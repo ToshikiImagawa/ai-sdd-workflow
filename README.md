@@ -2,20 +2,22 @@
 
 AI駆動仕様駆動開発（AI-SDD）ワークフローを支援する Claude Code プラグインのマーケットプレイスリポジトリです。
 
-A marketplace repository for Claude Code plugins supporting AI-driven Specification-Driven Development (AI-SDD) workflow.
+A marketplace repository for Claude Code plugins supporting AI-driven Specification-Driven Development (AI-SDD)
+workflow.
 
 ## 概要 / Overview
 
 このリポジトリには、Vibe Coding問題を防ぎ、仕様書を真実の源として高品質な実装を実現するためのプラグインが含まれています。
 
-This repository contains plugins to prevent Vibe Coding problems and achieve high-quality implementations using specifications as the source of truth.
+This repository contains plugins to prevent Vibe Coding problems and achieve high-quality implementations using
+specifications as the source of truth.
 
 ## 利用可能なプラグイン / Available Plugins
 
-| プラグイン / Plugin | 言語 / Language | 説明 / Description |
-|:---|:---|:---|
-| `sdd-workflow-ja` | 日本語 | AI-SDD ワークフローを支援する日本語プラグイン |
-| `sdd-workflow` | English | English plugin supporting AI-SDD workflow |
+| プラグイン / Plugin    | 言語 / Language | 説明 / Description                          |
+|:------------------|:--------------|:------------------------------------------|
+| `sdd-workflow-ja` | 日本語           | AI-SDD ワークフローを支援する日本語プラグイン                |
+| `sdd-workflow`    | English       | English plugin supporting AI-SDD workflow |
 
 ## インストール / Installation
 
