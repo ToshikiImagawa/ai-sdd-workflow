@@ -5,9 +5,28 @@
 形式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に基づき、
 [Semantic Versioning](https://semver.org/lang/ja/) に準拠しています。
 
-## [1.0.1] - 2025-12-03
+## [1.0.1] - 2025-12-04
 
 ### Changed
+
+#### エージェント
+
+- `spec-reviewer` - 前提条件セクションを追加
+  - 実行前に `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込む指示を追加
+  - AI-SDDの原則・ドキュメント構成・永続性ルール・Vibe Coding防止の理解を促進
+
+#### コマンド
+
+- 全コマンドに前提条件セクションを追加
+  - `generate_prd`, `generate_spec`, `check_spec`, `task_breakdown`, `review_cleanup`
+  - 実行前に `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込む指示を追加
+  - sdd-workflowエージェントの原則に従った一貫した動作を保証
+
+#### スキル
+
+- 全スキルに前提条件セクションを追加
+  - `vibe-detector`, `doc-consistency-checker`
+  - 実行前に `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込む指示を追加
 
 #### フック
 

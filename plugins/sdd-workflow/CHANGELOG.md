@@ -5,9 +5,28 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.1] - 2025-12-03
+## [1.0.1] - 2025-12-04
 
 ### Changed
+
+#### Agents
+
+- `spec-reviewer` - Added prerequisites section
+  - Added instruction to read `sdd-workflow:sdd-workflow` agent content before execution
+  - Promotes understanding of AI-SDD principles, document structure, persistence rules, and Vibe Coding prevention
+
+#### Commands
+
+- Added prerequisites section to all commands
+  - `generate_prd`, `generate_spec`, `check_spec`, `task_breakdown`, `review_cleanup`
+  - Added instruction to read `sdd-workflow:sdd-workflow` agent content before execution
+  - Ensures consistent behavior following sdd-workflow agent principles
+
+#### Skills
+
+- Added prerequisites section to all skills
+  - `vibe-detector`, `doc-consistency-checker`
+  - Added instruction to read `sdd-workflow:sdd-workflow` agent content before execution
 
 #### Hooks
 
