@@ -18,19 +18,19 @@ This plugin solves this problem by providing a specification-centered developmen
 Run the following in Claude Code:
 
 ```
-/plugin marketplace add ToshikiImagawa/ai-sdd-workflow-ja
+/plugin marketplace add ToshikiImagawa/ai-sdd-workflow
 ```
 
 Then install the plugin:
 
 ```
-/plugin install sdd-workflow@ToshikiImagawa/ai-sdd-workflow-ja
+/plugin install sdd-workflow@ToshikiImagawa/ai-sdd-workflow
 ```
 
 ### Method 2: Clone from GitHub
 
 ```bash
-git clone https://github.com/ToshikiImagawa/ai-sdd-workflow-ja.git ~/.claude/plugins/sdd-workflow
+git clone https://github.com/ToshikiImagawa/ai-sdd-workflow.git ~/.claude/plugins/sdd-workflow
 ```
 
 After installation, restart Claude Code.

@@ -10,29 +10,37 @@ Coding問題を防ぎ、仕様書を真実の源として高品質な実装を�
 ## リポジトリ構成
 
 ```
-ai-sdd-workflow-ja/
+ai-sdd-workflow/
 ├── .claude-plugin/
 │   └── marketplace.json           # マーケットプレイスメタデータ
 ├── plugins/
-│   └── sdd-workflow-ja/           # sdd-workflow-ja プラグイン
+│   ├── sdd-workflow-ja/           # 日本語プラグイン
+│   │   ├── .claude-plugin/
+│   │   │   └── plugin.json        # プラグインマニフェスト
+│   │   ├── agents/
+│   │   │   ├── sdd-workflow.md    # AI-SDD開発フローエージェント
+│   │   │   └── spec-reviewer.md   # 仕様書レビューエージェント
+│   │   ├── commands/
+│   │   │   ├── generate_spec.md   # 仕様書・設計書生成
+│   │   │   ├── generate_prd.md    # PRD生成
+│   │   │   ├── check_spec.md      # 整合性チェック
+│   │   │   ├── review_cleanup.md  # レビュークリーンアップ
+│   │   │   └── task_breakdown.md  # タスク分解
+│   │   ├── skills/
+│   │   │   ├── vibe-detector.md   # Vibe Coding検出
+│   │   │   └── doc-consistency-checker.md
+│   │   ├── hooks/
+│   │   │   ├── check-spec-exists.sh
+│   │   │   ├── check-commit-prefix.sh
+│   │   │   └── settings.example.json
+│   │   └── LICENSE
+│   └── sdd-workflow/              # 英語プラグイン
 │       ├── .claude-plugin/
-│       │   └── plugin.json        # プラグインマニフェスト
+│       │   └── plugin.json
 │       ├── agents/
-│       │   ├── sdd-workflow.md    # AI-SDD開発フローエージェント
-│       │   └── spec-reviewer.md   # 仕様書レビューエージェント
 │       ├── commands/
-│       │   ├── generate_spec.md   # 仕様書・設計書生成
-│       │   ├── generate_prd.md    # PRD生成
-│       │   ├── check_spec.md      # 整合性チェック
-│       │   ├── review_cleanup.md  # レビュークリーンアップ
-│       │   └── task_breakdown.md  # タスク分解
 │       ├── skills/
-│       │   ├── vibe-detector.md   # Vibe Coding検出
-│       │   └── doc-consistency-checker.md
 │       ├── hooks/
-│       │   ├── check-spec-exists.sh
-│       │   ├── check-commit-prefix.sh
-│       │   └── settings.example.json
 │       └── LICENSE
 ├── CHANGELOG.md
 ├── CLAUDE.md
