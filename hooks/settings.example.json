@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude-plugin/hooks/check-spec-exists.sh"
+            "command": "hooks/check-spec-exists.sh"
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude-plugin/hooks/check-commit-prefix.sh"
+            "command": "hooks/check-commit-prefix.sh"
           }
         ]
       }

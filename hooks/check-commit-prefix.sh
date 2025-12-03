@@ -4,7 +4,12 @@
 # コミットメッセージ規約をチェック
 
 # 環境変数から実行されたコマンドを取得
-COMMAND=$(echo "$TOOL_INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*"command"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+# jq が利用可能な場合は jq を使用、そうでなければ grep/sed でフォールバック
+if command -v jq &> /dev/null; then
+    COMMAND=$(echo "$TOOL_INPUT" | jq -r '.command // empty' 2>/dev/null)
+else
+    COMMAND=$(echo "$TOOL_INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*"command"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+fi
 
 # git commit コマンドでない場合は終了
 if [[ ! "$COMMAND" == *"git commit"* ]]; then

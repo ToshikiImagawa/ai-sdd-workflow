@@ -122,7 +122,7 @@ Claude Codeで `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示�
         "hooks": [
           {
             "type": "command",
-            "command": ".claude-plugin/hooks/check-spec-exists.sh"
+            "command": "hooks/check-spec-exists.sh"
           }
         ]
       }
@@ -133,7 +133,7 @@ Claude Codeで `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示�
         "hooks": [
           {
             "type": "command",
-            "command": ".claude-plugin/hooks/check-commit-prefix.sh"
+            "command": "hooks/check-commit-prefix.sh"
           }
         ]
       }

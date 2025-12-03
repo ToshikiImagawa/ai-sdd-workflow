@@ -5,7 +5,12 @@
 
 # 環境変数から対象ファイルパスを取得
 # Claude Code は TOOL_INPUT を JSON で渡す
-FILE_PATH=$(echo "$TOOL_INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*"file_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+# jq が利用可能な場合は jq を使用、そうでなければ grep/sed でフォールバック
+if command -v jq &> /dev/null; then
+    FILE_PATH=$(echo "$TOOL_INPUT" | jq -r '.file_path // empty' 2>/dev/null)
+else
+    FILE_PATH=$(echo "$TOOL_INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*"file_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+fi
 
 # ファイルパスが取得できない場合は終了
 if [ -z "$FILE_PATH" ]; then
