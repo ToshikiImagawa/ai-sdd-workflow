@@ -1,7 +1,7 @@
 ---
 name: vibe-detector
 description: "Analyzes user input to automatically detect Vibe Coding (vague instructions) and assess risk. Used when detecting ambiguous implementation instructions or specification gaps."
-allowed-tools: Read, Glob, Grep
+allowed-tools: Read, Glob, Grep, AskUserQuestion
 ---
 
 # Vibe Detector - Automatic Detection of Vague Instructions

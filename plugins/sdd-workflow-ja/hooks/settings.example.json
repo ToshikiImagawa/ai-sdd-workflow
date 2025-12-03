@@ -1,4 +1,18 @@
 {
+  "$comment": [
+    "AI-SDD Workflow Hooks Configuration",
+    "",
+    "セットアップ手順:",
+    "1. このファイルを ~/.claude/settings.json にコピー（既存の場合はマージ）",
+    "2. hooksディレクトリをプロジェクトルートにコピー:",
+    "   cp -r plugins/sdd-workflow-ja/hooks /path/to/your/project/",
+    "3. スクリプトに実行権限を付与:",
+    "   chmod +x /path/to/your/project/hooks/*.sh",
+    "4. パスをプロジェクトに合わせて調整（必要な場合）",
+    "",
+    "注意: $comment フィールドはJSONの慣習的なコメントです。",
+    "      Claude Codeはこのフィールドを無視します。"
+  ],
   "hooks": {
     "PreToolUse": [
       {
@@ -6,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "hooks/check-spec-exists.sh"
+            "command": "./hooks/check-spec-exists.sh"
           }
         ]
       }
@@ -17,7 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "hooks/check-commit-prefix.sh"
+            "command": "./hooks/check-commit-prefix.sh"
           }
         ]
       }

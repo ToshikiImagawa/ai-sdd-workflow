@@ -5,6 +5,29 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-12-03
+
+### Changed
+
+#### Hooks
+
+- `check-spec-exists.sh` - Improved path resolution
+  - Dynamically retrieves repository root using `git rev-parse --show-toplevel`
+  - Falls back to current directory if not a git repository
+- `check-spec-exists.sh` - Extended test file exclusion patterns
+  - Jest: `__tests__/`, `__mocks__/`
+  - Storybook: `*.stories.*`
+  - E2E: `/e2e/`, `/cypress/`
+- `settings.example.json` - Added setup instructions as comments
+  - Fixed path to `./hooks/` format
+
+#### Skills
+
+- `vibe-detector` - Added `AskUserQuestion` to `allowed-tools`
+  - Supports user confirmation flow
+- `doc-consistency-checker` - Added `Bash` to `allowed-tools`
+  - Supports directory structure verification
+
 ## [1.0.0] - 2024-12-03
 
 ### Added

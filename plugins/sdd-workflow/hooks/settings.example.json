@@ -1,4 +1,18 @@
 {
+  "$comment": [
+    "AI-SDD Workflow Hooks Configuration",
+    "",
+    "Setup Instructions:",
+    "1. Copy this file to ~/.claude/settings.json (merge if existing)",
+    "2. Copy hooks directory to your project root:",
+    "   cp -r plugins/sdd-workflow/hooks /path/to/your/project/",
+    "3. Grant execution permission to scripts:",
+    "   chmod +x /path/to/your/project/hooks/*.sh",
+    "4. Adjust paths to match your project (if needed)",
+    "",
+    "Note: The $comment field is a conventional JSON comment.",
+    "      Claude Code ignores this field."
+  ],
   "hooks": {
     "PreToolUse": [
       {
@@ -6,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "hooks/check-spec-exists.sh"
+            "command": "./hooks/check-spec-exists.sh"
           }
         ]
       }
@@ -17,7 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "hooks/check-commit-prefix.sh"
+            "command": "./hooks/check-commit-prefix.sh"
           }
         ]
       }

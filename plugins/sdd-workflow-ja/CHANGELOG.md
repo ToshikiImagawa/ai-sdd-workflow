@@ -5,6 +5,29 @@
 形式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に基づき、
 [Semantic Versioning](https://semver.org/lang/ja/) に準拠しています。
 
+## [1.0.1] - 2025-12-03
+
+### Changed
+
+#### フック
+
+- `check-spec-exists.sh` - パス解決の改善
+  - `git rev-parse --show-toplevel` でリポジトリルートを動的に取得
+  - gitリポジトリでない場合はカレントディレクトリにフォールバック
+- `check-spec-exists.sh` - テストファイル除外パターンを拡張
+  - Jest: `__tests__/`, `__mocks__/`
+  - Storybook: `*.stories.*`
+  - E2E: `/e2e/`, `/cypress/`
+- `settings.example.json` - セットアップ手順をコメントとして追加
+  - パスを `./hooks/` 形式に修正
+
+#### スキル
+
+- `vibe-detector` - `allowed-tools` に `AskUserQuestion` を追加
+  - ユーザーへの確認フローをサポート
+- `doc-consistency-checker` - `allowed-tools` に `Bash` を追加
+  - ディレクトリ構造の確認をサポート
+
 ## [1.0.0] - 2024-12-03
 
 ### Added

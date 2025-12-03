@@ -1,7 +1,7 @@
 ---
 name: vibe-detector
 description: "ユーザーの入力を分析し、Vibe Coding（曖昧な指示）を自動検出してリスク評価を行います。曖昧な実装指示や仕様不足を検出した場合に使用します。"
-allowed-tools: Read, Glob, Grep
+allowed-tools: Read, Glob, Grep, AskUserQuestion
 ---
 
 # Vibe Detector - 曖昧な指示の自動検出

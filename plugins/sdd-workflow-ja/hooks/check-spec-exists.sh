@@ -17,9 +17,16 @@ if [ -z "$FILE_PATH" ]; then
     exit 0
 fi
 
+# リポジトリルートを取得（git管理下の場合）
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+if [ -z "$REPO_ROOT" ]; then
+    # gitリポジトリでない場合はカレントディレクトリを使用
+    REPO_ROOT="$(pwd)"
+fi
+
 # ソースコードファイルかどうかを判定
 # .docs/ 配下のファイルは対象外
-if [[ "$FILE_PATH" == *".docs/"* ]]; then
+if [[ "$FILE_PATH" == *".docs/"* ]] || [[ "$FILE_PATH" == *"/.docs/"* ]]; then
     exit 0
 fi
 
@@ -29,12 +36,21 @@ if [[ "$FILE_PATH" == *".json" ]] || [[ "$FILE_PATH" == *".md" ]] || [[ "$FILE_P
 fi
 
 # テストファイルは対象外（一般的なテストファイルパターン）
-if [[ "$FILE_PATH" == *".test."* ]] || [[ "$FILE_PATH" == *".spec."* ]] || [[ "$FILE_PATH" == *"_test."* ]] || [[ "$FILE_PATH" == *"test_"* ]] || [[ "$FILE_PATH" == *"/test/"* ]] || [[ "$FILE_PATH" == *"/tests/"* ]]; then
+# Jest: __tests__/, __mocks__/, *.test.*, *.spec.*
+# Python: test_*, *_test.py, /tests/
+# Storybook: *.stories.*
+# E2E: /e2e/, /cypress/
+if [[ "$FILE_PATH" == *".test."* ]] || [[ "$FILE_PATH" == *".spec."* ]] || \
+   [[ "$FILE_PATH" == *"_test."* ]] || [[ "$FILE_PATH" == *"test_"* ]] || \
+   [[ "$FILE_PATH" == *"/test/"* ]] || [[ "$FILE_PATH" == *"/tests/"* ]] || \
+   [[ "$FILE_PATH" == *"/__tests__/"* ]] || [[ "$FILE_PATH" == *"/__mocks__/"* ]] || \
+   [[ "$FILE_PATH" == *".stories."* ]] || \
+   [[ "$FILE_PATH" == *"/e2e/"* ]] || [[ "$FILE_PATH" == *"/cypress/"* ]]; then
     exit 0
 fi
 
-# .docs/specification/ ディレクトリの存在確認
-SPEC_DIR=".docs/specification"
+# .docs/specification/ ディレクトリの存在確認（リポジトリルートからの相対パス）
+SPEC_DIR="${REPO_ROOT}/.docs/specification"
 if [ ! -d "$SPEC_DIR" ]; then
     # 仕様書ディレクトリが存在しない場合は警告のみ
     echo "[AI-SDD Warning] .docs/specification/ ディレクトリが存在しません。" >&2

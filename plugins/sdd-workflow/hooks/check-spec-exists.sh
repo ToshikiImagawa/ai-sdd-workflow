@@ -17,9 +17,16 @@ if [ -z "$FILE_PATH" ]; then
     exit 0
 fi
 
+# Get repository root (if under git management)
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+if [ -z "$REPO_ROOT" ]; then
+    # Use current directory if not a git repository
+    REPO_ROOT="$(pwd)"
+fi
+
 # Determine if it's a source code file
 # Files under .docs/ are excluded
-if [[ "$FILE_PATH" == *".docs/"* ]]; then
+if [[ "$FILE_PATH" == *".docs/"* ]] || [[ "$FILE_PATH" == *"/.docs/"* ]]; then
     exit 0
 fi
 
@@ -29,12 +36,21 @@ if [[ "$FILE_PATH" == *".json" ]] || [[ "$FILE_PATH" == *".md" ]] || [[ "$FILE_P
 fi
 
 # Test files are excluded (common test file patterns)
-if [[ "$FILE_PATH" == *".test."* ]] || [[ "$FILE_PATH" == *".spec."* ]] || [[ "$FILE_PATH" == *"_test."* ]] || [[ "$FILE_PATH" == *"test_"* ]] || [[ "$FILE_PATH" == *"/test/"* ]] || [[ "$FILE_PATH" == *"/tests/"* ]]; then
+# Jest: __tests__/, __mocks__/, *.test.*, *.spec.*
+# Python: test_*, *_test.py, /tests/
+# Storybook: *.stories.*
+# E2E: /e2e/, /cypress/
+if [[ "$FILE_PATH" == *".test."* ]] || [[ "$FILE_PATH" == *".spec."* ]] || \
+   [[ "$FILE_PATH" == *"_test."* ]] || [[ "$FILE_PATH" == *"test_"* ]] || \
+   [[ "$FILE_PATH" == *"/test/"* ]] || [[ "$FILE_PATH" == *"/tests/"* ]] || \
+   [[ "$FILE_PATH" == *"/__tests__/"* ]] || [[ "$FILE_PATH" == *"/__mocks__/"* ]] || \
+   [[ "$FILE_PATH" == *".stories."* ]] || \
+   [[ "$FILE_PATH" == *"/e2e/"* ]] || [[ "$FILE_PATH" == *"/cypress/"* ]]; then
     exit 0
 fi
 
-# Check if .docs/specification/ directory exists
-SPEC_DIR=".docs/specification"
+# Check if .docs/specification/ directory exists (relative to repository root)
+SPEC_DIR="${REPO_ROOT}/.docs/specification"
 if [ ! -d "$SPEC_DIR" ]; then
     # Warning only if specification directory doesn't exist
     echo "[AI-SDD Warning] .docs/specification/ directory does not exist." >&2

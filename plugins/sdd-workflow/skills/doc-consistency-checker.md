@@ -1,7 +1,7 @@
 ---
 name: doc-consistency-checker
 description: "Automatically checks consistency between documents (PRD, *_spec.md, *_design.md) and detects inconsistencies. Used for document updates and pre-implementation checks."
-allowed-tools: Read, Glob, Grep
+allowed-tools: Read, Glob, Grep, Bash
 ---
 
 # Doc Consistency Checker - Document Consistency Check
