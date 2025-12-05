@@ -15,8 +15,8 @@ This command follows the sdd-workflow agent principles for task breakdown.
 
 ### Tasks Phase Positioning (Reference)
 
-| Phase | Purpose | Deliverables |
-|:---|:---|:---|
+| Phase     | Purpose                                                   | Deliverables    |
+|:----------|:----------------------------------------------------------|:----------------|
 | **Tasks** | Break down design into independently testable small tasks | Under `review/` |
 
 ## Input
@@ -47,11 +47,11 @@ Load .docs/specification/{feature-name}_design.md (required)
 
 Extract the following information from design document:
 
-| Extraction Item | Description |
-|:---|:---|
+| Extraction Item      | Description                 |
+|:---------------------|:----------------------------|
 | **Module Structure** | Files/directories to create |
-| **Dependencies** | Inter-module dependencies |
-| **Interfaces** | Public API for each module |
+| **Dependencies**     | Inter-module dependencies   |
+| **Interfaces**       | Public API for each module  |
 | **Technology Stack** | Libraries/frameworks to use |
 
 ### 3. Task Breakdown Principles
@@ -73,13 +73,13 @@ Extract the following information from design document:
 
 ### 4. Task Classification
 
-| Category | Description | Examples |
-|:---|:---|:---|
-| **Foundation** | Work prerequisite to other tasks | Directory structure, type definitions |
-| **Core** | Main feature implementation | Business logic, API |
-| **Integration** | Inter-module coordination | Service layer, event processing |
-| **Testing** | Test creation | Unit tests, integration tests |
-| **Finishing** | Final adjustments | Documentation updates, refactoring |
+| Category        | Description                      | Examples                              |
+|:----------------|:---------------------------------|:--------------------------------------|
+| **Foundation**  | Work prerequisite to other tasks | Directory structure, type definitions |
+| **Core**        | Main feature implementation      | Business logic, API                   |
+| **Integration** | Inter-module coordination        | Service layer, event processing       |
+| **Testing**     | Test creation                    | Unit tests, integration tests         |
+| **Finishing**   | Final adjustments                | Documentation updates, refactoring    |
 
 ### 5. Organize Dependencies
 
@@ -239,9 +239,9 @@ If Serena MCP is enabled, semantic code analysis can be leveraged to improve tas
 
 #### Impact Scope Analysis
 
-| Feature | Usage |
-|:---|:---|
-| `find_symbol` | Identify symbols to be changed |
+| Feature                    | Usage                                                 |
+|:---------------------------|:------------------------------------------------------|
+| `find_symbol`              | Identify symbols to be changed                        |
 | `find_referencing_symbols` | Understand impact scope (dependent code) from changes |
 
 #### Enhanced Task Breakdown Items

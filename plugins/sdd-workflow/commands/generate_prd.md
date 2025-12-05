@@ -17,11 +17,12 @@ This command follows the sdd-workflow agent principles for PRD generation.
 
 This command uses the following skills:
 
-| Skill | Purpose |
-|:---|:---|
+| Skill                        | Purpose                                                               |
+|:-----------------------------|:----------------------------------------------------------------------|
 | `sdd-workflow:sdd-templates` | Generate `.docs/PRD_TEMPLATE.md` when project template does not exist |
 
 **Template Preparation Flow**:
+
 1. Use `.docs/PRD_TEMPLATE.md` (project template) if it exists
 2. If not, use `sdd-templates` skill to generate the template
 
@@ -123,7 +124,8 @@ Follow these steps to prepare the template:
 
 1. Check if `.docs/PRD_TEMPLATE.md` exists
 2. **If exists**: Use that template
-3. **If not exists**: Use `sdd-workflow:sdd-templates` skill to generate `.docs/PRD_TEMPLATE.md`, then use the generated template
+3. **If not exists**: Use `sdd-workflow:sdd-templates` skill to generate `.docs/PRD_TEMPLATE.md`, then use the generated
+   template
 
 ### Template Application Notes
 
@@ -167,12 +169,12 @@ If existing spec/design exists, verify the following after PRD generation:
 
 ### Check Items
 
-| Check Item | Verification Content |
-|:---|:---|
-| **New Requirement Addition** | Are requirements added in PRD reflected in spec? |
-| **Requirement Changes** | Are requirements changed in PRD reflected in spec/design? |
-| **Requirement Deletion** | Are requirements deleted from PRD removed from spec/design? |
-| **Requirement ID Consistency** | Do requirement ID references in spec match PRD? |
+| Check Item                     | Verification Content                                        |
+|:-------------------------------|:------------------------------------------------------------|
+| **New Requirement Addition**   | Are requirements added in PRD reflected in spec?            |
+| **Requirement Changes**        | Are requirements changed in PRD reflected in spec/design?   |
+| **Requirement Deletion**       | Are requirements deleted from PRD removed from spec/design? |
+| **Requirement ID Consistency** | Do requirement ID references in spec match PRD?             |
 
 ### Handling When Updates Needed
 
@@ -183,18 +185,18 @@ If existing spec/design exists, verify the following after PRD generation:
 ## Post-Generation Actions
 
 1. **Save File**:
-   - `.docs/requirement-diagram/{feature-name}.md`
+    - `.docs/requirement-diagram/{feature-name}.md`
 
 2. **Consistency Check**:
-   - If existing spec/design exists: Verify impact and notify if updates needed
+    - If existing spec/design exists: Verify impact and notify if updates needed
 
 3. **Commit**:
-   - `[docs] Add {feature-name} PRD`
+    - `[docs] Add {feature-name} PRD`
 
 4. **Next Steps**:
-   - Create abstract specification and technical design document with `/generate_spec`
-   - Reference PRD requirement IDs in specification
-   - If existing spec exists, recommend update
+    - Create abstract specification and technical design document with `/generate_spec`
+    - Reference PRD requirement IDs in specification
+    - If existing spec exists, recommend update
 
 ## Notes
 

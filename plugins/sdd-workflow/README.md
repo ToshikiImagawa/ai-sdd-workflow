@@ -4,7 +4,8 @@ A Claude Code plugin supporting AI-driven Specification-Driven Development (AI-S
 
 ## Overview
 
-This plugin provides tools to prevent Vibe Coding problems and achieve high-quality implementations using specifications as the source of truth.
+This plugin provides tools to prevent Vibe Coding problems and achieve high-quality implementations using specifications
+as the source of truth.
 
 ### What is Vibe Coding?
 
@@ -43,34 +44,34 @@ Run `/plugin` command in Claude Code and verify that `sdd-workflow` is displayed
 
 ### Agents
 
-| Agent | Description |
-|:---|:---|
-| `sdd-workflow` | AI-SDD development flow management. Phase determination, Vibe Coding prevention, document consistency checks |
+| Agent           | Description                                                                                                               |
+|:----------------|:--------------------------------------------------------------------------------------------------------------------------|
+| `sdd-workflow`  | AI-SDD development flow management. Phase determination, Vibe Coding prevention, document consistency checks              |
 | `spec-reviewer` | Specification quality review and improvement suggestions. Ambiguous description detection, missing section identification |
 
 ### Commands
 
-| Command | Description |
-|:---|:---|
-| `/generate_spec` | Generate abstract specification and technical design document from input |
-| `/generate_prd` | Generate PRD (Requirements Specification) in SysML requirements diagram format from business requirements |
-| `/check_spec` | Check consistency between implementation code and specifications, detecting discrepancies |
-| `/review_cleanup` | Clean up review/ directory after implementation, integrating design decisions |
-| `/task_breakdown` | Break down tasks from technical design document into small task list |
+| Command           | Description                                                                                               |
+|:------------------|:----------------------------------------------------------------------------------------------------------|
+| `/generate_spec`  | Generate abstract specification and technical design document from input                                  |
+| `/generate_prd`   | Generate PRD (Requirements Specification) in SysML requirements diagram format from business requirements |
+| `/check_spec`     | Check consistency between implementation code and specifications, detecting discrepancies                 |
+| `/review_cleanup` | Clean up review/ directory after implementation, integrating design decisions                             |
+| `/task_breakdown` | Break down tasks from technical design document into small task list                                      |
 
 ### Skills
 
-| Skill | Description |
-|:---|:---|
-| `vibe-detector` | Analyzes user input to automatically detect Vibe Coding (vague instructions) |
-| `doc-consistency-checker` | Automatically checks consistency between documents (PRD, spec, design) |
+| Skill                     | Description                                                                  |
+|:--------------------------|:-----------------------------------------------------------------------------|
+| `vibe-detector`           | Analyzes user input to automatically detect Vibe Coding (vague instructions) |
+| `doc-consistency-checker` | Automatically checks consistency between documents (PRD, spec, design)       |
 
 ### Hooks
 
-| Hook | Trigger | Description |
-|:---|:---|:---|
-| `check-spec-exists` | PreToolUse (Edit/Write) | Verifies specification existence before implementation, shows warning |
-| `check-commit-prefix` | PostToolUse (Bash) | Checks commit message convention |
+| Hook                  | Trigger                 | Description                                                           |
+|:----------------------|:------------------------|:----------------------------------------------------------------------|
+| `check-spec-exists`   | PreToolUse (Edit/Write) | Verifies specification existence before implementation, shows warning |
+| `check-commit-prefix` | PostToolUse (Bash)      | Checks commit message convention                                      |
 
 ## Usage
 
@@ -152,11 +153,13 @@ See `hooks/settings.example.json` for configuration example.
 
 ## Serena MCP Integration (Optional)
 
-Configure [Serena](https://github.com/oraios/serena) MCP to enable enhanced functionality through semantic code analysis.
+Configure [Serena](https://github.com/oraios/serena) MCP to enable enhanced functionality through semantic code
+analysis.
 
 ### What is Serena
 
-Serena is a semantic code analysis tool based on LSP (Language Server Protocol), supporting 30+ programming languages. It enables symbol-level code search and analysis.
+Serena is a semantic code analysis tool based on LSP (Language Server Protocol), supporting 30+ programming languages.
+It enables symbol-level code search and analysis.
 
 ### Configuration
 
@@ -187,11 +190,11 @@ Add the following to your project's `.mcp.json`:
 
 ### Enhanced Features
 
-| Command | Enhancement with Serena |
-|:---|:---|
-| `/generate_spec` | Reference existing code API/type definitions for consistent specification generation |
-| `/check_spec` | High-precision API implementation and signature verification via symbol-based search |
-| `/task_breakdown` | Analyze change impact scope for accurate task dependency mapping |
+| Command           | Enhancement with Serena                                                              |
+|:------------------|:-------------------------------------------------------------------------------------|
+| `/generate_spec`  | Reference existing code API/type definitions for consistent specification generation |
+| `/check_spec`     | High-precision API implementation and signature verification via symbol-based search |
+| `/task_breakdown` | Analyze change impact scope for accurate task dependency mapping                     |
 
 ### Without Serena
 
@@ -246,10 +249,10 @@ sdd-workflow/
 
 ## Commit Message Convention
 
-| Prefix | Usage |
-|:---|:---|
-| `[docs]` | Add/update documentation |
-| `[spec]` | Add/update specifications (`*_spec.md`) |
+| Prefix     | Usage                                       |
+|:-----------|:--------------------------------------------|
+| `[docs]`   | Add/update documentation                    |
+| `[spec]`   | Add/update specifications (`*_spec.md`)     |
 | `[design]` | Add/update design documents (`*_design.md`) |
 
 ## License

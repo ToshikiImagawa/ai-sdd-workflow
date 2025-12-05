@@ -5,7 +5,8 @@ description: "Check consistency between implementation code and specifications, 
 
 # Check Spec - Specification Consistency Check
 
-Verifies consistency between implementation code and specifications (`*_spec.md`, `*_design.md`), detecting discrepancies.
+Verifies consistency between implementation code and specifications (`*_spec.md`, `*_design.md`), detecting
+discrepancies.
 
 ## Prerequisites
 
@@ -49,28 +50,28 @@ Extract the following information from target documents:
 
 **From PRD (`requirement-diagram/*.md`)** (if exists):
 
-| Item | Description |
-|:---|:---|
-| **Requirement IDs** | UR-xxx, FR-xxx, NFR-xxx |
-| **Functional Requirements** | Functions the system should provide |
-| **Non-Functional Requirements** | Performance, security, etc. |
+| Item                            | Description                         |
+|:--------------------------------|:------------------------------------|
+| **Requirement IDs**             | UR-xxx, FR-xxx, NFR-xxx             |
+| **Functional Requirements**     | Functions the system should provide |
+| **Non-Functional Requirements** | Performance, security, etc.         |
 
 **From `*_spec.md`**:
 
-| Item | Description |
-|:---|:---|
-| **Public API** | Function names, arguments, return types |
-| **Data Model** | Type definitions, interfaces |
-| **Functional Requirements** | List of functions to implement |
-| **PRD Reference** | Referenced requirement IDs |
+| Item                        | Description                             |
+|:----------------------------|:----------------------------------------|
+| **Public API**              | Function names, arguments, return types |
+| **Data Model**              | Type definitions, interfaces            |
+| **Functional Requirements** | List of functions to implement          |
+| **PRD Reference**           | Referenced requirement IDs              |
 
 **From `*_design.md`**:
 
-| Item | Description |
-|:---|:---|
-| **Module Structure** | Directory structure, file organization |
-| **Technology Stack** | Libraries, frameworks used |
-| **Interface Definitions** | Interface definitions for each layer |
+| Item                      | Description                            |
+|:--------------------------|:---------------------------------------|
+| **Module Structure**      | Directory structure, file organization |
+| **Technology Stack**      | Libraries, frameworks used             |
+| **Interface Definitions** | Interface definitions for each layer   |
 
 ### 3. Verify Implementation Code
 
@@ -84,30 +85,30 @@ Search for code corresponding to specification contents:
 
 #### PRD ↔ spec Consistency (if PRD exists)
 
-| Check Target | Verification Content | Importance |
-|:---|:---|:---|
-| **Requirement ID Mapping** | Are PRD requirement IDs referenced in spec? | High |
-| **Functional Requirement Coverage** | Are PRD functional requirements covered in spec? | High |
-| **Non-Functional Requirement Reflection** | Are PRD non-functional requirements reflected in spec? | Medium |
-| **Terminology Consistency** | Is same terminology used in PRD and spec? | Low |
+| Check Target                              | Verification Content                                   | Importance |
+|:------------------------------------------|:-------------------------------------------------------|:-----------|
+| **Requirement ID Mapping**                | Are PRD requirement IDs referenced in spec?            | High       |
+| **Functional Requirement Coverage**       | Are PRD functional requirements covered in spec?       | High       |
+| **Non-Functional Requirement Reflection** | Are PRD non-functional requirements reflected in spec? | Medium     |
+| **Terminology Consistency**               | Is same terminology used in PRD and spec?              | Low        |
 
 #### spec ↔ design Consistency
 
-| Check Target | Verification Content | Importance |
-|:---|:---|:---|
-| **API Definition Match** | Is spec API detailed in design? | High |
-| **Type Definition Match** | Do spec type definitions match design? | High |
-| **Constraint Consideration** | Are spec constraints considered in design? | Medium |
+| Check Target                 | Verification Content                       | Importance |
+|:-----------------------------|:-------------------------------------------|:-----------|
+| **API Definition Match**     | Is spec API detailed in design?            | High       |
+| **Type Definition Match**    | Do spec type definitions match design?     | High       |
+| **Constraint Consideration** | Are spec constraints considered in design? | Medium     |
 
 #### design ↔ Implementation Consistency
 
-| Check Target | Verification Content | Importance |
-|:---|:---|:---|
-| **API Signature** | Do function names, arguments, return values match? | High |
-| **Type Definitions** | Do interfaces and types match? | High |
-| **Module Structure** | Does directory/file structure match? | Medium |
-| **Functional Requirements** | Are functions specified in specs implemented? | High |
-| **Technology Stack** | Are documented libraries being used? | Low |
+| Check Target                | Verification Content                               | Importance |
+|:----------------------------|:---------------------------------------------------|:-----------|
+| **API Signature**           | Do function names, arguments, return values match? | High       |
+| **Type Definitions**        | Do interfaces and types match?                     | High       |
+| **Module Structure**        | Does directory/file structure match?               | Medium     |
+| **Functional Requirements** | Are functions specified in specs implemented?      | High       |
+| **Technology Stack**        | Are documented libraries being used?               | Low        |
 
 ### 5. Discrepancy Classification
 
@@ -163,15 +164,19 @@ Classify detected discrepancies as follows:
 **Specification States**:
 
 ```
+
 // From *_spec.md
 doSomething(arg: string): Result
+
 ```
 
 **Implementation Code**:
 
 ```
+
 // From implementation file
-doSomething(arg: number): Result  // Argument type differs
+doSomething(arg: number): Result // Argument type differs
+
 ```
 
 **Recommended Actions**:
@@ -224,12 +229,12 @@ Features implemented but not documented in specifications:
 
 ## Check Execution Timing
 
-| Timing | Recommended Action |
-|:---|:---|
-| **Before Implementation Start** | Verify specification existence and content |
-| **At Implementation Completion** | Verify consistency with specifications |
-| **Before PR Creation** | Run as final verification |
-| **Periodic Check** | Prevent documentation obsolescence |
+| Timing                           | Recommended Action                         |
+|:---------------------------------|:-------------------------------------------|
+| **Before Implementation Start**  | Verify specification existence and content |
+| **At Implementation Completion** | Verify consistency with specifications     |
+| **Before PR Creation**           | Run as final verification                  |
+| **Periodic Check**               | Prevent documentation obsolescence         |
 
 ## Serena MCP Integration (Optional)
 
@@ -244,9 +249,9 @@ If Serena MCP is enabled, high-precision consistency checking through semantic c
 
 #### Symbol-Based Consistency Check
 
-| Feature | Description |
-|:---|:---|
-| `find_symbol` | Search implementation code for APIs/functions documented in spec |
+| Feature                    | Description                                                             |
+|:---------------------------|:------------------------------------------------------------------------|
+| `find_symbol`              | Search implementation code for APIs/functions documented in spec        |
 | `find_referencing_symbols` | Understand usage locations of specific symbols to identify impact scope |
 
 #### Enhanced Check Items

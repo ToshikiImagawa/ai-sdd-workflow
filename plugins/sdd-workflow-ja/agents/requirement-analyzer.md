@@ -9,7 +9,8 @@ color: blue
 
 ## 前提条件
 
-**実行前に必ず `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込み、AI-SDDの原則・ドキュメント構成・永続性ルール・Vibe Coding防止の詳細を理解してください。**
+**実行前に必ず `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込み、AI-SDDの原則・ドキュメント構成・永続性ルール・Vibe
+Coding防止の詳細を理解してください。**
 
 このエージェントはsdd-workflowエージェントの原則に基づいて要求分析を行います。
 

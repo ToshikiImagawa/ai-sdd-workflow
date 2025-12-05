@@ -20,11 +20,12 @@ This command follows the sdd-workflow agent principles for specification and des
 
 This command uses the following skills:
 
-| Skill | Purpose |
-|:---|:---|
+| Skill                        | Purpose                                                                                                        |
+|:-----------------------------|:---------------------------------------------------------------------------------------------------------------|
 | `sdd-workflow:sdd-templates` | Generate `.docs/SPECIFICATION_TEMPLATE.md`, `.docs/DESIGN_DOC_TEMPLATE.md` when project templates do not exist |
 
 **Template Preparation Flow**:
+
 1. Use `.docs/SPECIFICATION_TEMPLATE.md`, `.docs/DESIGN_DOC_TEMPLATE.md` (project templates) if they exist
 2. If not, use `sdd-templates` skill to generate the templates
 
@@ -54,11 +55,11 @@ Provides an API to check login status and middleware to protect endpoints requir
 
 Analyze input content and assess risk based on the following criteria:
 
-| Risk | Condition | Response |
-|:---|:---|:---|
-| High | No specs + vague instructions | Confirm missing information with user before generating |
-| Medium | Some requirements unclear | Clarify ambiguous points before generating |
-| Low | Requirements clear | Can generate as-is |
+| Risk   | Condition                     | Response                                                |
+|:-------|:------------------------------|:--------------------------------------------------------|
+| High   | No specs + vague instructions | Confirm missing information with user before generating |
+| Medium | Some requirements unclear     | Clarify ambiguous points before generating              |
+| Low    | Requirements clear            | Can generate as-is                                      |
 
 **Examples of Vague Input**:
 
@@ -72,24 +73,24 @@ Extract/infer the following from input:
 
 **For Spec (Abstract Specification)**:
 
-| Extraction Item | Description | Required |
-|:---|:---|:---|
-| **Feature Name** | Identifier used for filename | Yes |
-| **Background** | Why this feature is needed | Yes |
-| **Purpose** | What to achieve | Yes |
-| **Functional Requirements** | List of required functions | Yes |
-| **Public API** | Interfaces users will use | |
-| **Data Model** | Major types/entities | |
-| **Behavior** | Major use cases/sequences | |
+| Extraction Item             | Description                  | Required |
+|:----------------------------|:-----------------------------|:---------|
+| **Feature Name**            | Identifier used for filename | Yes      |
+| **Background**              | Why this feature is needed   | Yes      |
+| **Purpose**                 | What to achieve              | Yes      |
+| **Functional Requirements** | List of required functions   | Yes      |
+| **Public API**              | Interfaces users will use    |          |
+| **Data Model**              | Major types/entities         |          |
+| **Behavior**                | Major use cases/sequences    |          |
 
 **For Design Doc (Technical Design Document)**:
 
-| Extraction Item | Description | Required |
-|:---|:---|:---|
-| **Technology Stack** | Technologies/libraries to use | Yes |
-| **Architecture Proposal** | Module structure/layer design | Yes |
-| **Design Decisions** | Reasons for technology selection/alternatives | |
-| **Non-Functional Requirements** | Performance/security requirements | |
+| Extraction Item                 | Description                                   | Required |
+|:--------------------------------|:----------------------------------------------|:---------|
+| **Technology Stack**            | Technologies/libraries to use                 | Yes      |
+| **Architecture Proposal**       | Module structure/layer design                 | Yes      |
+| **Design Decisions**            | Reasons for technology selection/alternatives |          |
+| **Non-Functional Requirements** | Performance/security requirements             |          |
 
 ### 3. Missing Information Confirmation
 
@@ -128,7 +129,8 @@ Follow these steps to prepare the template:
 
 1. Check if `.docs/SPECIFICATION_TEMPLATE.md` exists
 2. **If exists**: Use that template
-3. **If not exists**: Use `sdd-workflow:sdd-templates` skill to generate `.docs/SPECIFICATION_TEMPLATE.md`, then use the generated template
+3. **If not exists**: Use `sdd-workflow:sdd-templates` skill to generate `.docs/SPECIFICATION_TEMPLATE.md`, then use the
+   generated template
 
 #### Template Application Notes
 
@@ -148,7 +150,8 @@ Follow these steps to prepare the template:
 
 1. Check if `.docs/DESIGN_DOC_TEMPLATE.md` exists
 2. **If exists**: Use that template
-3. **If not exists**: Use `sdd-workflow:sdd-templates` skill to generate `.docs/DESIGN_DOC_TEMPLATE.md`, then use the generated template
+3. **If not exists**: Use `sdd-workflow:sdd-templates` skill to generate `.docs/DESIGN_DOC_TEMPLATE.md`, then use the
+   generated template
 
 #### Template Application Notes
 
@@ -199,12 +202,12 @@ If PRD exists, perform the following consistency checks on generated spec and re
 
 ### Check Items
 
-| Check Item | Verification Content |
-|:---|:---|
-| **Requirement Coverage** | Are all PRD functional requirements (FR-xxx) covered in spec? |
-| **Requirement ID References** | Do spec functional requirements appropriately reference PRD requirement IDs? |
-| **Non-Functional Requirement Reflection** | Are PRD non-functional requirements (NFR-xxx) reflected in spec? |
-| **Terminology Consistency** | Is the same terminology used in PRD and spec? |
+| Check Item                                | Verification Content                                                         |
+|:------------------------------------------|:-----------------------------------------------------------------------------|
+| **Requirement Coverage**                  | Are all PRD functional requirements (FR-xxx) covered in spec?                |
+| **Requirement ID References**             | Do spec functional requirements appropriately reference PRD requirement IDs? |
+| **Non-Functional Requirement Reflection** | Are PRD non-functional requirements (NFR-xxx) reflected in spec?             |
+| **Terminology Consistency**               | Is the same terminology used in PRD and spec?                                |
 
 ### Handling Inconsistencies
 
@@ -250,10 +253,10 @@ If Serena MCP is enabled, existing codebase semantic analysis can be leveraged t
 
 #### Specification Extraction from Existing Code
 
-| Feature | Usage |
-|:---|:---|
-| `find_symbol` | Search existing function/class definitions for API spec reference |
-| `find_referencing_symbols` | Infer behavior from existing code usage patterns |
+| Feature                    | Usage                                                             |
+|:---------------------------|:------------------------------------------------------------------|
+| `find_symbol`              | Search existing function/class definitions for API spec reference |
+| `find_referencing_symbols` | Infer behavior from existing code usage patterns                  |
 
 #### Enhanced Generation Items
 

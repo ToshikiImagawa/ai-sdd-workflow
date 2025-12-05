@@ -12,40 +12,40 @@
 #### エージェント
 
 - `spec-reviewer` - 前提条件セクションを追加
-  - 実行前に `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込む指示を追加
-  - AI-SDDの原則・ドキュメント構成・永続性ルール・Vibe Coding防止の理解を促進
+    - 実行前に `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込む指示を追加
+    - AI-SDDの原則・ドキュメント構成・永続性ルール・Vibe Coding防止の理解を促進
 
 #### コマンド
 
 - 全コマンドに前提条件セクションを追加
-  - `generate_prd`, `generate_spec`, `check_spec`, `task_breakdown`, `review_cleanup`
-  - 実行前に `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込む指示を追加
-  - sdd-workflowエージェントの原則に従った一貫した動作を保証
+    - `generate_prd`, `generate_spec`, `check_spec`, `task_breakdown`, `review_cleanup`
+    - 実行前に `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込む指示を追加
+    - sdd-workflowエージェントの原則に従った一貫した動作を保証
 
 #### スキル
 
 - 全スキルに前提条件セクションを追加
-  - `vibe-detector`, `doc-consistency-checker`
-  - 実行前に `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込む指示を追加
+    - `vibe-detector`, `doc-consistency-checker`
+    - 実行前に `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込む指示を追加
 
 #### フック
 
 - `check-spec-exists.sh` - パス解決の改善
-  - `git rev-parse --show-toplevel` でリポジトリルートを動的に取得
-  - gitリポジトリでない場合はカレントディレクトリにフォールバック
+    - `git rev-parse --show-toplevel` でリポジトリルートを動的に取得
+    - gitリポジトリでない場合はカレントディレクトリにフォールバック
 - `check-spec-exists.sh` - テストファイル除外パターンを拡張
-  - Jest: `__tests__/`, `__mocks__/`
-  - Storybook: `*.stories.*`
-  - E2E: `/e2e/`, `/cypress/`
+    - Jest: `__tests__/`, `__mocks__/`
+    - Storybook: `*.stories.*`
+    - E2E: `/e2e/`, `/cypress/`
 - `settings.example.json` - セットアップ手順をコメントとして追加
-  - パスを `./hooks/` 形式に修正
+    - パスを `./hooks/` 形式に修正
 
 #### スキル
 
 - `vibe-detector` - `allowed-tools` に `AskUserQuestion` を追加
-  - ユーザーへの確認フローをサポート
+    - ユーザーへの確認フローをサポート
 - `doc-consistency-checker` - `allowed-tools` に `Bash` を追加
-  - ディレクトリ構造の確認をサポート
+    - ディレクトリ構造の確認をサポート
 
 ## [1.0.0] - 2024-12-03
 
@@ -54,23 +54,23 @@
 #### エージェント
 
 - `sdd-workflow` - AI-SDD開発フローの管理エージェント
-  - フェーズ判定（Specify → Plan → Tasks → Implement & Review）
-  - Vibe Coding防止（曖昧な指示の検出と明確化促進）
-  - ドキュメント整合性チェック
+    - フェーズ判定（Specify → Plan → Tasks → Implement & Review）
+    - Vibe Coding防止（曖昧な指示の検出と明確化促進）
+    - ドキュメント整合性チェック
 - `spec-reviewer` - 仕様書の品質レビューエージェント
-  - 曖昧な記述の検出
-  - 不足セクションの指摘
-  - SysML準拠のチェック
+    - 曖昧な記述の検出
+    - 不足セクションの指摘
+    - SysML準拠のチェック
 
 #### コマンド
 
 - `/generate_prd` - ビジネス要求からPRD（要求仕様書）をSysML要求図形式で生成
 - `/generate_spec` - 入力から抽象仕様書と技術設計書を生成
-  - PRDとの整合性レビュー機能
+    - PRDとの整合性レビュー機能
 - `/check_spec` - 実装コードと仕様書の整合性チェック
-  - PRD ↔ spec ↔ design ↔ 実装 の多層チェック
+    - PRD ↔ spec ↔ design ↔ 実装 の多層チェック
 - `/task_breakdown` - 技術設計書からタスクを分解
-  - 要求カバレッジの確認機能
+    - 要求カバレッジの確認機能
 - `/review_cleanup` - 実装完了後のreview/ディレクトリ整理
 
 #### スキル
@@ -86,6 +86,6 @@
 #### 統合
 
 - Serena MCP オプショナル統合
-  - セマンティックコード分析による機能強化
-  - 30以上のプログラミング言語に対応
-  - 未設定時もテキストベース検索で動作
+    - セマンティックコード分析による機能強化
+    - 30以上のプログラミング言語に対応
+    - 未設定時もテキストベース検索で動作

@@ -5,7 +5,8 @@ description: "Clean up review/ directory after implementation completion, integr
 
 # Review Cleanup - Review Document Cleanup
 
-Organizes documents under `.docs/review/`, integrating important design decisions into `.docs/specification/*_design.md` before deletion.
+Organizes documents under `.docs/review/`, integrating important design decisions into `.docs/specification/*_design.md`
+before deletion.
 
 ## Prerequisites
 
@@ -15,10 +16,10 @@ This command follows the sdd-workflow agent principles for cleanup.
 
 ### Document Persistence Rules (Reference)
 
-| Path | Persistence | Management Rules |
-|:---|:---|:---|
-| `specification/*_design.md` | **Persistent** | Describe technical design, architecture, rationale for technology selection |
-| `review/` | **Temporary** | **Delete** after implementation complete. Integrate important design decisions into `*_design.md` |
+| Path                        | Persistence    | Management Rules                                                                                  |
+|:----------------------------|:---------------|:--------------------------------------------------------------------------------------------------|
+| `specification/*_design.md` | **Persistent** | Describe technical design, architecture, rationale for technology selection                       |
+| `review/`                   | **Temporary**  | **Delete** after implementation complete. Integrate important design decisions into `*_design.md` |
 
 ## Input
 
@@ -57,23 +58,23 @@ Review content of each file and classify as follows:
 
 **Content to Integrate (→ `*_design.md`)**:
 
-| Category | Examples |
-|:---|:---|
+| Category                           | Examples                                                                  |
+|:-----------------------------------|:--------------------------------------------------------------------------|
 | **Design decisions and rationale** | "Reason for choosing Redis: ...", "Reason for adopting this pattern: ..." |
 | **Alternative evaluation results** | "Comparison of Option A vs Option B", "Rejected alternatives and reasons" |
-| **Technical tips and know-how** | Discoveries during implementation, performance improvement points |
-| **Troubleshooting information** | Problems encountered and solutions |
-| **Reusable patterns** | Code patterns or design patterns usable in other features |
+| **Technical tips and know-how**    | Discoveries during implementation, performance improvement points         |
+| **Troubleshooting information**    | Problems encountered and solutions                                        |
+| **Reusable patterns**              | Code patterns or design patterns usable in other features                 |
 
 **Content Safe to Delete (No Migration Needed)**:
 
-| Category | Examples |
-|:---|:---|
-| **Work progress notes** | "Implementing X", "Y completed" |
-| **Temporary investigation logs** | Diary-like content, trial and error records |
-| **Specific implementation steps** | Detailed procedures already reflected in code |
-| **Task lists** | Lists of completed tasks |
-| **Date-dependent information** | Information dependent on specific periods or dates |
+| Category                          | Examples                                           |
+|:----------------------------------|:---------------------------------------------------|
+| **Work progress notes**           | "Implementing X", "Y completed"                    |
+| **Temporary investigation logs**  | Diary-like content, trial and error records        |
+| **Specific implementation steps** | Detailed procedures already reflected in code      |
+| **Task lists**                    | Lists of completed tasks                           |
+| **Date-dependent information**    | Information dependent on specific periods or dates |
 
 ### 4. Determine Integration Target
 
