@@ -39,7 +39,8 @@ description: "現在のプロジェクトにAI-SDDワークフローを初期化
    ↓
 3. .docs/ ディレクトリ構造を作成
    ├─ .docs/requirement-diagram/
-   └─ .docs/specification/
+   ├─ .docs/specification/
+   └─ .docs/review/
    ↓
 4. 既存テンプレートを確認
    ├─ .docs/PRD_TEMPLATE.md
@@ -65,28 +66,28 @@ description: "現在のプロジェクトにAI-SDDワークフローを初期化
 
 ### ドキュメント操作
 
-`.docs/` ディレクトリ配下のファイルを操作する際は、必ず `sdd-workflow-ja:sdd-workflow` エージェントを使用して、適切なAI-SDDワークフローへの準拠を確保してください。
+`.docs/` ディレクトリ配下のファイルを操作する際は、必ず `sdd-workflow-ja:sdd-workflow`
+エージェントを使用して、適切なAI-SDDワークフローへの準拠を確保してください。
 
 **トリガー条件**:
+
 - `.docs/` 配下のファイルの読み込みまたは変更
 - 新しい仕様書、設計書、要求仕様書の作成
 - `.docs/` のドキュメントを参照する機能の実装
 
 ### ディレクトリ構造
 
-```
-
-.docs/
-├── PRD_TEMPLATE.md # このプロジェクト用のPRDテンプレート
-├── SPECIFICATION_TEMPLATE.md # 抽象仕様書テンプレート
-├── DESIGN_DOC_TEMPLATE.md # 技術設計書テンプレート
-├── requirement-diagram/ # PRD（要求仕様書）
-│ └── {機能名}.md
-└── specification/ # 仕様書と設計書
-├── {機能名}_spec.md # 抽象仕様書
-└── {機能名}_design.md # 技術設計書
-
-```
+    .docs/
+    ├── PRD_TEMPLATE.md               # このプロジェクト用のPRDテンプレート
+    ├── SPECIFICATION_TEMPLATE.md     # 抽象仕様書テンプレート
+    ├── DESIGN_DOC_TEMPLATE.md        # 技術設計書テンプレート
+    ├── requirement-diagram/          # PRD（要求仕様書）
+    │   └── {機能名}.md
+    ├── specification/                # 仕様書と設計書
+    │   ├── {機能名}_spec.md          # 抽象仕様書
+    │   └── {機能名}_design.md        # 技術設計書
+    └── review/                       # 一時的な作業ログ
+        └── {チケット番号}/
 
 ### コミットメッセージ規約
 
@@ -143,6 +144,7 @@ description: "現在のプロジェクトにAI-SDDワークフローを初期化
 2. **ディレクトリ構造**:
     - `.docs/requirement-diagram/` が存在する
     - `.docs/specification/` が存在する
+    - `.docs/review/` が存在する
 3. **テンプレート**: 3つのテンプレートファイルすべてが `.docs/` に存在する
 
 ## 出力
@@ -153,13 +155,17 @@ description: "現在のプロジェクトにAI-SDDワークフローを初期化
 ## AI-SDD初期化完了
 
 ### CLAUDE.md
+
 - [x] AI-SDD Instructionsセクションを追加
 
 ### ディレクトリ構造
+
 - [x] .docs/requirement-diagram/ を作成
 - [x] .docs/specification/ を作成
+- [x] .docs/review/ を作成
 
 ### 生成されたテンプレート
+
 - [x] .docs/PRD_TEMPLATE.md
 - [x] .docs/SPECIFICATION_TEMPLATE.md
 - [x] .docs/DESIGN_DOC_TEMPLATE.md

@@ -108,6 +108,7 @@ following perspectives:
 {Specific problem description}
 
 **Improvement Suggestion**:
+
 ```markdown
 {Example of corrected description}
 ```

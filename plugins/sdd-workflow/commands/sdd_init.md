@@ -39,7 +39,8 @@ This command uses the following skills:
    ↓
 3. Create .docs/ directory structure
    ├─ .docs/requirement-diagram/
-   └─ .docs/specification/
+   ├─ .docs/specification/
+   └─ .docs/review/
    ↓
 4. Check for existing templates
    ├─ .docs/PRD_TEMPLATE.md
@@ -74,19 +75,17 @@ When working with files under `.docs/` directory, you MUST use the `sdd-workflow
 
 ### Directory Structure
 
-```
-
-.docs/
-├── PRD_TEMPLATE.md # PRD template for this project
-├── SPECIFICATION_TEMPLATE.md # Abstract specification template
-├── DESIGN_DOC_TEMPLATE.md # Technical design document template
-├── requirement-diagram/ # PRD (Requirements Specification)
-│ └── {feature-name}.md
-└── specification/ # Specifications and Design Documents
-├── {feature-name}_spec.md # Abstract specification
-└── {feature-name}_design.md # Technical design document
-
-```
+    .docs/
+    ├── PRD_TEMPLATE.md               # PRD template for this project
+    ├── SPECIFICATION_TEMPLATE.md     # Abstract specification template
+    ├── DESIGN_DOC_TEMPLATE.md        # Technical design document template
+    ├── requirement-diagram/          # PRD (Requirements Specification)
+    │   └── {feature-name}.md
+    ├── specification/                # Specifications and Design Documents
+    │   ├── {feature-name}_spec.md    # Abstract specification
+    │   └── {feature-name}_design.md  # Technical design document
+    └── review/                       # Temporary work logs
+        └── {ticket-number}/
 
 ### Commit Message Convention
 
@@ -143,6 +142,7 @@ After initialization, verify:
 2. **Directory Structure**:
     - `.docs/requirement-diagram/` exists
     - `.docs/specification/` exists
+    - `.docs/review/` exists
 3. **Templates**: All three template files exist in `.docs/`
 
 ## Output
@@ -153,13 +153,17 @@ Upon successful initialization, display:
 ## AI-SDD Initialization Complete
 
 ### CLAUDE.md
+
 - [x] AI-SDD Instructions section added
 
 ### Directory Structure
+
 - [x] .docs/requirement-diagram/ created
 - [x] .docs/specification/ created
+- [x] .docs/review/ created
 
 ### Templates Generated
+
 - [x] .docs/PRD_TEMPLATE.md
 - [x] .docs/SPECIFICATION_TEMPLATE.md
 - [x] .docs/DESIGN_DOC_TEMPLATE.md
