@@ -13,16 +13,28 @@ Generates PRD (Requirements Specification) from input business requirements acco
 
 This command follows the sdd-workflow agent principles for PRD generation.
 
+### Skills Used
+
+This command uses the following skills:
+
+| Skill | Purpose |
+|:---|:---|
+| `sdd-workflow:sdd-templates` | PRD template reference (fallback when project template does not exist) |
+
+**Template Priority**:
+1. Use `.docs/PRD_TEMPLATE.md` (project template) if it exists
+2. If not, reference `sdd-templates` skill templates
+
 ### PRD / Requirements Diagram Positioning (Reference)
 
 **Abstraction Level: Highest** | **Focus: What to build, why to build it**
 
-| Item | Details |
-|:---|:---|
-| **Purpose** | Define high-level product requirements (business value) |
-| **Content** | User requirements, functional requirements, non-functional requirements in SysML requirements diagram format |
-| **Technical Details** | **Not included** |
-| **SysML Elements** | Requirements Diagram (req) |
+| Item                  | Details                                                                                                      |
+|:----------------------|:-------------------------------------------------------------------------------------------------------------|
+| **Purpose**           | Define high-level product requirements (business value)                                                      |
+| **Content**           | User requirements, functional requirements, non-functional requirements in SysML requirements diagram format |
+| **Technical Details** | **Not included**                                                                                             |
+| **SysML Elements**    | Requirements Diagram (req)                                                                                   |
 
 ### Document Dependencies
 
@@ -51,11 +63,11 @@ Sends email notifications for tasks nearing their due date.
 
 Analyze input content and assess risk based on the following criteria:
 
-| Risk | Condition | Response |
-|:---|:---|:---|
-| High | Business requirements vague | Confirm missing info with user before generating |
-| Medium | Some requirements unclear | Clarify ambiguous points before generating |
-| Low | Requirements clear | Can generate as-is |
+| Risk   | Condition                   | Response                                         |
+|:-------|:----------------------------|:-------------------------------------------------|
+| High   | Business requirements vague | Confirm missing info with user before generating |
+| Medium | Some requirements unclear   | Clarify ambiguous points before generating       |
+| Low    | Requirements clear          | Can generate as-is                               |
 
 **Examples of Vague Input**:
 
@@ -67,15 +79,15 @@ Analyze input content and assess risk based on the following criteria:
 
 Extract/infer the following from input:
 
-| Extraction Item | Description | Required |
-|:---|:---|:---|
-| **Feature Name** | Identifier used for filename | Yes |
-| **Background/Purpose** | Why this feature is needed, business value | Yes |
-| **User Requirements** | What end users want | Yes |
-| **Functional Requirements** | Functions the system should provide | Yes |
-| **Non-Functional Requirements** | Performance, security, availability, etc. | |
-| **Constraints** | Technical/business constraints | |
-| **Preconditions** | Assumptions for feature operation | |
+| Extraction Item                 | Description                                | Required |
+|:--------------------------------|:-------------------------------------------|:---------|
+| **Feature Name**                | Identifier used for filename               | Yes      |
+| **Background/Purpose**          | Why this feature is needed, business value | Yes      |
+| **User Requirements**           | What end users want                        | Yes      |
+| **Functional Requirements**     | Functions the system should provide        | Yes      |
+| **Non-Functional Requirements** | Performance, security, availability, etc.  |          |
+| **Constraints**                 | Technical/business constraints             |          |
+| **Preconditions**               | Assumptions for feature operation          |          |
 
 ### 3. Missing Information Confirmation
 
@@ -99,6 +111,7 @@ Does .docs/specification/{feature-name}_design.md already exist? (design)
 **If PRD exists**: Confirm with user whether to overwrite.
 
 **If spec/design exists**:
+
 - After PRD generation, verify no impact on consistency with existing spec/design
 - If requirement IDs are added/changed, notify that spec/design may need updates
 
@@ -195,10 +208,10 @@ graph TB
 
 ## Glossary
 
-| Term | Definition |
-|:---|:---|
+| Term     | Definition   |
+|:---------|:-------------|
 | {Term 1} | {Definition} |
-| {Term 2} | {Definition}|
+| {Term 2} | {Definition} |
 
 ```
 
@@ -207,6 +220,7 @@ graph TB
 ## Generation Flow
 
 ```
+
 1. Analyze input content
    ↓
 2. Vibe Coding risk assessment
@@ -225,8 +239,9 @@ graph TB
    └─ Updates needed: Notify recommendation to update spec/design
    ↓
 6. Propose next steps
-   - Create abstract specification with /generate_spec
-   - If existing spec exists, recommend update
+    - Create abstract specification with /generate_spec
+    - If existing spec exists, recommend update
+
 ```
 
 ## Consistency Check with Existing spec/design

@@ -16,6 +16,20 @@ Generates the following documents from input content according to the AI-SDD wor
 
 This command follows the sdd-workflow agent principles for specification and design document generation.
 
+### Skills Used
+
+This command uses the following skills:
+
+| Skill | Purpose |
+|:---|:---|
+| `sdd-workflow:sdd-templates` | Specification and design document template reference (fallback when project templates do not exist) |
+
+**Template Priority**:
+1. Use `.docs/SPECIFICATION_TEMPLATE.md`, `.docs/DESIGN_DOC_TEMPLATE.md` (project templates) if they exist
+2. If not, reference `sdd-templates` skill templates
+
+### Pre-Generation Verification
+
 Before generation, verify the following:
 
 1. Does the `.docs/` directory exist in the project?
