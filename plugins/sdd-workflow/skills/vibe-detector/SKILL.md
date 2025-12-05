@@ -75,50 +75,7 @@ This skill follows the sdd-workflow agent principles for Vibe Coding detection.
 
 ## Output Format
 
-```markdown
-## Vibe Coding Risk Detected
-
-### Risk Level: High / Medium / Low
-
-### Detected Vague Instructions
-
-| # | Location | Pattern | Issue |
-|:---|:---|:---|:---|
-| 1 | "{location}" | {Pattern name} | {Specific issue} |
-| 2 | "{location}" | {Pattern name} | {Specific issue} |
-
-### Items Requiring Clarification
-
-- [ ] {Question 1}
-- [ ] {Question 2}
-- [ ] {Question 3}
-
-### Specification Status
-
-| Document | Status |
-|:---|:---|
-| PRD | Exists / Missing |
-| *_spec.md | Exists / Missing |
-| *_design.md | Exists / Missing |
-
-### Recommended Actions
-
-**For High Risk**:
-
-1. Confirm clarification items above with user
-2. Create specifications with `/generate_spec`
-3. Start implementation after spec review
-
-**For Medium Risk**:
-
-1. Confirm ambiguous points with user
-2. Update specifications as needed
-3. Start implementation
-
-**For Low Risk**:
-
-- Can start implementation
-```
+Use [templates/risk_report.md](templates/risk_report.md) for risk detection output.
 
 ## Escalation When Specifications Are Insufficient
 
@@ -126,31 +83,7 @@ Even when user refuses specification creation, ensure minimum guardrails:
 
 ### 1. Document Inferred Specifications
 
-```markdown
-# Inferred Specification
-
-## Warning
-
-This specification was inferred without explicit requirement definition.
-Verification with user is required after implementation completion.
-
-## Inferred Specifications
-
-| Item | Inferred Content | Confidence |
-|:---|:---|:---|
-| {Item 1} | {Inferred content} | High / Medium / Low |
-| {Item 2} | {Inferred content} | High / Medium / Low |
-
-## Verification Points
-
-- [ ] {Item to verify upon implementation completion 1}
-- [ ] {Item to verify upon implementation completion 2}
-
-## Potential Risks
-
-- {Potential issue 1 due to specification gap}
-- {Potential issue 2 due to specification gap}
-```
+Use [templates/assumed_spec.md](templates/assumed_spec.md) for creating inferred specification documents.
 
 **Save Location**: `.docs/review/{ticket}/assumed-spec.md`
 
