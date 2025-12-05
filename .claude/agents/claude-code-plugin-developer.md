@@ -52,7 +52,6 @@ plugin-name/
 
 ```json
 {
-  "$schema": "https://code.claude.com/plugin.v0.schema.json",
   "name": "plugin-name",
   "version": "1.0.0",
   "description": "プラグインの説明",

@@ -26,8 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Plugin Configuration
 
-- `plugin.json` - Enhanced schema and author fields
-    - Added `$schema` field (IDE completion and validation support)
+- `plugin.json` - Enhanced author field
     - Added `author.url` field
 
 #### Commands

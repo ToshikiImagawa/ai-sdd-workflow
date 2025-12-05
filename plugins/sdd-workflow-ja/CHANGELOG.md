@@ -26,8 +26,7 @@
 
 #### プラグイン設定
 
-- `plugin.json` - スキーマとauthorフィールドを強化
-    - `$schema` フィールドを追加（IDEでの補完とバリデーション対応）
+- `plugin.json` - authorフィールドを強化
     - `author.url` フィールドを追加
 
 #### コマンド
