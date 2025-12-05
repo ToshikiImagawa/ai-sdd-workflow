@@ -19,11 +19,11 @@ This command uses the following skills:
 
 | Skill | Purpose |
 |:---|:---|
-| `sdd-workflow:sdd-templates` | PRD template reference (fallback when project template does not exist) |
+| `sdd-workflow:sdd-templates` | Generate `.docs/PRD_TEMPLATE.md` when project template does not exist |
 
-**Template Priority**:
+**Template Preparation Flow**:
 1. Use `.docs/PRD_TEMPLATE.md` (project template) if it exists
-2. If not, reference `sdd-templates` skill templates
+2. If not, use `sdd-templates` skill to generate the template
 
 ### PRD / Requirements Diagram Positioning (Reference)
 
@@ -117,103 +117,20 @@ Does .docs/specification/{feature-name}_design.md already exist? (design)
 
 ## Output Format
 
-### PRD in SysML Requirements Diagram Format
+### Template Preparation
 
-```markdown
-# {Feature Name} Requirements Specification (PRD)
+Follow these steps to prepare the template:
 
-## Document Information
+1. Check if `.docs/PRD_TEMPLATE.md` exists
+2. **If exists**: Use that template
+3. **If not exists**: Use `sdd-workflow:sdd-templates` skill to generate `.docs/PRD_TEMPLATE.md`, then use the generated template
 
-| Item | Content |
-|:---|:---|
-| Feature Name | {Feature Name} |
-| Created Date | YYYY-MM-DD |
-| Status | Draft / Review / Approved |
+### Template Application Notes
 
-## Background and Purpose
-
-### Background
-
-{Why this feature is needed, current issues}
-
-### Purpose
-
-{What to achieve with this feature, business value}
-
-### Success Criteria
-
-- {Quantitative or qualitative success metrics}
-
-## Requirements Definition
-
-### User Requirements
-
-Define requirements from user perspective.
-
-| ID | Requirement | Priority |
-|:---|:---|:---|
-| UR-001 | {User can do X} | Must / Should / Could |
-| UR-002 | {User can do Y} | Must / Should / Could |
-
-### Functional Requirements
-
-Define functions the system should provide.
-
-| ID | Requirement | Derived From | Priority |
-|:---|:---|:---|:---|
-| FR-001 | {System does X} | UR-001 | Must / Should / Could |
-| FR-002 | {System does Y} | UR-001 | Must / Should / Could |
-
-### Non-Functional Requirements
-
-| ID | Category | Requirement | Priority |
-|:---|:---|:---|:---|
-| NFR-001 | Performance | {Response time, throughput, etc.} | Must / Should / Could |
-| NFR-002 | Security | {Authentication, authorization, encryption, etc.} | Must / Should / Could |
-| NFR-003 | Availability | {Uptime, disaster recovery, etc.} | Must / Should / Could |
-
-## Requirements Diagram (SysML Requirements Diagram)
-
-```mermaid
-graph TB
-    subgraph "User Requirements"
-        UR001["UR-001<br/>{Requirement Name}"]
-        UR002["UR-002<br/>{Requirement Name}"]
-    end
-
-    subgraph "Functional Requirements"
-        FR001["FR-001<br/>{Requirement Name}"]
-        FR002["FR-002<br/>{Requirement Name}"]
-    end
-
-    UR001 -->|deriveReqt| FR001
-    UR001 -->|deriveReqt| FR002
-```
-
-## Constraints
-
-- {Technical constraints}
-- {Business constraints}
-- {Legal/regulatory constraints}
-
-## Preconditions
-
-- {Assumptions for this feature to operate}
-- {Dependent systems/features}
-
-## Out of Scope
-
-- {What is not included in this feature}
-- {May be considered in future but out of scope for now}
-
-## Glossary
-
-| Term     | Definition   |
-|:---------|:-------------|
-| {Term 1} | {Definition} |
-| {Term 2} | {Definition} |
-
-```
+- Replace template placeholders (`{Feature Name}`, `{Requirement Name}`, etc.) based on input content
+- Sections with `<MUST>` markers are required, `<RECOMMENDED>` are recommended, `<OPTIONAL>` are optional
+- Use SysML requirementDiagram syntax for requirements diagrams
+- Manage requirement IDs (UR-xxx, FR-xxx, NFR-xxx) uniquely
 
 **Save Location**: `.docs/requirement-diagram/{feature-name}.md`
 
