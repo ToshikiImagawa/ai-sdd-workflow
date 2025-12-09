@@ -6,5 +6,6 @@
     "name": "toshiki.imagawa",
     "url": "https://github.com/ToshikiImagawa"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "hooks": "./hooks/hooks.json"
 }

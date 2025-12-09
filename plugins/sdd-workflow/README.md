@@ -42,34 +42,7 @@ Run the `/plugin` command in Claude Code and verify that `sdd-workflow` is displ
 
 ## Quick Start
 
-### 1. Hook Configuration (Recommended)
-
-To fully utilize the plugin features, add hook settings to your project's `.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "hooks/session-start.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-Grant execute permission to hook scripts:
-
-```bash
-chmod +x hooks/*.sh
-```
-
-### 2. Project Initialization
+### 1. Project Initialization
 
 **For projects using this plugin for the first time, run `/sdd_init`.**
 
@@ -115,9 +88,11 @@ This command automatically:
 
 ### Hooks
 
-| Hook            | Trigger      | Description                                                           |
-|:----------------|:-------------|:----------------------------------------------------------------------|
-| `session-start` | SessionStart | Loads settings from `.sdd-config.json` and sets environment variables |
+| Hook            | Trigger      | Description                                                                |
+|:----------------|:-------------|:---------------------------------------------------------------------------|
+| `session-start` | SessionStart | Loads settings from `.sdd-config.json` and sets environment variables automatically |
+
+**Note**: Hooks are automatically enabled when the plugin is installed. No additional configuration is required.
 
 ## Usage
 
@@ -162,34 +137,38 @@ Available only to logged-in users.
 /task_cleanup TICKET-123
 ```
 
-## Hook Configuration
+## About Hooks
 
-To enable hooks, add the following to your project's `.claude/settings.json`:
+This plugin automatically loads `.sdd-config.json` and sets environment variables at session start.
+**Hooks are automatically enabled when the plugin is installed. No additional configuration is required.**
 
-```json
-{
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "hooks/session-start.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+### Hook Behavior
 
-**Note**: Hook scripts require execute permission:
+| Hook            | Trigger      | Description                                                           |
+|:----------------|:-------------|:----------------------------------------------------------------------|
+| `session-start` | SessionStart | Loads settings from `.sdd-config.json` and sets environment variables |
+
+### Environment Variables Set
+
+The following environment variables are automatically set at session start:
+
+| Environment Variable       | Default              | Description                             |
+|:---------------------------|:---------------------|:----------------------------------------|
+| `SDD_DOCS_ROOT`            | `.sdd`               | Documentation root                      |
+| `SDD_REQUIREMENT_DIR`      | `requirement`        | Requirements specification directory    |
+| `SDD_SPECIFICATION_DIR`    | `specification`      | Specification/design document directory |
+| `SDD_TASK_DIR`             | `task`               | Task log directory                      |
+| `SDD_REQUIREMENT_PATH`     | `.sdd/requirement`   | Requirements specification full path    |
+| `SDD_SPECIFICATION_PATH`   | `.sdd/specification` | Specification/design document full path |
+| `SDD_TASK_PATH`            | `.sdd/task`          | Task log full path                      |
+
+### Hook Debugging
+
+To check hook registration status:
 
 ```bash
-chmod +x hooks/*.sh
+claude --debug
 ```
-
-See `hooks/settings.example.json` for a configuration example.
 
 ## Serena MCP Integration (Optional)
 
@@ -373,8 +352,9 @@ sdd-workflow/
 │       ├── SKILL.md
 │       └── templates/
 ├── hooks/
-│   ├── session-start.sh         # Session start initialization
-│   └── settings.example.json    # Hooks configuration example
+│   └── hooks.json               # Hooks configuration
+├── scripts/
+│   └── session-start.sh         # Session start initialization script
 ├── LICENSE
 └── README.md
 ```

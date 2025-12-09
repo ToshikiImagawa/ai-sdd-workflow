@@ -114,7 +114,7 @@ skills/my-skill/
 
 **SKILL.md からの参照方法**:
 
-```markdown
+``` markdown
 詳細は [references/detailed-guide.md](references/detailed-guide.md) を参照してください。
 テンプレートは [templates/spec_template.md](templates/spec_template.md) を使用してください。
 ```
@@ -183,7 +183,189 @@ color: green
 
 ## Hooks の作成
 
-### hooks/settings.example.json の構造
+プラグインは、Claude Codeのイベントに応じて自動的に実行されるフック（イベントハンドラー）を提供できます。
+
+### フック設定の配置方法
+
+フック設定は以下の2つの方法で配置できます：
+
+1. **個別ファイル**: `hooks/hooks.json`（推奨）
+2. **インライン設定**: `plugin.json` に直接記載
+
+#### 方法1: 個別ファイル（hooks/hooks.json）
+
+```
+plugin-name/
+├── .claude-plugin/
+│   └── plugin.json
+├── hooks/
+│   ├── hooks.json           # メインフック設定
+│   └── security-hooks.json  # 追加フック（任意）
+├── scripts/                 # フック実行スクリプト
+│   ├── format-code.sh
+│   └── validate.py
+└── ...
+```
+
+**plugin.json での参照:**
+
+```json
+{
+  "name": "plugin-name",
+  "version": "1.0.0",
+  "description": "プラグインの説明",
+  "hooks": "./hooks/hooks.json"
+}
+```
+
+**hooks/hooks.json の内容:**
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/format-code.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### 方法2: インライン設定（plugin.json に直接記載）
+
+```json
+{
+  "name": "plugin-name",
+  "version": "1.0.0",
+  "description": "プラグインの説明",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/format-code.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### フックタイプ
+
+プラグインのフックでは、以下の3種類のタイプがサポートされています：
+
+| タイプ             | 説明                       |
+|:----------------|:-------------------------|
+| **command**     | シェルコマンドまたはスクリプトを実行       |
+| **validation**  | ファイルコンテンツまたはプロジェクト状態を検証  |
+| **notification** | アラートまたはステータス更新を送信        |
+
+#### Command フック
+
+```json
+{
+  "type": "command",
+  "command": "${CLAUDE_PLUGIN_ROOT}/scripts/process.sh"
+}
+```
+
+#### Validation フック
+
+```json
+{
+  "type": "validation"
+}
+```
+
+#### Notification フック
+
+```json
+{
+  "type": "notification"
+}
+```
+
+### マッチャー（Matcher）
+
+フックは `matcher` フィールドを使用して特定の条件に基づいてトリガーできます：
+
+``` json
+{
+  "matcher": "Write|Edit",
+  "hooks": [...]
+}
+```
+
+- `Write|Edit`: Write または Edit ツールの後に実行
+- 正規表現パターンを使用可能
+
+### 利用可能なイベント
+
+| イベント               | トリガー                      |
+|:-------------------|:--------------------------|
+| `PreToolUse`       | Claudeがツールを使用する前          |
+| `PostToolUse`      | Claudeがツールを使用した後          |
+| `UserPromptSubmit` | ユーザーがプロンプトを送信するとき         |
+| `Notification`     | Claude Codeが通知を送信するとき     |
+| `Stop`             | Claudeが停止しようとするとき         |
+| `SubagentStop`     | サブエージェントが停止しようとするとき       |
+| `SessionStart`     | セッションの開始時                 |
+| `SessionEnd`       | セッションの終了時                 |
+| `PreCompact`       | 会話履歴がコンパクト化される前           |
+
+### フックスクリプトの例
+
+**scripts/format-code.sh:**
+
+```bash
+#!/bin/bash
+# フォーマットスクリプト
+echo "ファイルをフォーマット中..."
+# 処理内容
+```
+
+**重要**: スクリプトに実行権限を付与すること
+
+```bash
+chmod +x scripts/format-code.sh
+```
+
+### フックのデバッグ
+
+プラグイン読み込みとフック登録の詳細を確認するには：
+
+```bash
+claude --debug
+```
+
+表示される情報：
+- どのプラグインが読み込まれているか
+- プラグインマニフェストのエラー
+- フック登録状況
+- MCPサーバー初期化
+
+### 一般的な問題と解決策
+
+| 問題             | 原因                   | 解決策                                  |
+|:---------------|:---------------------|:-------------------------------------|
+| フックが発火しない      | スクリプトが実行可能でない        | `chmod +x script.sh` を実行             |
+| パスエラー          | 絶対パスが使用されている         | `${CLAUDE_PLUGIN_ROOT}` を使用           |
+| マニフェストエラー      | JSON構文が無効            | JSON構文を検証                            |
+
+### hooks/settings.example.json の提供
+
+ユーザーがプラグインのフックを有効化するための設定例を提供することを推奨します：
 
 ```json
 {
@@ -203,19 +385,7 @@ color: green
 }
 ```
 
-### 利用可能なイベント
-
-| イベント               | トリガー         |
-|:-------------------|:-------------|
-| `PreToolUse`       | ツール実行前       |
-| `PostToolUse`      | ツール実行後       |
-| `Stop`             | セッション停止時     |
-| `SubagentStop`     | サブエージェント停止時  |
-| `SessionStart`     | セッション開始時     |
-| `SessionEnd`       | セッション終了時     |
-| `UserPromptSubmit` | ユーザープロンプト送信時 |
-| `PreCompact`       | コンパクト処理前     |
-| `Notification`     | 通知時          |
+ユーザーはこのファイルを参考に、自身の `.claude/settings.json` にフック設定を追加できます。
 
 ## 環境変数
 

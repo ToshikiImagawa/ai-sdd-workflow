@@ -41,34 +41,7 @@ Claude Codeで `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示�
 
 ## クイックスタート
 
-### 1. フックの設定（推奨）
-
-プラグインの機能を最大限に活用するため、プロジェクトの `.claude/settings.json` にフック設定を追加してください：
-
-```json
-{
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "hooks/session-start.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-フックスクリプトに実行権限を付与：
-
-```bash
-chmod +x hooks/*.sh
-```
-
-### 2. プロジェクトの初期化
+### 1. プロジェクトの初期化
 
 **初めてこのプラグインを使用するプロジェクトでは、`/sdd_init` を実行してください。**
 
@@ -114,9 +87,11 @@ chmod +x hooks/*.sh
 
 ### フック
 
-| フック             | トリガー         | 説明                                  |
-|:----------------|:-------------|:------------------------------------|
-| `session-start` | SessionStart | `.sdd-config.json`から設定を読み込み、環境変数を設定 |
+| フック             | トリガー         | 説明                                    |
+|:----------------|:-------------|:--------------------------------------|
+| `session-start` | SessionStart | `.sdd-config.json`から設定を読み込み、環境変数を自動設定 |
+
+**注意**: フックはプラグインインストール時に自動的に有効化されます。追加の設定は不要です。
 
 ## 使用方法
 
@@ -161,34 +136,38 @@ chmod +x hooks/*.sh
 /task_cleanup TICKET-123
 ```
 
-## フックの設定
+## フックについて
 
-フックを有効にするには、プロジェクトの `.claude/settings.json` に以下を追加してください：
+このプラグインは、セッション開始時に自動的に `.sdd-config.json` を読み込み、環境変数を設定します。
+**プラグインインストール時に自動的に有効化されるため、追加の設定は不要です。**
 
-```json
-{
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "hooks/session-start.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+### フックの動作
 
-**注意**: フックスクリプトには実行権限が必要です：
+| フック             | トリガー         | 説明                                  |
+|:----------------|:-------------|:------------------------------------|
+| `session-start` | SessionStart | `.sdd-config.json`から設定を読み込み、環境変数を設定 |
+
+### 設定される環境変数
+
+以下の環境変数がセッション開始時に自動的に設定されます：
+
+| 環境変数                     | デフォルト値               | 説明                |
+|:-------------------------|:---------------------|:------------------|
+| `SDD_DOCS_ROOT`          | `.sdd`               | ドキュメントルート         |
+| `SDD_REQUIREMENT_DIR`    | `requirement`        | 要求仕様書ディレクトリ名      |
+| `SDD_SPECIFICATION_DIR`  | `specification`      | 仕様書・設計書ディレクトリ名    |
+| `SDD_TASK_DIR`           | `task`               | タスクログディレクトリ名      |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | 要求仕様書フルパス         |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書フルパス       |
+| `SDD_TASK_PATH`          | `.sdd/task`          | タスクログフルパス         |
+
+### フックのデバッグ
+
+フックの登録状況を確認するには：
 
 ```bash
-chmod +x hooks/*.sh
+claude --debug
 ```
-
-設定例は `hooks/settings.example.json` を参照してください。
 
 ## Serena MCP 統合（オプション）
 
@@ -370,8 +349,9 @@ sdd-workflow-ja/
 │       ├── SKILL.md
 │       └── templates/
 ├── hooks/
-│   ├── session-start.sh         # セッション開始時の初期化
-│   └── settings.example.json    # hooks設定例
+│   └── hooks.json               # フック設定
+├── scripts/
+│   └── session-start.sh         # セッション開始時の初期化スクリプト
 ├── LICENSE
 └── README.md
 ```
