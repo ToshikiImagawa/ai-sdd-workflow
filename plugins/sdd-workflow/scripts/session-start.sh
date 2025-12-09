@@ -48,17 +48,29 @@ if [ ! -f "$CONFIG_FILE" ]; then
         TASK_DIR="review"
     fi
 
-    # Show warning if legacy structure detected
+    # If legacy structure detected
     if [ "$LEGACY_DETECTED" = true ]; then
+        # Auto-generate .sdd-config.json with legacy values
+        cat > "$CONFIG_FILE" << EOF
+{
+  "docsRoot": "${DOCS_ROOT}",
+  "directories": {
+    "requirement": "${REQUIREMENT_DIR}",
+    "specification": "${SPECIFICATION_DIR}",
+    "task": "${TASK_DIR}"
+  }
+}
+EOF
         echo "[AI-SDD Migration] Legacy directory structure detected." >&2
         echo "" >&2
         echo "Detected legacy structure:" >&2
-        [ -n "$LEGACY_DOCS_ROOT" ] && echo "  - Docs root: .docs → .sdd (recommended)" >&2
-        [ -n "$LEGACY_REQUIREMENT" ] && echo "  - Requirement: requirement-diagram → requirement (recommended)" >&2
-        [ -n "$LEGACY_TASK" ] && echo "  - Task log: review → task (recommended)" >&2
+        [ -n "$LEGACY_DOCS_ROOT" ] && echo "  - Docs root: .docs" >&2
+        [ -n "$LEGACY_REQUIREMENT" ] && echo "  - Requirement: requirement-diagram" >&2
+        [ -n "$LEGACY_TASK" ] && echo "  - Task log: review" >&2
         echo "" >&2
-        echo "Your current structure will continue to work, but you can migrate with:" >&2
-        echo "  /sdd_migrate - Migrate to new structure or generate compatibility config" >&2
+        echo ".sdd-config.json auto-generated based on legacy structure." >&2
+        echo "To migrate to new structure, run:" >&2
+        echo "  /sdd_migrate - Migrate to new structure" >&2
         echo "" >&2
     else
         # No legacy structure detected and no .sdd-config.json exists, auto-generate default config
@@ -105,7 +117,19 @@ if [ -f "$CONFIG_FILE" ]; then
     fi
 fi
 
-# Write to environment file (if provided by Claude Code)
+# Environment variable output
+# If CLAUDE_ENV_FILE is provided by Claude Code, write to it
+# Otherwise output to stdout (for Claude Code to read)
+output_env_vars() {
+    echo "export SDD_DOCS_ROOT=\"$DOCS_ROOT\""
+    echo "export SDD_REQUIREMENT_DIR=\"$REQUIREMENT_DIR\""
+    echo "export SDD_SPECIFICATION_DIR=\"$SPECIFICATION_DIR\""
+    echo "export SDD_TASK_DIR=\"$TASK_DIR\""
+    echo "export SDD_REQUIREMENT_PATH=\"${DOCS_ROOT}/${REQUIREMENT_DIR}\""
+    echo "export SDD_SPECIFICATION_PATH=\"${DOCS_ROOT}/${SPECIFICATION_DIR}\""
+    echo "export SDD_TASK_PATH=\"${DOCS_ROOT}/${TASK_DIR}\""
+}
+
 if [ -n "$CLAUDE_ENV_FILE" ]; then
     # Remove existing SDD_* environment variables (prevent duplicate writes)
     if [ -f "$CLAUDE_ENV_FILE" ]; then
@@ -113,17 +137,11 @@ if [ -n "$CLAUDE_ENV_FILE" ]; then
         grep -v '^export SDD_' "$CLAUDE_ENV_FILE" > "${CLAUDE_ENV_FILE}.tmp" 2>/dev/null || true
         mv "${CLAUDE_ENV_FILE}.tmp" "$CLAUDE_ENV_FILE" 2>/dev/null || true
     fi
-
-    # Base directory names
-    echo "export SDD_DOCS_ROOT=\"$DOCS_ROOT\"" >> "$CLAUDE_ENV_FILE"
-    echo "export SDD_REQUIREMENT_DIR=\"$REQUIREMENT_DIR\"" >> "$CLAUDE_ENV_FILE"
-    echo "export SDD_SPECIFICATION_DIR=\"$SPECIFICATION_DIR\"" >> "$CLAUDE_ENV_FILE"
-    echo "export SDD_TASK_DIR=\"$TASK_DIR\"" >> "$CLAUDE_ENV_FILE"
-
-    # Full paths (for convenience)
-    echo "export SDD_REQUIREMENT_PATH=\"${DOCS_ROOT}/${REQUIREMENT_DIR}\"" >> "$CLAUDE_ENV_FILE"
-    echo "export SDD_SPECIFICATION_PATH=\"${DOCS_ROOT}/${SPECIFICATION_DIR}\"" >> "$CLAUDE_ENV_FILE"
-    echo "export SDD_TASK_PATH=\"${DOCS_ROOT}/${TASK_DIR}\"" >> "$CLAUDE_ENV_FILE"
+    output_env_vars >> "$CLAUDE_ENV_FILE"
+else
+    # If CLAUDE_ENV_FILE is not available, output to stdout
+    # Claude Code hooks read stdout and interpret as environment variables
+    output_env_vars
 fi
 
 exit 0

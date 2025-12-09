@@ -48,17 +48,29 @@ if [ ! -f "$CONFIG_FILE" ]; then
         TASK_DIR="review"
     fi
 
-    # 旧構成が検出された場合、警告を表示
+    # 旧構成が検出された場合
     if [ "$LEGACY_DETECTED" = true ]; then
+        # 旧構成の値で .sdd-config.json を自動生成
+        cat > "$CONFIG_FILE" << EOF
+{
+  "docsRoot": "${DOCS_ROOT}",
+  "directories": {
+    "requirement": "${REQUIREMENT_DIR}",
+    "specification": "${SPECIFICATION_DIR}",
+    "task": "${TASK_DIR}"
+  }
+}
+EOF
         echo "[AI-SDD Migration] 旧バージョンのディレクトリ構成を検出しました。" >&2
         echo "" >&2
         echo "検出された旧構成:" >&2
-        [ -n "$LEGACY_DOCS_ROOT" ] && echo "  - ドキュメントルート: .docs → .sdd (推奨)" >&2
-        [ -n "$LEGACY_REQUIREMENT" ] && echo "  - 要求仕様: requirement-diagram → requirement (推奨)" >&2
-        [ -n "$LEGACY_TASK" ] && echo "  - タスクログ: review → task (推奨)" >&2
+        [ -n "$LEGACY_DOCS_ROOT" ] && echo "  - ドキュメントルート: .docs" >&2
+        [ -n "$LEGACY_REQUIREMENT" ] && echo "  - 要求仕様: requirement-diagram" >&2
+        [ -n "$LEGACY_TASK" ] && echo "  - タスクログ: review" >&2
         echo "" >&2
-        echo "現在の構成でそのまま動作しますが、以下のコマンドでマイグレーションできます:" >&2
-        echo "  /sdd_migrate - 新構成への移行または互換性設定の生成" >&2
+        echo "旧構成に基づいて .sdd-config.json を自動生成しました。" >&2
+        echo "新構成に移行する場合は以下のコマンドを実行してください:" >&2
+        echo "  /sdd_migrate - 新構成への移行" >&2
         echo "" >&2
     else
         # 旧構成が検出されず、.sdd-config.json も存在しない場合、デフォルトの設定ファイルを自動生成
@@ -105,7 +117,19 @@ if [ -f "$CONFIG_FILE" ]; then
     fi
 fi
 
-# 環境変数ファイルに書き出し（Claude Codeが提供する場合）
+# 環境変数の出力
+# Claude Code が CLAUDE_ENV_FILE を提供する場合はそちらに書き出し
+# 提供されない場合は stdout に出力（Claude Code が読み取る）
+output_env_vars() {
+    echo "export SDD_DOCS_ROOT=\"$DOCS_ROOT\""
+    echo "export SDD_REQUIREMENT_DIR=\"$REQUIREMENT_DIR\""
+    echo "export SDD_SPECIFICATION_DIR=\"$SPECIFICATION_DIR\""
+    echo "export SDD_TASK_DIR=\"$TASK_DIR\""
+    echo "export SDD_REQUIREMENT_PATH=\"${DOCS_ROOT}/${REQUIREMENT_DIR}\""
+    echo "export SDD_SPECIFICATION_PATH=\"${DOCS_ROOT}/${SPECIFICATION_DIR}\""
+    echo "export SDD_TASK_PATH=\"${DOCS_ROOT}/${TASK_DIR}\""
+}
+
 if [ -n "$CLAUDE_ENV_FILE" ]; then
     # 既存のSDD_*環境変数を削除（重複書き込み対策）
     if [ -f "$CLAUDE_ENV_FILE" ]; then
@@ -113,17 +137,11 @@ if [ -n "$CLAUDE_ENV_FILE" ]; then
         grep -v '^export SDD_' "$CLAUDE_ENV_FILE" > "${CLAUDE_ENV_FILE}.tmp" 2>/dev/null || true
         mv "${CLAUDE_ENV_FILE}.tmp" "$CLAUDE_ENV_FILE" 2>/dev/null || true
     fi
-
-    # 基本ディレクトリ名
-    echo "export SDD_DOCS_ROOT=\"$DOCS_ROOT\"" >> "$CLAUDE_ENV_FILE"
-    echo "export SDD_REQUIREMENT_DIR=\"$REQUIREMENT_DIR\"" >> "$CLAUDE_ENV_FILE"
-    echo "export SDD_SPECIFICATION_DIR=\"$SPECIFICATION_DIR\"" >> "$CLAUDE_ENV_FILE"
-    echo "export SDD_TASK_DIR=\"$TASK_DIR\"" >> "$CLAUDE_ENV_FILE"
-
-    # フルパス（利便性のため）
-    echo "export SDD_REQUIREMENT_PATH=\"${DOCS_ROOT}/${REQUIREMENT_DIR}\"" >> "$CLAUDE_ENV_FILE"
-    echo "export SDD_SPECIFICATION_PATH=\"${DOCS_ROOT}/${SPECIFICATION_DIR}\"" >> "$CLAUDE_ENV_FILE"
-    echo "export SDD_TASK_PATH=\"${DOCS_ROOT}/${TASK_DIR}\"" >> "$CLAUDE_ENV_FILE"
+    output_env_vars >> "$CLAUDE_ENV_FILE"
+else
+    # CLAUDE_ENV_FILE がない場合、stdout に出力
+    # Claude Code のフックは stdout を読み取り、環境変数として解釈する
+    output_env_vars
 fi
 
 exit 0
