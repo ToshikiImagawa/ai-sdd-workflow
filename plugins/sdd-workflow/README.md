@@ -142,6 +142,16 @@ To enable hooks, add the following to your project's `.claude/settings.json`:
 ```json
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "hooks/session-start.sh"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
@@ -166,6 +176,12 @@ To enable hooks, add the following to your project's `.claude/settings.json`:
     ]
   }
 }
+```
+
+**Note**: Hook scripts require execute permission:
+
+```bash
+chmod +x hooks/*.sh
 ```
 
 See `hooks/settings.example.json` for a configuration example.

@@ -141,6 +141,16 @@ Claude Codeで `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示�
 ```json
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "hooks/session-start.sh"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
@@ -165,6 +175,12 @@ Claude Codeで `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示�
     ]
   }
 }
+```
+
+**注意**: フックスクリプトには実行権限が必要です：
+
+```bash
+chmod +x hooks/*.sh
 ```
 
 設定例は `hooks/settings.example.json` を参照してください。
