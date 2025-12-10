@@ -17,7 +17,7 @@ A command to migrate legacy AI-SDD directory structure (v1.x) to the new version
 
 | Legacy (v1.x)          | New (v2.0.0)    | Description                     |
 |:-----------------------|:----------------|:--------------------------------|
-| `.docs/`               | `.sdd/`         | Documentation root directory    |
+| `.docs/`               | `.sdd/`         | Root directory                  |
 | `requirement-diagram/` | `requirement/`  | Requirement documents directory |
 | `review/`              | `task/`         | Task log directory              |
 | `/review_cleanup`      | `/task_cleanup` | Cleanup command                 |
@@ -84,7 +84,7 @@ Process:
 
 ```json
 {
-  "docsRoot": ".docs",
+  "root": ".docs",
   "directories": {
     "requirement": "requirement-diagram",
     "specification": "specification",
@@ -108,8 +108,8 @@ Process:
 Legacy structure is detected under these conditions:
 
 1. **Legacy docs root**: `.docs/` exists and `.sdd/` doesn't exist
-2. **Legacy requirement directory**: `{docsRoot}/requirement-diagram/` exists
-3. **Legacy task directory**: `{docsRoot}/review/` exists and `{docsRoot}/task/` doesn't exist
+2. **Legacy requirement directory**: `{root}/requirement-diagram/` exists
+3. **Legacy task directory**: `{root}/review/` exists and `{root}/task/` doesn't exist
 
 ## Output Examples
 
@@ -122,7 +122,7 @@ Legacy structure is detected under these conditions:
 
 | Item | Current Value | New Recommended Value |
 |:---|:---|:---|
-| Docs Root | `.docs` | `.sdd` |
+| Root Directory | `.docs` | `.sdd` |
 | Requirement Directory | `requirement-diagram` | `requirement` |
 | Task Directory | `review` | `task` |
 
@@ -173,7 +173,7 @@ Which option would you like to choose?
 
 ```json
 {
-  "docsRoot": ".docs",
+  "root": ".docs",
   "directories": {
     "requirement": "requirement-diagram",
     "specification": "specification",
@@ -214,7 +214,7 @@ No migration needed.
 
 Current structure:
 
-- Docs root: .sdd
+- Root directory: .sdd
 - Requirement: requirement
 - Task: task
 
@@ -228,7 +228,7 @@ Current structure:
 
 Current settings:
 
-- docsRoot: {current value}
+- root: {current value}
 - directories.requirement: {current value}
 - directories.task: {current value}
 

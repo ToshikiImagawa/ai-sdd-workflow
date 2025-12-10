@@ -58,7 +58,7 @@ AI-SDD workflow supports customizing directory names via a `.sdd-config.json` fi
 
 ```json
 {
-  "docsRoot": ".sdd",
+  "root": ".sdd",
   "directories": {
     "requirement": "requirement",
     "specification": "specification",
@@ -71,7 +71,7 @@ AI-SDD workflow supports customizing directory names via a `.sdd-config.json` fi
 
 | Item                        | Default Value   | Description                                      |
 |:----------------------------|:----------------|:-------------------------------------------------|
-| `docsRoot`                  | `.sdd`          | Documentation root directory                     |
+| `root`                      | `.sdd`          | Root directory                                   |
 | `directories.requirement`   | `requirement`   | PRD/Requirements specification directory         |
 | `directories.specification` | `specification` | Abstract specification/design document directory |
 | `directories.task`          | `task`          | Task log/temporary work log directory            |
@@ -89,7 +89,7 @@ At session start, the `session-start` hook reads `.sdd-config.json` and sets the
 
 | Environment Variable       | Default Value          | Description                      |
 |:---------------------------|:-----------------------|:---------------------------------|
-| `SDD_DOCS_ROOT`            | `.sdd`                 | Documentation root               |
+| `SDD_ROOT`            | `.sdd`                 | Root directory                   |
 | `SDD_REQUIREMENT_DIR`      | `requirement`          | Requirements directory name      |
 | `SDD_SPECIFICATION_DIR`    | `specification`        | Specification directory name     |
 | `SDD_TASK_DIR`             | `task`                 | Task log directory name          |
@@ -108,7 +108,7 @@ Agents, commands, and skills use these environment variables when referencing do
 
 ```json
 {
-  "docsRoot": "docs",
+  "root": "docs",
   "directories": {
     "requirement": "requirements",
     "specification": "specs",

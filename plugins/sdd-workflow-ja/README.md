@@ -153,7 +153,7 @@ Claude Codeで `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示�
 
 | 環境変数                     | デフォルト値               | 説明                |
 |:-------------------------|:---------------------|:------------------|
-| `SDD_DOCS_ROOT`          | `.sdd`               | ドキュメントルート         |
+| `SDD_ROOT`          | `.sdd`               | ルートディレクトリ          |
 | `SDD_REQUIREMENT_DIR`    | `requirement`        | 要求仕様書ディレクトリ名      |
 | `SDD_SPECIFICATION_DIR`  | `specification`      | 仕様書・設計書ディレクトリ名    |
 | `SDD_TASK_DIR`           | `task`               | タスクログディレクトリ名      |
@@ -278,7 +278,7 @@ Specify（仕様化） → Plan（計画） → Tasks（タスク分解） → I
 
 ```json
 {
-  "docsRoot": ".sdd",
+  "root": ".sdd",
   "directories": {
     "requirement": "requirement",
     "specification": "specification",
@@ -289,7 +289,7 @@ Specify（仕様化） → Plan（計画） → Tasks（タスク分解） → I
 
 | 設定項目                        | デフォルト値          | 説明                |
 |:----------------------------|:----------------|:------------------|
-| `docsRoot`                  | `.sdd`          | ドキュメントルートディレクトリ   |
+| `root`                      | `.sdd`          | ルートディレクトリ         |
 | `directories.requirement`   | `requirement`   | PRD（要求仕様書）ディレクトリ名 |
 | `directories.specification` | `specification` | 仕様書・設計書ディレクトリ名    |
 | `directories.task`          | `task`          | 一時的なタスクログディレクトリ名  |
@@ -303,7 +303,7 @@ Specify（仕様化） → Plan（計画） → Tasks（タスク分解） → I
 
 ```json
 {
-  "docsRoot": "docs",
+  "root": "docs",
   "directories": {
     "requirement": "requirements",
     "specification": "specs"

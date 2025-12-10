@@ -154,7 +154,7 @@ The following environment variables are automatically set at session start:
 
 | Environment Variable       | Default              | Description                             |
 |:---------------------------|:---------------------|:----------------------------------------|
-| `SDD_DOCS_ROOT`            | `.sdd`               | Documentation root                      |
+| `SDD_ROOT`            | `.sdd`               | Root directory                          |
 | `SDD_REQUIREMENT_DIR`      | `requirement`        | Requirements specification directory    |
 | `SDD_SPECIFICATION_DIR`    | `specification`      | Specification/design document directory |
 | `SDD_TASK_DIR`             | `task`               | Task log directory                      |
@@ -281,7 +281,7 @@ Place a `.sdd-config.json` file in your project root to customize directory name
 
 ```json
 {
-  "docsRoot": ".sdd",
+  "root": ".sdd",
   "directories": {
     "requirement": "requirement",
     "specification": "specification",
@@ -292,7 +292,7 @@ Place a `.sdd-config.json` file in your project root to customize directory name
 
 | Setting                     | Default         | Description                                |
 |:----------------------------|:----------------|:-------------------------------------------|
-| `docsRoot`                  | `.sdd`          | Documentation root directory               |
+| `root`                      | `.sdd`          | Root directory                             |
 | `directories.requirement`   | `requirement`   | PRD (Requirements Specification) directory |
 | `directories.specification` | `specification` | Specification/design document directory    |
 | `directories.task`          | `task`          | Temporary task logs directory              |
@@ -306,7 +306,7 @@ Place a `.sdd-config.json` file in your project root to customize directory name
 
 ```json
 {
-  "docsRoot": "docs",
+  "root": "docs",
   "directories": {
     "requirement": "requirements",
     "specification": "specs"

@@ -57,7 +57,7 @@ AI-SDDワークフローでは、`.sdd-config.json` ファイルによるディ�
 
 ```json
 {
-  "docsRoot": ".sdd",
+  "root": ".sdd",
   "directories": {
     "requirement": "requirement",
     "specification": "specification",
@@ -70,7 +70,7 @@ AI-SDDワークフローでは、`.sdd-config.json` ファイルによるディ�
 
 | 項目                          | デフォルト値          | 説明                     |
 |:----------------------------|:----------------|:-----------------------|
-| `docsRoot`                  | `.sdd`          | ドキュメントルートディレクトリ        |
+| `root`                      | `.sdd`          | ルートディレクトリ              |
 | `directories.requirement`   | `requirement`   | PRD/要求仕様書ディレクトリ名       |
 | `directories.specification` | `specification` | 抽象仕様書・技術設計書ディレクトリ名     |
 | `directories.task`          | `task`          | タスクログディレクトリ名（一時的な作業ログ） |
@@ -88,7 +88,7 @@ AI-SDDワークフローでは、`.sdd-config.json` ファイルによるディ�
 
 | 環境変数                     | デフォルト値               | 説明                |
 |:-------------------------|:---------------------|:------------------|
-| `SDD_DOCS_ROOT`          | `.sdd`               | ドキュメントルート         |
+| `SDD_ROOT`          | `.sdd`               | ルートディレクトリ          |
 | `SDD_REQUIREMENT_DIR`    | `requirement`        | 要求仕様書ディレクトリ名      |
 | `SDD_SPECIFICATION_DIR`  | `specification`      | 仕様書・設計書ディレクトリ名    |
 | `SDD_TASK_DIR`           | `task`               | タスクログディレクトリ名      |
@@ -107,7 +107,7 @@ AI-SDDワークフローでは、`.sdd-config.json` ファイルによるディ�
 
 ```json
 {
-  "docsRoot": "docs",
+  "root": "docs",
   "directories": {
     "requirement": "requirements",
     "specification": "specs",

@@ -20,7 +20,7 @@ AI-SDD ドキュメント間（PRD、`*_spec.md`、`*_design.md`）の整合性�
 
 | 環境変数                     | デフォルト値               | 説明               |
 |:-------------------------|:---------------------|:-----------------|
-| `SDD_DOCS_ROOT`          | `.sdd`               | ドキュメントルート        |
+| `SDD_ROOT`          | `.sdd`               | ルートディレクトリ         |
 | `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/要求仕様書ディレクトリ  |
 | `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書ディレクトリ    |
 | `SDD_TASK_PATH`          | `.sdd/task`          | タスクログディレクトリ      |

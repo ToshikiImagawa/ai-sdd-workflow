@@ -11,7 +11,7 @@
 
 #### ディレクトリ構造の変更
 
-- **ドキュメントルート**: `.docs/` → `.sdd/` に変更
+- **ルートディレクトリ**: `.docs/` → `.sdd/` に変更
 - **要求仕様ディレクトリ**: `requirement-diagram/` → `requirement/` に変更
 - **タスクログディレクトリ**: `review/` → `task/` に変更
 
@@ -49,7 +49,7 @@
 #### 設定ファイル
 
 - `.sdd-config.json` - プロジェクト設定ファイルのサポート
-    - `docsRoot`: ドキュメントルートディレクトリ（デフォルト: `.sdd`）
+    - `root`: ルートディレクトリ（デフォルト: `.sdd`）
     - `directories.requirement`: 要求仕様ディレクトリ（デフォルト: `requirement`）
     - `directories.specification`: 仕様書ディレクトリ（デフォルト: `specification`）
     - `directories.task`: タスクログディレクトリ（デフォルト: `task`）

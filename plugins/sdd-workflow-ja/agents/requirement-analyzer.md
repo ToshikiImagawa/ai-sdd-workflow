@@ -20,7 +20,7 @@ Coding防止の詳細を理解してください。**
 
 | 環境変数                     | デフォルト値               | 説明               |
 |:-------------------------|:---------------------|:-----------------|
-| `SDD_DOCS_ROOT`          | `.sdd`               | ドキュメントルート        |
+| `SDD_ROOT`          | `.sdd`               | ルートディレクトリ         |
 | `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/要求仕様書ディレクトリ  |
 | `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書ディレクトリ    |
 | `SDD_TASK_PATH`          | `.sdd/task`          | タスクログディレクトリ      |
@@ -315,7 +315,7 @@ requirementDiagram
 
 ## 参照ドキュメント
 
-プロジェクトの要求図はドキュメントルート配下の要求ディレクトリに配置されます。
+プロジェクトの要求図はルートディレクトリ配下の要求ディレクトリに配置されます。
 
 ### 設定ファイルの確認
 
@@ -323,7 +323,7 @@ requirementDiagram
 
 デフォルトのディレクトリ構成:
 
-- ドキュメントルート: `.sdd`
+- ルートディレクトリ: `.sdd`
 - 要求ディレクトリ: `requirement`
 
 設定ファイルの詳細は `sdd-workflow-ja:sdd-workflow` エージェントの「プロジェクト設定ファイル」セクションを参照してください。
@@ -335,21 +335,21 @@ requirementDiagram
 **フラット構造**:
 
 ```
-{docsRoot}/{requirement}/
+{root}/{requirement}/
 └── {機能名}.md
 ```
 
 **階層構造**:
 
 ```
-{docsRoot}/{requirement}/
+{root}/{requirement}/
 ├── {機能名}.md              # トップレベル機能
 └── {親機能名}/              # 親機能ディレクトリ
     ├── index.md             # 親機能の概要・要求一覧
     └── {子機能名}.md        # 子機能の要求仕様
 ```
 
-※ `{docsRoot}` と `{requirement}` は `.sdd-config.json` の設定値、またはデフォルト値（`.sdd` / `requirement`）を使用
+※ `{root}` と `{requirement}` は `.sdd-config.json` の設定値、またはデフォルト値（`.sdd` / `requirement`）を使用
 
 分析対象のプロジェクトに合わせて適切なドキュメントを参照してください。階層構造の場合、`index.md` には親機能全体の要求概要と子要求への参照を記載します。
 

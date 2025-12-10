@@ -53,7 +53,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
         # Auto-generate .sdd-config.json with legacy values
         cat > "$CONFIG_FILE" << EOF
 {
-  "docsRoot": "${DOCS_ROOT}",
+  "root": "${DOCS_ROOT}",
   "directories": {
     "requirement": "${REQUIREMENT_DIR}",
     "specification": "${SPECIFICATION_DIR}",
@@ -64,7 +64,7 @@ EOF
         echo "[AI-SDD Migration] Legacy directory structure detected." >&2
         echo "" >&2
         echo "Detected legacy structure:" >&2
-        [ -n "$LEGACY_DOCS_ROOT" ] && echo "  - Docs root: .docs" >&2
+        [ -n "$LEGACY_DOCS_ROOT" ] && echo "  - Root directory: .docs" >&2
         [ -n "$LEGACY_REQUIREMENT" ] && echo "  - Requirement: requirement-diagram" >&2
         [ -n "$LEGACY_TASK" ] && echo "  - Task log: review" >&2
         echo "" >&2
@@ -76,7 +76,7 @@ EOF
         # No legacy structure detected and no .sdd-config.json exists, auto-generate default config
         cat > "$CONFIG_FILE" << 'EOF'
 {
-  "docsRoot": ".sdd",
+  "root": ".sdd",
   "directories": {
     "requirement": "requirement",
     "specification": "specification",
@@ -92,7 +92,7 @@ fi
 if [ -f "$CONFIG_FILE" ]; then
     if command -v jq &> /dev/null; then
         # jq is available
-        CONFIGURED_DOCS_ROOT=$(jq -r '.docsRoot // empty' "$CONFIG_FILE" 2>/dev/null)
+        CONFIGURED_DOCS_ROOT=$(jq -r '.root // empty' "$CONFIG_FILE" 2>/dev/null)
         CONFIGURED_REQUIREMENT=$(jq -r '.directories.requirement // empty' "$CONFIG_FILE" 2>/dev/null)
         CONFIGURED_SPECIFICATION=$(jq -r '.directories.specification // empty' "$CONFIG_FILE" 2>/dev/null)
         CONFIGURED_TASK=$(jq -r '.directories.task // empty' "$CONFIG_FILE" 2>/dev/null)
@@ -104,7 +104,7 @@ if [ -f "$CONFIG_FILE" ]; then
         [ -n "$CONFIGURED_TASK" ] && TASK_DIR="$CONFIGURED_TASK"
     else
         # jq not available, use grep for basic parsing
-        CONFIGURED_DOCS_ROOT=$(grep -o '"docsRoot"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
+        CONFIGURED_DOCS_ROOT=$(grep -o '"root"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
         CONFIGURED_REQUIREMENT=$(grep -o '"requirement"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
         CONFIGURED_SPECIFICATION=$(grep -o '"specification"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
         CONFIGURED_TASK=$(grep -o '"task"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
@@ -121,7 +121,7 @@ fi
 # If CLAUDE_ENV_FILE is provided by Claude Code, write to it
 # Otherwise output to stdout (for Claude Code to read)
 output_env_vars() {
-    echo "export SDD_DOCS_ROOT=\"$DOCS_ROOT\""
+    echo "export SDD_ROOT=\"$DOCS_ROOT\""
     echo "export SDD_REQUIREMENT_DIR=\"$REQUIREMENT_DIR\""
     echo "export SDD_SPECIFICATION_DIR=\"$SPECIFICATION_DIR\""
     echo "export SDD_TASK_DIR=\"$TASK_DIR\""

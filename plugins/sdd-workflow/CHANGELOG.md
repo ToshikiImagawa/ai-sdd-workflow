@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Directory Structure Changes
 
-- **Documentation root**: `.docs/` → `.sdd/`
+- **Root directory**: `.docs/` → `.sdd/`
 - **Requirement directory**: `requirement-diagram/` → `requirement/`
 - **Task log directory**: `review/` → `task/`
 
@@ -59,7 +59,7 @@ Use the `/sdd_migrate` command to migrate from legacy versions (v1.x):
 #### Configuration File
 
 - `.sdd-config.json` - Project configuration file support
-    - `docsRoot`: Documentation root directory (default: `.sdd`)
+    - `root`: Root directory (default: `.sdd`)
     - `directories.requirement`: Requirement directory (default: `requirement`)
     - `directories.specification`: Specification directory (default: `specification`)
     - `directories.task`: Task log directory (default: `task`)

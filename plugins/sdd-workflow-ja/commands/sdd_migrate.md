@@ -17,7 +17,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 | 旧構成（v1.x）              | 新構成（v2.0.0）     | 説明              |
 |:-----------------------|:----------------|:----------------|
-| `.docs/`               | `.sdd/`         | ドキュメントルートディレクトリ |
+| `.docs/`               | `.sdd/`         | ルートディレクトリ        |
 | `requirement-diagram/` | `requirement/`  | 要求仕様書格納ディレクトリ   |
 | `review/`              | `task/`         | タスクログ格納ディレクトリ   |
 | `/review_cleanup`      | `/task_cleanup` | クリーンアップコマンド     |
@@ -84,7 +84,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 ```json
 {
-  "docsRoot": ".docs",
+  "root": ".docs",
   "directories": {
     "requirement": "requirement-diagram",
     "specification": "specification",
@@ -107,9 +107,9 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 以下の条件で旧構成を検出:
 
-1. **旧ドキュメントルート**: `.docs/` が存在し、`.sdd/` が存在しない
-2. **旧要求仕様ディレクトリ**: `{docsRoot}/requirement-diagram/` が存在
-3. **旧タスクディレクトリ**: `{docsRoot}/review/` が存在し、`{docsRoot}/task/` が存在しない
+1. **旧ルートディレクトリ**: `.docs/` が存在し、`.sdd/` が存在しない
+2. **旧要求仕様ディレクトリ**: `{root}/requirement-diagram/` が存在
+3. **旧タスクディレクトリ**: `{root}/review/` が存在し、`{root}/task/` が存在しない
 
 ## 出力例
 
@@ -122,7 +122,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 | 項目 | 現在の値 | 新しい推奨値 |
 |:---|:---|:---|
-| ドキュメントルート | `.docs` | `.sdd` |
+| ルートディレクトリ | `.docs` | `.sdd` |
 | 要求仕様ディレクトリ | `requirement-diagram` | `requirement` |
 | タスクディレクトリ | `review` | `task` |
 
@@ -173,7 +173,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 ```json
 {
-  "docsRoot": ".docs",
+  "root": ".docs",
   "directories": {
     "requirement": "requirement-diagram",
     "specification": "specification",
@@ -214,7 +214,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 現在の構成:
 
-- ドキュメントルート: .sdd
+- ルートディレクトリ: .sdd
 - 要求仕様: requirement
 - タスク: task
 
@@ -228,7 +228,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 現在の設定:
 
-- docsRoot: {現在の値}
+- root: {現在の値}
 - directories.requirement: {現在の値}
 - directories.task: {現在の値}
 

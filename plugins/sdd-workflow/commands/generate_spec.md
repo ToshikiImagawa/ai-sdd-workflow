@@ -22,7 +22,7 @@ This command follows the sdd-workflow agent principles for specification and des
 
 | Environment Variable     | Default Value         | Description                  |
 |:-------------------------|:----------------------|:-----------------------------|
-| `SDD_DOCS_ROOT`          | `.sdd`                | Documentation root           |
+| `SDD_ROOT`          | `.sdd`                | Root directory               |
 | `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`    | PRD/Requirements directory   |
 | `SDD_SPECIFICATION_PATH` | `.sdd/specification`  | Specification/Design directory |
 | `SDD_TASK_PATH`          | `.sdd/task`           | Task log directory           |
