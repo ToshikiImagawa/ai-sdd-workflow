@@ -142,6 +142,11 @@ Does .sdd/specification/{parent-feature}/index_design.md already exist? (parent 
 Does .sdd/specification/{parent-feature}/{feature-name}_design.md already exist? (child feature design)
 ```
 
+**⚠️ Note the difference in naming conventions**:
+
+- **Under requirement**: No suffix (`index.md`, `{feature-name}.md`)
+- **Under specification**: `_spec` or `_design` suffix required (`index_spec.md`, `{feature-name}_spec.md`)
+
 **Hierarchical structure usage decision**:
 
 - Use hierarchical structure when corresponding PRD exists in hierarchical structure

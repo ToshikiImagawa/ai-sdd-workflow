@@ -80,6 +80,13 @@ graph RL
         └── {子機能名}_design.md       # 子機能の技術設計書
 ```
 
+**⚠️ 命名規則の違いに注意**:
+
+| ディレクトリ | 命名パターン | 例 |
+|:--|:--|:--|
+| **requirement** | サフィックスなし | `index.md`, `user-login.md` |
+| **specification** | `_spec` / `_design` 必須 | `index_spec.md`, `user-login_design.md` |
+
 整合性チェックでは、階層構造の場合も親子関係を考慮してチェックを行います。
 
 ## チェック項目

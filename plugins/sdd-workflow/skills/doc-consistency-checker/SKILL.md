@@ -80,6 +80,13 @@ Both flat and hierarchical structures are supported.
         └── {child-feature}_design.md      # Child feature technical design document
 ```
 
+**⚠️ Note the difference in naming conventions**:
+
+| Directory | Naming Pattern | Examples |
+|:--|:--|:--|
+| **requirement** | No suffix | `index.md`, `user-login.md` |
+| **specification** | `_spec` / `_design` required | `index_spec.md`, `user-login_design.md` |
+
 Consistency checks also consider parent-child relationships for hierarchical structures.
 
 ## Check Items

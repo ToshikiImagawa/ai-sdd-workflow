@@ -172,6 +172,33 @@ Both flat and hierarchical structures are supported. Choose based on project sca
         └── xxx.md
 ```
 
+### File Naming Convention (Important)
+
+**⚠️ Suffix requirements differ between requirement and specification directories. Do not confuse them.**
+
+| Directory | File Type | Naming Pattern | Examples |
+|:--|:--|:--|:--|
+| **requirement** | All files | `{name}.md` (no suffix) | `user-login.md`, `index.md` |
+| **specification** | Abstract spec | `{name}_spec.md` (`_spec` suffix required) | `user-login_spec.md`, `index_spec.md` |
+| **specification** | Design doc | `{name}_design.md` (`_design` suffix required) | `user-login_design.md`, `index_design.md` |
+
+#### Naming Pattern Quick Reference
+
+```
+# ✅ Correct naming
+requirement/auth/index.md              # Parent feature overview (no suffix)
+requirement/auth/user-login.md         # Child feature requirements (no suffix)
+specification/auth/index_spec.md       # Parent feature abstract spec (_spec required)
+specification/auth/index_design.md     # Parent feature design doc (_design required)
+specification/auth/user-login_spec.md  # Child feature abstract spec (_spec required)
+specification/auth/user-login_design.md # Child feature design doc (_design required)
+
+# ❌ Incorrect naming (never use these)
+requirement/auth/index_spec.md         # requirement does not need _spec
+specification/auth/user-login.md       # specification requires _spec or _design
+specification/auth/index.md            # specification requires _spec or _design
+```
+
 #### Hierarchical Structure Guidelines
 
 | Condition                                | Recommended Structure  |

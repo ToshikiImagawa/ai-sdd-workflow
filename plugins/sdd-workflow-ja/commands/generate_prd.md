@@ -140,6 +140,11 @@ $ARGUMENTS
 .sdd/specification/{親機能名}/{機能名}_design.md が既に存在するか？（子機能のdesign）
 ```
 
+**⚠️ 命名規則の違いに注意**:
+
+- **requirement 配下**: サフィックスなし（`index.md`, `{機能名}.md`）
+- **specification 配下**: `_spec` または `_design` サフィックス必須（`index_spec.md`, `{機能名}_spec.md`）
+
 **階層構造の使用判断**:
 
 - 入力に親機能（カテゴリ）が指定されている場合、または既存の階層構造がある場合は階層構造を使用

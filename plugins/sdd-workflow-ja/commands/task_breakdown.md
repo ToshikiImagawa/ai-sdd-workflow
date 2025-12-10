@@ -73,6 +73,11 @@ $ARGUMENTS
 .sdd/specification/{親機能名}/{機能名}_design.md を読み込む（子機能のdesign、必須）
 ```
 
+**⚠️ 命名規則の違いに注意**:
+
+- **requirement 配下**: サフィックスなし（`index.md`, `{機能名}.md`）
+- **specification 配下**: `_spec` または `_design` サフィックス必須（`index_spec.md`, `{機能名}_spec.md`）
+
 **入力例（階層構造）**:
 
 ```

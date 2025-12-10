@@ -83,6 +83,11 @@ Argument is "{parent-feature}" only → Target the following files:
   - .sdd/specification/{parent-feature}/*_design.md (child feature designs)
 ```
 
+**⚠️ Note the difference in naming conventions**:
+
+- **Under requirement**: No suffix (`index.md`, `{feature-name}.md`)
+- **Under specification**: `_spec` or `_design` suffix required (`index_spec.md`, `{feature-name}_spec.md`)
+
 **Hierarchical structure input examples**:
 
 ```

@@ -171,6 +171,33 @@ docs/
         └── xxx.md
 ```
 
+### ファイル命名規則（重要）
+
+**⚠️ requirement と specification でサフィックスの有無が異なります。混同しないでください。**
+
+| ディレクトリ | ファイル種別 | 命名パターン | 例 |
+|:--|:--|:--|:--|
+| **requirement** | 全ファイル | `{名前}.md`（サフィックスなし） | `user-login.md`, `index.md` |
+| **specification** | 抽象仕様書 | `{名前}_spec.md`（`_spec` サフィックス必須） | `user-login_spec.md`, `index_spec.md` |
+| **specification** | 技術設計書 | `{名前}_design.md`（`_design` サフィックス必須） | `user-login_design.md`, `index_design.md` |
+
+#### 命名パターン早見表
+
+```
+# ✅ 正しい命名
+requirement/auth/index.md              # 親機能の概要（サフィックスなし）
+requirement/auth/user-login.md         # 子機能の要求仕様（サフィックスなし）
+specification/auth/index_spec.md       # 親機能の抽象仕様書（_spec 必須）
+specification/auth/index_design.md     # 親機能の技術設計書（_design 必須）
+specification/auth/user-login_spec.md  # 子機能の抽象仕様書（_spec 必須）
+specification/auth/user-login_design.md # 子機能の技術設計書（_design 必須）
+
+# ❌ 誤った命名（絶対に使用しないこと）
+requirement/auth/index_spec.md         # requirement に _spec は不要
+specification/auth/user-login.md       # specification には _spec/_design が必須
+specification/auth/index.md            # specification には _spec/_design が必須
+```
+
 #### 階層構造の使用ガイドライン
 
 | 条件             | 推奨構造   |

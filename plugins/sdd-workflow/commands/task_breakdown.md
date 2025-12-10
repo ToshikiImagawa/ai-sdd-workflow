@@ -73,6 +73,11 @@ Load .sdd/specification/{parent-feature}/index_design.md (parent feature design,
 Load .sdd/specification/{parent-feature}/{feature-name}_design.md (child feature design, required)
 ```
 
+**⚠️ Note the difference in naming conventions**:
+
+- **Under requirement**: No suffix (`index.md`, `{feature-name}.md`)
+- **Under specification**: `_spec` or `_design` suffix required (`index_spec.md`, `{feature-name}_spec.md`)
+
 **Hierarchical structure input examples**:
 
 ```

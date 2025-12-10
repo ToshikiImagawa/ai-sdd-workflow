@@ -98,6 +98,33 @@ Specify（仕様化） → Plan（計画） → Tasks（タスク分解） → I
         └── xxx.md
 ```
 
+### ファイル命名規則（重要）
+
+**requirement と specification でサフィックスの有無が異なります。混同しないでください。**
+
+| ディレクトリ | ファイル種別 | 命名パターン | 例 |
+|:--|:--|:--|:--|
+| **requirement** | 全ファイル | `{名前}.md`（サフィックスなし） | `user-login.md`, `index.md` |
+| **specification** | 抽象仕様書 | `{名前}_spec.md`（`_spec` サフィックス必須） | `user-login_spec.md`, `index_spec.md` |
+| **specification** | 技術設計書 | `{名前}_design.md`（`_design` サフィックス必須） | `user-login_design.md`, `index_design.md` |
+
+#### 階層構造での命名パターン比較
+
+```
+# requirement 配下（サフィックスなし）
+requirement/auth/index.md           # 親機能の概要
+requirement/auth/user-login.md      # 子機能の要求仕様
+requirement/auth/password-reset.md  # 子機能の要求仕様
+
+# specification 配下（_spec/_design サフィックス必須）
+specification/auth/index_spec.md        # 親機能の抽象仕様書
+specification/auth/index_design.md      # 親機能の技術設計書
+specification/auth/user-login_spec.md   # 子機能の抽象仕様書
+specification/auth/user-login_design.md # 子機能の技術設計書
+```
+
+**注意**: `specification/auth/user-login.md` は**誤り**です。必ず `_spec.md` または `_design.md` サフィックスを付けてください。
+
 ### ドキュメント永続性ルール
 
 - `requirement/`, `specification/*_spec.md`, `specification/*_design.md`: **永続**
