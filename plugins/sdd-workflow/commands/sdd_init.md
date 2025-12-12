@@ -96,10 +96,11 @@ Supports both flat and hierarchical structures.
 **Flat Structure (for small to medium projects)**:
 
     .sdd/
+    ├── CONSTITUTION.md               # Project principles (top-level)
     ├── PRD_TEMPLATE.md               # PRD template for this project
     ├── SPECIFICATION_TEMPLATE.md     # Abstract specification template
     ├── DESIGN_DOC_TEMPLATE.md        # Technical design template
-    ├── requirement/          # PRD (Product Requirements Documents)
+    ├── requirement/                  # PRD (Product Requirements Documents)
     │   └── {feature-name}.md
     ├── specification/                # Specifications and designs
     │   ├── {feature-name}_spec.md    # Abstract specification
@@ -110,10 +111,11 @@ Supports both flat and hierarchical structures.
 **Hierarchical Structure (for medium to large projects)**:
 
     .sdd/
+    ├── CONSTITUTION.md               # Project principles (top-level)
     ├── PRD_TEMPLATE.md               # PRD template for this project
     ├── SPECIFICATION_TEMPLATE.md     # Abstract specification template
     ├── DESIGN_DOC_TEMPLATE.md        # Technical design template
-    ├── requirement/          # PRD (Product Requirements Documents)
+    ├── requirement/                  # PRD (Product Requirements Documents)
     │   ├── {feature-name}.md         # Top-level feature
     │   └── {parent-feature}/         # Parent feature directory
     │       ├── index.md              # Parent feature overview & requirements list

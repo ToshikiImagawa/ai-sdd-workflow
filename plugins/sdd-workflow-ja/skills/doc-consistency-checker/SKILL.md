@@ -56,6 +56,7 @@ graph RL
 
 ```
 .sdd/
+├── CONSTITUTION.md                    # プロジェクト原則（最上位）
 ├── requirement/{機能名}.md
 └── specification/
     ├── {機能名}_spec.md
@@ -66,6 +67,7 @@ graph RL
 
 ```
 .sdd/
+├── CONSTITUTION.md                    # プロジェクト原則（最上位）
 ├── requirement/
 │   ├── {機能名}.md                    # トップレベル機能
 │   └── {親機能名}/

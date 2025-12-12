@@ -57,6 +57,7 @@ Both flat and hierarchical structures are supported.
 
 ```
 .sdd/
+├── CONSTITUTION.md                        # Project constitution (top-level)
 ├── requirement/{feature-name}.md
 └── specification/
     ├── {feature-name}_spec.md
@@ -67,6 +68,7 @@ Both flat and hierarchical structures are supported.
 
 ```
 .sdd/
+├── CONSTITUTION.md                        # Project constitution (top-level)
 ├── requirement/
 │   ├── {feature-name}.md                  # Top-level feature
 │   └── {parent-feature}/

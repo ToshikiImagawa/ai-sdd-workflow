@@ -97,10 +97,11 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 **フラット構造（小〜中規模プロジェクト向け）**:
 
     .sdd/
+    ├── CONSTITUTION.md               # プロジェクト原則（最上位）
     ├── PRD_TEMPLATE.md               # このプロジェクト用のPRDテンプレート
     ├── SPECIFICATION_TEMPLATE.md     # 抽象仕様書テンプレート
     ├── DESIGN_DOC_TEMPLATE.md        # 技術設計書テンプレート
-    ├── requirement/          # PRD（要求仕様書）
+    ├── requirement/                  # PRD（要求仕様書）
     │   └── {機能名}.md
     ├── specification/                # 仕様書と設計書
     │   ├── {機能名}_spec.md          # 抽象仕様書
@@ -111,10 +112,11 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 **階層構造（中〜大規模プロジェクト向け）**:
 
     .sdd/
+    ├── CONSTITUTION.md               # プロジェクト原則（最上位）
     ├── PRD_TEMPLATE.md               # このプロジェクト用のPRDテンプレート
     ├── SPECIFICATION_TEMPLATE.md     # 抽象仕様書テンプレート
     ├── DESIGN_DOC_TEMPLATE.md        # 技術設計書テンプレート
-    ├── requirement/          # PRD（要求仕様書）
+    ├── requirement/                  # PRD（要求仕様書）
     │   ├── {機能名}.md               # トップレベル機能
     │   └── {親機能名}/               # 親機能ディレクトリ
     │       ├── index.md              # 親機能の概要・要求一覧
