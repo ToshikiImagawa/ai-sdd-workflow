@@ -136,7 +136,7 @@ docs/
 
 ```
 .sdd/
-├── CONSTITUTION.md               # プロジェクト憲章（非妥協原則）
+├── CONSTITUTION.md               # プロジェクト原則（非妥協原則）
 ├── SPECIFICATION_TEMPLATE.md     # 抽象仕様書テンプレート
 ├── DESIGN_DOC_TEMPLATE.md        # 技術設計書テンプレート
 ├── requirement/          # PRD（要求仕様書）- SysML要求図形式
@@ -153,7 +153,7 @@ docs/
 
 ```
 .sdd/
-├── CONSTITUTION.md               # プロジェクト憲章（非妥協原則）
+├── CONSTITUTION.md               # プロジェクト原則（非妥協原則）
 ├── SPECIFICATION_TEMPLATE.md     # 抽象仕様書テンプレート
 ├── DESIGN_DOC_TEMPLATE.md        # 技術設計書テンプレート
 ├── requirement/          # PRD（要求仕様書）- SysML要求図形式
@@ -458,13 +458,13 @@ graph RL
    ↓
 2. 必要なフェーズを特定
    ↓
-3. プロジェクト憲章の確認（CONSTITUTION.md が存在する場合、原則を確認）
+3. プロジェクト原則の確認（CONSTITUTION.md が存在する場合、原則を確認）
    ↓
 4. 既存ドキュメントの確認（PRD, spec, design）
    ↓
 5. 仕様の曖昧さをチェック（Vibe Coding防止）
    ↓
-6. 憲章準拠を確認しつつ必要なドキュメントを作成（Specify → Plan）
+6. 原則準拠を確認しつつ必要なドキュメントを作成（Specify → Plan）
    ↓
 7. タスク分解（Tasks）
    ↓
