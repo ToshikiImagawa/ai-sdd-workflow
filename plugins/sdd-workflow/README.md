@@ -60,11 +60,12 @@ This command automatically:
 
 ### Agents
 
-| Agent                  | Description                                                                                                             |
-|:-----------------------|:------------------------------------------------------------------------------------------------------------------------|
-| `sdd-workflow`         | Manages AI-SDD development flow. Phase determination, Vibe Coding prevention, document consistency checks               |
-| `spec-reviewer`        | Reviews specification quality and provides improvement suggestions. Detects ambiguous descriptions and missing sections |
-| `requirement-analyzer` | SysML requirements diagram-based analysis, requirement tracking and verification                                        |
+| Agent                     | Description                                                                                                             |
+|:--------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| `sdd-workflow`            | Manages AI-SDD development flow. Phase determination, Vibe Coding prevention, document consistency checks               |
+| `spec-reviewer`           | Reviews specification quality and provides improvement suggestions. Detects ambiguous descriptions and missing sections |
+| `requirement-analyzer`    | SysML requirements diagram-based analysis, requirement tracking and verification                                        |
+| `clarification-assistant` | Specification clarification support. Analyzes requirements across 9 categories and integrates answers into specs        |
 
 ### Commands
 
@@ -77,19 +78,23 @@ This command automatically:
 | `/check_spec`     | Checks consistency between implementation code and specifications, detecting discrepancies                   |
 | `/task_cleanup`   | Cleans up the task/ directory after implementation, integrating design decisions                             |
 | `/task_breakdown` | Breaks down tasks from the technical design document into a list of small tasks                              |
+| `/clarify`        | Scans specs across 9 categories, generates questions to clarify ambiguity                                    |
+| `/implement`      | TDD-based 5-phase implementation execution with automatic progress marking in tasks.md                       |
+| `/checklist`      | Auto-generates 9-category quality checklists from specs and design docs                                      |
+| `/constitution`   | Defines and manages non-negotiable project principles (constitution)                                         |
 
 ### Skills
 
-| Skill                     | Description                                                                  |
-|:--------------------------|:-----------------------------------------------------------------------------|
-| `vibe-detector`           | Analyzes user input to automatically detect Vibe Coding (vague instructions) |
-| `doc-consistency-checker` | Automatically checks consistency between documents (PRD, spec, design)       |
-| `sdd-templates`           | Provides fallback templates for PRD, specification, and design documents     |
+| Skill                     | Description                                                                                         |
+|:--------------------------|:----------------------------------------------------------------------------------------------------|
+| `vibe-detector`           | Analyzes user input to automatically detect Vibe Coding (vague instructions)                        |
+| `doc-consistency-checker` | Automatically checks consistency between documents (PRD, spec, design)                              |
+| `sdd-templates`           | Provides fallback templates for PRD, spec, design, checklist, constitution, and implementation logs |
 
 ### Hooks
 
-| Hook            | Trigger      | Description                                                                |
-|:----------------|:-------------|:---------------------------------------------------------------------------|
+| Hook            | Trigger      | Description                                                                         |
+|:----------------|:-------------|:------------------------------------------------------------------------------------|
 | `session-start` | SessionStart | Loads settings from `.sdd-config.json` and sets environment variables automatically |
 
 **Note**: Hooks are automatically enabled when the plugin is installed. No additional configuration is required.
@@ -137,6 +142,118 @@ Available only to logged-in users.
 /task_cleanup TICKET-123
 ```
 
+#### Specification Clarification
+
+```
+/clarify user-auth
+```
+
+Scans specifications across 9 categories and generates up to 5 clarification questions.
+
+#### TDD-based Implementation
+
+```
+/implement user-auth TICKET-123
+```
+
+Executes implementation in 5 phases (Setup→Tests→Core→Integration→Polish) and auto-marks progress in tasks.md.
+
+#### Quality Checklist Generation
+
+```
+/checklist user-auth TICKET-123
+```
+
+Auto-generates 9-category quality checklists from specifications and design documents.
+
+#### Project Constitution Management
+
+```
+/constitution show                    # Display current constitution
+/constitution add "Library-First"     # Add a new principle
+/constitution validate                # Verify specs/designs comply with constitution
+```
+
+Defines and manages non-negotiable project principles. Use `/constitution init` to create the constitution file
+initially.
+
+### Complete Workflow Example
+
+Here's a complete workflow for implementing a new "User Authentication" feature.
+
+#### Step 1: Project Initialization (First Time Only)
+
+```
+/sdd_init
+```
+
+Generates project constitution (CONSTITUTION.md) and templates.
+
+#### Step 2: Create Requirements Document (PRD)
+
+```
+/generate_prd User authentication feature. Login and logout with email and password.
+Includes session management and password reset functionality.
+```
+
+→ `.sdd/requirement/user-auth.md` is generated.
+
+#### Step 3: Generate Specification and Design Documents
+
+```
+/generate_spec user-auth
+```
+
+→ `.sdd/specification/user-auth_spec.md` and `user-auth_design.md` are generated.
+
+#### Step 4: Clarify Specifications
+
+```
+/clarify user-auth
+```
+
+Scans specifications across 9 categories and generates questions for unclear points. Answers are automatically integrated into specs.
+
+#### Step 5: Task Breakdown
+
+```
+/task_breakdown user-auth TICKET-123
+```
+
+→ `.sdd/task/TICKET-123/tasks.md` is generated with the task list.
+
+#### Step 6: Generate Quality Checklist
+
+```
+/checklist user-auth TICKET-123
+```
+
+→ `.sdd/task/TICKET-123/checklist.md` is generated with 9-category quality checklist.
+
+#### Step 7: TDD-based Implementation
+
+```
+/implement user-auth TICKET-123
+```
+
+Proceeds through 5 phases (Setup→Tests→Core→Integration→Polish) with automatic progress marking.
+
+#### Step 8: Consistency Check
+
+```
+/check_spec user-auth
+```
+
+Verifies consistency between implementation and specifications, reporting any discrepancies.
+
+#### Step 9: Task Cleanup
+
+```
+/task_cleanup TICKET-123
+```
+
+Cleans up temporary files and integrates important design decisions into `*_design.md`.
+
 ## About Hooks
 
 This plugin automatically loads `.sdd-config.json` and sets environment variables at session start.
@@ -152,15 +269,15 @@ This plugin automatically loads `.sdd-config.json` and sets environment variable
 
 The following environment variables are automatically set at session start:
 
-| Environment Variable       | Default              | Description                             |
-|:---------------------------|:---------------------|:----------------------------------------|
-| `SDD_ROOT`            | `.sdd`               | Root directory                          |
-| `SDD_REQUIREMENT_DIR`      | `requirement`        | Requirements specification directory    |
-| `SDD_SPECIFICATION_DIR`    | `specification`      | Specification/design document directory |
-| `SDD_TASK_DIR`             | `task`               | Task log directory                      |
-| `SDD_REQUIREMENT_PATH`     | `.sdd/requirement`   | Requirements specification full path    |
-| `SDD_SPECIFICATION_PATH`   | `.sdd/specification` | Specification/design document full path |
-| `SDD_TASK_PATH`            | `.sdd/task`          | Task log full path                      |
+| Environment Variable     | Default              | Description                             |
+|:-------------------------|:---------------------|:----------------------------------------|
+| `SDD_ROOT`               | `.sdd`               | Root directory                          |
+| `SDD_REQUIREMENT_DIR`    | `requirement`        | Requirements specification directory    |
+| `SDD_SPECIFICATION_DIR`  | `specification`      | Specification/design document directory |
+| `SDD_TASK_DIR`           | `task`               | Task log directory                      |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | Requirements specification full path    |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | Specification/design document full path |
+| `SDD_TASK_PATH`          | `.sdd/task`          | Task log full path                      |
 
 ### Hook Debugging
 
@@ -233,9 +350,11 @@ Both flat and hierarchical structures are supported.
 
 ```
 .sdd/
+├── CONSTITUTION.md               # Project constitution (highest level)
+├── PRD_TEMPLATE.md               # PRD template (optional)
 ├── SPECIFICATION_TEMPLATE.md     # Abstract specification template (optional)
 ├── DESIGN_DOC_TEMPLATE.md        # Technical design document template (optional)
-├── requirement/          # PRD (Requirements Specification)
+├── requirement/                  # PRD (Requirements Specification)
 │   └── {feature-name}.md
 ├── specification/                # Persistent knowledge assets
 │   ├── {feature-name}_spec.md    # Abstract specification
@@ -248,9 +367,11 @@ Both flat and hierarchical structures are supported.
 
 ```
 .sdd/
+├── CONSTITUTION.md               # Project constitution (highest level)
+├── PRD_TEMPLATE.md               # PRD template (optional)
 ├── SPECIFICATION_TEMPLATE.md     # Abstract specification template (optional)
 ├── DESIGN_DOC_TEMPLATE.md        # Technical design document template (optional)
-├── requirement/          # PRD (Requirements Specification)
+├── requirement/                  # PRD (Requirements Specification)
 │   ├── {feature-name}.md         # Top-level feature (backward compatible with flat structure)
 │   └── {parent-feature}/         # Parent feature directory
 │       ├── index.md              # Parent feature overview and requirements list
@@ -266,6 +387,14 @@ Both flat and hierarchical structures are supported.
 └── task/                         # Temporary task logs (deleted after implementation)
     └── {ticket-number}/
 ```
+
+#### Document Dependencies
+
+```
+CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → Implementation
+```
+
+All documents are created following `CONSTITUTION.md` project principles.
 
 **Hierarchical structure usage examples**:
 
@@ -328,33 +457,44 @@ docs/
 ```
 sdd-workflow/
 ├── .claude-plugin/
-│   └── plugin.json              # Plugin manifest
+│   └── plugin.json                # Plugin manifest
 ├── agents/
-│   ├── sdd-workflow.md          # AI-SDD development flow agent
-│   ├── spec-reviewer.md         # Specification review agent
-│   └── requirement-analyzer.md  # Requirement analysis agent
+│   ├── sdd-workflow.md            # AI-SDD development flow agent
+│   ├── spec-reviewer.md           # Specification review agent
+│   ├── requirement-analyzer.md    # Requirement analysis agent
+│   └── clarification-assistant.md # Specification clarification assistant
 ├── commands/
-│   ├── sdd_init.md              # AI-SDD workflow initialization
-│   ├── sdd_migrate.md           # Migration from legacy version
-│   ├── generate_spec.md         # Specification/design document generation
-│   ├── generate_prd.md          # PRD generation
-│   ├── check_spec.md            # Consistency check
-│   ├── task_cleanup.md          # Task cleanup
-│   └── task_breakdown.md        # Task breakdown
+│   ├── sdd_init.md                # AI-SDD workflow initialization
+│   ├── sdd_migrate.md             # Migration from legacy version
+│   ├── generate_spec.md           # Specification/design document generation
+│   ├── generate_prd.md            # PRD generation
+│   ├── check_spec.md              # Consistency check
+│   ├── task_cleanup.md            # Task cleanup
+│   ├── task_breakdown.md          # Task breakdown
+│   ├── clarify.md                 # Specification clarification
+│   ├── implement.md               # TDD-based implementation execution
+│   ├── checklist.md               # Quality checklist generation
+│   └── constitution.md            # Project constitution management
 ├── skills/
-│   ├── vibe-detector/           # Vibe Coding detection skill
+│   ├── vibe-detector/             # Vibe Coding detection skill
 │   │   ├── SKILL.md
 │   │   └── templates/
-│   ├── doc-consistency-checker/ # Document consistency checker
+│   ├── doc-consistency-checker/   # Document consistency checker
 │   │   ├── SKILL.md
 │   │   └── templates/
-│   └── sdd-templates/           # AI-SDD templates
+│   └── sdd-templates/             # AI-SDD templates
 │       ├── SKILL.md
 │       └── templates/
+│           ├── prd_template.md
+│           ├── spec_template.md
+│           ├── design_template.md
+│           ├── checklist_template.md
+│           ├── constitution_template.md
+│           └── implementation_log_template.md
 ├── hooks/
-│   └── hooks.json               # Hooks configuration
+│   └── hooks.json                 # Hooks configuration
 ├── scripts/
-│   └── session-start.sh         # Session start initialization script
+│   └── session-start.sh           # Session start initialization script
 ├── LICENSE
 └── README.md
 ```

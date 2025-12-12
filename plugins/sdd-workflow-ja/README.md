@@ -59,31 +59,36 @@ Claude Codeで `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示�
 
 ### エージェント
 
-| エージェント                 | 説明                                                |
-|:-----------------------|:--------------------------------------------------|
-| `sdd-workflow`         | AI-SDD開発フローの管理。フェーズ判定、Vibe Coding防止、ドキュメント整合性チェック |
-| `spec-reviewer`        | 仕様書の品質レビューと改善提案。曖昧な記述の検出、不足セクションの指摘               |
-| `requirement-analyzer` | SysML要求図に基づく要求分析、トラッキング、検証                        |
+| エージェント                    | 説明                                                |
+|:--------------------------|:--------------------------------------------------|
+| `sdd-workflow`            | AI-SDD開発フローの管理。フェーズ判定、Vibe Coding防止、ドキュメント整合性チェック |
+| `spec-reviewer`           | 仕様書の品質レビューと改善提案。曖昧な記述の検出、不足セクションの指摘               |
+| `requirement-analyzer`    | SysML要求図に基づく要求分析、トラッキング、検証                        |
+| `clarification-assistant` | 仕様明確化支援。要件を9カテゴリで分析し、質問を生成して仕様書に統合                |
 
 ### コマンド
 
-| コマンド              | 説明                                    |
-|:------------------|:--------------------------------------|
-| `/sdd_init`       | AI-SDDワークフローの初期化。CLAUDE.md設定とテンプレート生成 |
-| `/sdd_migrate`    | 旧バージョン（v1.x）からの移行。新構成への移行または互換性設定の生成  |
-| `/generate_spec`  | 入力から抽象仕様書と技術設計書を生成                    |
-| `/generate_prd`   | ビジネス要求からPRD（要求仕様書）をSysML要求図形式で生成      |
-| `/check_spec`     | 実装コードと仕様書の整合性をチェックし、差異を検出             |
-| `/task_cleanup`   | 実装完了後のtask/ディレクトリを整理し、設計判断を統合         |
-| `/task_breakdown` | 技術設計書からタスクを分解し、小タスクのリストを生成            |
+| コマンド              | 説明                                     |
+|:------------------|:---------------------------------------|
+| `/sdd_init`       | AI-SDDワークフローの初期化。CLAUDE.md設定とテンプレート生成  |
+| `/sdd_migrate`    | 旧バージョン（v1.x）からの移行。新構成への移行または互換性設定の生成   |
+| `/generate_spec`  | 入力から抽象仕様書と技術設計書を生成                     |
+| `/generate_prd`   | ビジネス要求からPRD（要求仕様書）をSysML要求図形式で生成       |
+| `/check_spec`     | 実装コードと仕様書の整合性をチェックし、差異を検出              |
+| `/task_cleanup`   | 実装完了後のtask/ディレクトリを整理し、設計判断を統合          |
+| `/task_breakdown` | 技術設計書からタスクを分解し、小タスクのリストを生成             |
+| `/clarify`        | 仕様書の不明点を9カテゴリでスキャンし、質問を生成して仕様を明確化      |
+| `/implement`      | TDDベースで5フェーズ順に実装を実行し、進捗をtasks.mdに自動マーク |
+| `/checklist`      | 仕様書・設計書から9カテゴリの品質チェックリストを自動生成          |
+| `/constitution`   | プロジェクトの非交渉原則を定義・管理                 |
 
 ### スキル
 
-| スキル                       | 説明                                  |
-|:--------------------------|:------------------------------------|
-| `vibe-detector`           | ユーザー入力を分析し、Vibe Coding（曖昧な指示）を自動検出  |
-| `doc-consistency-checker` | ドキュメント間（PRD、spec、design）の整合性を自動チェック |
-| `sdd-templates`           | PRD、仕様書、設計書テンプレートのフォールバック提供         |
+| スキル                       | 説明                                          |
+|:--------------------------|:--------------------------------------------|
+| `vibe-detector`           | ユーザー入力を分析し、Vibe Coding（曖昧な指示）を自動検出          |
+| `doc-consistency-checker` | ドキュメント間（PRD、spec、design）の整合性を自動チェック         |
+| `sdd-templates`           | PRD、仕様書、設計書、チェックリスト、原則、実装ログテンプレートのフォールバック提供 |
 
 ### フック
 
@@ -105,7 +110,7 @@ Claude Codeで `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示�
 
 ### コマンドの使用例
 
-#### PRD生成
+#### 要求仕様書生成
 
 ```
 /generate_prd ユーザーがタスクを管理できる機能。
@@ -136,6 +141,117 @@ Claude Codeで `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示�
 /task_cleanup TICKET-123
 ```
 
+#### 仕様明確化
+
+```
+/clarify user-auth
+```
+
+仕様書の不明点を9カテゴリでスキャンし、最大5つの質問を生成します。
+
+#### TDDベース実装
+
+```
+/implement user-auth TICKET-123
+```
+
+5フェーズ（Setup→Tests→Core→Integration→Polish）順に実装を実行し、進捗をtasks.mdに自動マークします。
+
+#### 品質チェックリスト生成
+
+```
+/checklist user-auth TICKET-123
+```
+
+仕様書・設計書から9カテゴリの品質チェックリストを自動生成します。
+
+#### プロジェクト原則管理
+
+```
+/constitution show                    # 現在の原則を表示
+/constitution add "Library-First"     # 新しい原則を追加
+/constitution validate                # 仕様書・設計書が原則に準拠しているか検証
+```
+
+プロジェクトの非交渉原則を定義・管理します。初回は `/constitution init` で原則ファイルを作成します。
+
+### 完全なワークフロー例
+
+新機能「ユーザー認証」を実装する場合の完全なワークフローを示します。
+
+#### ステップ1: プロジェクト初期化（初回のみ）
+
+```
+/sdd_init
+```
+
+プロジェクト原則（CONSTITUTION.md）とテンプレートが生成されます。
+
+#### ステップ2: 要求仕様書（PRD）の作成
+
+```
+/generate_prd ユーザー認証機能。メールアドレスとパスワードによるログイン・ログアウト。
+セッション管理とパスワードリセット機能も含む。
+```
+
+→ `.sdd/requirement/user-auth.md` が生成されます。
+
+#### ステップ3: 仕様書・設計書の生成
+
+```
+/generate_spec user-auth
+```
+
+→ `.sdd/specification/user-auth_spec.md` と `user-auth_design.md` が生成されます。
+
+#### ステップ4: 仕様の明確化
+
+```
+/clarify user-auth
+```
+
+9カテゴリで仕様をスキャンし、不明点に対する質問を生成。回答後、仕様書に自動統合されます。
+
+#### ステップ5: タスク分解
+
+```
+/task_breakdown user-auth TICKET-123
+```
+
+→ `.sdd/task/TICKET-123/tasks.md` にタスクリストが生成されます。
+
+#### ステップ6: 品質チェックリストの生成
+
+```
+/checklist user-auth TICKET-123
+```
+
+→ `.sdd/task/TICKET-123/checklist.md` に9カテゴリのチェックリストが生成されます。
+
+#### ステップ7: TDDベースの実装
+
+```
+/implement user-auth TICKET-123
+```
+
+5フェーズ（Setup→Tests→Core→Integration→Polish）で実装を進め、進捗が自動でマークされます。
+
+#### ステップ8: 整合性チェック
+
+```
+/check_spec user-auth
+```
+
+実装と仕様書の整合性を検証し、差異があれば報告されます。
+
+#### ステップ9: タスククリーンアップ
+
+```
+/task_cleanup TICKET-123
+```
+
+一時ファイルを整理し、重要な設計判断を `*_design.md` に統合します。
+
 ## フックについて
 
 このプラグインは、セッション開始時に自動的に `.sdd-config.json` を読み込み、環境変数を設定します。
@@ -151,15 +267,15 @@ Claude Codeで `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示�
 
 以下の環境変数がセッション開始時に自動的に設定されます：
 
-| 環境変数                     | デフォルト値               | 説明                |
-|:-------------------------|:---------------------|:------------------|
-| `SDD_ROOT`          | `.sdd`               | ルートディレクトリ          |
-| `SDD_REQUIREMENT_DIR`    | `requirement`        | 要求仕様書ディレクトリ名      |
-| `SDD_SPECIFICATION_DIR`  | `specification`      | 仕様書・設計書ディレクトリ名    |
-| `SDD_TASK_DIR`           | `task`               | タスクログディレクトリ名      |
-| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | 要求仕様書フルパス         |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書フルパス       |
-| `SDD_TASK_PATH`          | `.sdd/task`          | タスクログフルパス         |
+| 環境変数                     | デフォルト値               | 説明             |
+|:-------------------------|:---------------------|:---------------|
+| `SDD_ROOT`               | `.sdd`               | ルートディレクトリ      |
+| `SDD_REQUIREMENT_DIR`    | `requirement`        | 要求仕様書ディレクトリ名   |
+| `SDD_SPECIFICATION_DIR`  | `specification`      | 仕様書・設計書ディレクトリ名 |
+| `SDD_TASK_DIR`           | `task`               | タスクログディレクトリ名   |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | 要求仕様書フルパス      |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書フルパス    |
+| `SDD_TASK_PATH`          | `.sdd/task`          | タスクログフルパス      |
 
 ### フックのデバッグ
 
@@ -230,9 +346,11 @@ Specify（仕様化） → Plan（計画） → Tasks（タスク分解） → I
 
 ```
 .sdd/
+├── CONSTITUTION.md               # プロジェクト原則（最上位）
+├── PRD_TEMPLATE.md               # PRDテンプレート（任意）
 ├── SPECIFICATION_TEMPLATE.md     # 抽象仕様書テンプレート（任意）
 ├── DESIGN_DOC_TEMPLATE.md        # 技術設計書テンプレート（任意）
-├── requirement/          # PRD（要求仕様書）
+├── requirement/                  # PRD（要求仕様書）
 │   └── {機能名}.md
 ├── specification/                # 永続的な知識資産
 │   ├── {機能名}_spec.md         # 抽象仕様書
@@ -245,9 +363,11 @@ Specify（仕様化） → Plan（計画） → Tasks（タスク分解） → I
 
 ```
 .sdd/
+├── CONSTITUTION.md               # プロジェクト原則（最上位）
+├── PRD_TEMPLATE.md               # PRDテンプレート（任意）
 ├── SPECIFICATION_TEMPLATE.md     # 抽象仕様書テンプレート（任意）
 ├── DESIGN_DOC_TEMPLATE.md        # 技術設計書テンプレート（任意）
-├── requirement/          # PRD（要求仕様書）
+├── requirement/                  # PRD（要求仕様書）
 │   ├── {機能名}.md              # トップレベル機能（フラット構造との互換性）
 │   └── {親機能名}/              # 親機能ディレクトリ
 │       ├── index.md             # 親機能の概要・要求一覧
@@ -263,6 +383,14 @@ Specify（仕様化） → Plan（計画） → Tasks（タスク分解） → I
 └── task/                         # 一時的なタスクログ（実装完了後に削除）
     └── {チケット番号}/
 ```
+
+#### ドキュメント依存関係
+
+```
+CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実装
+```
+
+すべてのドキュメントは `CONSTITUTION.md` のプロジェクト原則に従って作成されます。
 
 **階層構造の使用例**:
 
@@ -325,33 +453,44 @@ docs/
 ```
 sdd-workflow-ja/
 ├── .claude-plugin/
-│   └── plugin.json              # プラグインマニフェスト
+│   └── plugin.json                # プラグインマニフェスト
 ├── agents/
-│   ├── sdd-workflow.md          # AI-SDD開発フローエージェント
-│   ├── spec-reviewer.md         # 仕様書レビューエージェント
-│   └── requirement-analyzer.md  # 要求仕様分析エージェント
+│   ├── sdd-workflow.md            # AI-SDD開発フローエージェント
+│   ├── spec-reviewer.md           # 仕様書レビューエージェント
+│   ├── requirement-analyzer.md    # 要求仕様分析エージェント
+│   └── clarification-assistant.md # 仕様明確化支援エージェント
 ├── commands/
-│   ├── sdd_init.md              # AI-SDDワークフロー初期化
-│   ├── sdd_migrate.md           # 旧バージョンからの移行
-│   ├── generate_spec.md         # 仕様書・設計書生成
-│   ├── generate_prd.md          # PRD生成
-│   ├── check_spec.md            # 整合性チェック
-│   ├── task_cleanup.md          # タスククリーンアップ
-│   └── task_breakdown.md        # タスク分解
+│   ├── sdd_init.md                # AI-SDDワークフロー初期化
+│   ├── sdd_migrate.md             # 旧バージョンからの移行
+│   ├── generate_spec.md           # 仕様書・設計書生成
+│   ├── generate_prd.md            # PRD生成
+│   ├── check_spec.md              # 整合性チェック
+│   ├── task_cleanup.md            # タスククリーンアップ
+│   ├── task_breakdown.md          # タスク分解
+│   ├── clarify.md                 # 仕様明確化支援
+│   ├── implement.md               # TDDベース実装実行
+│   ├── checklist.md               # 品質チェックリスト生成
+│   └── constitution.md            # プロジェクト原則管理
 ├── skills/
-│   ├── vibe-detector/           # Vibe Coding検出スキル
+│   ├── vibe-detector/             # Vibe Coding検出スキル
 │   │   ├── SKILL.md
 │   │   └── templates/
-│   ├── doc-consistency-checker/ # ドキュメント整合性チェック
+│   ├── doc-consistency-checker/   # ドキュメント整合性チェック
 │   │   ├── SKILL.md
 │   │   └── templates/
-│   └── sdd-templates/           # AI-SDDテンプレート
+│   └── sdd-templates/             # AI-SDDテンプレート
 │       ├── SKILL.md
 │       └── templates/
+│           ├── prd_template.md
+│           ├── spec_template.md
+│           ├── design_template.md
+│           ├── checklist_template.md
+│           ├── constitution_template.md
+│           └── implementation_log_template.md
 ├── hooks/
-│   └── hooks.json               # フック設定
+│   └── hooks.json                 # フック設定
 ├── scripts/
-│   └── session-start.sh         # セッション開始時の初期化スクリプト
+│   └── session-start.sh           # セッション開始時の初期化スクリプト
 ├── LICENSE
 └── README.md
 ```

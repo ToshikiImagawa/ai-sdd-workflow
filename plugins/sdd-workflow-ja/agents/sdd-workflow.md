@@ -136,6 +136,7 @@ docs/
 
 ```
 .sdd/
+├── CONSTITUTION.md               # プロジェクト原則（非妥協原則）
 ├── SPECIFICATION_TEMPLATE.md     # 抽象仕様書テンプレート
 ├── DESIGN_DOC_TEMPLATE.md        # 技術設計書テンプレート
 ├── requirement/          # PRD（要求仕様書）- SysML要求図形式
@@ -152,6 +153,7 @@ docs/
 
 ```
 .sdd/
+├── CONSTITUTION.md               # プロジェクト原則（非妥協原則）
 ├── SPECIFICATION_TEMPLATE.md     # 抽象仕様書テンプレート
 ├── DESIGN_DOC_TEMPLATE.md        # 技術設計書テンプレート
 ├── requirement/          # PRD（要求仕様書）- SysML要求図形式
@@ -241,17 +243,20 @@ specification/auth/index.md            # specification には _spec/_design が�
 
 ```mermaid
 graph RL
-    IMPL[実装] --> DESIGN["*_design.md<br/>(技術設計)"]
-    TASK["task/<br/>(タスクログ)"] --> DESIGN
+    IMPL[実装] --> TASK["task/<br/>(タスクログ)"]
+    TASK --> DESIGN["*_design.md<br/>(技術設計)"]
     DESIGN --> SPEC["*_spec.md<br/>(抽象仕様)"]
     SPEC --> PRD["requirement/<br/>(PRD/要求図)"]
+    PRD --> CONST["CONSTITUTION.md<br/>(プロジェクト原則)"]
 ```
 
 **依存方向の意味**:
 
-- `実装` は `*_design.md` を参照して作成される（技術的な「どのように」）
+- `実装` は `task/` のタスクログに基づいて作成される
+- `task/` は `*_design.md` を参照してタスク分解される
 - `*_design.md` は `*_spec.md` を参照して作成される（抽象的な「何を」を具体化）
 - `*_spec.md` は `requirement` を参照して作成される（ビジネス要求を技術仕様に変換）
+- `requirement` は `CONSTITUTION.md` の原則に従って作成される（プロジェクトの非交渉原則）
 
 ## 各ドキュメントの役割と抽象度
 
@@ -453,17 +458,19 @@ graph RL
    ↓
 2. 必要なフェーズを特定
    ↓
-3. 既存ドキュメントの確認（PRD, spec, design）
+3. プロジェクト原則の確認（CONSTITUTION.md が存在する場合、原則を確認）
    ↓
-4. 仕様の曖昧さをチェック（Vibe Coding防止）
+4. 既存ドキュメントの確認（PRD, spec, design）
    ↓
-5. 必要なドキュメントを作成（Specify → Plan）
+5. 仕様の曖昧さをチェック（Vibe Coding防止）
    ↓
-6. タスク分解（Tasks）
+6. 原則準拠を確認しつつ必要なドキュメントを作成（Specify → Plan）
    ↓
-7. コミット（ドキュメントのみ）
+7. タスク分解（Tasks）
    ↓
-8. 実装開始（Implement）
+8. コミット（ドキュメントのみ）
+   ↓
+9. 実装開始（Implement）
 ```
 
 ### 実装完了時
@@ -482,7 +489,7 @@ graph RL
 
 ### タスク分析結果
 
-```markdown
+````markdown
 ## AI-SDD タスク分析
 
 ### タスク概要
@@ -497,12 +504,12 @@ graph RL
 
 ### 必要なフェーズとドキュメント
 
-| フェーズ | ドキュメント | ステータス |
-|:--|:--|:--|
-| Specify | .sdd/requirement/[{path}/]{name}.md | 🟢 存在 / 🟡 要更新 / 🔴 要作成 |
-| Specify | .sdd/specification/[{path}/]{name}_spec.md | 🟢 / 🟡 / 🔴 |
-| Plan | .sdd/specification/[{path}/]{name}_design.md | 🟢 / 🟡 / 🔴 |
-| Tasks | .sdd/task/{ticket}/ | 🔴 要作成 |
+| フェーズ    | ドキュメント                                       | ステータス                   |
+|:--------|:---------------------------------------------|:------------------------|
+| Specify | .sdd/requirement/[{path}/]{name}.md          | 🟢 存在 / 🟡 要更新 / 🔴 要作成 |
+| Specify | .sdd/specification/[{path}/]{name}_spec.md   | 🟢 / 🟡 / 🔴            |
+| Plan    | .sdd/specification/[{path}/]{name}_design.md | 🟢 / 🟡 / 🔴            |
+| Tasks   | .sdd/task/{ticket}/                          | 🔴 要作成                  |
 
 ※ `[{path}/]` は階層構造の場合のみ指定（例: `auth/`）。親機能の場合は `{name}` が `index` になる
 
@@ -511,11 +518,11 @@ graph RL
 1. {ステップ1}
 2. {ステップ2}
    ...
-```
+````
 
 ### タスクログクリーンアップ確認
 
-```markdown
+````markdown
 ## task/ クリーンアップ確認
 
 ### 対象ディレクトリ
@@ -536,7 +543,7 @@ graph RL
 
 1. {設計判断} を {design.md} に追記
 2. task/{チケット番号}/ を削除
-```
+````
 
 ---
 

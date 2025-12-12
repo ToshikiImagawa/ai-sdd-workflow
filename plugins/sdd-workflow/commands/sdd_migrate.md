@@ -5,7 +5,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 # SDD Migrate - AI-SDD Migration
 
-A command to migrate legacy AI-SDD directory structure (v1.x) to the new version (v2.0.0).
+Migrate legacy AI-SDD directory structure (v1.x) to new version (v2.0.0).
 
 ## Command Features
 
@@ -51,36 +51,36 @@ A command to migrate legacy AI-SDD directory structure (v1.x) to the new version
 
 ### Option A: Migrate to New Structure
 
-**Recommended**: For early-stage projects or when unified naming conventions are desired
+**Recommended**: For projects in early stages or when you want unified naming conventions
 
 Process:
 
-1. `git mv .docs .sdd` to rename root directory
-2. `git mv .sdd/requirement-diagram .sdd/requirement` to rename requirement directory
-3. `git mv .sdd/review .sdd/task` to rename task directory
+1. Rename root directory: `git mv .docs .sdd`
+2. Rename requirements directory: `git mv .sdd/requirement-diagram .sdd/requirement`
+3. Rename task directory: `git mv .sdd/review .sdd/task`
 4. Update path references in CLAUDE.md
 5. Commit changes
 
-**Benefits**:
+**Advantages**:
 
-- Full compatibility with new plugin version
+- Fully compatible with new plugin version
 - Simpler document references
 
 **Note**:
 
-- May require updating existing references or scripts
+- May need to update existing references and scripts
 - Tracked as rename in Git history
 
 ### Option B: Keep Legacy Structure
 
-**Recommended**: For existing projects with many references or when avoiding breaking changes
+**Recommended**: For existing projects with many references or to avoid breaking changes
 
 Process:
 
 1. Generate `.sdd-config.json` with legacy directory names
 2. Plugin operates based on configuration file
 
-**Generated configuration file example**:
+**Generated Configuration Example**:
 
 ```json
 {
@@ -93,60 +93,60 @@ Process:
 }
 ```
 
-**Benefits**:
+**Advantages**:
 
 - No changes to existing structure
-- Existing references and scripts continue to work
+- Existing references and scripts work as-is
 
 **Note**:
 
 - New documents will use legacy directory names
-- Configuration file management required
+- Configuration file needs to be managed
 
 ## Detection Logic
 
-Legacy structure is detected under these conditions:
+Detect legacy structure when:
 
-1. **Legacy docs root**: `.docs/` exists and `.sdd/` doesn't exist
-2. **Legacy requirement directory**: `{root}/requirement-diagram/` exists
-3. **Legacy task directory**: `{root}/review/` exists and `{root}/task/` doesn't exist
+1. **Legacy Root Directory**: `.docs/` exists and `.sdd/` doesn't exist
+2. **Legacy Requirements Directory**: `{root}/requirement-diagram/` exists
+3. **Legacy Task Directory**: `{root}/review/` exists and `{root}/task/` doesn't exist
 
 ## Output Examples
 
 ### When Legacy Structure Detected
 
-```markdown
+````markdown
 ## AI-SDD Migration
 
 ### Detected Structure
 
-| Item | Current Value | New Recommended Value |
-|:---|:---|:---|
-| Root Directory | `.docs` | `.sdd` |
-| Requirement Directory | `requirement-diagram` | `requirement` |
-| Task Directory | `review` | `task` |
+| Item                     | Current Value        | New Recommended Value |
+|:-------------------------|:---------------------|:----------------------|
+| Root Directory           | `.docs`              | `.sdd`                |
+| Requirements Directory   | `requirement-diagram` | `requirement`         |
+| Task Directory           | `review`             | `task`                |
 
 ### Migration Options
 
 **A: Migrate to New Structure**
 
-- Rename directories to align with new naming conventions
-- Recommended: For new or early-stage projects
+- Rename directories to align with new naming convention
+- Recommended: New projects or early-stage projects
 
 **B: Keep Legacy Structure**
 
 - Generate `.sdd-config.json` to maintain current structure
-- Recommended: For existing projects with many external references
+- Recommended: Existing projects with many external references
 
-Which option would you like to choose?
-```
+Which option do you choose?
+````
 
 ### After Migration Complete (Option A)
 
-```markdown
+````markdown
 ## Migration Complete
 
-### Executed Changes
+### Changes Applied
 
 - [x] Renamed `.docs/` → `.sdd/`
 - [x] Renamed `requirement-diagram/` → `requirement/`
@@ -158,11 +158,11 @@ Which option would you like to choose?
 1. Review existing scripts and references, update as needed
 2. Check changes with `git status`
 3. Commit changes (recommended message: `[docs] Migrate to AI-SDD v2.0.0 structure`)
-```
+````
 
 ### After Migration Complete (Option B)
 
-```markdown
+````markdown
 ## Migration Complete
 
 ### Generated Files
@@ -185,29 +185,26 @@ Which option would you like to choose?
 ### Next Steps
 
 1. Add `.sdd-config.json` to version control
-2. Commit changes (recommended message: `[docs] Add AI-SDD compatibility config`)
+2. Commit changes (recommended message: `[docs] Add AI-SDD compatibility configuration`)
 
-```
+````
 
 ## Error Handling
 
 ### Project Not Under Git
 
 ```
-
 ⚠️ This project is not under Git management.
 
 If you choose Option A (directory rename),
 manual backup is recommended.
 
 Continue?
-
 ```
 
 ### Already Using New Structure
 
 ```
-
 ✅ This project is already using the new structure.
 
 No migration needed.
@@ -215,15 +212,13 @@ No migration needed.
 Current structure:
 
 - Root directory: .sdd
-- Requirement: requirement
+- Requirements: requirement
 - Task: task
-
 ```
 
 ### .sdd-config.json Already Exists
 
 ```
-
 ℹ️ `.sdd-config.json` already exists.
 
 Current settings:
@@ -233,33 +228,28 @@ Current settings:
 - directories.task: {current value}
 
 The plugin will operate based on this configuration.
-To modify settings, manually edit `.sdd-config.json`.
-
+To change settings, manually edit `.sdd-config.json`.
 ```
 
 ## Commit
 
-After migration complete:
+After migration:
 
-### For Option A
+### Option A
 
 ```
-
 [docs] Migrate to AI-SDD v2.0.0 structure
 
 - Renamed .docs/ → .sdd/
 - Renamed requirement-diagram/ → requirement/
 - Renamed review/ → task/
-
 ```
 
-### For Option B
+### Option B
 
 ```
-
-[docs] Add AI-SDD compatibility config
+[docs] Add AI-SDD compatibility configuration
 
 - Generated .sdd-config.json
-- Maintained legacy directory structure
-
+- Maintaining legacy directory structure
 ```

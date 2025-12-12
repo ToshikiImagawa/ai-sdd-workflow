@@ -5,18 +5,19 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 # SDD Init - AI-SDD Workflow Initializer
 
-Initializes the AI-SDD (AI-driven Specification-Driven Development) workflow in the current project.
+Initialize AI-SDD (AI-driven Specification-Driven Development) workflow in the current project.
 
 ## What This Command Does
 
-1. **CLAUDE.md Configuration**: Adds AI-SDD instructions to the project's `CLAUDE.md` file
-2. **Template Generation**: Creates document templates in `.sdd/` directory (if not exist)
+1. **CLAUDE.md Configuration**: Add AI-SDD instructions to project's `CLAUDE.md`
+2. **Project Constitution Generation**: Create `.sdd/CONSTITUTION.md` (if not exist)
+3. **Template Generation**: Create document templates in `.sdd/` directory (if not exist)
 
 ## Prerequisites
 
-**Before execution, you must read `sdd-workflow:sdd-workflow` agent content to understand AI-SDD principles.**
+**Before execution, you must read the `sdd-workflow:sdd-workflow` agent content to understand AI-SDD principles.**
 
-This command follows the sdd-workflow agent principles for project initialization.
+This command initializes the project following the sdd-workflow agent's principles.
 
 ### Configuration File (Optional)
 
@@ -24,22 +25,23 @@ You can customize directory names by creating `.sdd-config.json` at project root
 
 For configuration file details, refer to the "Project Configuration File" section in the `sdd-workflow:sdd-workflow` agent.
 
-**Note**: If you want to use custom directory names during initialization, create `.sdd-config.json` first. The directory structure and CLAUDE.md content will be generated based on the configuration values.
+**Note**: If you want to use custom directory names during initialization, create `.sdd-config.json` first. The directory structure and CLAUDE.md content will be generated based on configuration values.
 
 ### Skills Used
 
 This command uses the following skills:
 
-| Skill                        | Purpose                                                                        |
-|:-----------------------------|:-------------------------------------------------------------------------------|
-| `sdd-workflow:sdd-templates` | Generate PRD, Specification, and Design Doc templates based on project context |
+| Skill                        | Purpose                                                                                            |
+|:-----------------------------|:---------------------------------------------------------------------------------------------------|
+| `sdd-workflow:sdd-templates` | Generate project constitution and PRD, Specification, Design Doc templates based on project context |
 
 ## Execution Flow
 
 ```
 1. Check current project state
    ├─ Does CLAUDE.md exist?
-   └─ Does .sdd/ directory exist?
+   ├─ Does .sdd/ directory exist?
+   └─ Does .sdd/CONSTITUTION.md exist?
    ↓
 2. Configure CLAUDE.md
    ├─ If CLAUDE.md exists: Add AI-SDD Instructions section
@@ -50,15 +52,19 @@ This command uses the following skills:
    ├─ .sdd/specification/
    └─ .sdd/task/
    ↓
-4. Check for existing templates
+4. Generate project constitution (if not exist)
+   ├─ Check if .sdd/CONSTITUTION.md exists
+   └─ If not exist: Generate using sdd-workflow:sdd-templates skill
+   ↓
+5. Check existing templates
    ├─ .sdd/PRD_TEMPLATE.md
    ├─ .sdd/SPECIFICATION_TEMPLATE.md
    └─ .sdd/DESIGN_DOC_TEMPLATE.md
    ↓
-5. Generate missing templates
-   └─ Use sdd-workflow:sdd-templates skill to generate
+6. Generate missing templates
+   └─ Use sdd-workflow:sdd-templates skill
    ↓
-6. Commit changes
+7. Commit changes
 ```
 
 ## CLAUDE.md Configuration
@@ -67,108 +73,171 @@ This command uses the following skills:
 
 Add the following section to `CLAUDE.md`:
 
-```markdown
+````markdown
 ## AI-SDD Instructions
 
-This project follows the AI-SDD (AI-driven Specification-Driven Development) workflow.
+This project follows AI-SDD (AI-driven Specification-Driven Development) workflow.
 
 ### Document Operations
 
-When working with files under `.sdd/` directory, you MUST use the `sdd-workflow:sdd-workflow` agent to ensure proper
-AI-SDD workflow compliance.
+When operating files under `.sdd/` directory, always use the `sdd-workflow:sdd-workflow`
+agent to ensure proper AI-SDD workflow compliance.
 
 **Trigger Conditions**:
 
-- Reading or modifying any file under `.sdd/`
-- Creating new specifications, designs, or requirements documents
-- Implementing features that reference documents in `.sdd/`
+- Reading or modifying files under `.sdd/`
+- Creating new specifications, design docs, or requirement docs
+- Implementing features that reference `.sdd/` documents
 
 ### Directory Structure
 
-Both flat and hierarchical structures are supported.
+Supports both flat and hierarchical structures.
 
 **Flat Structure (for small to medium projects)**:
 
     .sdd/
+    ├── CONSTITUTION.md               # Project principles (top-level)
     ├── PRD_TEMPLATE.md               # PRD template for this project
     ├── SPECIFICATION_TEMPLATE.md     # Abstract specification template
-    ├── DESIGN_DOC_TEMPLATE.md        # Technical design document template
-    ├── requirement/          # PRD (Requirements Specification)
+    ├── DESIGN_DOC_TEMPLATE.md        # Technical design template
+    ├── requirement/                  # PRD (Product Requirements Documents)
     │   └── {feature-name}.md
-    ├── specification/                # Specifications and Design Documents
+    ├── specification/                # Specifications and designs
     │   ├── {feature-name}_spec.md    # Abstract specification
-    │   └── {feature-name}_design.md  # Technical design document
+    │   └── {feature-name}_design.md  # Technical design
     └── task/                         # Temporary task logs
         └── {ticket-number}/
 
 **Hierarchical Structure (for medium to large projects)**:
 
     .sdd/
+    ├── CONSTITUTION.md               # Project principles (top-level)
     ├── PRD_TEMPLATE.md               # PRD template for this project
     ├── SPECIFICATION_TEMPLATE.md     # Abstract specification template
-    ├── DESIGN_DOC_TEMPLATE.md        # Technical design document template
-    ├── requirement/          # PRD (Requirements Specification)
+    ├── DESIGN_DOC_TEMPLATE.md        # Technical design template
+    ├── requirement/                  # PRD (Product Requirements Documents)
     │   ├── {feature-name}.md         # Top-level feature
     │   └── {parent-feature}/         # Parent feature directory
-    │       ├── index.md              # Parent feature overview and requirements list
+    │       ├── index.md              # Parent feature overview & requirements list
     │       └── {child-feature}.md    # Child feature requirements
-    ├── specification/                # Specifications and Design Documents
+    ├── specification/                # Specifications and designs
     │   ├── {feature-name}_spec.md    # Top-level feature
     │   ├── {feature-name}_design.md
     │   └── {parent-feature}/         # Parent feature directory
-    │       ├── index_spec.md         # Parent feature abstract specification
-    │       ├── index_design.md       # Parent feature technical design document
-    │       ├── {child-feature}_spec.md   # Child feature abstract specification
-    │       └── {child-feature}_design.md # Child feature technical design document
+    │       ├── index_spec.md         # Parent feature abstract spec
+    │       ├── index_design.md       # Parent feature technical design
+    │       ├── {child-feature}_spec.md   # Child feature abstract spec
+    │       └── {child-feature}_design.md # Child feature technical design
     └── task/                         # Temporary task logs
         └── {ticket-number}/
 
-### Commit Message Convention
+### File Naming Convention (Important)
 
-| Prefix | Usage |
-|:---|:---|
-| `[docs]` | Add/update documentation |
-| `[spec]` | Add/update specifications (`*_spec.md`) |
-| `[design]` | Add/update design documents (`*_design.md`) |
+**⚠️ The presence of suffixes differs between requirement and specification. Do not confuse them.**
+
+| Directory         | File Type        | Naming Pattern                                 | Example                                   |
+|:------------------|:-----------------|:-----------------------------------------------|:------------------------------------------|
+| **requirement**   | All files        | `{name}.md` (no suffix)                        | `user-login.md`, `index.md`               |
+| **specification** | Abstract spec    | `{name}_spec.md` (`_spec` suffix required)     | `user-login_spec.md`, `index_spec.md`     |
+| **specification** | Technical design | `{name}_design.md` (`_design` suffix required) | `user-login_design.md`, `index_design.md` |
+
+#### Naming Pattern Quick Reference
+
 ```
+# ✅ Correct Naming
+requirement/auth/index.md              # Parent feature overview (no suffix)
+requirement/auth/user-login.md         # Child feature requirements (no suffix)
+specification/auth/index_spec.md       # Parent feature abstract spec (_spec required)
+specification/auth/index_design.md     # Parent feature technical design (_design required)
+specification/auth/user-login_spec.md  # Child feature abstract spec (_spec required)
+specification/auth/user-login_design.md # Child feature technical design (_design required)
+
+# ❌ Incorrect Naming (never use these)
+requirement/auth/index_spec.md         # requirement doesn't need _spec
+specification/auth/user-login.md       # specification requires _spec/_design
+specification/auth/index.md            # specification requires _spec/_design
+```
+
+### Document Link Convention
+
+Follow these formats for markdown links within documents:
+
+| Link Target    | Format                                     | Link Text             | Example                                              |
+|:---------------|:-------------------------------------------|:----------------------|:-----------------------------------------------------|
+| **File**       | `[filename.md](path or URL)`               | Include filename      | `[user-login.md](../requirement/auth/user-login.md)` |
+| **Directory**  | `[directory-name](path or URL/index.md)`   | Directory name only   | `[auth](../requirement/auth/index.md)`               |
+
+This convention makes it visually clear whether the link target is a file or directory.
+
+````
 
 ### Placement Rules
 
-1. **If CLAUDE.md already has an "AI-SDD" section**: Skip (already initialized)
-2. **If CLAUDE.md exists without AI-SDD section**: Append the section at the end
-3. **If CLAUDE.md does not exist**: Create new file with the section
+1. **If CLAUDE.md already has "AI-SDD" section**: Skip (already initialized)
+2. **If CLAUDE.md exists but no AI-SDD section**: Append section to end
+3. **If CLAUDE.md doesn't exist**: Create new file with section
 
-## Template Generation
+## Project Constitution Generation
 
-### Template Files to Generate
+### What is a Project Constitution?
 
-| Template                   | Path                             | Purpose                                    |
-|:---------------------------|:---------------------------------|:-------------------------------------------|
-| **PRD Template**           | `.sdd/PRD_TEMPLATE.md`           | Requirements specification in SysML format |
-| **Specification Template** | `.sdd/SPECIFICATION_TEMPLATE.md` | Abstract system specification              |
-| **Design Doc Template**    | `.sdd/DESIGN_DOC_TEMPLATE.md`    | Technical design document                  |
+A Project Constitution (CONSTITUTION.md) defines **non-negotiable principles that form the foundation of all design decisions**.
+
+| Characteristic    | Description                                                      |
+|:------------------|:-----------------------------------------------------------------|
+| **Non-negotiable** | Not open to debate. Changes require careful consideration       |
+| **Persistent**    | Consistently applied across the entire project                   |
+| **Hierarchical**  | Higher principles take precedence over lower ones                |
+| **Verifiable**    | Can automatically verify spec/design compliance with principles  |
 
 ### Generation Process
 
-1. **Check existing templates**: Skip if template already exists
-2. **Analyze project context**:
-    - Detect programming language(s) used
+1. Check if `.sdd/CONSTITUTION.md` exists
+2. If not exist, generate using `sdd-workflow:sdd-templates` skill
+3. Customize based on project context (language, framework, domain)
+
+### Constitution Management
+
+Use `/constitution` command to manage the constitution after initialization:
+
+| Subcommand   | Purpose                                      |
+|:-------------|:---------------------------------------------|
+| `validate`   | Verify specs/designs comply with constitution |
+| `add`        | Add new principles                            |
+| `sync`       | Synchronize templates with constitution       |
+
+## Template Generation
+
+### Templates to Generate
+
+| Template                  | Path                             | Purpose                       |
+|:--------------------------|:---------------------------------|:------------------------------|
+| **Project Constitution**  | `.sdd/CONSTITUTION.md`           | Non-negotiable principles     |
+| **PRD Template**          | `.sdd/PRD_TEMPLATE.md`           | SysML-format requirements doc |
+| **Spec Template**         | `.sdd/SPECIFICATION_TEMPLATE.md` | Abstract system specification |
+| **Design Template**       | `.sdd/DESIGN_DOC_TEMPLATE.md`    | Technical design document     |
+
+### Generation Process
+
+1. **Check Existing Templates**: Skip if template already exists
+2. **Analyze Project Context**:
+    - Detect programming languages used
     - Identify project structure and conventions
-    - Check for existing documentation patterns
-3. **Generate customized templates**:
+    - Review existing documentation patterns
+3. **Generate Customized Templates**:
     - Use `sdd-workflow:sdd-templates` skill
-    - Customize type syntax for project's language (TypeScript, Python, Go, etc.)
-    - Adjust examples to match project domain
+    - Customize type syntax for project language (TypeScript, Python, Go, etc.)
+    - Adjust examples based on project domain
 
 ### Template Customization Points
 
-When generating templates, customize based on project analysis:
+Customize during template generation based on project analysis:
 
-| Aspect              | Customization                                                                     |
-|:--------------------|:----------------------------------------------------------------------------------|
-| **Type Syntax**     | Match project's primary language (e.g., TypeScript interfaces, Python type hints) |
-| **Directory Paths** | Reflect project's actual structure in examples                                    |
-| **Domain Examples** | Use relevant examples based on project type (web app, CLI, library, etc.)         |
+| Item                | Customization Content                                                     |
+|:--------------------|:--------------------------------------------------------------------------|
+| **Type Syntax**     | Adapt to project's primary language (e.g., TypeScript interfaces, Python type hints) |
+| **Directory Paths** | Reflect project's actual structure in examples                            |
+| **Domain Examples** | Use relevant examples based on project type (web app, CLI, library, etc.) |
 
 ## Post-Initialization Verification
 
@@ -179,26 +248,31 @@ After initialization, verify:
     - `.sdd/requirement/` exists
     - `.sdd/specification/` exists
     - `.sdd/task/` exists
-3. **Templates**: All three template files exist in `.sdd/`
+3. **Project Constitution**: `.sdd/CONSTITUTION.md` exists
+4. **Templates**: All 3 template files exist in `.sdd/`
 
 ## Output
 
-Upon successful initialization, display:
+On successful initialization, display:
 
-```markdown
+````markdown
 ## AI-SDD Initialization Complete
 
 ### CLAUDE.md
 
-- [x] AI-SDD Instructions section added
+- [x] Added AI-SDD Instructions section
 
 ### Directory Structure
 
-- [x] .sdd/requirement/ created
-- [x] .sdd/specification/ created
-- [x] .sdd/task/ created
+- [x] Created .sdd/requirement/
+- [x] Created .sdd/specification/
+- [x] Created .sdd/task/
 
-### Templates Generated
+### Project Constitution
+
+- [x] Created .sdd/CONSTITUTION.md
+
+### Generated Templates
 
 - [x] .sdd/PRD_TEMPLATE.md
 - [x] .sdd/SPECIFICATION_TEMPLATE.md
@@ -206,11 +280,12 @@ Upon successful initialization, display:
 
 ### Next Steps
 
-1. Review generated templates and customize as needed
-2. Use `/generate_prd` to create your first PRD
-3. Use `/generate_spec` to create specifications from PRD
-4. Use the `sdd-workflow` agent for development guidance
-```
+1. Review `.sdd/CONSTITUTION.md` and customize project principles
+2. Review generated templates and customize as needed
+3. Use `/generate_prd` to create first PRD
+4. Use `/generate_spec` to create specifications from PRD
+5. Use `/constitution validate` to verify constitution compliance
+````
 
 ## Commit
 
@@ -221,5 +296,6 @@ After successful initialization:
 
 - Add AI-SDD Instructions to CLAUDE.md
 - Create .sdd/ directory structure
+- Generate project constitution (CONSTITUTION.md)
 - Generate document templates
 ```

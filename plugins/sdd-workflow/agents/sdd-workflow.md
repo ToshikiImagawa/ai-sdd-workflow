@@ -87,17 +87,18 @@ AI-SDD workflow supports customizing directory names via a `.sdd-config.json` fi
 
 At session start, the `session-start` hook reads `.sdd-config.json` and sets the following environment variables.
 
-| Environment Variable       | Default Value          | Description                      |
-|:---------------------------|:-----------------------|:---------------------------------|
-| `SDD_ROOT`            | `.sdd`                 | Root directory                   |
-| `SDD_REQUIREMENT_DIR`      | `requirement`          | Requirements directory name      |
-| `SDD_SPECIFICATION_DIR`    | `specification`        | Specification directory name     |
-| `SDD_TASK_DIR`             | `task`                 | Task log directory name          |
-| `SDD_REQUIREMENT_PATH`     | `.sdd/requirement`     | Requirements full path           |
-| `SDD_SPECIFICATION_PATH`   | `.sdd/specification`   | Specification full path          |
-| `SDD_TASK_PATH`            | `.sdd/task`            | Task log full path               |
+| Environment Variable     | Default Value        | Description                  |
+|:-------------------------|:---------------------|:-----------------------------|
+| `SDD_ROOT`               | `.sdd`               | Root directory               |
+| `SDD_REQUIREMENT_DIR`    | `requirement`        | Requirements directory name  |
+| `SDD_SPECIFICATION_DIR`  | `specification`      | Specification directory name |
+| `SDD_TASK_DIR`           | `task`               | Task log directory name      |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | Requirements full path       |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | Specification full path      |
+| `SDD_TASK_PATH`          | `.sdd/task`          | Task log full path           |
 
 **Path Resolution Priority:**
+
 1. Use `SDD_*` environment variables if set
 2. Check `.sdd-config.json` if environment variables are not set
 3. Use default values if neither exists
@@ -136,6 +137,7 @@ Both flat and hierarchical structures are supported. Choose based on project sca
 
 ```
 .sdd/
+├── CONSTITUTION.md               # Project constitution (non-negotiable principles)
 ├── SPECIFICATION_TEMPLATE.md     # Abstract specification template
 ├── DESIGN_DOC_TEMPLATE.md        # Technical design document template
 ├── requirement/          # PRD (Requirements Specification) - SysML requirements diagram format
@@ -152,6 +154,7 @@ Both flat and hierarchical structures are supported. Choose based on project sca
 
 ```
 .sdd/
+├── CONSTITUTION.md               # Project constitution (non-negotiable principles)
 ├── SPECIFICATION_TEMPLATE.md     # Abstract specification template
 ├── DESIGN_DOC_TEMPLATE.md        # Technical design document template
 ├── requirement/          # PRD (Requirements Specification) - SysML requirements diagram format
@@ -176,11 +179,11 @@ Both flat and hierarchical structures are supported. Choose based on project sca
 
 **⚠️ Suffix requirements differ between requirement and specification directories. Do not confuse them.**
 
-| Directory | File Type | Naming Pattern | Examples |
-|:--|:--|:--|:--|
-| **requirement** | All files | `{name}.md` (no suffix) | `user-login.md`, `index.md` |
-| **specification** | Abstract spec | `{name}_spec.md` (`_spec` suffix required) | `user-login_spec.md`, `index_spec.md` |
-| **specification** | Design doc | `{name}_design.md` (`_design` suffix required) | `user-login_design.md`, `index_design.md` |
+| Directory         | File Type     | Naming Pattern                                 | Examples                                  |
+|:------------------|:--------------|:-----------------------------------------------|:------------------------------------------|
+| **requirement**   | All files     | `{name}.md` (no suffix)                        | `user-login.md`, `index.md`               |
+| **specification** | Abstract spec | `{name}_spec.md` (`_spec` suffix required)     | `user-login_spec.md`, `index_spec.md`     |
+| **specification** | Design doc    | `{name}_design.md` (`_design` suffix required) | `user-login_design.md`, `index_design.md` |
 
 #### Naming Pattern Quick Reference
 
@@ -203,10 +206,10 @@ specification/auth/index.md            # specification requires _spec or _design
 
 Follow these formats for markdown links within documents:
 
-| Link Target | Format | Link Text | Example |
-|:--|:--|:--|:--|
-| **File** | `[filename.md](path or URL)` | Include filename | `[user-login.md](../requirement/auth/user-login.md)` |
-| **Directory** | `[directory-name](path or URL/index.md)` | Directory name only | `[auth](../requirement/auth/index.md)` |
+| Link Target   | Format                                   | Link Text           | Example                                              |
+|:--------------|:-----------------------------------------|:--------------------|:-----------------------------------------------------|
+| **File**      | `[filename.md](path or URL)`             | Include filename    | `[user-login.md](../requirement/auth/user-login.md)` |
+| **Directory** | `[directory-name](path or URL/index.md)` | Directory name only | `[auth](../requirement/auth/index.md)`               |
 
 This convention makes it visually easy to distinguish whether the link target is a file or a directory.
 
@@ -241,18 +244,20 @@ This convention makes it visually easy to distinguish whether the link target is
 
 ```mermaid
 graph RL
-    IMPL[Implementation] --> DESIGN["*_design.md<br/>(Technical Design)"]
-    TASK["task/<br/>(Task Logs)"] --> DESIGN
+    IMPL[Implementation] --> TASK["task/<br/>(Task Logs)"]
+    TASK --> DESIGN["*_design.md<br/>(Technical Design)"]
     DESIGN --> SPEC["*_spec.md<br/>(Abstract Spec)"]
     SPEC --> PRD["requirement/<br/>(PRD/Requirements)"]
+    PRD --> CONST["CONSTITUTION.md<br/>(Project Constitution)"]
 ```
 
 **Meaning of Dependency Direction**:
 
-- `Implementation` is created referencing `*_design.md` (technical "how")
+- `Implementation` is created based on `task/` task logs
+- `task/` references `*_design.md` for task breakdown
 - `*_design.md` is created referencing `*_spec.md` (concretizing abstract "what")
-- `*_spec.md` is created referencing `requirement` (converting business requirements to technical
-  specifications)
+- `*_spec.md` is created referencing `requirement` (converting business requirements to technical specifications)
+- `requirement` is created following `CONSTITUTION.md` principles (non-negotiable project principles)
 
 ## Role of Each Document and Abstraction Level
 
@@ -454,17 +459,19 @@ Criteria for when to update each document:
    ↓
 2. Identify required phases
    ↓
-3. Check existing documents (PRD, spec, design)
+3. Check project constitution (if CONSTITUTION.md exists, review principles)
    ↓
-4. Check specification ambiguity (Vibe Coding prevention)
+4. Check existing documents (PRD, spec, design)
    ↓
-5. Create necessary documents (Specify → Plan)
+5. Check specification ambiguity (Vibe Coding prevention)
    ↓
-6. Task breakdown (Tasks)
+6. Create necessary documents ensuring constitution compliance (Specify → Plan)
    ↓
-7. Commit (documents only)
+7. Task breakdown (Tasks)
    ↓
-8. Start implementation (Implement)
+8. Commit (documents only)
+   ↓
+9. Start implementation (Implement)
 ```
 
 ### At Implementation Completion
@@ -483,7 +490,7 @@ Criteria for when to update each document:
 
 ### Task Analysis Results
 
-```markdown
+````markdown
 ## AI-SDD Task Analysis
 
 ### Task Overview
@@ -513,11 +520,11 @@ Criteria for when to update each document:
 1. {Step 1}
 2. {Step 2}
    ...
-```
+````
 
 ### Task Log Cleanup Confirmation
 
-```markdown
+````markdown
 ## task/ Cleanup Confirmation
 
 ### Target Directory
@@ -538,7 +545,7 @@ Criteria for when to update each document:
 
 1. Add {design decision} to {design.md}
 2. Delete task/{ticket-number}/
-```
+````
 
 ---
 

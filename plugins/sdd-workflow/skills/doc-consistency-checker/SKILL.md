@@ -18,19 +18,21 @@ This skill follows the sdd-workflow agent principles for document consistency ch
 
 **Use `SDD_*` environment variables to resolve directory paths.**
 
-| Environment Variable     | Default Value         | Description                  |
-|:-------------------------|:----------------------|:-----------------------------|
-| `SDD_ROOT`          | `.sdd`                | Root directory               |
-| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`    | PRD/Requirements directory   |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification`  | Specification/Design directory |
-| `SDD_TASK_PATH`          | `.sdd/task`           | Task log directory           |
+| Environment Variable     | Default Value        | Description                    |
+|:-------------------------|:---------------------|:-------------------------------|
+| `SDD_ROOT`               | `.sdd`               | Root directory                 |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/Requirements directory     |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | Specification/Design directory |
+| `SDD_TASK_PATH`          | `.sdd/task`          | Task log directory             |
 
 **Path Resolution Priority:**
+
 1. Use `SDD_*` environment variables if set
 2. Check `.sdd-config.json` if environment variables are not set
 3. Use default values if neither exists
 
-The following documentation uses default values, but replace with custom values if environment variables or configuration file exists.
+The following documentation uses default values, but replace with custom values if environment variables or
+configuration file exists.
 
 ## Document Dependencies
 
@@ -55,6 +57,7 @@ Both flat and hierarchical structures are supported.
 
 ```
 .sdd/
+├── CONSTITUTION.md                        # Project constitution (top-level)
 ├── requirement/{feature-name}.md
 └── specification/
     ├── {feature-name}_spec.md
@@ -65,6 +68,7 @@ Both flat and hierarchical structures are supported.
 
 ```
 .sdd/
+├── CONSTITUTION.md                        # Project constitution (top-level)
 ├── requirement/
 │   ├── {feature-name}.md                  # Top-level feature
 │   └── {parent-feature}/
@@ -82,9 +86,9 @@ Both flat and hierarchical structures are supported.
 
 **⚠️ Note the difference in naming conventions**:
 
-| Directory | Naming Pattern | Examples |
-|:--|:--|:--|
-| **requirement** | No suffix | `index.md`, `user-login.md` |
+| Directory         | Naming Pattern               | Examples                                |
+|:------------------|:-----------------------------|:----------------------------------------|
+| **requirement**   | No suffix                    | `index.md`, `user-login.md`             |
 | **specification** | `_spec` / `_design` required | `index_spec.md`, `user-login_design.md` |
 
 Consistency checks also consider parent-child relationships for hierarchical structures.

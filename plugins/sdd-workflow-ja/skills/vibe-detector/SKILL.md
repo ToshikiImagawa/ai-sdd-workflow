@@ -18,14 +18,15 @@ allowed-tools: Read, Glob, Grep, AskUserQuestion
 
 **環境変数 `SDD_*` を使用してディレクトリパスを解決します。**
 
-| 環境変数                     | デフォルト値               | 説明               |
-|:-------------------------|:---------------------|:-----------------|
-| `SDD_ROOT`          | `.sdd`               | ルートディレクトリ         |
-| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/要求仕様書ディレクトリ  |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書ディレクトリ    |
-| `SDD_TASK_PATH`          | `.sdd/task`          | タスクログディレクトリ      |
+| 環境変数                     | デフォルト値               | 説明              |
+|:-------------------------|:---------------------|:----------------|
+| `SDD_ROOT`               | `.sdd`               | ルートディレクトリ       |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/要求仕様書ディレクトリ |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書ディレクトリ   |
+| `SDD_TASK_PATH`          | `.sdd/task`          | タスクログディレクトリ     |
 
 **パス解決の優先順位:**
+
 1. 環境変数 `SDD_*` が設定されている場合はそれを使用
 2. 環境変数がない場合は `.sdd-config.json` を確認
 3. どちらもない場合はデフォルト値を使用

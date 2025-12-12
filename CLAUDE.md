@@ -67,7 +67,11 @@ Specify（仕様化） → Plan（計画） → Tasks（タスク分解） → I
 
 ```
 .sdd/
-├── requirement/          # PRD（要求仕様書）- 永続
+├── CONSTITUTION.md               # プロジェクト原則（最上位）
+├── PRD_TEMPLATE.md               # PRDテンプレート
+├── SPECIFICATION_TEMPLATE.md     # 抽象仕様書テンプレート
+├── DESIGN_DOC_TEMPLATE.md        # 技術設計書テンプレート
+├── requirement/                  # PRD（要求仕様書）- 永続
 │   └── {機能名}.md
 ├── specification/                # 永続的な知識資産
 │   ├── {機能名}_spec.md         # 抽象仕様書
@@ -80,7 +84,11 @@ Specify（仕様化） → Plan（計画） → Tasks（タスク分解） → I
 
 ```
 .sdd/
-├── requirement/          # PRD（要求仕様書）- SysML要求図形式
+├── CONSTITUTION.md               # プロジェクト原則（最上位）
+├── PRD_TEMPLATE.md               # PRDテンプレート
+├── SPECIFICATION_TEMPLATE.md     # 抽象仕様書テンプレート
+├── DESIGN_DOC_TEMPLATE.md        # 技術設計書テンプレート
+├── requirement/                  # PRD（要求仕様書）- SysML要求図形式
 │   ├── {機能名}.md              # トップレベル機能
 │   └── {親機能名}/              # 親機能ディレクトリ
 │       ├── index.md             # 親機能の概要・要求一覧
@@ -129,6 +137,14 @@ specification/auth/user-login_design.md # 子機能の技術設計書
 
 - `requirement/`, `specification/*_spec.md`, `specification/*_design.md`: **永続**
 - `task/`: **一時的** - 実装完了後に削除。重要な設計判断は `*_design.md` に統合
+
+### ドキュメント依存関係
+
+すべてのドキュメントは `CONSTITUTION.md` のプロジェクト原則に従って作成されます。
+
+```
+CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実装
+```
 
 ### プロジェクト設定ファイル
 

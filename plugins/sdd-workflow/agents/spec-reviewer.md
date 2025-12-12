@@ -19,19 +19,21 @@ This agent performs specification reviews based on the sdd-workflow agent princi
 
 **Use `SDD_*` environment variables to resolve directory paths.**
 
-| Environment Variable     | Default Value         | Description                  |
-|:-------------------------|:----------------------|:-----------------------------|
-| `SDD_ROOT`          | `.sdd`                | Root directory               |
-| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`    | PRD/Requirements directory   |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification`  | Specification/Design directory |
-| `SDD_TASK_PATH`          | `.sdd/task`           | Task log directory           |
+| Environment Variable     | Default Value        | Description                    |
+|:-------------------------|:---------------------|:-------------------------------|
+| `SDD_ROOT`               | `.sdd`               | Root directory                 |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/Requirements directory     |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | Specification/Design directory |
+| `SDD_TASK_PATH`          | `.sdd/task`          | Task log directory             |
 
 **Path Resolution Priority:**
+
 1. Use `SDD_*` environment variables if set
 2. Check `.sdd-config.json` if environment variables are not set
 3. Use default values if neither exists
 
-The following documentation uses default values, but replace with custom values if environment variables or configuration file exists.
+The following documentation uses default values, but replace with custom values if environment variables or
+configuration file exists.
 
 ## Role
 
@@ -42,6 +44,7 @@ following perspectives:
 2. **Clarity**: Are there any ambiguous descriptions?
 3. **Consistency**: Is inter-document consistency maintained?
 4. **SysML Compliance**: Are SysML elements appropriately used?
+5. **Constitution Compliance**: Does it comply with project constitution (`CONSTITUTION.md`) principles?
 
 ## Review Perspectives
 
@@ -111,10 +114,10 @@ Design documents support both flat structure (`{feature-name}_design.md`) and hi
 
 Check that markdown links within documents follow these conventions:
 
-| Link Target | Format | Link Text | Example |
-|:--|:--|:--|:--|
-| **File** | `[filename.md](path or URL)` | Include filename | `[user-login.md](../requirement/auth/user-login.md)` |
-| **Directory** | `[directory-name](path or URL/index.md)` | Directory name only | `[auth](../requirement/auth/index.md)` |
+| Link Target   | Format                                   | Link Text           | Example                                              |
+|:--------------|:-----------------------------------------|:--------------------|:-----------------------------------------------------|
+| **File**      | `[filename.md](path or URL)`             | Include filename    | `[user-login.md](../requirement/auth/user-login.md)` |
+| **Directory** | `[directory-name](path or URL/index.md)` | Directory name only | `[auth](../requirement/auth/index.md)`               |
 
 **Check Points**:
 
@@ -124,7 +127,7 @@ Check that markdown links within documents follow these conventions:
 
 ## Review Output Format
 
-```markdown
+````markdown
 ## Specification Review Results
 
 ### Target Document
@@ -133,12 +136,13 @@ Check that markdown links within documents follow these conventions:
 
 ### Evaluation Summary
 
-| Perspective | Rating | Comment |
-|:---|:---|:---|
-| Completeness | Good / Needs Improvement / Needs Fix | {Comment} |
-| Clarity | Good / Needs Improvement / Needs Fix | {Comment} |
-| Consistency | Good / Needs Improvement / Needs Fix | {Comment} |
-| SysML Compliance | Good / Needs Improvement / Needs Fix | {Comment} |
+| Perspective             | Rating                                     | Comment   |
+|:------------------------|:-------------------------------------------|:----------|
+| Completeness            | Good / Needs Improvement / Needs Fix       | {Comment} |
+| Clarity                 | Good / Needs Improvement / Needs Fix       | {Comment} |
+| Consistency             | Good / Needs Improvement / Needs Fix       | {Comment} |
+| SysML Compliance        | Good / Needs Improvement / Needs Fix       | {Comment} |
+| Constitution Compliance | Good / Needs Improvement / Needs Fix / N/A | {Comment} |
 
 ### Needs Fix (Critical)
 
@@ -151,7 +155,7 @@ Check that markdown links within documents follow these conventions:
 
 **Improvement Suggestion**:
 
-```markdown
+```md
 {Example of corrected description}
 ```
 
@@ -186,10 +190,11 @@ The following sections are recommended to be added:
 
 ### Consistency Check Results
 
-| Check Target  | Result                    | Details   |
-|:--------------|:--------------------------|:----------|
-| PRD ↔ spec    | Consistent / Inconsistent | {Details} |
-| spec ↔ design | Consistent / Inconsistent | {Details} |
+| Check Target        | Result                                      | Details   |
+|:--------------------|:--------------------------------------------|:----------|
+| PRD ↔ spec          | Consistent / Inconsistent                   | {Details} |
+| spec ↔ design       | Consistent / Inconsistent                   | {Details} |
+| CONSTITUTION ↔ docs | Compliant / Non-compliant / No Constitution | {Details} |
 
 ### Recommended Actions
 
@@ -197,7 +202,7 @@ The following sections are recommended to be added:
 2. {Action 2}
 3. {Action 3}
 
-```
+````
 
 ## Review Best Practices
 

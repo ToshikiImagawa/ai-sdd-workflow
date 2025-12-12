@@ -20,19 +20,21 @@ This command follows the sdd-workflow agent principles for specification and des
 
 **Use `SDD_*` environment variables to resolve directory paths.**
 
-| Environment Variable     | Default Value         | Description                  |
-|:-------------------------|:----------------------|:-----------------------------|
-| `SDD_ROOT`          | `.sdd`                | Root directory               |
-| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`    | PRD/Requirements directory   |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification`  | Specification/Design directory |
-| `SDD_TASK_PATH`          | `.sdd/task`           | Task log directory           |
+| Environment Variable     | Default Value        | Description                    |
+|:-------------------------|:---------------------|:-------------------------------|
+| `SDD_ROOT`               | `.sdd`               | Root directory                 |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/Requirements directory     |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | Specification/Design directory |
+| `SDD_TASK_PATH`          | `.sdd/task`          | Task log directory             |
 
 **Path Resolution Priority:**
+
 1. Use `SDD_*` environment variables if set
 2. Check `.sdd-config.json` if environment variables are not set
 3. Use default values if neither exists
 
-The following documentation uses default values, but replace with custom values if environment variables or configuration file exists.
+The following documentation uses default values, but replace with custom values if environment variables or
+configuration file exists.
 
 ### Skills Used
 
@@ -224,26 +226,31 @@ Skip Design Doc generation and confirm with user in the following cases:
 ```
 1. Analyze input content
    ↓
-2. Vibe Coding risk assessment
+2. Check project constitution
+   ├─ If CONSTITUTION.md exists: Load principles and ensure compliance during generation
+   └─ If not exists: Skip
+   ↓
+3. Vibe Coding risk assessment
    ├─ High: Confirm missing info with user → Resume after response
    ├─ Medium: Confirm ambiguous points → Resume after response
    └─ Low: Proceed to next step
    ↓
-3. Check existing documents
+4. Check existing documents
    ├─ If PRD exists: Pre-load and understand requirements
    └─ If spec/design exists: Confirm overwrite
    ↓
-4. Generate and save abstract specification (Specify)
+5. Generate and save abstract specification (Specify)
    ↓
-5. PRD consistency review (if PRD exists)
-   ├─ Consistent: Proceed to next step
-   └─ Inconsistent: Modify spec and re-save
+6. PRD and constitution consistency review
+   ├─ If PRD exists: Verify PRD ↔ spec consistency
+   ├─ If constitution exists: Verify compliance with principles
+   └─ If inconsistent/non-compliant: Modify spec and re-save
    ↓
-6. Confirm Design Doc generation
+7. Confirm Design Doc generation
    ├─ Technical info present: Generate and save (Plan)
    └─ No technical info: Confirm whether to skip
    ↓
-7. Commit
+8. Commit
 ```
 
 ## PRD Consistency Review
@@ -269,12 +276,12 @@ If PRD exists, perform the following consistency checks on generated spec and re
 
 Add the following to spec's end (if PRD exists):
 
-```markdown
+````markdown
 ## PRD Reference
 
 - Corresponding PRD: `.sdd/requirement/[{parent-feature}/]{feature-name}.md`
 - Covered Requirements: UR-001, FR-001, FR-002, NFR-001, ...
-```
+````
 
 ※ For hierarchical structure, parent feature PRD is `.sdd/requirement/{parent-feature}/index.md`
 
@@ -282,8 +289,10 @@ Add the following to spec's end (if PRD exists):
 
 1. **Save Files**:
     - Flat structure: `.sdd/specification/{feature-name}_spec.md`, `.sdd/specification/{feature-name}_design.md`
-    - Hierarchical structure (parent feature): `.sdd/specification/{parent-feature}/index_spec.md`, `.sdd/specification/{parent-feature}/index_design.md`
-    - Hierarchical structure (child feature): `.sdd/specification/{parent-feature}/{feature-name}_spec.md`, `.sdd/specification/{parent-feature}/{feature-name}_design.md`
+    - Hierarchical structure (parent feature): `.sdd/specification/{parent-feature}/index_spec.md`,
+      `.sdd/specification/{parent-feature}/index_design.md`
+    - Hierarchical structure (child feature): `.sdd/specification/{parent-feature}/{feature-name}_spec.md`,
+      `.sdd/specification/{parent-feature}/{feature-name}_design.md`
 
 2. **Consistency Check**:
     - If PRD exists: Verify and reflect PRD ↔ spec consistency

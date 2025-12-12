@@ -18,14 +18,15 @@ AI-SDD ドキュメント間（PRD、`*_spec.md`、`*_design.md`）の整合性�
 
 **環境変数 `SDD_*` を使用してディレクトリパスを解決します。**
 
-| 環境変数                     | デフォルト値               | 説明               |
-|:-------------------------|:---------------------|:-----------------|
-| `SDD_ROOT`          | `.sdd`               | ルートディレクトリ         |
-| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/要求仕様書ディレクトリ  |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書ディレクトリ    |
-| `SDD_TASK_PATH`          | `.sdd/task`          | タスクログディレクトリ      |
+| 環境変数                     | デフォルト値               | 説明              |
+|:-------------------------|:---------------------|:----------------|
+| `SDD_ROOT`               | `.sdd`               | ルートディレクトリ       |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/要求仕様書ディレクトリ |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書ディレクトリ   |
+| `SDD_TASK_PATH`          | `.sdd/task`          | タスクログディレクトリ     |
 
 **パス解決の優先順位:**
+
 1. 環境変数 `SDD_*` が設定されている場合はそれを使用
 2. 環境変数がない場合は `.sdd-config.json` を確認
 3. どちらもない場合はデフォルト値を使用
@@ -55,6 +56,7 @@ graph RL
 
 ```
 .sdd/
+├── CONSTITUTION.md                    # プロジェクト原則（最上位）
 ├── requirement/{機能名}.md
 └── specification/
     ├── {機能名}_spec.md
@@ -65,6 +67,7 @@ graph RL
 
 ```
 .sdd/
+├── CONSTITUTION.md                    # プロジェクト原則（最上位）
 ├── requirement/
 │   ├── {機能名}.md                    # トップレベル機能
 │   └── {親機能名}/
@@ -82,9 +85,9 @@ graph RL
 
 **⚠️ 命名規則の違いに注意**:
 
-| ディレクトリ | 命名パターン | 例 |
-|:--|:--|:--|
-| **requirement** | サフィックスなし | `index.md`, `user-login.md` |
+| ディレクトリ            | 命名パターン                 | 例                                       |
+|:------------------|:-----------------------|:----------------------------------------|
+| **requirement**   | サフィックスなし               | `index.md`, `user-login.md`             |
 | **specification** | `_spec` / `_design` 必須 | `index_spec.md`, `user-login_design.md` |
 
 整合性チェックでは、階層構造の場合も親子関係を考慮してチェックを行います。

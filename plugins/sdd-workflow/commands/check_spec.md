@@ -18,24 +18,26 @@ This command follows the sdd-workflow agent principles for consistency checking.
 
 **Use `SDD_*` environment variables to resolve directory paths.**
 
-| Environment Variable     | Default Value         | Description                  |
-|:-------------------------|:----------------------|:-----------------------------|
-| `SDD_ROOT`          | `.sdd`                | Root directory               |
-| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`    | PRD/Requirements directory   |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification`  | Specification/Design directory |
-| `SDD_TASK_PATH`          | `.sdd/task`           | Task log directory           |
+| Environment Variable     | Default Value        | Description                    |
+|:-------------------------|:---------------------|:-------------------------------|
+| `SDD_ROOT`               | `.sdd`               | Root directory                 |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/Requirements directory     |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | Specification/Design directory |
+| `SDD_TASK_PATH`          | `.sdd/task`          | Task log directory             |
 
 **Path Resolution Priority:**
+
 1. Use `SDD_*` environment variables if set
 2. Check `.sdd-config.json` if environment variables are not set
 3. Use default values if neither exists
 
-The following documentation uses default values, but replace with custom values if environment variables or configuration file exists.
+The following documentation uses default values, but replace with custom values if environment variables or
+configuration file exists.
 
 ### Document Dependencies (Reference)
 
 ```
-Implementation → *_design.md → *_spec.md → requirement/
+Implementation → task/ → *_design.md → *_spec.md → requirement/ → CONSTITUTION.md
 ```
 
 ## Input
@@ -134,6 +136,14 @@ Search for code corresponding to specification contents:
 
 ### 4. Consistency Check Items
 
+#### CONSTITUTION ↔ Document Consistency (if constitution exists)
+
+| Check Target                        | Verification Content                                                           | Importance |
+|:------------------------------------|:-------------------------------------------------------------------------------|:-----------|
+| **Principle Compliance**            | Do specifications and design documents comply with project principles?         | High       |
+| **Development Standard Compliance** | Are defined development standards (code quality, testing, security, etc.) met? | Medium     |
+| **Technology Stack**                | Are permitted technology stacks being used?                                    | Medium     |
+
 #### PRD ↔ spec Consistency (if PRD exists)
 
 | Check Target                              | Verification Content                                   | Importance |
@@ -184,7 +194,7 @@ Classify detected discrepancies as follows:
 
 ## Output Format
 
-```markdown
+````markdown
 ## Specification Consistency Check Results
 
 ### Target Documents
@@ -199,6 +209,7 @@ Classify detected discrepancies as follows:
 
 | Check Target | Result | Count |
 |:---|:---|:---|
+| CONSTITUTION ↔ docs | Compliant / Non-compliant / No Constitution | {n} items |
 | PRD ↔ spec | Consistent / Inconsistent | {n} items |
 | spec ↔ design | Consistent / Inconsistent | {n} items |
 | design ↔ Implementation | Consistent / Inconsistent | {n} items |
@@ -278,7 +289,7 @@ Features implemented but not documented in specifications:
 2. Decide whether to modify specification or implementation
 3. After modifications, run `/check_spec` again to verify
 
-```
+````
 
 ## Check Execution Timing
 
@@ -316,7 +327,7 @@ If Serena MCP is enabled, high-precision consistency checking through semantic c
 
 #### Additional Output When Using Serena
 
-```markdown
+````markdown
 ### Serena Symbol Analysis Results
 
 | Symbol | In Spec | Implementation Status | Reference Count |
@@ -324,7 +335,7 @@ If Serena MCP is enabled, high-precision consistency checking through semantic c
 | `createUser` | Yes | Implemented | 5 |
 | `deleteUser` | Yes | Not Implemented | 0 |
 | `internalHelper` | No | Implemented | 3 |
-```
+````
 
 ### Behavior When Serena is Not Configured
 

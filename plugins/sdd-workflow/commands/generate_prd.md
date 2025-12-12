@@ -17,19 +17,21 @@ This command follows the sdd-workflow agent principles for PRD generation.
 
 **Use `SDD_*` environment variables to resolve directory paths.**
 
-| Environment Variable     | Default Value         | Description                  |
-|:-------------------------|:----------------------|:-----------------------------|
-| `SDD_ROOT`          | `.sdd`                | Root directory               |
-| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`    | PRD/Requirements directory   |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification`  | Specification/Design directory |
-| `SDD_TASK_PATH`          | `.sdd/task`           | Task log directory           |
+| Environment Variable     | Default Value        | Description                    |
+|:-------------------------|:---------------------|:-------------------------------|
+| `SDD_ROOT`               | `.sdd`               | Root directory                 |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/Requirements directory     |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | Specification/Design directory |
+| `SDD_TASK_PATH`          | `.sdd/task`          | Task log directory             |
 
 **Path Resolution Priority:**
+
 1. Use `SDD_*` environment variables if set
 2. Check `.sdd-config.json` if environment variables are not set
 3. Use default values if neither exists
 
-The following documentation uses default values, but replace with custom values if environment variables or configuration file exists.
+The following documentation uses default values, but replace with custom values if environment variables or
+configuration file exists.
 
 ### Skills Used
 
@@ -58,10 +60,10 @@ This command uses the following skills:
 ### Document Dependencies
 
 ```
-PRD (Requirements Diagram) ← *_spec.md ← *_design.md ← Implementation
+CONSTITUTION.md → PRD (Requirements Diagram) → *_spec.md → *_design.md → task/ → Implementation
 ```
 
-PRD is the most upstream document and serves as the foundation for subsequent specifications and design documents.
+PRD is created following `CONSTITUTION.md` principles and serves as the foundation for subsequent specifications and design documents.
 
 ## Input
 
@@ -146,7 +148,9 @@ Does .sdd/specification/{parent-feature}/{feature-name}_design.md already exist?
 - **Under specification**: `_spec` or `_design` suffix required (`index_spec.md`, `{feature-name}_spec.md`)
 
 **Hierarchical structure usage decision**:
-- Use hierarchical structure when parent feature (category) is specified in input, or when existing hierarchical structure exists
+
+- Use hierarchical structure when parent feature (category) is specified in input, or when existing hierarchical
+  structure exists
 - Recommended to confirm with user whether to use hierarchical structure
 
 **If PRD exists**: Confirm with user whether to overwrite.
@@ -183,28 +187,31 @@ Follow these steps to prepare the template:
 ## Generation Flow
 
 ```
-
 1. Analyze input content
    ↓
-2. Vibe Coding risk assessment
+2. Check project constitution
+   ├─ If CONSTITUTION.md exists: Load principles and ensure compliance during generation
+   └─ If not exists: Skip
+   ↓
+3. Vibe Coding risk assessment
    ├─ High: Confirm missing info with user → Resume after response
    ├─ Medium: Confirm ambiguous points → Resume after response
    └─ Low: Proceed to next step
    ↓
-3. Check existing documents
+4. Check existing documents
    ├─ If PRD exists: Confirm overwrite
    └─ If spec/design exists: Understand impact scope
    ↓
-4. Generate and save PRD
+5. Generate and save PRD
    ↓
-5. Check consistency with existing spec/design (if they exist)
-   ├─ Consistent: Proceed to next step
+6. Check consistency with constitution and existing spec/design
+   ├─ If constitution exists: Verify compliance with principles
+   ├─ If spec/design exists: Verify consistency
    └─ Updates needed: Notify recommendation to update spec/design
    ↓
-6. Propose next steps
-    - Create abstract specification with /generate_spec
-    - If existing spec exists, recommend update
-
+7. Propose next steps
+   - Create abstract specification with /generate_spec
+   - If existing spec exists, recommend update
 ```
 
 ## Consistency Check with Existing spec/design
@@ -230,7 +237,8 @@ If existing spec/design exists, verify the following after PRD generation:
 
 1. **Save File**:
     - Flat structure: `.sdd/requirement/{feature-name}.md`
-    - Hierarchical structure: `.sdd/requirement/{parent-feature}/index.md` or `.sdd/requirement/{parent-feature}/{feature-name}.md`
+    - Hierarchical structure: `.sdd/requirement/{parent-feature}/index.md` or
+      `.sdd/requirement/{parent-feature}/{feature-name}.md`
 
 2. **Consistency Check**:
     - If existing spec/design exists: Verify impact and notify if updates needed

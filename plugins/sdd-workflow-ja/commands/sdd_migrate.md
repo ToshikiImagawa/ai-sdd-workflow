@@ -15,12 +15,12 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 ## 破壊的変更の概要（v1.x → v2.0.0）
 
-| 旧構成（v1.x）              | 新構成（v2.0.0）     | 説明              |
-|:-----------------------|:----------------|:----------------|
-| `.docs/`               | `.sdd/`         | ルートディレクトリ        |
-| `requirement-diagram/` | `requirement/`  | 要求仕様書格納ディレクトリ   |
-| `review/`              | `task/`         | タスクログ格納ディレクトリ   |
-| `/review_cleanup`      | `/task_cleanup` | クリーンアップコマンド     |
+| 旧構成（v1.x）              | 新構成（v2.0.0）     | 説明            |
+|:-----------------------|:----------------|:--------------|
+| `.docs/`               | `.sdd/`         | ルートディレクトリ     |
+| `requirement-diagram/` | `requirement/`  | 要求仕様書格納ディレクトリ |
+| `review/`              | `task/`         | タスクログ格納ディレクトリ |
+| `/review_cleanup`      | `/task_cleanup` | クリーンアップコマンド   |
 
 ## 実行フロー
 
@@ -115,7 +115,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 ### 旧構成が検出された場合
 
-```markdown
+````markdown
 ## AI-SDD マイグレーション
 
 ### 検出された構成
@@ -139,11 +139,11 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 - 推奨: 多くの外部参照がある既存プロジェクト
 
 どちらのオプションを選択しますか？
-```
+````
 
 ### 移行完了後（オプションA選択時）
 
-```markdown
+````markdown
 ## マイグレーション完了
 
 ### 実行された変更
@@ -158,11 +158,11 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 1. 既存のスクリプトや参照を確認し、必要に応じて更新
 2. `git status` で変更を確認
 3. 変更をコミット（推奨メッセージ: `[docs] AI-SDD v2.0.0 構成に移行`）
-```
+````
 
 ### 移行完了後（オプションB選択時）
 
-```markdown
+````markdown
 ## マイグレーション完了
 
 ### 生成されたファイル
@@ -187,7 +187,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 1. `.sdd-config.json` をバージョン管理に追加
 2. 変更をコミット（推奨メッセージ: `[docs] AI-SDD 互換性設定を追加`）
 
-```
+````
 
 ## エラーハンドリング
 

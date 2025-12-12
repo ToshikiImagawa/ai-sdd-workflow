@@ -17,19 +17,21 @@ This command follows the sdd-workflow agent principles for task breakdown.
 
 **Use `SDD_*` environment variables to resolve directory paths.**
 
-| Environment Variable     | Default Value         | Description                  |
-|:-------------------------|:----------------------|:-----------------------------|
-| `SDD_ROOT`          | `.sdd`                | Root directory               |
-| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`    | PRD/Requirements directory   |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification`  | Specification/Design directory |
-| `SDD_TASK_PATH`          | `.sdd/task`           | Task log directory           |
+| Environment Variable     | Default Value        | Description                    |
+|:-------------------------|:---------------------|:-------------------------------|
+| `SDD_ROOT`               | `.sdd`               | Root directory                 |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/Requirements directory     |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | Specification/Design directory |
+| `SDD_TASK_PATH`          | `.sdd/task`          | Task log directory             |
 
 **Path Resolution Priority:**
+
 1. Use `SDD_*` environment variables if set
 2. Check `.sdd-config.json` if environment variables are not set
 3. Use default values if neither exists
 
-The following documentation uses default values, but replace with custom values if environment variables or configuration file exists.
+The following documentation uses default values, but replace with custom values if environment variables or
+configuration file exists.
 
 ### Tasks Phase Positioning (Reference)
 
@@ -144,7 +146,7 @@ graph LR
 
 ### Task List
 
-```markdown
+````markdown
 # {Feature Name} Task Breakdown
 
 ## Meta Information
@@ -221,7 +223,7 @@ graph TD
 
 ※ For hierarchical structure, parent feature uses `index_spec.md`, `index_design.md`
 
-```
+````
 
 **Save Location**: `.sdd/task/{ticket-number}/tasks.md` or `.sdd/task/{feature-name}/tasks.md`
 
@@ -231,17 +233,17 @@ If PRD/spec exists, verify the following for generated task list:
 
 ### Check Items
 
-| Check Item | Verification Content |
-|:---|:---|
-| **Functional Requirement Coverage** | Are PRD/spec functional requirements (FR-xxx) covered by tasks? |
+| Check Item                                   | Verification Content                                                 |
+|:---------------------------------------------|:---------------------------------------------------------------------|
+| **Functional Requirement Coverage**          | Are PRD/spec functional requirements (FR-xxx) covered by tasks?      |
 | **Non-Functional Requirement Consideration** | Are non-functional requirements (NFR-xxx) included in testing tasks? |
-| **API Implementation Coverage** | Are all spec APIs included in core tasks? |
+| **API Implementation Coverage**              | Are all spec APIs included in core tasks?                            |
 
 ### Requirement Coverage Table Output
 
 Add the following to task list end (if PRD/spec exists):
 
-```markdown
+````markdown
 ## Requirement Coverage
 
 | Requirement ID | Requirement Content | Corresponding Tasks |
@@ -249,7 +251,7 @@ Add the following to task list end (if PRD/spec exists):
 | FR-001 | {Requirement content} | 2.1, 2.2 |
 | FR-002 | {Requirement content} | 2.3 |
 | NFR-001 | {Requirement content} | 4.1 |
-```
+````
 
 ### Handling Insufficient Coverage
 
@@ -300,7 +302,7 @@ If Serena MCP is enabled, semantic code analysis can be leveraged to improve tas
 
 #### Additional Information in Task List
 
-```markdown
+````markdown
 ## Serena Analysis Results
 
 ### Affected Symbols
@@ -314,7 +316,7 @@ If Serena MCP is enabled, semantic code analysis can be leveraged to improve tas
 
 - Verify updates at 12 locations referencing `UserService`
 - Update related test `user.test.ts`
-```
+````
 
 ### Behavior When Serena is Not Configured
 

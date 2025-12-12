@@ -17,14 +17,15 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 **環境変数 `SDD_*` を使用してディレクトリパスを解決します。**
 
-| 環境変数                   | デフォルト値              | 説明                 |
-|:-----------------------|:--------------------|:-------------------|
-| `SDD_ROOT`        | `.sdd`              | ルートディレクトリ           |
-| `SDD_REQUIREMENT_PATH` | `.sdd/requirement`  | PRD/要求仕様書ディレクトリ    |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書ディレクトリ      |
-| `SDD_TASK_PATH`        | `.sdd/task`         | タスクログディレクトリ        |
+| 環境変数                     | デフォルト値               | 説明              |
+|:-------------------------|:---------------------|:----------------|
+| `SDD_ROOT`               | `.sdd`               | ルートディレクトリ       |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/要求仕様書ディレクトリ |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書ディレクトリ   |
+| `SDD_TASK_PATH`          | `.sdd/task`          | タスクログディレクトリ     |
 
 **パス解決の優先順位:**
+
 1. 環境変数 `SDD_*` が設定されている場合はそれを使用
 2. 環境変数がない場合は `.sdd-config.json` を確認
 3. どちらもない場合はデフォルト値を使用
@@ -58,10 +59,10 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ### ドキュメント間の依存関係
 
 ```
-PRD（要求図）← *_spec.md ← *_design.md ← 実装
+CONSTITUTION.md → PRD（要求図）→ *_spec.md → *_design.md → task/ → 実装
 ```
 
-PRDは最上流のドキュメントであり、後続の仕様書・設計書の基盤となります。
+PRDは `CONSTITUTION.md` の原則に従って作成され、後続の仕様書・設計書の基盤となります。
 
 ## 入力
 
@@ -185,22 +186,27 @@ $ARGUMENTS
 ```
 1. 入力内容を分析
    ↓
-2. Vibe Coding リスク評価
+2. プロジェクト原則の確認
+   ├─ CONSTITUTION.md が存在する場合: 原則を読み込み、生成時に準拠
+   └─ 存在しない場合: スキップ
+   ↓
+3. Vibe Coding リスク評価
    ├─ 🔴 高: 不足情報をユーザーに確認 → 回答後に再開
    ├─ 🟡 中: 曖昧な箇所を確認 → 回答後に再開
    └─ 🟢 低: 次のステップへ
    ↓
-3. 既存ドキュメントの確認
+4. 既存ドキュメントの確認
    ├─ PRDが存在する場合: 上書き確認
    └─ spec/designが存在する場合: 影響範囲を把握
    ↓
-4. PRDを生成・保存
+5. PRDを生成・保存
    ↓
-5. 既存spec/designとの整合性確認（存在する場合）
-   ├─ 整合している: 次のステップへ
+6. 原則・既存spec/designとの整合性確認
+   ├─ 原則が存在する場合: 原則に準拠しているか確認
+   ├─ spec/designが存在する場合: 整合性を確認
    └─ 更新が必要: spec/design更新の推奨を通知
    ↓
-6. 次のステップを提案
+7. 次のステップを提案
    - /generate_spec で抽象仕様書を作成
    - 既存specがある場合は更新を推奨
 ```

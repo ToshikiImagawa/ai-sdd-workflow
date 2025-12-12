@@ -17,16 +17,17 @@ AI-SDD ワークフローで使用する各種ドキュメントのテンプレ�
 ドキュメント生成時は、**必ず以下の順序で**テンプレートを探索してください：
 
 ```
-1. プロジェクトテンプレートを確認（最優先）
+1. プロジェクトファイル/テンプレートを確認（最優先）
+   ├─ .sdd/CONSTITUTION.md が存在するか？
    ├─ .sdd/PRD_TEMPLATE.md が存在するか？
    ├─ .sdd/SPECIFICATION_TEMPLATE.md が存在するか？
    └─ .sdd/DESIGN_DOC_TEMPLATE.md が存在するか？
    ↓
-2. プロジェクトテンプレートが存在する場合
-   → そのテンプレートを使用（このスキルのテンプレートは使用しない）
+2. プロジェクトファイル/テンプレートが存在する場合
+   → そのファイルを使用（このスキルのテンプレートは使用しない）
    ↓
-3. プロジェクトテンプレートが存在しない場合のみ
-   → このスキルのテンプレートを使用してプロジェクト用テンプレートを生成
+3. プロジェクトファイル/テンプレートが存在しない場合のみ
+   → このスキルのテンプレートを使用してプロジェクト用ファイルを生成
 ```
 
 ### テンプレート優先順位（厳守）
@@ -46,14 +47,15 @@ AI-SDD ワークフローで使用する各種ドキュメントのテンプレ�
 
 **環境変数 `SDD_*` を使用してディレクトリパスを解決します。**
 
-| 環境変数                   | デフォルト値              | 説明                 |
-|:-----------------------|:--------------------|:-------------------|
-| `SDD_ROOT`        | `.sdd`              | ルートディレクトリ           |
-| `SDD_REQUIREMENT_PATH` | `.sdd/requirement`  | PRD/要求仕様書ディレクトリ    |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書ディレクトリ      |
-| `SDD_TASK_PATH`        | `.sdd/task`         | タスクログディレクトリ        |
+| 環境変数                     | デフォルト値               | 説明              |
+|:-------------------------|:---------------------|:----------------|
+| `SDD_ROOT`               | `.sdd`               | ルートディレクトリ       |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/要求仕様書ディレクトリ |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書ディレクトリ   |
+| `SDD_TASK_PATH`          | `.sdd/task`          | タスクログディレクトリ     |
 
 **パス解決の優先順位:**
+
 1. 環境変数 `SDD_*` が設定されている場合はそれを使用
 2. 環境変数がない場合は `.sdd-config.json` を確認
 3. どちらもない場合はデフォルト値を使用
@@ -64,15 +66,33 @@ AI-SDD ワークフローで使用する各種ドキュメントのテンプレ�
 
 プロジェクトにテンプレートが存在しない場合に使用：
 
-| テンプレート         | ファイル                                                         | 対応するプロジェクトテンプレート                 |
-|:---------------|:-------------------------------------------------------------|:---------------------------------|
-| **PRD（要求仕様書）** | [templates/prd_template.md](templates/prd_template.md)       | `.sdd/PRD_TEMPLATE.md`           |
-| **抽象仕様書**      | [templates/spec_template.md](templates/spec_template.md)     | `.sdd/SPECIFICATION_TEMPLATE.md` |
-| **技術設計書**      | [templates/design_template.md](templates/design_template.md) | `.sdd/DESIGN_DOC_TEMPLATE.md`    |
+| テンプレート         | ファイル                                                                                 | 対応するプロジェクトテンプレート                 |
+|:---------------|:-------------------------------------------------------------------------------------|:---------------------------------|
+| **PRD（要求仕様書）** | [templates/prd_template.md](templates/prd_template.md)                               | `.sdd/PRD_TEMPLATE.md`           |
+| **抽象仕様書**      | [templates/spec_template.md](templates/spec_template.md)                             | `.sdd/SPECIFICATION_TEMPLATE.md` |
+| **技術設計書**      | [templates/design_template.md](templates/design_template.md)                         | `.sdd/DESIGN_DOC_TEMPLATE.md`    |
+| **品質チェックリスト**  | [templates/checklist_template.md](templates/checklist_template.md)                   | N/A（コマンドから動的生成）                  |
+| **プロジェクト原則**   | [templates/constitution_template.md](templates/constitution_template.md)             | `.sdd/CONSTITUTION.md`           |
+| **実装ログ**       | [templates/implementation_log_template.md](templates/implementation_log_template.md) | N/A（実装中に動的生成）                    |
 
 ## 使用方法
 
-### ケース1: プロジェクトテンプレートが存在する場合
+### ケース1: プロジェクト原則の生成（/sdd_init または /constitution init）
+
+```
+/sdd_init
+または
+/constitution init
+
+1. .sdd/CONSTITUTION.md を確認
+2. 存在する → スキップ（既存の原則を尊重）
+3. 存在しない:
+   - このスキルの templates/constitution_template.md を参照
+   - プロジェクトコンテキスト（言語、フレームワーク、ドメイン）を分析
+   - カスタマイズされた原則を .sdd/CONSTITUTION.md に生成
+```
+
+### ケース2: プロジェクトテンプレートが存在する場合
 
 ```
 /generate_spec {仕様内容}
@@ -82,7 +102,7 @@ AI-SDD ワークフローで使用する各種ドキュメントのテンプレ�
 3. このスキルのテンプレートは参照しない
 ```
 
-### ケース2: プロジェクトテンプレートが存在しない場合
+### ケース3: プロジェクトテンプレートが存在しない場合
 
 ```
 /generate_spec {仕様内容}
@@ -97,10 +117,11 @@ AI-SDD ワークフローで使用する各種ドキュメントのテンプレ�
 
 プロジェクトにテンプレートがない場合、以下の手順で初期化できます：
 
-1. このスキルのテンプレートを `.sdd/` にコピー
-2. プロジェクトのプログラミング言語に合わせて型定義の記法を修正
-3. プロジェクトのディレクトリ構成に合わせてパスを修正
-4. 以後、プロジェクトテンプレートが優先される
+1. `/sdd_init` コマンドを実行（推奨）
+2. または、このスキルのテンプレートを `.sdd/` に手動コピー
+3. プロジェクトのプログラミング言語に合わせて型定義の記法を修正
+4. プロジェクトのディレクトリ構成に合わせてパスを修正
+5. 以後、プロジェクトファイル/テンプレートが優先される
 
 ## テンプレートの概要
 
@@ -135,16 +156,55 @@ SysML要求図形式で以下を定義：
 - アーキテクチャ
 - 設計判断と根拠
 
+### 品質チェックリストテンプレート
+
+仕様書・設計書から自動生成されるチェックリスト：
+
+- 要求レビュー
+- API仕様
+- データモデル
+- 設計レビュー
+- 単体テスト
+- 統合テスト
+- パフォーマンス
+- セキュリティ
+- デプロイ
+
+### プロジェクト原則テンプレート
+
+プロジェクトの非交渉原則を定義：
+
+- ビジネス原則
+- アーキテクチャ原則
+- 開発手法原則
+- 技術制約
+- セマンティックバージョニング
+
+### 実装ログテンプレート
+
+実装中の判断や問題を記録：
+
+- 実装判断
+- 問題と解決策
+- 代替案の検討
+- 技術的発見
+- テスト結果
+- パフォーマンス計測
+
 ## ドキュメント間の依存関係
 
 ```mermaid
 graph RL
-    IMPL[実装] --> DESIGN["*_design.md<br/>(技術設計)"]
+    IMPL[実装] --> TASK["task/<br/>(タスクログ)"]
+    TASK --> DESIGN["*_design.md<br/>(技術設計)"]
     DESIGN --> SPEC["*_spec.md<br/>(抽象仕様)"]
     SPEC --> PRD["requirement/<br/>(PRD/要求図)"]
+    PRD --> CONST["CONSTITUTION.md<br/>(プロジェクト原則)"]
 ```
 
 各テンプレートは、この依存関係に基づいてトレーサビリティを確保するよう設計されています。
+
+**CONSTITUTION.md が最上位**: すべてのドキュメントはプロジェクト原則に従って作成されます。
 
 ## 注意事項
 

@@ -5,6 +5,61 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-12-12
+
+### Added
+
+#### Commands
+
+- `/clarify` - Specification clarification command
+    - Scans specifications across 9 categories (functional scope, data model, flow, non-functional requirements,
+      integrations, edge cases, constraints, terminology, completion signals)
+    - Classifies unclear items as Clear/Partial/Missing
+    - Generates up to 5 high-impact clarification questions
+    - Incrementally integrates answers into `*_spec.md`
+    - Complementary to `vibe-detector` skill
+- `/implement` - TDD-based implementation execution command
+    - Verifies checklist completion rate in tasks.md
+    - Executes 5 phases in order (Setup→Tests→Core→Integration→Polish)
+    - Test-first (TDD) approach
+    - Auto-marks progress in tasks.md
+    - Completion verification (all tasks done, tests pass, spec consistency)
+- `/checklist` - Quality checklist generation command
+    - Auto-generates checklists from specs and plans across 9 categories
+    - Assigns IDs in CHK-{category-number}{sequence} format
+    - Auto-sets priority levels (P1/P2/P3)
+- `/constitution` - Project constitution management command
+    - Defines non-negotiable project principles (business, architecture, development methodology, technical constraints)
+    - Semantic versioning (MAJOR/MINOR/PATCH)
+    - Sync validation with specifications and design documents
+
+#### Agents
+
+- `clarification-assistant` - Specification clarification assistant agent
+    - Systematically analyzes user requirements across 9 categories
+    - Generates high-impact clarification questions
+    - Integrates answers into specifications
+    - Backend role for `/clarify` command
+
+#### Templates
+
+- `checklist_template.md` - Quality checklist template
+    - 9 categories of quality check items
+    - Priority levels (P1/P2/P3)
+    - Verification methods for each item
+- `constitution_template.md` - Project constitution template
+    - Principle hierarchy (business → architecture → development methodology → technical constraints)
+    - Verification methods, violation examples, compliance examples for each principle
+    - Version history and amendment process
+- `implementation_log_template.md` - Implementation log template
+    - Session-based implementation decision records
+    - Challenges and solutions tracking
+    - Technical discoveries and performance metrics
+
+#### Skills
+
+- `sdd-templates` - Added references to new templates
+
 ## [2.0.1] - 2025-12-12
 
 ### Added
