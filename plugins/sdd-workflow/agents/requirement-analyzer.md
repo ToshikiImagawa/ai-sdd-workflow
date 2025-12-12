@@ -19,14 +19,15 @@ This agent performs requirement analysis based on the sdd-workflow agent princip
 
 **Use `SDD_*` environment variables to resolve directory paths.**
 
-| Environment Variable     | Default Value         | Description                  |
-|:-------------------------|:----------------------|:-----------------------------|
-| `SDD_ROOT`          | `.sdd`                | Root directory               |
-| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`    | PRD/Requirements directory   |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification`  | Specification/Design directory |
-| `SDD_TASK_PATH`          | `.sdd/task`           | Task log directory           |
+| Environment Variable     | Default Value        | Description                    |
+|:-------------------------|:---------------------|:-------------------------------|
+| `SDD_ROOT`               | `.sdd`               | Root directory                 |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/Requirements directory     |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | Specification/Design directory |
+| `SDD_TASK_PATH`          | `.sdd/task`          | Task log directory             |
 
 **Path Resolution Priority:**
+
 1. Use `SDD_*` environment variables if set
 2. Check `.sdd-config.json` if environment variables are not set
 3. Use default values if neither exists
@@ -343,7 +344,19 @@ Requirement diagrams support both flat and hierarchical structures:
     └── {child-feature}.md         # Child feature requirements
 ```
 
-Refer to appropriate documents according to the project being analyzed. For hierarchical structures, `index.md` contains the parent feature's overall requirements overview and references to child requirements.
+Refer to appropriate documents according to the project being analyzed. For hierarchical structures, `index.md` contains
+the parent feature's overall requirements overview and references to child requirements.
+
+### Document Link Convention
+
+Follow these formats for markdown links within requirement diagrams:
+
+| Link Target   | Format                                   | Link Text           | Example                                 |
+|:--------------|:-----------------------------------------|:--------------------|:----------------------------------------|
+| **File**      | `[filename.md](path or URL)`             | Include filename    | `[user-login.md](./auth/user-login.md)` |
+| **Directory** | `[directory-name](path or URL/index.md)` | Directory name only | `[auth](./auth/index.md)`               |
+
+This convention makes it visually easy to distinguish whether the link target is a file or a directory.
 
 ---
 

@@ -199,6 +199,17 @@ specification/auth/user-login.md       # specification requires _spec or _design
 specification/auth/index.md            # specification requires _spec or _design
 ```
 
+### Document Link Convention
+
+Follow these formats for markdown links within documents:
+
+| Link Target | Format | Link Text | Example |
+|:--|:--|:--|:--|
+| **File** | `[filename.md](path or URL)` | Include filename | `[user-login.md](../requirement/auth/user-login.md)` |
+| **Directory** | `[directory-name](path or URL/index.md)` | Directory name only | `[auth](../requirement/auth/index.md)` |
+
+This convention makes it visually easy to distinguish whether the link target is a file or a directory.
+
 #### Hierarchical Structure Guidelines
 
 | Condition                                | Recommended Structure  |
@@ -528,14 +539,6 @@ Criteria for when to update each document:
 1. Add {design decision} to {design.md}
 2. Delete task/{ticket-number}/
 ```
-
-## Commit Message Convention
-
-| Prefix     | Usage                                       |
-|:-----------|:--------------------------------------------|
-| `[docs]`   | Add/update documentation                    |
-| `[spec]`   | Add/update specifications (`*_spec.md`)     |
-| `[design]` | Add/update design documents (`*_design.md`) |
 
 ---
 

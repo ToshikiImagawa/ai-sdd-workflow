@@ -86,17 +86,18 @@ AI-SDDワークフローでは、`.sdd-config.json` ファイルによるディ�
 
 セッション開始時に `session-start` フックが `.sdd-config.json` を読み込み、以下の環境変数を設定します。
 
-| 環境変数                     | デフォルト値               | 説明                |
-|:-------------------------|:---------------------|:------------------|
-| `SDD_ROOT`          | `.sdd`               | ルートディレクトリ          |
-| `SDD_REQUIREMENT_DIR`    | `requirement`        | 要求仕様書ディレクトリ名      |
-| `SDD_SPECIFICATION_DIR`  | `specification`      | 仕様書・設計書ディレクトリ名    |
-| `SDD_TASK_DIR`           | `task`               | タスクログディレクトリ名      |
-| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | 要求仕様書フルパス         |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書フルパス       |
-| `SDD_TASK_PATH`          | `.sdd/task`          | タスクログフルパス         |
+| 環境変数                     | デフォルト値               | 説明             |
+|:-------------------------|:---------------------|:---------------|
+| `SDD_ROOT`               | `.sdd`               | ルートディレクトリ      |
+| `SDD_REQUIREMENT_DIR`    | `requirement`        | 要求仕様書ディレクトリ名   |
+| `SDD_SPECIFICATION_DIR`  | `specification`      | 仕様書・設計書ディレクトリ名 |
+| `SDD_TASK_DIR`           | `task`               | タスクログディレクトリ名   |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | 要求仕様書フルパス      |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書フルパス    |
+| `SDD_TASK_PATH`          | `.sdd/task`          | タスクログフルパス      |
 
 **パス解決の優先順位:**
+
 1. 環境変数 `SDD_*` が設定されている場合はそれを使用
 2. 環境変数がない場合は `.sdd-config.json` を確認
 3. どちらもない場合はデフォルト値を使用
@@ -175,11 +176,11 @@ docs/
 
 **⚠️ requirement と specification でサフィックスの有無が異なります。混同しないでください。**
 
-| ディレクトリ | ファイル種別 | 命名パターン | 例 |
-|:--|:--|:--|:--|
-| **requirement** | 全ファイル | `{名前}.md`（サフィックスなし） | `user-login.md`, `index.md` |
-| **specification** | 抽象仕様書 | `{名前}_spec.md`（`_spec` サフィックス必須） | `user-login_spec.md`, `index_spec.md` |
-| **specification** | 技術設計書 | `{名前}_design.md`（`_design` サフィックス必須） | `user-login_design.md`, `index_design.md` |
+| ディレクトリ            | ファイル種別 | 命名パターン                               | 例                                         |
+|:------------------|:-------|:-------------------------------------|:------------------------------------------|
+| **requirement**   | 全ファイル  | `{名前}.md`（サフィックスなし）                  | `user-login.md`, `index.md`               |
+| **specification** | 抽象仕様書  | `{名前}_spec.md`（`_spec` サフィックス必須）     | `user-login_spec.md`, `index_spec.md`     |
+| **specification** | 技術設計書  | `{名前}_design.md`（`_design` サフィックス必須） | `user-login_design.md`, `index_design.md` |
 
 #### 命名パターン早見表
 
@@ -197,6 +198,17 @@ requirement/auth/index_spec.md         # requirement に _spec は不要
 specification/auth/user-login.md       # specification には _spec/_design が必須
 specification/auth/index.md            # specification には _spec/_design が必須
 ```
+
+### ドキュメントリンク規約
+
+ドキュメント内でのマークダウンリンクは以下の形式に従ってください：
+
+| リンク先       | 形式                             | リンクテキスト   | 例                                                    |
+|:-----------|:-------------------------------|:----------|:-----------------------------------------------------|
+| **ファイル**   | `[ファイル名.md](パスまたはURL)`         | ファイル名を含める | `[user-login.md](../requirement/auth/user-login.md)` |
+| **ディレクトリ** | `[ディレクトリ名](パスまたはURL/index.md)` | ディレクトリ名のみ | `[auth](../requirement/auth/index.md)`               |
+
+この規約により、リンク先がファイルかディレクトリかが視覚的に判別しやすくなります。
 
 #### 階層構造の使用ガイドライン
 
@@ -525,14 +537,6 @@ graph RL
 1. {設計判断} を {design.md} に追記
 2. task/{チケット番号}/ を削除
 ```
-
-## コミットメッセージ規約
-
-| プレフィックス    | 用途                       |
-|:-----------|:-------------------------|
-| `[docs]`   | ドキュメントの追加・更新             |
-| `[spec]`   | 仕様書の追加・更新（`*_spec.md`）   |
-| `[design]` | 設計書の追加・更新（`*_design.md`） |
 
 ---
 

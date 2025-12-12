@@ -5,6 +5,26 @@
 形式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に基づき、
 [Semantic Versioning](https://semver.org/lang/ja/) に準拠しています。
 
+## [2.0.1] - 2025-12-12
+
+### Added
+
+#### エージェント
+
+- 全エージェントにドキュメントリンク規約を追加
+    - `sdd-workflow` - ファイル/ディレクトリへのマークダウンリンク形式を規定
+    - `spec-reviewer` - リンク規約のチェックポイントを追加
+    - `requirement-analyzer` - 要求図内でのリンク規約を追加
+    - ファイルへのリンク: `[ファイル名.md](パス)` 形式
+    - ディレクトリへのリンク: `[ディレクトリ名](パス/index.md)` 形式
+
+### Removed
+
+#### エージェント
+
+- `sdd-workflow` - コミットメッセージ規約セクションを削除
+    - Claude Codeの標準的なコミット規約に委ねる方針に変更
+
 ## [2.0.0] - 2025-12-09
 
 ### Breaking Changes
