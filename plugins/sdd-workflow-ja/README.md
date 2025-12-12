@@ -175,6 +175,83 @@ Claude Codeで `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示�
 
 プロジェクトの非交渉原則を定義・管理します。初回は `/constitution init` で原則ファイルを作成します。
 
+### 完全なワークフロー例
+
+新機能「ユーザー認証」を実装する場合の完全なワークフローを示します。
+
+#### ステップ1: プロジェクト初期化（初回のみ）
+
+```
+/sdd_init
+```
+
+プロジェクト原則（CONSTITUTION.md）とテンプレートが生成されます。
+
+#### ステップ2: 要求仕様書（PRD）の作成
+
+```
+/generate_prd ユーザー認証機能。メールアドレスとパスワードによるログイン・ログアウト。
+セッション管理とパスワードリセット機能も含む。
+```
+
+→ `.sdd/requirement/user-auth.md` が生成されます。
+
+#### ステップ3: 仕様書・設計書の生成
+
+```
+/generate_spec user-auth
+```
+
+→ `.sdd/specification/user-auth_spec.md` と `user-auth_design.md` が生成されます。
+
+#### ステップ4: 仕様の明確化
+
+```
+/clarify user-auth
+```
+
+9カテゴリで仕様をスキャンし、不明点に対する質問を生成。回答後、仕様書に自動統合されます。
+
+#### ステップ5: タスク分解
+
+```
+/task_breakdown user-auth TICKET-123
+```
+
+→ `.sdd/task/TICKET-123/tasks.md` にタスクリストが生成されます。
+
+#### ステップ6: 品質チェックリストの生成
+
+```
+/checklist user-auth TICKET-123
+```
+
+→ `.sdd/task/TICKET-123/checklist.md` に9カテゴリのチェックリストが生成されます。
+
+#### ステップ7: TDDベースの実装
+
+```
+/implement user-auth TICKET-123
+```
+
+5フェーズ（Setup→Tests→Core→Integration→Polish）で実装を進め、進捗が自動でマークされます。
+
+#### ステップ8: 整合性チェック
+
+```
+/check_spec user-auth
+```
+
+実装と仕様書の整合性を検証し、差異があれば報告されます。
+
+#### ステップ9: タスククリーンアップ
+
+```
+/task_cleanup TICKET-123
+```
+
+一時ファイルを整理し、重要な設計判断を `*_design.md` に統合します。
+
 ## フックについて
 
 このプラグインは、セッション開始時に自動的に `.sdd-config.json` を読み込み、環境変数を設定します。

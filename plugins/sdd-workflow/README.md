@@ -177,6 +177,83 @@ Auto-generates 9-category quality checklists from specifications and design docu
 Defines and manages non-negotiable project principles. Use `/constitution init` to create the constitution file
 initially.
 
+### Complete Workflow Example
+
+Here's a complete workflow for implementing a new "User Authentication" feature.
+
+#### Step 1: Project Initialization (First Time Only)
+
+```
+/sdd_init
+```
+
+Generates project constitution (CONSTITUTION.md) and templates.
+
+#### Step 2: Create Requirements Document (PRD)
+
+```
+/generate_prd User authentication feature. Login and logout with email and password.
+Includes session management and password reset functionality.
+```
+
+→ `.sdd/requirement/user-auth.md` is generated.
+
+#### Step 3: Generate Specification and Design Documents
+
+```
+/generate_spec user-auth
+```
+
+→ `.sdd/specification/user-auth_spec.md` and `user-auth_design.md` are generated.
+
+#### Step 4: Clarify Specifications
+
+```
+/clarify user-auth
+```
+
+Scans specifications across 9 categories and generates questions for unclear points. Answers are automatically integrated into specs.
+
+#### Step 5: Task Breakdown
+
+```
+/task_breakdown user-auth TICKET-123
+```
+
+→ `.sdd/task/TICKET-123/tasks.md` is generated with the task list.
+
+#### Step 6: Generate Quality Checklist
+
+```
+/checklist user-auth TICKET-123
+```
+
+→ `.sdd/task/TICKET-123/checklist.md` is generated with 9-category quality checklist.
+
+#### Step 7: TDD-based Implementation
+
+```
+/implement user-auth TICKET-123
+```
+
+Proceeds through 5 phases (Setup→Tests→Core→Integration→Polish) with automatic progress marking.
+
+#### Step 8: Consistency Check
+
+```
+/check_spec user-auth
+```
+
+Verifies consistency between implementation and specifications, reporting any discrepancies.
+
+#### Step 9: Task Cleanup
+
+```
+/task_cleanup TICKET-123
+```
+
+Cleans up temporary files and integrates important design decisions into `*_design.md`.
+
 ## About Hooks
 
 This plugin automatically loads `.sdd-config.json` and sets environment variables at session start.
