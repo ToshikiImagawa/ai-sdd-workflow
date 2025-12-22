@@ -59,7 +59,6 @@ Process:
 2. Rename requirements directory: `git mv .sdd/requirement-diagram .sdd/requirement`
 3. Rename task directory: `git mv .sdd/review .sdd/task`
 4. Update path references in CLAUDE.md
-5. Commit changes
 
 **Advantages**:
 
@@ -157,7 +156,6 @@ Which option do you choose?
 
 1. Review existing scripts and references, update as needed
 2. Check changes with `git status`
-3. Commit changes (recommended message: `[docs] Migrate to AI-SDD v2.0.0 structure`)
 ````
 
 ### After Migration Complete (Option B)
@@ -185,7 +183,6 @@ Which option do you choose?
 ### Next Steps
 
 1. Add `.sdd-config.json` to version control
-2. Commit changes (recommended message: `[docs] Add AI-SDD compatibility configuration`)
 
 ````
 
@@ -229,27 +226,4 @@ Current settings:
 
 The plugin will operate based on this configuration.
 To change settings, manually edit `.sdd-config.json`.
-```
-
-## Commit
-
-After migration:
-
-### Option A
-
-```
-[docs] Migrate to AI-SDD v2.0.0 structure
-
-- Renamed .docs/ → .sdd/
-- Renamed requirement-diagram/ → requirement/
-- Renamed review/ → task/
-```
-
-### Option B
-
-```
-[docs] Add AI-SDD compatibility configuration
-
-- Generated .sdd-config.json
-- Maintaining legacy directory structure
 ```

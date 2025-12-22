@@ -267,10 +267,7 @@ Add the following to task list end (if PRD/spec exists):
     - If PRD/spec exists: Verify all requirements are covered by tasks
     - Add coverage table to task list
 
-3. **Commit**:
-    - `[docs] Create {feature-name} task breakdown`
-
-4. **Next Steps**:
+3. **Next Steps**:
     - Start implementation from Phase 1 foundation tasks in order
     - Check off each task upon completion
     - After all tasks complete, clean up with `/task_cleanup`

@@ -243,10 +243,7 @@ If existing spec/design exists, verify the following after PRD generation:
 2. **Consistency Check**:
     - If existing spec/design exists: Verify impact and notify if updates needed
 
-3. **Commit**:
-    - `[docs] Add {feature-name} PRD`
-
-4. **Next Steps**:
+3. **Next Steps**:
     - Create abstract specification and technical design document with `/generate_spec`
     - Reference PRD requirement IDs in specification
     - If existing spec exists, recommend update

@@ -269,9 +269,8 @@ After receiving user answers:
 
 ## Recommended Next Steps
 
-1. Commit specification updates
-2. Run `/task_breakdown {feature-name}` to generate implementation tasks
-3. Address remaining ambiguities during implementation if needed
+1. Run `/task_breakdown {feature-name}` to generate implementation tasks
+2. Address remaining ambiguities during implementation if needed
 ````
 
 ## Integration Mode
@@ -287,7 +286,6 @@ This will:
 1. Prompt for answers to each question
 2. Update specifications incrementally
 3. Show diffs of changes
-4. Commit updates with clear message
 
 ## Best Practices
 

@@ -125,16 +125,6 @@ git rm .sdd/task/{target}/{file}
 git rm -r .sdd/task/{target}/
 ```
 
-### 7. Commit
-
-```bash
-# Commit integration and deletion together
-git commit -m "[docs] Clean up task/{target}
-
-- Integrate design decisions into {design.md}
-- Delete temporary task logs"
-```
-
 ## Output Format
 
 ````markdown
@@ -168,7 +158,6 @@ git commit -m "[docs] Clean up task/{target}
 
 1. Add {design decision} to {section} in `{design.md}`
 2. Delete `task/{target}/`
-3. Commit
 
 ### Confirmation Items
 

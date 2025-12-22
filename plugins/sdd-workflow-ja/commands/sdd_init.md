@@ -64,8 +64,6 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
    ↓
 6. 不足しているテンプレートを生成
    └─ sdd-workflow-ja:sdd-templates スキルを使用して生成
-   ↓
-7. 変更をコミット
 ```
 
 ## CLAUDE.md設定
@@ -287,16 +285,3 @@ specification/auth/index.md            # specification には _spec/_design が�
 4. `/generate_spec` を使用してPRDから仕様書を作成
 5. `/constitution validate` で原則準拠を検証
 ````
-
-## コミット
-
-初期化成功後：
-
-```
-[docs] AI-SDDワークフローを初期化
-
-- CLAUDE.mdにAI-SDD Instructionsを追加
-- .sdd/ディレクトリ構造を作成
-- プロジェクト原則（CONSTITUTION.md）を生成
-- ドキュメントテンプレートを生成
-```

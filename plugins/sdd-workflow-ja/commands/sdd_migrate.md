@@ -59,7 +59,6 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 2. `git mv .sdd/requirement-diagram .sdd/requirement` で要求仕様ディレクトリをリネーム
 3. `git mv .sdd/review .sdd/task` でタスクディレクトリをリネーム
 4. CLAUDE.md 内のパス参照を更新
-5. 変更をコミット
 
 **利点**:
 
@@ -157,7 +156,6 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 1. 既存のスクリプトや参照を確認し、必要に応じて更新
 2. `git status` で変更を確認
-3. 変更をコミット（推奨メッセージ: `[docs] AI-SDD v2.0.0 構成に移行`）
 ````
 
 ### 移行完了後（オプションB選択時）
@@ -185,7 +183,6 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ### 次のステップ
 
 1. `.sdd-config.json` をバージョン管理に追加
-2. 変更をコミット（推奨メッセージ: `[docs] AI-SDD 互換性設定を追加`）
 
 ````
 
@@ -234,32 +231,5 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 この設定に基づいてプラグインは動作します。
 設定を変更する場合は、手動で `.sdd-config.json` を編集してください。
-
-```
-
-## コミット
-
-移行完了後:
-
-### オプションAの場合
-
-```
-
-[docs] AI-SDD v2.0.0 構成に移行
-
-- .docs/ → .sdd/ にリネーム
-- requirement-diagram/ → requirement/ にリネーム
-- review/ → task/ にリネーム
-
-```
-
-### オプションBの場合
-
-```
-
-[docs] AI-SDD 互換性設定を追加
-
-- .sdd-config.json を生成
-- 旧ディレクトリ構成を維持
 
 ```

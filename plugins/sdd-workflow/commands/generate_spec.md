@@ -249,8 +249,6 @@ Skip Design Doc generation and confirm with user in the following cases:
 7. Confirm Design Doc generation
    ├─ Technical info present: Generate and save (Plan)
    └─ No technical info: Confirm whether to skip
-   ↓
-8. Commit
 ```
 
 ## PRD Consistency Review
@@ -297,10 +295,6 @@ Add the following to spec's end (if PRD exists):
 2. **Consistency Check**:
     - If PRD exists: Verify and reflect PRD ↔ spec consistency
     - Verify spec ↔ design consistency
-
-3. **Commit**:
-    - Spec only: `[spec] Add {feature-name} abstract specification`
-    - Both: `[docs] Add {feature-name} abstract specification and technical design document`
 
 ## Serena MCP Integration (Optional)
 

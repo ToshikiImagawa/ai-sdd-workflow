@@ -313,8 +313,6 @@ After completing each task:
 2. Check spec consistency → Must match
    ↓
 3. Update tasks.md → Mark [x]
-   ↓
-4. Commit with clear message
 ```
 
 **Spec Consistency Check** (automatic):
@@ -726,6 +724,5 @@ After implementation complete, integrate important content into `*_design.md` (e
 - Don't skip tests to "save time"
 - Mark task complete only when tests pass and match spec
 - Document design decisions during implementation, not after
-- Commit frequently with clear messages
 - Keep updating implementation log for knowledge transfer
 - Run `/check_spec` at phase boundaries to detect drift early

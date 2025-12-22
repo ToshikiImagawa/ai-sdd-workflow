@@ -5,6 +5,21 @@
 形式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に基づき、
 [Semantic Versioning](https://semver.org/lang/ja/) に準拠しています。
 
+## [2.1.1] - 2025-12-23
+
+### Changed
+
+- すべてのコマンドとエージェントから自動git commit指示を削除
+    - `task_cleanup` - クリーンアップワークフローからコミットステップを削除
+    - `implement` - 継続的な検証フローからコミット指示を削除
+    - `generate_spec` - 生成フローからコミットステップを削除
+    - `sdd-workflow` エージェント - ワークフローフェーズからコミットステップを削除
+    - `clarify` - 統合モードからコミット指示を削除
+    - `task_breakdown` - 生成後アクションからコミットステップを削除
+    - `generate_prd` - 生成後アクションからコミットステップを削除
+    - `sdd_migrate` - コミット指示とコミットメッセージ例を削除
+    - `sdd_init` - 初期化フローからコミットステップを削除
+
 ## [2.1.0] - 2025-12-12
 
 ### Added

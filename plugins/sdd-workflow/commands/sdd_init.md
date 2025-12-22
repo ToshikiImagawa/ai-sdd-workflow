@@ -63,8 +63,6 @@ This command uses the following skills:
    ↓
 6. Generate missing templates
    └─ Use sdd-workflow:sdd-templates skill
-   ↓
-7. Commit changes
 ```
 
 ## CLAUDE.md Configuration
@@ -286,16 +284,3 @@ On successful initialization, display:
 4. Use `/generate_spec` to create specifications from PRD
 5. Use `/constitution validate` to verify constitution compliance
 ````
-
-## Commit
-
-After successful initialization:
-
-```
-[docs] Initialize AI-SDD workflow
-
-- Add AI-SDD Instructions to CLAUDE.md
-- Create .sdd/ directory structure
-- Generate project constitution (CONSTITUTION.md)
-- Generate document templates
-```

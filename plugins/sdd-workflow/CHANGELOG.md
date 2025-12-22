@@ -5,6 +5,21 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2025-12-23
+
+### Changed
+
+- Removed automatic git commit instructions from all commands and agents
+    - `task_cleanup` - Removed commit step from cleanup workflow
+    - `implement` - Removed commit instruction from continuous verification flow
+    - `generate_spec` - Removed commit step from generation flow
+    - `sdd-workflow` agent - Removed commit steps from workflow phases
+    - `clarify` - Removed commit instructions from integration mode
+    - `task_breakdown` - Removed commit step from post-generation actions
+    - `generate_prd` - Removed commit step from post-generation actions
+    - `sdd_migrate` - Removed commit instructions and commit message examples
+    - `sdd_init` - Removed commit step from initialization flow
+
 ## [2.1.0] - 2025-12-12
 
 ### Added

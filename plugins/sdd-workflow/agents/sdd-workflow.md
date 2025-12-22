@@ -469,9 +469,7 @@ Criteria for when to update each document:
    ↓
 7. Task breakdown (Tasks)
    ↓
-8. Commit (documents only)
-   ↓
-9. Start implementation (Implement)
+8. Start implementation (Implement)
 ```
 
 ### At Implementation Completion
@@ -482,8 +480,6 @@ Criteria for when to update each document:
 2. Integrate important task/ content into design
    ↓
 3. Delete task/
-   ↓
-4. Commit
 ```
 
 ## Output Format
