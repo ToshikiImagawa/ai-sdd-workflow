@@ -63,7 +63,8 @@ This command automatically:
 | Agent                     | Description                                                                                                             |
 |:--------------------------|:------------------------------------------------------------------------------------------------------------------------|
 | `sdd-workflow`            | Manages AI-SDD development flow. Phase determination, Vibe Coding prevention, document consistency checks               |
-| `spec-reviewer`           | Reviews specification quality and provides improvement suggestions. Detects ambiguous descriptions and missing sections |
+| `prd-reviewer`            | Reviews PRD quality and CONSTITUTION.md compliance. Attempts auto-fix on violations                                     |
+| `spec-reviewer`           | Reviews specification quality and CONSTITUTION.md compliance. Attempts auto-fix on violations                           |
 | `requirement-analyzer`    | SysML requirements diagram-based analysis, requirement tracking and verification                                        |
 | `clarification-assistant` | Specification clarification support. Analyzes requirements across 9 categories and integrates answers into specs        |
 
@@ -460,6 +461,7 @@ sdd-workflow/
 │   └── plugin.json                # Plugin manifest
 ├── agents/
 │   ├── sdd-workflow.md            # AI-SDD development flow agent
+│   ├── prd-reviewer.md            # PRD review and CONSTITUTION compliance agent
 │   ├── spec-reviewer.md           # Specification review agent
 │   ├── requirement-analyzer.md    # Requirement analysis agent
 │   └── clarification-assistant.md # Specification clarification assistant

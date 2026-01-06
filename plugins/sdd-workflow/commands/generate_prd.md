@@ -189,9 +189,11 @@ Follow these steps to prepare the template:
 ```
 1. Analyze input content
    ↓
-2. Check project constitution
-   ├─ If CONSTITUTION.md exists: Load principles and ensure compliance during generation
-   └─ If not exists: Skip
+2. Load project principles (Required)
+   ├─ If CONSTITUTION.md exists:
+   │   └─ Read .sdd/CONSTITUTION.md using Read tool
+   │   └─ Understand principle categories (B-xxx, A-xxx, D-xxx, T-xxx)
+   └─ If not exists: Skip (note this in output)
    ↓
 3. Vibe Coding risk assessment
    ├─ High: Confirm missing info with user → Resume after response
@@ -204,12 +206,17 @@ Follow these steps to prepare the template:
    ↓
 5. Generate and save PRD
    ↓
-6. Check consistency with constitution and existing spec/design
-   ├─ If constitution exists: Verify compliance with principles
+6. Principle compliance check with prd-reviewer (Required)
+   ├─ Call prd-reviewer agent
+   ├─ Check CONSTITUTION.md compliance
+   ├─ On violation detection: Attempt auto-fix
+   └─ After fix, re-check
+   ↓
+7. Check consistency with existing spec/design
    ├─ If spec/design exists: Verify consistency
    └─ Updates needed: Notify recommendation to update spec/design
    ↓
-7. Propose next steps
+8. Propose next steps
    - Create abstract specification with /generate_spec
    - If existing spec exists, recommend update
 ```
@@ -247,6 +254,68 @@ If existing spec/design exists, verify the following after PRD generation:
     - Create abstract specification and technical design document with `/generate_spec`
     - Reference PRD requirement IDs in specification
     - If existing spec exists, recommend update
+
+## Loading CONSTITUTION.md (Required)
+
+Before PRD generation, **you must read `.sdd/CONSTITUTION.md` using the Read tool**.
+
+```
+Read: .sdd/CONSTITUTION.md
+```
+
+### Post-Load Verification
+
+After loading CONSTITUTION.md, understand the following principles and ensure PRD compliance:
+
+| Principle Category        | Impact on PRD                                              |
+|:--------------------------|:-----------------------------------------------------------|
+| Business Principles (B-xxx) | Directly reflected in background/purpose, user requirements |
+| Architecture Principles (A-xxx) | Documented as constraints (no technical details)       |
+| Development Principles (D-xxx) | Affects verifymethod selection                         |
+| Technical Constraints (T-xxx) | Documented as constraints (from feasibility perspective) |
+
+### If CONSTITUTION.md Does Not Exist
+
+- Skip principle check
+- Note in output: "Principle check was not performed as CONSTITUTION.md does not exist"
+
+## Principle Compliance Check with prd-reviewer (Required)
+
+After PRD generation, **you must call the `prd-reviewer` agent to check principle compliance**.
+
+### Check Flow
+
+```
+1. Call prd-reviewer agent
+   ↓
+2. Execute CONSTITUTION.md compliance check
+   ↓
+3. If violations detected:
+   ├─ Auto-fixable: Apply fix using Edit tool
+   └─ Not auto-fixable: Report locations needing manual fix
+   ↓
+4. After fix, re-check to verify
+   ↓
+5. Include check results in output
+```
+
+### Check Result Output
+
+Include the following in output upon generation completion:
+
+```markdown
+### CONSTITUTION.md Compliance Check Results
+
+| Principle Category      | Compliance Status                         |
+|:------------------------|:------------------------------------------|
+| Business Principles     | Compliant / Violation                     |
+| Architecture Principles | Compliant / Violation                     |
+| Development Principles  | Compliant / Violation                     |
+| Technical Constraints   | Compliant / Violation                     |
+
+**Auto-fixes applied**: {count} items
+**Manual fixes required**: {count} items (see details above)
+```
 
 ## Notes
 

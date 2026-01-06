@@ -226,9 +226,11 @@ Skip Design Doc generation and confirm with user in the following cases:
 ```
 1. Analyze input content
    ↓
-2. Check project constitution
-   ├─ If CONSTITUTION.md exists: Load principles and ensure compliance during generation
-   └─ If not exists: Skip
+2. Load project principles (Required)
+   ├─ If CONSTITUTION.md exists:
+   │   └─ Read .sdd/CONSTITUTION.md using Read tool
+   │   └─ Understand principle categories (B-xxx, A-xxx, D-xxx, T-xxx)
+   └─ If not exists: Skip (note this in output)
    ↓
 3. Vibe Coding risk assessment
    ├─ High: Confirm missing info with user → Resume after response
@@ -241,14 +243,21 @@ Skip Design Doc generation and confirm with user in the following cases:
    ↓
 5. Generate and save abstract specification (Specify)
    ↓
-6. PRD and constitution consistency review
-   ├─ If PRD exists: Verify PRD ↔ spec consistency
-   ├─ If constitution exists: Verify compliance with principles
-   └─ If inconsistent/non-compliant: Modify spec and re-save
+6. Spec principle compliance check with spec-reviewer (Required)
+   ├─ Call spec-reviewer agent
+   ├─ Check CONSTITUTION.md compliance (Architecture/Development principles focus)
+   ├─ On violation detection: Attempt auto-fix
+   └─ After fix, re-check
    ↓
 7. Confirm Design Doc generation
    ├─ Technical info present: Generate and save (Plan)
    └─ No technical info: Confirm whether to skip
+   ↓
+8. Design Doc principle compliance check with spec-reviewer (Required)
+   ├─ Call spec-reviewer agent
+   ├─ Check CONSTITUTION.md compliance (Technical constraints/Architecture focus)
+   ├─ On violation detection: Attempt auto-fix
+   └─ After fix, re-check
 ```
 
 ## PRD Consistency Review
@@ -339,3 +348,90 @@ If Serena MCP is enabled, existing codebase semantic analysis can be leveraged t
 
 Even without Serena, specifications are generated based on input content and PRD.
 Existing code reference must be done manually.
+
+## Loading CONSTITUTION.md (Required)
+
+Before spec/design generation, **you must read `.sdd/CONSTITUTION.md` using the Read tool**.
+
+```
+Read: .sdd/CONSTITUTION.md
+```
+
+### Post-Load Verification
+
+After loading CONSTITUTION.md, understand the following principles and ensure spec/design compliance:
+
+**For Abstract Specification (*_spec.md)**:
+
+| Principle Category          | Impact on Spec                                           |
+|:----------------------------|:---------------------------------------------------------|
+| Architecture Principles (A-xxx) | Architecture patterns, layer separation, interface design |
+| Development Principles (D-xxx)  | Testability, modularity, requirement traceability        |
+| Business Principles (B-xxx)     | Business logic reflection, domain model                  |
+
+**For Technical Design Document (*_design.md)**:
+
+| Principle Category          | Impact on Design                                         |
+|:----------------------------|:---------------------------------------------------------|
+| Technical Constraints (T-xxx)   | Technology selection, version constraints, platform      |
+| Architecture Principles (A-xxx) | Architecture implementation, design patterns             |
+| Development Principles (D-xxx)  | Test strategy, CI/CD considerations                      |
+
+### If CONSTITUTION.md Does Not Exist
+
+- Skip principle check
+- Note in output: "Principle check was not performed as CONSTITUTION.md does not exist"
+
+## Principle Compliance Check with spec-reviewer (Required)
+
+After spec and design generation, **you must call the `spec-reviewer` agent to check principle compliance**.
+
+### Check Flow
+
+```
+1. Call spec-reviewer agent
+   ↓
+2. Execute CONSTITUTION.md compliance check
+   ↓
+3. If violations detected:
+   ├─ Auto-fixable: Apply fix using Edit tool
+   └─ Not auto-fixable: Report locations needing manual fix
+   ↓
+4. After fix, re-check to verify
+   ↓
+5. Include check results in output
+```
+
+### Abstract Specification Check Result Output
+
+Include the following after spec generation:
+
+```markdown
+### CONSTITUTION.md Compliance Check Results (Spec)
+
+| Principle Category        | Compliance Status                         |
+|:--------------------------|:------------------------------------------|
+| Architecture Principles   | Compliant / Violation                     |
+| Development Principles    | Compliant / Violation                     |
+| Business Principles       | Compliant / Violation                     |
+
+**Auto-fixes applied**: {count} items
+**Manual fixes required**: {count} items (see details above)
+```
+
+### Technical Design Document Check Result Output
+
+Include the following after design doc generation:
+
+```markdown
+### CONSTITUTION.md Compliance Check Results (Design)
+
+| Principle Category        | Compliance Status                         |
+|:--------------------------|:------------------------------------------|
+| Technical Constraints     | Compliant / Violation                     |
+| Architecture Principles   | Compliant / Violation                     |
+| Development Principles    | Compliant / Violation                     |
+
+**Auto-fixes applied**: {count} items
+**Manual fixes required**: {count} items (see details above)
+```

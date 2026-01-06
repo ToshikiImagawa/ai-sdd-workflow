@@ -62,7 +62,8 @@ Claude Codeで `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示�
 | エージェント                    | 説明                                                |
 |:--------------------------|:--------------------------------------------------|
 | `sdd-workflow`            | AI-SDD開発フローの管理。フェーズ判定、Vibe Coding防止、ドキュメント整合性チェック |
-| `spec-reviewer`           | 仕様書の品質レビューと改善提案。曖昧な記述の検出、不足セクションの指摘               |
+| `prd-reviewer`            | PRDの品質レビューとCONSTITUTION.md準拠チェック。違反時は自動修正を試行     |
+| `spec-reviewer`           | 仕様書の品質レビューとCONSTITUTION.md準拠チェック。違反時は自動修正を試行     |
 | `requirement-analyzer`    | SysML要求図に基づく要求分析、トラッキング、検証                        |
 | `clarification-assistant` | 仕様明確化支援。要件を9カテゴリで分析し、質問を生成して仕様書に統合                |
 
@@ -456,7 +457,8 @@ sdd-workflow-ja/
 │   └── plugin.json                # プラグインマニフェスト
 ├── agents/
 │   ├── sdd-workflow.md            # AI-SDD開発フローエージェント
-│   ├── spec-reviewer.md           # 仕様書レビューエージェント
+│   ├── prd-reviewer.md            # PRDレビュー・CONSTITUTION準拠チェックエージェント
+│   ├── spec-reviewer.md           # 仕様書レビュー・CONSTITUTION準拠チェックエージェント
 │   ├── requirement-analyzer.md    # 要求仕様分析エージェント
 │   └── clarification-assistant.md # 仕様明確化支援エージェント
 ├── commands/
