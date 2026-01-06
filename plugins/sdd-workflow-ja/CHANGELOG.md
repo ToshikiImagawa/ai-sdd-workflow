@@ -5,6 +5,43 @@
 形式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に基づき、
 [Semantic Versioning](https://semver.org/lang/ja/) に準拠しています。
 
+## [2.2.0] - 2026-01-06
+
+### Added
+
+#### エージェント
+
+- `prd-reviewer` - PRD（要求仕様書）専用のレビューエージェント
+    - CONSTITUTION.md準拠チェック（最重要機能）
+    - 原則カテゴリ別チェック（ビジネス原則、アーキテクチャ原則、開発手法原則、技術制約）
+    - 自動修正フロー（違反検出時に自動修正を試行）
+    - SysML要求図形式の妥当性検証
+    - 曖昧な表現の検出と改善提案
+
+### Changed
+
+#### エージェント
+
+- `spec-reviewer` - CONSTITUTION.md準拠チェック機能を追加
+    - 事前準備としてRead ツールでCONSTITUTION.mdを読み込む指示を追加
+    - spec向け原則カテゴリ別チェック（アーキテクチャ原則を重視）
+    - design向け原則カテゴリ別チェック（技術制約を重視）
+    - 自動修正フロー（違反検出時に自動修正を試行）
+    - レビュー出力フォーマットにCONSTITUTION.md準拠チェック結果を追加
+
+#### コマンド
+
+- `/generate_prd` - CONSTITUTION.md準拠の生成フローを追加
+    - 生成フローにCONSTITUTION.md読み込みステップを追加（ステップ2）
+    - prd-reviewerによる原則準拠チェックを必須化（ステップ6）
+    - 原則カテゴリ別のPRDへの影響表を追加
+    - チェック結果の出力テンプレートを追加
+
+- `/generate_spec` - CONSTITUTION.md準拠の生成フローを追加
+    - 生成フローにCONSTITUTION.md読み込みステップを追加（ステップ2）
+    - spec-reviewerによる原則準拠チェックを必須化（ステップ6, 8）
+    - 抽象仕様書・技術設計書それぞれのチェック結果出力テンプレートを追加
+
 ## [2.1.1] - 2025-12-23
 
 ### Changed

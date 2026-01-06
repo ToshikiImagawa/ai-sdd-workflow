@@ -5,6 +5,43 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-01-06
+
+### Added
+
+#### Agents
+
+- `prd-reviewer` - PRD (Requirements Specification) review agent
+    - CONSTITUTION.md compliance check (most important feature)
+    - Principle category checks (Business, Architecture, Development, Technical Constraints)
+    - Auto-fix flow (attempts auto-fix on violation detection)
+    - SysML requirements diagram format validation
+    - Ambiguous expression detection and improvement suggestions
+
+### Changed
+
+#### Agents
+
+- `spec-reviewer` - Added CONSTITUTION.md compliance check functionality
+    - Added preparation instruction to read CONSTITUTION.md using Read tool
+    - Spec-focused principle category checks (Architecture principles emphasized)
+    - Design-focused principle category checks (Technical constraints emphasized)
+    - Auto-fix flow (attempts auto-fix on violation detection)
+    - Added CONSTITUTION.md compliance check results to review output format
+
+#### Commands
+
+- `/generate_prd` - Added CONSTITUTION.md compliant generation flow
+    - Added CONSTITUTION.md reading step to generation flow (Step 2)
+    - Made prd-reviewer principle compliance check mandatory (Step 6)
+    - Added principle category impact table for PRD
+    - Added check result output template
+
+- `/generate_spec` - Added CONSTITUTION.md compliant generation flow
+    - Added CONSTITUTION.md reading step to generation flow (Step 2)
+    - Made spec-reviewer principle compliance check mandatory (Steps 6, 8)
+    - Added check result output templates for both spec and design doc
+
 ## [2.1.1] - 2025-12-23
 
 ### Changed

@@ -313,6 +313,62 @@ graph RL
 | **Lifecycle** | **Delete** after implementation complete. Integrate important design decisions into `*_design.md` |
 | **Role**      | **Prevent documentation noise**                                                                   |
 
+## Related Agents
+
+The AI-SDD workflow provides specialized review agents for each document type.
+
+### Document Review Agents
+
+| Agent | Target Documents | Role |
+|:--|:--|:--|
+| `prd-reviewer` | PRD (`requirement/`) | PRD quality review and CONSTITUTION.md compliance check |
+| `spec-reviewer` | `*_spec.md`, `*_design.md` | Specification/design quality review and CONSTITUTION.md compliance check |
+
+### Importance of CONSTITUTION.md Compliance Check
+
+All documents are created following `CONSTITUTION.md` project principles. Review agents check the following principle categories:
+
+| Principle Category | ID Format | Impact on PRD | Impact on spec/design |
+|:--|:--|:--|:--|
+| **Business Principles** | B-xxx | Directly reflected in background/purpose, user requirements | Business logic reflection |
+| **Architecture Principles** | A-xxx | Documented as constraints | Directly reflected in architecture design |
+| **Development Method Principles** | D-xxx | Affects verification method selection | Reflected in test strategy, module design |
+| **Technical Constraints** | T-xxx | Documented as constraints | Directly affects technology stack selection |
+
+### When to Use Review Agents
+
+```
+PRD generation/update
+   ↓
+prd-reviewer review (Required)
+   ├─ CONSTITUTION.md compliance check
+   ├─ On violation: Attempt auto-fix
+   └─ If not fixable: Report locations needing manual fix
+   ↓
+spec generation/update
+   ↓
+spec-reviewer review (Required)
+   ├─ CONSTITUTION.md compliance check (Architecture principles focus)
+   ├─ PRD ↔ spec consistency check
+   └─ On violation/inconsistency: Fix
+   ↓
+design generation/update
+   ↓
+spec-reviewer review (Required)
+   ├─ CONSTITUTION.md compliance check (Technical constraints focus)
+   ├─ spec ↔ design consistency check
+   └─ On violation/inconsistency: Fix
+```
+
+### Command and Review Agent Mapping
+
+| Command | Review Agent Called |
+|:--|:--|
+| `/generate_prd` | `prd-reviewer` (auto-executed after PRD generation) |
+| `/generate_spec` | `spec-reviewer` (auto-executed after spec generation and after design generation) |
+
+**Note**: Review agents are automatically called within generation commands. For manual review, call the respective review agent directly.
+
 ## Your Responsibilities
 
 ### 1. Phase Determination and Document Identification
