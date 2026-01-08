@@ -1,6 +1,6 @@
 ---
 name: requirement-analyzer
-description: "SysML要求図ベースで要求分析・追跡・検証を行う専門エージェント。新規要求の追加、要求間の関係性分析、実装とのトレーサビリティ確認を実行します。"
+description: "SysML要求図ベースで要求分析・追跡・検証を行う専門エージェント。要求ドキュメント（.sdd/requirement/*.md）のカバレッジギャップ、依存関係の競合、実装とのトレーサビリティを分析し、[must]/[recommend]/[nits]分類で実行可能なレポートと提案を生成します。"
 model: sonnet
 color: blue
 allowed-tools: Read, Glob, Grep, Edit, AskUserQuestion

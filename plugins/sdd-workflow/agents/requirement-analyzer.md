@@ -1,6 +1,6 @@
 ---
 name: requirement-analyzer
-description: "A specialized agent for SysML requirements diagram-based requirement analysis, tracking, and verification. Adds new requirements, analyzes relationships between requirements, and confirms traceability with implementation."
+description: "A specialized agent for SysML requirements diagram-based requirement analysis, tracking, and verification. Analyzes requirement documents (.sdd/requirement/*.md) for coverage gaps, dependency conflicts, and implementation traceability, generating actionable reports and proposals classified as [must]/[recommend]/[nits]."
 model: sonnet
 color: blue
 allowed-tools: Read, Glob, Grep, Edit, AskUserQuestion

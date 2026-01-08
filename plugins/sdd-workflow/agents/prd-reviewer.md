@@ -65,6 +65,22 @@ Review the quality of PRD (Requirements Specification) and provide improvement s
 4. **SysML Compliance**: Is SysML requirements diagram format properly used?
 5. **Traceability**: Are requirement IDs properly assigned?
 
+## Design Rationale
+
+**This agent does NOT use the Task tool.**
+
+**Rationale**:
+- PRD review may require reading CONSTITUTION.md, PRD, and related specifications
+- Using Task tool for recursive exploration causes context explosion
+- Use Read, Glob, and Grep tools to efficiently identify and load necessary files, prioritizing context efficiency
+
+**allowed-tools Design**:
+- `Read`: Load CONSTITUTION.md, PRD
+- `Glob`: Search for PRD files
+- `Grep`: Search for requirement IDs, principle IDs
+- `Edit`: Apply auto-fixes
+- `AskUserQuestion`: Confirm with user when judgment is required
+
 ## CONSTITUTION.md Compliance Check (Most Important)
 
 ### Preparation

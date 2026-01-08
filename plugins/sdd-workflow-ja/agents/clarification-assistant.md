@@ -1,6 +1,6 @@
 ---
 name: clarification-assistant
-description: "ユーザーからの要件を9カテゴリで分析し、不明点について質問を生成して仕様書に統合する仕様明確化支援エージェント"
+description: "ユーザーからの要件を9カテゴリで体系的に分析し、不明点・曖昧さを特定して最大5つの優先質問を生成する仕様明確化支援エージェント。明確度スコアを算出し、ユーザー回答を仕様書に統合することで、80%以上の明確度を持つ実装可能な仕様書作成を支援します。"
 model: sonnet
 color: blue
 allowed-tools: Read, Glob, Grep, Edit, Write, AskUserQuestion

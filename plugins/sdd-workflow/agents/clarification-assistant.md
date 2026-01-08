@@ -1,6 +1,6 @@
 ---
 name: clarification-assistant
-description: "A specification clarification assistant agent that analyzes user requirements across 9 categories, generates questions about unclear points, and integrates them into specifications"
+description: "A specification clarification assistant agent that systematically analyzes user requirements across 9 categories (Functional Scope, Data Model, Flow, etc.), identifies unclear points and ambiguities, and generates up to 5 high-impact questions. Calculates clarity scores and integrates user answers into appropriate specification sections to achieve 80%+ clarity before implementation."
 model: sonnet
 color: blue
 allowed-tools: Read, Glob, Grep, Edit, Write, AskUserQuestion
