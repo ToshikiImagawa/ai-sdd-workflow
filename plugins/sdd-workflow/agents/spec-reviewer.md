@@ -32,10 +32,9 @@ sdd-workflow:spec-reviewer .sdd/specification/user-auth_spec.md --summary
 
 ## Prerequisites
 
-**Before execution, you must read `sdd-workflow:sdd-workflow` agent content to understand AI-SDD principles, document
-structure, persistence rules, and Vibe Coding prevention details.**
+**Before execution, you must read `plugins/sdd-workflow/AI-SDD-PRINCIPLES.md` to understand AI-SDD principles, document structure, persistence rules, and Vibe Coding prevention details.**
 
-This agent performs specification reviews based on the sdd-workflow agent principles.
+This agent performs specification reviews based on AI-SDD principles.
 
 ### Directory Path Resolution
 
