@@ -1,12 +1,15 @@
----
-name: sdd-workflow
-description: "An agent supporting AI-driven Specification-Driven Development (AI-SDD) workflow. Prevents Vibe Coding problems and achieves high-quality implementations by AI agents using specifications as the source of truth."
-model: sonnet
-color: green
----
+# AI-SDD Development Principles
 
-You are a development process expert with specialized knowledge in AI-driven Specification-Driven Development (AI-SDD).
-You manage the project's development flow.
+**Document Type**: Plugin Design Principles (not a sub-agent)
+
+**Purpose**: This document defines the principles, document structure, and management rules for AI-driven Specification-Driven Development (AI-SDD) workflow. All agents, commands, and skills in this plugin reference this document as the source of truth.
+
+**Usage**:
+- This document is NOT a sub-agent executable via Task tool
+- This is a reference document that all agents read via Read tool
+- All agents must read this document before execution to understand AI-SDD principles
+
+---
 
 ## What is AI-SDD?
 
@@ -369,29 +372,7 @@ spec-reviewer review (Required)
 
 **Note**: Review agents are automatically called within generation commands. For manual review, call the respective review agent directly.
 
-## Your Responsibilities
-
-### 1. Phase Determination and Document Identification
-
-Determine required phases and documents based on task nature:
-
-| Task Type               | Required Phases                    | Deliverables                      |
-|:------------------------|:-----------------------------------|:----------------------------------|
-| New Feature (Large)     | Specify → Plan → Tasks → Implement | PRD → spec → design → task        |
-| New Feature (Small)     | Specify → Plan → Tasks → Implement | spec → design → task              |
-| Bug Fix                 | Tasks → Implement                  | task (investigation log) only     |
-| Refactoring             | Plan → Tasks → Implement           | design (change plan) → task       |
-| Technical Investigation | Tasks                              | task (investigation results) only |
-
-**Task Scale Criteria**:
-
-| Scale   | Criteria                                                                             |
-|:--------|:-------------------------------------------------------------------------------------|
-| Large   | New business domain, changes spanning multiple features, external system integration |
-| Small   | Feature additions within existing features, changes contained to single module       |
-| Bug Fix | Correcting deviations from existing specifications (no spec changes)                 |
-
-### 2. Vibe Coding Prevention
+## Vibe Coding Prevention
 
 Detect vague instructions and prompt specification clarification:
 
@@ -435,7 +416,29 @@ Even when user refuses specification creation, ensure minimum guardrails:
 2. **Set Verification Points**: List items to confirm with user upon implementation completion
 3. **Visualize Risks**: Warn of potential issues due to specification gaps
 
-### 3. Knowledge Asset Persistence Management
+## Workflow Management Guidelines
+
+### Task Type Determination
+
+Determine required phases and documents based on task nature:
+
+| Task Type               | Required Phases                    | Deliverables                      |
+|:------------------------|:-----------------------------------|:----------------------------------|
+| New Feature (Large)     | Specify → Plan → Tasks → Implement | PRD → spec → design → task        |
+| New Feature (Small)     | Specify → Plan → Tasks → Implement | spec → design → task              |
+| Bug Fix                 | Tasks → Implement                  | task (investigation log) only     |
+| Refactoring             | Plan → Tasks → Implement           | design (change plan) → task       |
+| Technical Investigation | Tasks                              | task (investigation results) only |
+
+**Task Scale Criteria**:
+
+| Scale   | Criteria                                                                             |
+|:--------|:-------------------------------------------------------------------------------------|
+| Large   | New business domain, changes spanning multiple features, external system integration |
+| Small   | Feature additions within existing features, changes contained to single module       |
+| Bug Fix | Correcting deviations from existing specifications (no spec changes)                 |
+
+### Knowledge Asset Persistence Management
 
 Manage lifecycle of files under `task/`:
 
@@ -463,7 +466,7 @@ Manage lifecycle of files under `task/`:
 - Work progress notes
 - Specific implementation steps (already reflected in code)
 
-### 4. Consistency Checking
+### Consistency Checking
 
 Verify consistency between documents:
 
@@ -482,7 +485,7 @@ Verify consistency between documents:
 | Implementation Completion | design ↔ implementation consistency | If inconsistent, update design       |
 | Review                    | All inter-document consistency      | Resolve inconsistencies before merge |
 
-### 5. Document Update Triggers
+### Document Update Triggers
 
 Criteria for when to update each document:
 
@@ -506,101 +509,7 @@ Criteria for when to update each document:
 - Bug fixes (correcting deviations from specifications)
 - Refactoring (no behavior changes)
 
-## Workflow
-
-### When Starting a New Task
-
-```
-1. Determine task nature
-   ↓
-2. Identify required phases
-   ↓
-3. Check project constitution (if CONSTITUTION.md exists, review principles)
-   ↓
-4. Check existing documents (PRD, spec, design)
-   ↓
-5. Check specification ambiguity (Vibe Coding prevention)
-   ↓
-6. Create necessary documents ensuring constitution compliance (Specify → Plan)
-   ↓
-7. Task breakdown (Tasks)
-   ↓
-8. Start implementation (Implement)
-```
-
-### At Implementation Completion
-
-```
-1. Verify consistency with specifications (Review)
-   ↓
-2. Integrate important task/ content into design
-   ↓
-3. Delete task/
-```
-
-## Output Format
-
-### Task Analysis Results
-
-````markdown
-## AI-SDD Task Analysis
-
-### Task Overview
-
-{Task description}
-
-### Vibe Coding Risk Assessment
-
-- [ ] Are requirements clear?
-- [ ] Do specifications exist?
-- [ ] Are guardrails sufficient?
-
-### Required Phases and Documents
-
-| Phase | Document | Status |
-|:--|:--|:--|
-| Specify | .sdd/requirement/[{path}/]{name}.md | Exists / Needs Update / Needs Creation |
-| Specify | .sdd/specification/[{path}/]{name}_spec.md | Exists / Needs Update / Needs Creation |
-| Plan | .sdd/specification/[{path}/]{name}_design.md | Exists / Needs Update / Needs Creation |
-| Tasks | .sdd/task/{ticket}/ | Needs Creation |
-
-※ `[{path}/]` is only specified for hierarchical structure (e.g., `auth/`). For parent features, `{name}` becomes
-`index`
-
-### Recommended Workflow
-
-1. {Step 1}
-2. {Step 2}
-   ...
-````
-
-### Task Log Cleanup Confirmation
-
-````markdown
-## task/ Cleanup Confirmation
-
-### Target Directory
-
-.sdd/task/{ticket-number}/
-
-### Content to Integrate (→ *_design.md)
-
-- [ ] {Design Decision 1}: {Summary}
-- [ ] {Design Decision 2}: {Summary}
-
-### Deletable Content
-
-- {File 1}: Temporary investigation log
-- {File 2}: Work progress notes
-
-### Recommended Actions
-
-1. Add {design decision} to {design.md}
-2. Delete task/{ticket-number}/
-````
-
 ---
 
-As an AI-SDD development process expert, you ensure **specifications are the source of truth**, prevent Vibe Coding
-problems, and achieve high-quality implementations by AI agents.
+This document defines the principles for AI-SDD workflow, treating **specifications as the source of truth**, preventing Vibe Coding problems, and achieving high-quality implementations by AI agents.
 Thoroughly separate persistent documentation from temporary logs and support sustainable growth of knowledge assets.
