@@ -244,20 +244,24 @@ Skip Design Doc generation and confirm with user in the following cases:
 5. Generate and save abstract specification (Specify)
    ↓
 6. Spec principle compliance check with spec-reviewer (Required)
-   ├─ Call spec-reviewer agent
+   ├─ Explicitly call spec-reviewer agent using Task tool
+   │  Example: Task(subagent_type="sdd-workflow:spec-reviewer", prompt=".sdd/specification/{feature-name}_spec.md")
    ├─ Check CONSTITUTION.md compliance (Architecture/Development principles focus)
    ├─ On violation detection: Attempt auto-fix
-   └─ After fix, re-check
+   ├─ After fix, re-check
+   └─ Retrieve review results and include in next step output
    ↓
 7. Confirm Design Doc generation
    ├─ Technical info present: Generate and save (Plan)
    └─ No technical info: Confirm whether to skip
    ↓
-8. Design Doc principle compliance check with spec-reviewer (Required)
-   ├─ Call spec-reviewer agent
+8. Design Doc principle compliance check with spec-reviewer (When design generated, Required)
+   ├─ Explicitly call spec-reviewer agent using Task tool
+   │  Example: Task(subagent_type="sdd-workflow:spec-reviewer", prompt=".sdd/specification/{feature-name}_design.md")
    ├─ Check CONSTITUTION.md compliance (Technical constraints/Architecture focus)
    ├─ On violation detection: Attempt auto-fix
-   └─ After fix, re-check
+   ├─ After fix, re-check
+   └─ Retrieve review results and include in next step output
 ```
 
 ## PRD Consistency Review
@@ -384,12 +388,23 @@ After loading CONSTITUTION.md, understand the following principles and ensure sp
 
 ## Principle Compliance Check with spec-reviewer (Required)
 
-After spec and design generation, **you must call the `spec-reviewer` agent to check principle compliance**.
+After spec and design generation, **you must call the `spec-reviewer` agent using the Task tool to check principle compliance**.
 
 ### Check Flow
 
 ```
-1. Call spec-reviewer agent
+1. Explicitly call spec-reviewer agent using Task tool
+   [After spec generation]
+   Example: Task(
+     subagent_type="sdd-workflow:spec-reviewer",
+     prompt=".sdd/specification/{feature-name}_spec.md"
+   )
+
+   [After design generation]
+   Example: Task(
+     subagent_type="sdd-workflow:spec-reviewer",
+     prompt=".sdd/specification/{feature-name}_design.md"
+   )
    ↓
 2. Execute CONSTITUTION.md compliance check
    ↓
@@ -399,39 +414,87 @@ After spec and design generation, **you must call the `spec-reviewer` agent to c
    ↓
 4. After fix, re-check to verify
    ↓
-5. Include check results in output
+5. Retrieve review results and must include in output (see next section)
 ```
 
-### Abstract Specification Check Result Output
+**Important**: This check cannot be omitted. **After both spec and design generation, you must execute spec-reviewer using the Task tool.**
 
-Include the following after spec generation:
+### Check Result Output (Required)
+
+**Upon spec/design generation completion, you must output the following check result section. This section cannot be omitted.**
 
 ```markdown
-### CONSTITUTION.md Compliance Check Results (Spec)
+## CONSTITUTION.md Compliance Check Results
 
-| Principle Category        | Compliance Status                         |
-|:--------------------------|:------------------------------------------|
-| Architecture Principles   | Compliant / Violation                     |
-| Development Principles    | Compliant / Violation                     |
-| Business Principles       | Compliant / Violation                     |
+**Check Execution Time**: YYYY-MM-DD HH:MM:SS
+**Review Agent**: spec-reviewer
 
-**Auto-fixes applied**: {count} items
-**Manual fixes required**: {count} items (see details above)
+### spec Check Results
+
+**Target File**: .sdd/specification/{feature-name}_spec.md
+
+#### Compliance Status Summary
+
+| Principle Category | Compliance Status | Details |
+|:---|:---|:---|
+| Business Principles (B-xxx) | 🟢 Compliant / 🟡 Partially Compliant / 🔴 Violation | Compliant: X items, Violations: Y items |
+| Architecture Principles (A-xxx) | 🟢 / 🟡 / 🔴 | Compliant: X items, Violations: Y items |
+| Development Principles (D-xxx) | 🟢 / 🟡 / 🔴 | Compliant: X items, Violations: Y items |
+| Technical Constraints (T-xxx) | 🟢 / 🟡 / 🔴 | Compliant: X items, Violations: Y items |
+
+#### Fix Summary
+
+- **Auto-fixes applied**: {count} items
+- **Manual fixes required**: {count} items
+
+---
+
+### design Check Results (if generated)
+
+**Target File**: .sdd/specification/{feature-name}_design.md
+
+#### Compliance Status Summary
+
+| Principle Category | Compliance Status | Details |
+|:---|:---|:---|
+| Business Principles (B-xxx) | 🟢 Compliant / 🟡 Partially Compliant / 🔴 Violation | Compliant: X items, Violations: Y items |
+| Architecture Principles (A-xxx) | 🟢 / 🟡 / 🔴 | Compliant: X items, Violations: Y items |
+| Development Principles (D-xxx) | 🟢 / 🟡 / 🔴 | Compliant: X items, Violations: Y items |
+| Technical Constraints (T-xxx) | 🟢 / 🟡 / 🔴 | Compliant: X items, Violations: Y items |
+
+#### Fix Summary
+
+- **Auto-fixes applied**: {count} items
+- **Manual fixes required**: {count} items
+
+---
+
+### 🔴 Violations (if any)
+
+**[If violations exist]**
+
+#### Principle: {Principle ID} - {Principle Name}
+
+**Violated File**: {spec or design}
+**Violation Details**:
+- {Specific violation content}
+
+**Recommended Actions**:
+- [ ] {Fix method}
+
+---
+
+**[If violations exist, explicitly display warning to user]**
+
+⚠️ **Warning**: CONSTITUTION.md violations detected in spec/design documents.
+Please implement the recommended actions above and re-run `/generate_spec` or fix manually.
+If you proceed to implementation without resolving violations, they may be flagged during code review.
+
 ```
 
-### Technical Design Document Check Result Output
+**Feedback Loop on Violation Detection**:
 
-Include the following after design doc generation:
-
-```markdown
-### CONSTITUTION.md Compliance Check Results (Design)
-
-| Principle Category        | Compliance Status                         |
-|:--------------------------|:------------------------------------------|
-| Technical Constraints     | Compliant / Violation                     |
-| Architecture Principles   | Compliant / Violation                     |
-| Development Principles    | Compliant / Violation                     |
-
-**Auto-fixes applied**: {count} items
-**Manual fixes required**: {count} items (see details above)
-```
+1. If violations detected, explicitly display the above warning to user
+2. Clearly document auto-fixed items
+3. Present manual fix items as specific actions
+4. Encourage user to resolve before proceeding to next step (task breakdown/implementation)

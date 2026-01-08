@@ -207,10 +207,12 @@ Follow these steps to prepare the template:
 5. Generate and save PRD
    ↓
 6. Principle compliance check with prd-reviewer (Required)
-   ├─ Call prd-reviewer agent
+   ├─ Explicitly call prd-reviewer agent using Task tool
+   │  Example: Task(subagent_type="sdd-workflow:prd-reviewer", prompt=".sdd/requirement/{feature-name}.md")
    ├─ Check CONSTITUTION.md compliance
    ├─ On violation detection: Attempt auto-fix
-   └─ After fix, re-check
+   ├─ After fix, re-check
+   └─ Retrieve review results and include in next step output
    ↓
 7. Check consistency with existing spec/design
    ├─ If spec/design exists: Verify consistency
@@ -281,12 +283,16 @@ After loading CONSTITUTION.md, understand the following principles and ensure PR
 
 ## Principle Compliance Check with prd-reviewer (Required)
 
-After PRD generation, **you must call the `prd-reviewer` agent to check principle compliance**.
+After PRD generation, **you must call the `prd-reviewer` agent using the Task tool to check principle compliance**.
 
 ### Check Flow
 
 ```
-1. Call prd-reviewer agent
+1. Explicitly call prd-reviewer agent using Task tool
+   Example: Task(
+     subagent_type="sdd-workflow:prd-reviewer",
+     prompt=".sdd/requirement/{feature-name}.md"
+   )
    ↓
 2. Execute CONSTITUTION.md compliance check
    ↓
@@ -296,26 +302,64 @@ After PRD generation, **you must call the `prd-reviewer` agent to check principl
    ↓
 4. After fix, re-check to verify
    ↓
-5. Include check results in output
+5. Retrieve review results and must include in output (see next section)
 ```
 
-### Check Result Output
+**Important**: This check cannot be omitted. **You must execute prd-reviewer using the Task tool.**
 
-Include the following in output upon generation completion:
+### Check Result Output (Required)
+
+**Upon PRD generation completion, you must output the following check result section. This section cannot be omitted.**
 
 ```markdown
-### CONSTITUTION.md Compliance Check Results
+## CONSTITUTION.md Compliance Check Results
 
-| Principle Category      | Compliance Status                         |
-|:------------------------|:------------------------------------------|
-| Business Principles     | Compliant / Violation                     |
-| Architecture Principles | Compliant / Violation                     |
-| Development Principles  | Compliant / Violation                     |
-| Technical Constraints   | Compliant / Violation                     |
+**Check Execution Time**: YYYY-MM-DD HH:MM:SS
+**Review Agent**: prd-reviewer
+**Target File**: .sdd/requirement/{feature-name}.md
 
-**Auto-fixes applied**: {count} items
-**Manual fixes required**: {count} items (see details above)
+### Compliance Status Summary
+
+| Principle Category | Compliance Status | Details |
+|:---|:---|:---|
+| Business Principles (B-xxx) | 🟢 Compliant / 🟡 Partially Compliant / 🔴 Violation | Compliant: X items, Violations: Y items |
+| Architecture Principles (A-xxx) | 🟢 / 🟡 / 🔴 | Compliant: X items, Violations: Y items |
+| Development Principles (D-xxx) | 🟢 / 🟡 / 🔴 | Compliant: X items, Violations: Y items |
+| Technical Constraints (T-xxx) | 🟢 / 🟡 / 🔴 | Compliant: X items, Violations: Y items |
+
+### Fix Summary
+
+- **Auto-fixes applied**: {count} items
+- **Manual fixes required**: {count} items
+
+### 🔴 Violations (if any)
+
+**[If violations exist]**
+
+#### Principle: {Principle ID} - {Principle Name}
+
+**Violation Details**:
+- {Specific violation content}
+
+**Recommended Actions**:
+- [ ] {Fix method}
+
+---
+
+**[If violations exist, explicitly display warning to user]**
+
+⚠️ **Warning**: CONSTITUTION.md violations detected in PRD.
+Please implement the recommended actions above and re-run `/generate_prd` or fix manually.
+If you proceed to `/generate_spec` without resolving violations, they may propagate to specification and design documents.
+
 ```
+
+**Feedback Loop on Violation Detection**:
+
+1. If violations detected, explicitly display the above warning to user
+2. Clearly document auto-fixed items
+3. Present manual fix items as specific actions
+4. Encourage user to resolve before proceeding to next step (`/generate_spec`)
 
 ## Notes
 
