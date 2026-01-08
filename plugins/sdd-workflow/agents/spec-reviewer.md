@@ -148,6 +148,7 @@ This agent performs the following traceability checks to verify document-level c
 1. **Load PRD**: Identify and load the PRD corresponding to the target spec file
     - Flat structure: `.sdd/requirement/{feature-name}.md`
     - Hierarchical structure: `.sdd/requirement/{parent-feature}/index.md`, `.sdd/requirement/{parent-feature}/{child-feature}.md`
+    - **If PRD does not exist**: Skip PRD ↔ spec traceability check and note this in the report. Other checks (CONSTITUTION compliance, completeness, clarity, spec ↔ design) will be performed as usual.
 
 2. **Extract Requirement IDs**: Extract all requirement IDs (UR-xxx, FR-xxx, NFR-xxx) from PRD
 

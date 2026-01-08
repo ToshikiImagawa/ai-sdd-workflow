@@ -157,6 +157,7 @@ CONSTITUTION.md が存在しない場合は、このチェックをスキップ�
 1. **PRD の読み込み**: 対象の spec ファイルに対応する PRD を特定して読み込む
     - フラット構造: `.sdd/requirement/{機能名}.md`
     - 階層構造: `.sdd/requirement/{親機能名}/index.md`, `.sdd/requirement/{親機能名}/{子機能名}.md`
+    - **PRDが存在しない場合**: PRD ↔ spec トレーサビリティチェックをスキップし、その旨をレポートに記載します。その他のチェック（CONSTITUTION準拠、完全性、明確性、spec ↔ design）は通常通り実行されます。
 
 2. **要求ID の抽出**: PRD から全ての要求ID（UR-xxx, FR-xxx, NFR-xxx）を抽出
 
