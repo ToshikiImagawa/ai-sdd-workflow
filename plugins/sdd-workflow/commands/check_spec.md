@@ -1,6 +1,6 @@
 ---
 description: "Check consistency between implementation code and design documents (design), detecting discrepancies"
-allowed-tools: Read, Glob, Grep, AskUserQuestion, Task
+allowed-tools: Read, Glob, Grep, AskUserQuestion
 ---
 
 # Check Spec - Design & Implementation Consistency Check

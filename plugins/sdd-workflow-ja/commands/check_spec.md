@@ -1,6 +1,6 @@
 ---
 description: "実装コードと設計書（design）の整合性をチェックし、差異を検出する"
-allowed-tools: Read, Glob, Grep, AskUserQuestion, Task
+allowed-tools: Read, Glob, Grep, AskUserQuestion
 ---
 
 # Check Spec - 設計書・実装整合性チェック
