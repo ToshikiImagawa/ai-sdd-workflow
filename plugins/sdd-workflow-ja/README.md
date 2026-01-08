@@ -73,8 +73,8 @@ Claude Codeで `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示�
 |:------------------|:---------------------------------------|
 | `/sdd_init`       | AI-SDDワークフローの初期化。CLAUDE.md設定とテンプレート生成  |
 | `/sdd_migrate`    | 旧バージョン（v1.x）からの移行。新構成への移行または互換性設定の生成   |
-| `/generate_spec`  | 入力から抽象仕様書と技術設計書を生成                     |
-| `/generate_prd`   | ビジネス要求からPRD（要求仕様書）をSysML要求図形式で生成       |
+| `/generate_spec`  | 入力から抽象仕様書と技術設計書を生成。自動的にCONSTITUTION.md準拠チェックを実行（spec/design両方） |
+| `/generate_prd`   | ビジネス要求からPRD（要求仕様書）をSysML要求図形式で生成。自動的にCONSTITUTION.md準拠チェックを実行 |
 | `/check_spec`     | 実装コードと仕様書の整合性をチェックし、差異を検出              |
 | `/task_cleanup`   | 実装完了後のtask/ディレクトリを整理し、設計判断を統合          |
 | `/task_breakdown` | 技術設計書からタスクを分解し、小タスクのリストを生成             |
@@ -196,6 +196,7 @@ Claude Codeで `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示�
 ```
 
 → `.sdd/requirement/user-auth.md` が生成されます。
+→ **自動的にCONSTITUTION.md準拠チェックが実行され、違反が検出された場合は警告が表示されます。**
 
 #### ステップ3: 仕様書・設計書の生成
 
@@ -204,6 +205,7 @@ Claude Codeで `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示�
 ```
 
 → `.sdd/specification/user-auth_spec.md` と `user-auth_design.md` が生成されます。
+→ **自動的にCONSTITUTION.md準拠チェックが実行され（spec/design両方）、違反が検出された場合は警告が表示されます。**
 
 #### ステップ4: 仕様の明確化
 

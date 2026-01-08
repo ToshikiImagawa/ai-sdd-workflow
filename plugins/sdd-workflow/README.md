@@ -74,8 +74,8 @@ This command automatically:
 |:------------------|:-------------------------------------------------------------------------------------------------------------|
 | `/sdd_init`       | AI-SDD workflow initialization. CLAUDE.md setup and template generation                                      |
 | `/sdd_migrate`    | Migration from legacy version (v1.x). Migrate to new structure or generate compatibility config              |
-| `/generate_spec`  | Generates an abstract specification and technical design document from input                                 |
-| `/generate_prd`   | Generates a PRD (Requirements Specification) in SysML requirements diagram format from business requirements |
+| `/generate_spec`  | Generates an abstract specification and technical design document from input. Automatically runs CONSTITUTION.md compliance check (both spec/design) |
+| `/generate_prd`   | Generates a PRD (Requirements Specification) in SysML requirements diagram format from business requirements. Automatically runs CONSTITUTION.md compliance check |
 | `/check_spec`     | Checks consistency between implementation code and specifications, detecting discrepancies                   |
 | `/task_cleanup`   | Cleans up the task/ directory after implementation, integrating design decisions                             |
 | `/task_breakdown` | Breaks down tasks from the technical design document into a list of small tasks                              |
@@ -198,6 +198,7 @@ Includes session management and password reset functionality.
 ```
 
 → `.sdd/requirement/user-auth.md` is generated.
+→ **CONSTITUTION.md compliance check is automatically executed. If violations are detected, warnings will be displayed.**
 
 #### Step 3: Generate Specification and Design Documents
 
@@ -206,6 +207,7 @@ Includes session management and password reset functionality.
 ```
 
 → `.sdd/specification/user-auth_spec.md` and `user-auth_design.md` are generated.
+→ **CONSTITUTION.md compliance check is automatically executed (both spec/design). If violations are detected, warnings will be displayed.**
 
 #### Step 4: Clarify Specifications
 
