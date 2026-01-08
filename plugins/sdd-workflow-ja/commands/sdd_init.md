@@ -15,15 +15,15 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 ## 前提条件
 
-**実行前に必ず `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込み、AI-SDDの原則を理解してください。**
+**実行前に必ず `../AI-SDD-PRINCIPLES.md` を読み込み、AI-SDDの原則を理解してください。**
 
-このコマンドはsdd-workflowエージェントの原則に従ってプロジェクトを初期化します。
+このコマンドはAI-SDD原則に従ってプロジェクトを初期化します。
 
 ### 設定ファイル（オプション）
 
 プロジェクトルートに `.sdd-config.json` を作成することで、ディレクトリ名をカスタマイズできます。
 
-設定ファイルの詳細は `sdd-workflow-ja:sdd-workflow` エージェントの「プロジェクト設定ファイル」セクションを参照してください。
+設定ファイルの詳細は `../AI-SDD-PRINCIPLES.md` の「プロジェクト設定ファイル」セクションを参照してください。
 
 **注意**: 初期化時にカスタムディレクトリ名を使用する場合は、先に `.sdd-config.json`
 を作成してください。初期化後にディレクトリ構造とCLAUDE.mdの記載が設定値に基づいて生成されます。
@@ -53,16 +53,20 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
    ├─ .sdd/specification/
    └─ .sdd/task/
    ↓
-4. プロジェクト原則を生成（存在しない場合）
+4. AI-SDD原則ドキュメントをコピー
+   ├─ プラグインルートのAI-SDD-PRINCIPLES.mdを読み込み（Read tool）
+   └─ .sdd/AI-SDD-PRINCIPLES.md として保存（Write tool）
+   ↓
+5. プロジェクト原則を生成（存在しない場合）
    ├─ .sdd/CONSTITUTION.md が存在するか確認
    └─ 存在しない場合: sdd-workflow-ja:sdd-templates スキルを使用して生成
    ↓
-5. 既存テンプレートを確認
+6. 既存テンプレートを確認
    ├─ .sdd/PRD_TEMPLATE.md
    ├─ .sdd/SPECIFICATION_TEMPLATE.md
    └─ .sdd/DESIGN_DOC_TEMPLATE.md
    ↓
-6. 不足しているテンプレートを生成
+7. 不足しているテンプレートを生成
    └─ sdd-workflow-ja:sdd-templates スキルを使用して生成
 ```
 
@@ -79,8 +83,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 ### ドキュメント操作
 
-`.sdd/` ディレクトリ配下のファイルを操作する際は、必ず `sdd-workflow-ja:sdd-workflow`
-エージェントを使用して、適切なAI-SDDワークフローへの準拠を確保してください。
+`.sdd/` ディレクトリ配下のファイルを操作する際は、`.sdd/AI-SDD-PRINCIPLES.md` を参照して、適切なAI-SDDワークフローへの準拠を確保してください。
 
 **トリガー条件**:
 

@@ -9,9 +9,9 @@ Define the project's non-negotiable principles (Constitution) and verify that al
 
 ## Prerequisites
 
-**Before execution, you must read the `sdd-workflow:sdd-workflow` agent content to understand AI-SDD principles.**
+**Before execution, you must read `../AI-SDD-PRINCIPLES.md` to understand AI-SDD principles.**
 
-This command manages project principles following the sdd-workflow agent's principles.
+This command manages project principles following AI-SDD principles.
 
 ### Directory Path Resolution
 

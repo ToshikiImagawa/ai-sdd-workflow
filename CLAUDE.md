@@ -110,11 +110,11 @@ Specify（仕様化） → Plan（計画） → Tasks（タスク分解） → I
 
 **requirement と specification でサフィックスの有無が異なります。混同しないでください。**
 
-| ディレクトリ | ファイル種別 | 命名パターン | 例 |
-|:--|:--|:--|:--|
-| **requirement** | 全ファイル | `{名前}.md`（サフィックスなし） | `user-login.md`, `index.md` |
-| **specification** | 抽象仕様書 | `{名前}_spec.md`（`_spec` サフィックス必須） | `user-login_spec.md`, `index_spec.md` |
-| **specification** | 技術設計書 | `{名前}_design.md`（`_design` サフィックス必須） | `user-login_design.md`, `index_design.md` |
+| ディレクトリ            | ファイル種別 | 命名パターン                               | 例                                         |
+|:------------------|:-------|:-------------------------------------|:------------------------------------------|
+| **requirement**   | 全ファイル  | `{名前}.md`（サフィックスなし）                  | `user-login.md`, `index.md`               |
+| **specification** | 抽象仕様書  | `{名前}_spec.md`（`_spec` サフィックス必須）     | `user-login_spec.md`, `index_spec.md`     |
+| **specification** | 技術設計書  | `{名前}_design.md`（`_design` サフィックス必須） | `user-login_design.md`, `index_design.md` |
 
 #### 階層構造での命名パターン比較
 
@@ -168,17 +168,18 @@ CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実
 
 セッション開始時に `session-start` フックが `.sdd-config.json` を読み込み、以下の環境変数を設定します。
 
-| 環境変数                     | デフォルト値               | 説明                |
-|:-------------------------|:---------------------|:------------------|
-| `SDD_ROOT`          | `.sdd`               | ルートディレクトリ          |
-| `SDD_REQUIREMENT_DIR`    | `requirement`        | 要求仕様書ディレクトリ名      |
-| `SDD_SPECIFICATION_DIR`  | `specification`      | 仕様書・設計書ディレクトリ名    |
-| `SDD_TASK_DIR`           | `task`               | タスクログディレクトリ名      |
-| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | 要求仕様書フルパス         |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書フルパス       |
-| `SDD_TASK_PATH`          | `.sdd/task`          | タスクログフルパス         |
+| 環境変数                     | デフォルト値               | 説明             |
+|:-------------------------|:---------------------|:---------------|
+| `SDD_ROOT`               | `.sdd`               | ルートディレクトリ      |
+| `SDD_REQUIREMENT_DIR`    | `requirement`        | 要求仕様書ディレクトリ名   |
+| `SDD_SPECIFICATION_DIR`  | `specification`      | 仕様書・設計書ディレクトリ名 |
+| `SDD_TASK_DIR`           | `task`               | タスクログディレクトリ名   |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | 要求仕様書フルパス      |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書フルパス    |
+| `SDD_TASK_PATH`          | `.sdd/task`          | タスクログフルパス      |
 
 **パス解決の優先順位:**
+
 1. 環境変数 `SDD_*` が設定されている場合はそれを使用
 2. 環境変数がない場合は `.sdd-config.json` を確認
 3. どちらもない場合はデフォルト値を使用
@@ -187,6 +188,18 @@ CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実
 
 曖昧な指示（「いい感じに」「適当に」「前と同じように」など）を検出した場合、仕様の明確化を促す。仕様書なしでの実装は避け、最低限
 `task/` に推測仕様を記録する。
+
+## プラグインエージェント設計ガイド
+
+AI-SDDワークフロープラグインのサブエージェント設計・実装に関する原則とベストプラクティスは、[AGENTS.md](./AGENTS.md) を参照してください。
+
+このガイドでは以下の内容を定義しています：
+
+1. **サブエージェントの基本概念**（コンテキスト独立性、トークン効率化）
+2. **エージェント設計原則**（役割、入出力、allowed-tools、前提条件）
+3. **委任すべきタスク vs メインで実行すべきタスク**
+4. **エージェント間連携パターン**
+5. **実践Tips**
 
 ## 新しいプラグインの追加
 

@@ -12,9 +12,9 @@ Generates the following documents from input content according to the AI-SDD wor
 
 ## Prerequisites
 
-**Before execution, you must read `sdd-workflow:sdd-workflow` agent content to understand AI-SDD principles.**
+**Before execution, you must read `../AI-SDD-PRINCIPLES.md` to understand AI-SDD principles.**
 
-This command follows the sdd-workflow agent principles for specification and design document generation.
+This command follows AI-SDD principles for specification and design document generation.
 
 ### Directory Path Resolution
 

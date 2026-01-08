@@ -10,9 +10,9 @@ breakdowns.
 
 ## Prerequisites
 
-**Before execution, you must read `sdd-workflow:sdd-workflow` agent content to understand AI-SDD principles.**
+**Before execution, you must read `../AI-SDD-PRINCIPLES.md` to understand AI-SDD principles.**
 
-This command follows the sdd-workflow agent principles for quality assurance.
+This command follows AI-SDD principles for quality assurance.
 
 ### Directory Path Resolution
 

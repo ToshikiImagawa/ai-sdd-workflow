@@ -32,10 +32,9 @@ sdd-workflow:spec-reviewer .sdd/specification/user-auth_spec.md --summary
 
 ## Prerequisites
 
-**Before execution, you must read `sdd-workflow:sdd-workflow` agent content to understand AI-SDD principles, document
-structure, persistence rules, and Vibe Coding prevention details.**
+**Before execution, you must read `../AI-SDD-PRINCIPLES.md` to understand AI-SDD principles, document structure, persistence rules, and Vibe Coding prevention details.**
 
-This agent performs specification reviews based on the sdd-workflow agent principles.
+This agent performs specification reviews based on AI-SDD principles.
 
 ### Directory Path Resolution
 
@@ -67,6 +66,22 @@ following perspectives:
 3. **Clarity**: Are there any ambiguous descriptions?
 4. **Consistency**: Is inter-document consistency maintained?
 5. **SysML Compliance**: Are SysML elements appropriately used?
+
+## Design Rationale
+
+**This agent does NOT use the Task tool.**
+
+**Rationale**:
+- Document-level traceability checks (PRD ↔ spec, spec ↔ design) require reading multiple related documents
+- Using Task tool for recursive exploration causes context explosion
+- Use Read, Glob, and Grep tools to efficiently identify and load necessary files, prioritizing context efficiency
+
+**allowed-tools Design**:
+- `Read`: Load CONSTITUTION.md, specifications, design documents
+- `Glob`: Search for related files
+- `Grep`: Search for requirement IDs, section names
+- `Edit`: Apply auto-fixes
+- `AskUserQuestion`: Confirm with user when judgment is required
 
 ## CONSTITUTION.md Compliance Check (Most Important)
 

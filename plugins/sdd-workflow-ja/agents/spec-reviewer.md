@@ -31,10 +31,9 @@ sdd-workflow-ja:spec-reviewer .sdd/specification/user-auth_spec.md --summary
 
 ## 前提条件
 
-**実行前に必ず `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込み、AI-SDDの原則・ドキュメント構成・永続性ルール・Vibe
-Coding防止の詳細を理解してください。**
+**実行前に必ず `../AI-SDD-PRINCIPLES.md` を読み込み、AI-SDDの原則・ドキュメント構成・永続性ルール・Vibe Coding防止の詳細を理解してください。**
 
-このエージェントはsdd-workflowエージェントの原則に基づいて仕様書レビューを行います。
+このエージェントはAI-SDD原則に基づいて仕様書レビューを行います。
 
 ### ディレクトリパスの解決
 
@@ -66,6 +65,22 @@ Coding防止の詳細を理解してください。**
 5. **SysML準拠**: SysML要素が適切に使用されているか
 
 **注意**: PRD のレビューは `prd-reviewer` エージェントが担当します。
+
+## 設計意図
+
+**このエージェントは Task ツールを使用しません。**
+
+**理由**:
+- ドキュメント間トレーサビリティチェック（PRD ↔ spec、spec ↔ design）では複数の関連ドキュメントを読み込む必要があります
+- Task ツールで再帰的に探索するとコンテキストが爆発的に増加するリスクがあります
+- Read, Glob, Grep ツールで必要なファイルを効率的に特定・読み込みすることで、コンテキスト効率化を優先します
+
+**allowed-tools の設計**:
+- `Read`: CONSTITUTION.md、仕様書、設計書の読み込み
+- `Glob`: 関連ファイルの検索
+- `Grep`: 要求ID、セクション名の検索
+- `Edit`: 自動修正の適用
+- `AskUserQuestion`: ユーザー判断が必要な場合の確認
 
 ## CONSTITUTION.md 準拠チェック（最重要）
 

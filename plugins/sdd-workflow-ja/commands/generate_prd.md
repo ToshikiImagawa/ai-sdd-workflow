@@ -9,9 +9,9 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 ## 前提条件
 
-**実行前に必ず `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込み、AI-SDDの原則を理解してください。**
+**実行前に必ず `../AI-SDD-PRINCIPLES.md` を読み込み、AI-SDDの原則を理解してください。**
 
-このコマンドはsdd-workflowエージェントの原則に従ってPRDを生成します。
+このコマンドはAI-SDD原則に従ってPRDを生成します。
 
 ### ディレクトリパスの解決
 
