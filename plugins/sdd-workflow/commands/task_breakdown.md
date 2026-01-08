@@ -9,9 +9,9 @@ Loads technical design document (`*_design.md`) and breaks it down into independ
 
 ## Prerequisites
 
-**Before execution, you must read `sdd-workflow:sdd-workflow` agent content to understand AI-SDD principles.**
+**Before execution, you must read `../AI-SDD-PRINCIPLES.md` to understand AI-SDD principles.**
 
-This command follows the sdd-workflow agent principles for task breakdown.
+This command follows AI-SDD principles for task breakdown.
 
 ### Directory Path Resolution
 

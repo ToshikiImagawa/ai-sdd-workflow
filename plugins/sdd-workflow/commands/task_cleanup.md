@@ -10,9 +10,9 @@ before deletion.
 
 ## Prerequisites
 
-**Before execution, you must read `sdd-workflow:sdd-workflow` agent content to understand AI-SDD principles.**
+**Before execution, you must read `../AI-SDD-PRINCIPLES.md` to understand AI-SDD principles.**
 
-This command follows the sdd-workflow agent principles for cleanup.
+This command follows AI-SDD principles for cleanup.
 
 ### Directory Path Resolution
 

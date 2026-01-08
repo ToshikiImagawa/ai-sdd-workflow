@@ -38,7 +38,7 @@ Requirement analysis result report (requirement validity assessment, detected is
 
 ## Prerequisites
 
-**Before execution, you must read `plugins/sdd-workflow/AI-SDD-PRINCIPLES.md` to understand AI-SDD principles, document structure, persistence rules, and Vibe Coding prevention details.**
+**Before execution, you must read `../AI-SDD-PRINCIPLES.md` to understand AI-SDD principles, document structure, persistence rules, and Vibe Coding prevention details.**
 
 This agent performs requirement analysis based on AI-SDD principles.
 

@@ -31,7 +31,7 @@ sdd-workflow-ja:spec-reviewer .sdd/specification/user-auth_spec.md --summary
 
 ## 前提条件
 
-**実行前に必ず `plugins/sdd-workflow-ja/AI-SDD-PRINCIPLES.md` を読み込み、AI-SDDの原則・ドキュメント構成・永続性ルール・Vibe Coding防止の詳細を理解してください。**
+**実行前に必ず `../AI-SDD-PRINCIPLES.md` を読み込み、AI-SDDの原則・ドキュメント構成・永続性ルール・Vibe Coding防止の詳細を理解してください。**
 
 このエージェントはAI-SDD原則に基づいて仕様書レビューを行います。
 
