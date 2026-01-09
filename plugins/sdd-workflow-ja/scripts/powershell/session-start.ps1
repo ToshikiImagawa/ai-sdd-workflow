@@ -44,7 +44,7 @@ if (-not (Test-Path $ConfigFile)) {
     }
 
     # 旧要求仕様ディレクトリ (requirement-diagram) の検出
-    $ReqDiagramPath = Join-Path $ProjectRoot $DocsRoot "requirement-diagram"
+    $ReqDiagramPath = Join-Path (Join-Path $ProjectRoot $DocsRoot) "requirement-diagram"
     if (Test-Path $ReqDiagramPath) {
         $LegacyDetected = $true
         $LegacyRequirement = "requirement-diagram"
@@ -52,8 +52,8 @@ if (-not (Test-Path $ConfigFile)) {
     }
 
     # 旧タスクディレクトリ (review) の検出
-    $ReviewPath = Join-Path $ProjectRoot $DocsRoot "review"
-    $TaskPath = Join-Path $ProjectRoot $DocsRoot "task"
+    $ReviewPath = Join-Path (Join-Path $ProjectRoot $DocsRoot) "review"
+    $TaskPath = Join-Path (Join-Path $ProjectRoot $DocsRoot) "task"
     if ((Test-Path $ReviewPath) -and -not (Test-Path $TaskPath)) {
         $LegacyDetected = $true
         $LegacyTask = "review"

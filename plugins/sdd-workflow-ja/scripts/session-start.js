@@ -17,6 +17,8 @@ const projectDir = process.env.CLAUDE_PROJECT_DIR || path.dirname(scriptsDir);
 const platform = os.platform();
 
 try {
+  let output;
+
   if (platform === 'win32') {
     // Windows: PowerShell script
     const psScript = path.join(scriptsDir, 'powershell', 'session-start.ps1');
@@ -26,8 +28,8 @@ try {
       process.exit(1);
     }
 
-    execSync(`powershell -ExecutionPolicy Bypass -File "${psScript}"`, {
-      stdio: 'inherit',
+    output = execSync(`powershell -ExecutionPolicy Bypass -File "${psScript}"`, {
+      encoding: 'utf-8',
       env: { ...process.env, CLAUDE_PROJECT_DIR: projectDir }
     });
   } else {
@@ -39,10 +41,15 @@ try {
       process.exit(1);
     }
 
-    execSync(`bash "${bashScript}"`, {
-      stdio: 'inherit',
+    output = execSync(`bash "${bashScript}"`, {
+      encoding: 'utf-8',
       env: { ...process.env, CLAUDE_PROJECT_DIR: projectDir }
     });
+  }
+
+  // 環境変数をClaude Codeに渡すためstdoutに出力
+  if (output) {
+    process.stdout.write(output);
   }
 } catch (error) {
   console.error(`[AI-SDD] Error: ${error.message}`);

@@ -44,7 +44,7 @@ if (-not (Test-Path $ConfigFile)) {
     }
 
     # Detect legacy requirement directory (requirement-diagram)
-    $ReqDiagramPath = Join-Path $ProjectRoot $DocsRoot "requirement-diagram"
+    $ReqDiagramPath = Join-Path (Join-Path $ProjectRoot $DocsRoot) "requirement-diagram"
     if (Test-Path $ReqDiagramPath) {
         $LegacyDetected = $true
         $LegacyRequirement = "requirement-diagram"
@@ -52,8 +52,8 @@ if (-not (Test-Path $ConfigFile)) {
     }
 
     # Detect legacy task directory (review)
-    $ReviewPath = Join-Path $ProjectRoot $DocsRoot "review"
-    $TaskPath = Join-Path $ProjectRoot $DocsRoot "task"
+    $ReviewPath = Join-Path (Join-Path $ProjectRoot $DocsRoot) "review"
+    $TaskPath = Join-Path (Join-Path $ProjectRoot $DocsRoot) "task"
     if ((Test-Path $ReviewPath) -and -not (Test-Path $TaskPath)) {
         $LegacyDetected = $true
         $LegacyTask = "review"
