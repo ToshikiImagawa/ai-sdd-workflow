@@ -15,7 +15,13 @@ Initialize AI-SDD (AI-driven Specification-Driven Development) workflow in the c
 
 ## Prerequisites
 
-**Before execution, you must read `../AI-SDD-PRINCIPLES.md` to understand AI-SDD principles.**
+**Before execution, you must read the AI-SDD principles document.**
+
+AI-SDD principles document path (search in the following order and use the first file found):
+1. `../AI-SDD-PRINCIPLES.md` (relative path from this file)
+2. `plugins/sdd-workflow/AI-SDD-PRINCIPLES.md` (relative path from project root)
+
+Understand AI-SDD principles.
 
 This command initializes the project following AI-SDD principles.
 
@@ -23,7 +29,7 @@ This command initializes the project following AI-SDD principles.
 
 You can customize directory names by creating `.sdd-config.json` at project root.
 
-For configuration file details, refer to the "Project Configuration File" section in `../AI-SDD-PRINCIPLES.md`.
+For configuration file details, refer to the "Project Configuration File" section in the AI-SDD principles document.
 
 **Note**: If you want to use custom directory names during initialization, create `.sdd-config.json` first. The directory structure and CLAUDE.md content will be generated based on configuration values.
 

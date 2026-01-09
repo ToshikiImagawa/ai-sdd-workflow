@@ -9,7 +9,13 @@ Loads technical design document (`*_design.md`) and breaks it down into independ
 
 ## Prerequisites
 
-**Before execution, you must read `../AI-SDD-PRINCIPLES.md` to understand AI-SDD principles.**
+**Before execution, you must read the AI-SDD principles document.**
+
+AI-SDD principles document path (search in the following order and use the first file found):
+1. `../AI-SDD-PRINCIPLES.md` (relative path from this file)
+2. `plugins/sdd-workflow/AI-SDD-PRINCIPLES.md` (relative path from project root)
+
+Understand AI-SDD principles.
 
 This command follows AI-SDD principles for task breakdown.
 

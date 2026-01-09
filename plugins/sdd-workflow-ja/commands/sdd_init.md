@@ -15,7 +15,13 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 ## 前提条件
 
-**実行前に必ず `../AI-SDD-PRINCIPLES.md` を読み込み、AI-SDDの原則を理解してください。**
+**実行前に必ず AI-SDD原則ドキュメントを読み込んでください。**
+
+AI-SDD原則ドキュメントのパス（以下の順序で検索し、最初に見つかったファイルを使用）：
+1. `../AI-SDD-PRINCIPLES.md`（このファイルからの相対パス）
+2. `plugins/sdd-workflow-ja/AI-SDD-PRINCIPLES.md`（プロジェクトルートからの相対パス）
+
+AI-SDDの原則を理解してください。
 
 このコマンドはAI-SDD原則に従ってプロジェクトを初期化します。
 
@@ -23,7 +29,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 プロジェクトルートに `.sdd-config.json` を作成することで、ディレクトリ名をカスタマイズできます。
 
-設定ファイルの詳細は `../AI-SDD-PRINCIPLES.md` の「プロジェクト設定ファイル」セクションを参照してください。
+設定ファイルの詳細は AI-SDD原則ドキュメントの「プロジェクト設定ファイル」セクションを参照してください。
 
 **注意**: 初期化時にカスタムディレクトリ名を使用する場合は、先に `.sdd-config.json`
 を作成してください。初期化後にディレクトリ構造とCLAUDE.mdの記載が設定値に基づいて生成されます。

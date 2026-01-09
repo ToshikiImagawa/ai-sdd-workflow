@@ -9,7 +9,13 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 ## 前提条件
 
-**実行前に必ず `../AI-SDD-PRINCIPLES.md` を読み込み、AI-SDDの原則を理解してください。**
+**実行前に必ず AI-SDD原則ドキュメントを読み込んでください。**
+
+AI-SDD原則ドキュメントのパス（以下の順序で検索し、最初に見つかったファイルを使用）：
+1. `../AI-SDD-PRINCIPLES.md`（このファイルからの相対パス）
+2. `plugins/sdd-workflow-ja/AI-SDD-PRINCIPLES.md`（プロジェクトルートからの相対パス）
+
+AI-SDDの原則を理解してください。
 
 このコマンドはAI-SDD原則に従ってクリーンアップを行います。
 

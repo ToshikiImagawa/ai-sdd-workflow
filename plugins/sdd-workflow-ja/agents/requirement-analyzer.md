@@ -38,7 +38,13 @@ sdd-workflow-ja:requirement-analyzer .sdd/requirement/user-auth.md --add-require
 
 ## 前提条件
 
-**実行前に必ず `../AI-SDD-PRINCIPLES.md` を読み込み、AI-SDDの原則・ドキュメント構成・永続性ルール・Vibe Coding防止の詳細を理解してください。**
+**実行前に必ず AI-SDD原則ドキュメントを読み込んでください。**
+
+AI-SDD原則ドキュメントのパス（以下の順序で検索し、最初に見つかったファイルを使用）：
+1. `../AI-SDD-PRINCIPLES.md`（このファイルからの相対パス）
+2. `plugins/sdd-workflow-ja/AI-SDD-PRINCIPLES.md`（プロジェクトルートからの相対パス）
+
+AI-SDDの原則・ドキュメント構成・永続性ルール・Vibe Coding防止の詳細を理解してください。
 
 このエージェントはAI-SDD原則に基づいて要求分析を行います。
 
