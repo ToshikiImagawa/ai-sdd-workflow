@@ -7,6 +7,33 @@ A Claude Code plugin supporting AI-driven Specification-Driven Development (AI-S
 This plugin provides tools to prevent Vibe Coding problems and achieve high-quality implementations using specifications
 as the source of truth.
 
+## Supported Environments
+
+| OS | Support | Notes |
+|:---|:---:|:---|
+| macOS | ✅ | Fully supported |
+| Linux | ✅ | Fully supported |
+| Windows | ❌ | Not supported (see alternatives below) |
+
+### Windows Limitations
+
+The `session-start.sh` hook in this plugin is implemented as a bash script and does not work on Windows.
+
+### Alternatives for Windows Users
+
+1. **Use WSL (Windows Subsystem for Linux)** (Recommended)
+   - Install WSL2 and run Claude Code within the Linux environment
+   - [WSL Installation Guide](https://learn.microsoft.com/en-us/windows/wsl/install)
+
+2. **Use Git Bash**
+   - Git Bash included with Git for Windows may allow bash scripts to run
+   - [Git for Windows](https://gitforwindows.org/)
+
+### Future Support Plans
+
+- Considering adding PowerShell version of the script
+- Considering migration to cross-platform implementation (e.g., Node.js)
+
 ### What is Vibe Coding?
 
 Vibe Coding occurs when AI must guess thousands of undefined requirements due to vague instructions.

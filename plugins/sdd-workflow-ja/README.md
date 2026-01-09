@@ -6,6 +6,33 @@ AI駆動仕様駆動開発（AI-SDD）ワークフローを支援する日本語
 
 このプラグインは、Vibe Coding問題を防ぎ、仕様書を真実の源として高品質な実装を実現するためのツール群を提供します。
 
+## 対応環境
+
+| OS | 対応状況 | 備考 |
+|:---|:---:|:---|
+| macOS | ✅ | フル対応 |
+| Linux | ✅ | フル対応 |
+| Windows | ❌ | 非対応（下記の代替手段を参照） |
+
+### Windows環境での制限事項
+
+このプラグインの `session-start.sh` フックはbashスクリプトとして実装されているため、Windows環境では動作しません。
+
+### Windowsユーザー向けの代替手段
+
+1. **WSL (Windows Subsystem for Linux) の使用**（推奨）
+   - WSL2をインストールし、Linux環境内でClaude Codeを実行してください
+   - [WSL インストールガイド](https://learn.microsoft.com/ja-jp/windows/wsl/install)
+
+2. **Git Bash の使用**
+   - Git for Windowsに付属するGit Bashを使用することで、bashスクリプトが実行可能になる場合があります
+   - [Git for Windows](https://gitforwindows.org/)
+
+### 将来的な対応方針
+
+- PowerShell版スクリプトの追加を検討中
+- Node.js等のクロスプラットフォーム実装への移行を検討中
+
 ### Vibe Codingとは？
 
 曖昧な指示によりAIが数千の未定義要件を推測せざるを得ない問題のことです。
