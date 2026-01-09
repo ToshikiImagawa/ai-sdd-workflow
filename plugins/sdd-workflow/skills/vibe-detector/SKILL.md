@@ -98,6 +98,36 @@ configuration file exists.
 
 Use [templates/risk_report.md](templates/risk_report.md) for risk detection output.
 
+**If template does not exist**: Generate output following the structure below:
+
+```markdown
+# Vibe Coding Risk Report
+
+**Detection Date**: {YYYY-MM-DD}
+**Risk Level**: 🔴 High / 🟡 Medium / 🟢 Low
+
+## Detected Issues
+
+- {Issue description with specific examples from user input}
+- {Issue description...}
+
+## Missing Information
+
+- {What information is unclear or missing}
+- {What assumptions would need to be made}
+
+## Recommended Actions
+
+1. {Specific action to clarify requirements}
+2. {Specific action...}
+
+## Risks if Proceeding Without Clarification
+
+- Risk of re-implementation due to misunderstood requirements
+- Risk of bug introduction from unhandled edge cases
+- Risk of technical debt accumulation
+```
+
 ## Escalation When Specifications Are Insufficient
 
 Even when user refuses specification creation, ensure minimum guardrails:
@@ -105,6 +135,43 @@ Even when user refuses specification creation, ensure minimum guardrails:
 ### 1. Document Inferred Specifications
 
 Use [templates/assumed_spec.md](templates/assumed_spec.md) for creating inferred specification documents.
+
+**If template does not exist**: Generate document following the structure below:
+
+```markdown
+# Assumed Specification (Inferred)
+
+⚠️ **WARNING**: This specification was inferred from vague requirements and may not match user intent.
+
+**Created**: {YYYY-MM-DD}
+**Based on**: {Original user request}
+
+## Assumptions Made
+
+1. {Assumption with reasoning}
+2. {Assumption...}
+
+## Inferred Requirements
+
+### Functional Requirements
+
+- {Inferred requirement}
+- {Inferred requirement...}
+
+### Non-Functional Requirements
+
+- {Inferred NFR if any}
+
+## Items Requiring Verification
+
+- [ ] {Item to verify with user}
+- [ ] {Item to verify...}
+
+## Known Risks
+
+- {Risk from assumption}
+- {Risk...}
+```
 
 **Save Location**: `.sdd/task/{ticket}/assumed-spec.md`
 

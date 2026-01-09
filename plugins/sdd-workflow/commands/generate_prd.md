@@ -282,8 +282,10 @@ After loading CONSTITUTION.md, understand the following principles and ensure PR
 
 ### If CONSTITUTION.md Does Not Exist
 
-- Skip principle check
-- Note in output: "Principle check was not performed as CONSTITUTION.md does not exist"
+1. **Skip principle compliance check**
+2. **Note in output**: "⚠️ Principle compliance check was skipped as CONSTITUTION.md does not exist"
+3. **Recommend to user**: "Run `/sdd_init` or `/constitution init` to create project principles"
+4. **Continue with PRD generation** (other quality checks will still be performed)
 
 ## Principle Compliance Check with prd-reviewer (Required)
 

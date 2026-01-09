@@ -99,7 +99,12 @@ Before starting review, **you must read `.sdd/CONSTITUTION.md` using the Read to
 Read: .sdd/CONSTITUTION.md
 ```
 
-If CONSTITUTION.md does not exist, skip this check and note it in the report.
+### If CONSTITUTION.md Does Not Exist
+
+1. **Skip principle compliance check**
+2. **Note in output**: "⚠️ Principle compliance check was skipped as CONSTITUTION.md does not exist"
+3. **Recommend to user**: "Run `/sdd_init` or `/constitution init` to create project principles"
+4. **Continue with other checks** (completeness, clarity, consistency, SysML compliance)
 
 ### Principle Category Checks for Spec (*_spec.md)
 
@@ -261,8 +266,8 @@ Design documents support both flat structure (`{feature-name}_design.md`) and hi
 | "appropriately," "as needed" | Criteria unclear          | Describe specific conditions      |
 | "if necessary"               | Decision criteria unclear | Specify when necessary            |
 | "etc.," "and so on"          | Scope ambiguous           | List specifically                 |
-| "fast," "efficient"          | No numeric criteria       | Describe specific numeric targets |
-| "flexible," "scalable"       | Definition vague          | Specify concrete extension points |
+| "fast," "efficient"          | No numeric criteria       | Describe specific numeric targets (e.g., "response within 2 seconds", "memory usage under 100MB") |
+| "flexible," "scalable"       | Definition vague          | Specify concrete extension points (e.g., "supports 10,000 concurrent users", "handles 1M records") |
 
 ### Commonly Missing Information
 

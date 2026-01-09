@@ -97,7 +97,12 @@ Before starting review, **you must read `.sdd/CONSTITUTION.md` using the Read to
 Read: .sdd/CONSTITUTION.md
 ```
 
-If CONSTITUTION.md does not exist, skip this check and note it in the report.
+### If CONSTITUTION.md Does Not Exist
+
+1. **Skip principle compliance check**
+2. **Note in output**: "⚠️ Principle compliance check was skipped as CONSTITUTION.md does not exist"
+3. **Recommend to user**: "Run `/sdd_init` or `/constitution init` to create project principles"
+4. **Continue with other checks** (required sections, SysML format, ambiguity detection)
 
 ### Principle Category Checks
 
