@@ -12,26 +12,22 @@ AI駆動仕様駆動開発（AI-SDD）ワークフローを支援する日本語
 |:---|:---:|:---|
 | macOS | ✅ | フル対応 |
 | Linux | ✅ | フル対応 |
-| Windows | ❌ | 非対応（下記の代替手段を参照） |
+| Windows | ✅ | フル対応（Node.js必須） |
 
-### Windows環境での制限事項
+### 前提条件
 
-このプラグインの `session-start.sh` フックはbashスクリプトとして実装されているため、Windows環境では動作しません。
+| 依存 | 必須/任意 | 備考 |
+|:---|:---:|:---|
+| Node.js | 必須 | クロスプラットフォームランチャーの実行に必要 |
+| PowerShell | Windows必須 | Windows 10以降はプリインストール |
+| Bash | macOS/Linux必須 | 標準搭載 |
 
-### Windowsユーザー向けの代替手段
+### クロスプラットフォーム対応
 
-1. **WSL (Windows Subsystem for Linux) の使用**（推奨）
-   - WSL2をインストールし、Linux環境内でClaude Codeを実行してください
-   - [WSL インストールガイド](https://learn.microsoft.com/ja-jp/windows/wsl/install)
+このプラグインはNode.jsベースのランチャー（`session-start.js`）を使用して、OSを自動検出し適切なスクリプトを実行します：
 
-2. **Git Bash の使用**
-   - Git for Windowsに付属するGit Bashを使用することで、bashスクリプトが実行可能になる場合があります
-   - [Git for Windows](https://gitforwindows.org/)
-
-### 将来的な対応方針
-
-- PowerShell版スクリプトの追加を検討中
-- Node.js等のクロスプラットフォーム実装への移行を検討中
+- **Windows**: PowerShellスクリプト（`scripts/powershell/session-start.ps1`）
+- **macOS/Linux**: Bashスクリプト（`scripts/bash/session-start.sh`）
 
 ### Vibe Codingとは？
 
@@ -519,7 +515,11 @@ sdd-workflow-ja/
 ├── hooks/
 │   └── hooks.json                 # フック設定
 ├── scripts/
-│   └── session-start.sh           # セッション開始時の初期化スクリプト
+│   ├── session-start.js           # クロスプラットフォームランチャー
+│   ├── bash/
+│   │   └── session-start.sh       # macOS/Linux用スクリプト
+│   └── powershell/
+│       └── session-start.ps1      # Windows用スクリプト
 ├── LICENSE
 └── README.md
 ```

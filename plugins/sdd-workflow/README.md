@@ -13,26 +13,22 @@ as the source of truth.
 |:---|:---:|:---|
 | macOS | ✅ | Fully supported |
 | Linux | ✅ | Fully supported |
-| Windows | ❌ | Not supported (see alternatives below) |
+| Windows | ✅ | Fully supported (Node.js required) |
 
-### Windows Limitations
+### Prerequisites
 
-The `session-start.sh` hook in this plugin is implemented as a bash script and does not work on Windows.
+| Dependency | Required | Notes |
+|:---|:---:|:---|
+| Node.js | Required | Needed for cross-platform launcher execution |
+| PowerShell | Windows Required | Pre-installed on Windows 10 and later |
+| Bash | macOS/Linux Required | Pre-installed |
 
-### Alternatives for Windows Users
+### Cross-Platform Support
 
-1. **Use WSL (Windows Subsystem for Linux)** (Recommended)
-   - Install WSL2 and run Claude Code within the Linux environment
-   - [WSL Installation Guide](https://learn.microsoft.com/en-us/windows/wsl/install)
+This plugin uses a Node.js-based launcher (`session-start.js`) that automatically detects the OS and runs the appropriate script:
 
-2. **Use Git Bash**
-   - Git Bash included with Git for Windows may allow bash scripts to run
-   - [Git for Windows](https://gitforwindows.org/)
-
-### Future Support Plans
-
-- Considering adding PowerShell version of the script
-- Considering migration to cross-platform implementation (e.g., Node.js)
+- **Windows**: PowerShell script (`scripts/powershell/session-start.ps1`)
+- **macOS/Linux**: Bash script (`scripts/bash/session-start.sh`)
 
 ### What is Vibe Coding?
 
@@ -523,7 +519,11 @@ sdd-workflow/
 ├── hooks/
 │   └── hooks.json                 # Hooks configuration
 ├── scripts/
-│   └── session-start.sh           # Session start initialization script
+│   ├── session-start.js           # Cross-platform launcher
+│   ├── bash/
+│   │   └── session-start.sh       # macOS/Linux script
+│   └── powershell/
+│       └── session-start.ps1      # Windows script
 ├── LICENSE
 └── README.md
 ```
