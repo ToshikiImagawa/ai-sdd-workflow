@@ -16,8 +16,9 @@ allowed-tools: Read, Glob, Grep, AskUserQuestion
 **実行前に必ず AI-SDD原則ドキュメントを読み込んでください。**
 
 AI-SDD原則ドキュメントのパス（以下の順序で検索し、最初に見つかったファイルを使用）：
-1. `../AI-SDD-PRINCIPLES.md`（このファイルからの相対パス）
-2. `plugins/sdd-workflow-ja/AI-SDD-PRINCIPLES.md`（プロジェクトルートからの相対パス）
+1. `.sdd/AI-SDD-PRINCIPLES.md`（プロジェクトルートから - プラグイン利用者向け）
+2. `../AI-SDD-PRINCIPLES.md`（このファイルからの相対パス - プラグイン開発者向け）
+3. `plugins/sdd-workflow-ja/AI-SDD-PRINCIPLES.md`（プロジェクトルートから - プラグイン開発者向け）
 
 AI-SDDの原則を理解してください。
 
