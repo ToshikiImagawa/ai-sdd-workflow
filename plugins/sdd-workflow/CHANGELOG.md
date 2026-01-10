@@ -34,6 +34,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `/check_spec` - **Specialized for design ↔ implementation consistency check**
     - **[BREAKING]** Delegated document-to-document consistency checks (PRD↔spec, spec↔design) to `spec-reviewer`
+        - **Before (v2.2.0)**: Performed all consistency checks (CONSTITUTION↔docs, PRD↔spec, spec↔design, design↔implementation)
+        - **After (v2.3.0)**: Performs only design↔implementation consistency check (improved performance)
+        - **Migration**:
+            - If document-to-document consistency checks are needed: Use `/check_spec --full`
+            - If design↔implementation only is sufficient: Keep using `/check_spec` (same command as before)
+        - **Impact**: If using `/check_spec` in CI/CD pipeline, consider adding `--full` option
     - Added `--full` option: Runs comprehensive review by `spec-reviewer` in addition to consistency check
     - Limited target documents to `*_design.md`
     - Simplified output format (focused on design↔implementation)

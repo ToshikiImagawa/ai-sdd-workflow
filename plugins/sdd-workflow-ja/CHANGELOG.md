@@ -34,6 +34,12 @@
 
 - `/check_spec` - **設計書（design）↔ 実装の整合性チェックに特化**
     - **[BREAKING]** ドキュメント間整合性チェック（PRD↔spec、spec↔design）を `spec-reviewer` に委譲
+        - **変更前（v2.2.0）**: すべての整合性チェック（CONSTITUTION↔docs、PRD↔spec、spec↔design、design↔実装）を実行
+        - **変更後（v2.3.0）**: design↔実装の整合性チェックのみ実行（高速化）
+        - **移行方法**:
+            - ドキュメント間整合性も含む包括的チェックが必要な場合: `/check_spec --full` を使用
+            - design↔実装のみで十分な場合: `/check_spec` のまま（既存と同じコマンド）
+        - **影響**: CI/CDパイプラインで `/check_spec` を使用している場合、`--full` オプションの追加を検討してください
     - `--full` オプションの追加: 整合性チェックに加えて `spec-reviewer` による包括的レビューを実行
     - 対象ドキュメントを `*_design.md` に限定
     - 出力フォーマットの簡素化（design↔実装に集中）
