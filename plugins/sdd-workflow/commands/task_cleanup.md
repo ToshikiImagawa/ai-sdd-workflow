@@ -10,9 +10,16 @@ before deletion.
 
 ## Prerequisites
 
-**Before execution, you must read `sdd-workflow:sdd-workflow` agent content to understand AI-SDD principles.**
+**Before execution, you must read the AI-SDD principles document.**
 
-This command follows the sdd-workflow agent principles for cleanup.
+AI-SDD principles document path (search in the following order and use the first file found):
+1. `.sdd/AI-SDD-PRINCIPLES.md` (from project root - for plugin users)
+2. `../AI-SDD-PRINCIPLES.md` (relative path from this file - for plugin development)
+3. `plugins/sdd-workflow/AI-SDD-PRINCIPLES.md` (from project root - for plugin development)
+
+Understand AI-SDD principles.
+
+This command follows AI-SDD principles for cleanup.
 
 ### Directory Path Resolution
 

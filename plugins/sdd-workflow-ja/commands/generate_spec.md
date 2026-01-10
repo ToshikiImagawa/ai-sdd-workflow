@@ -12,9 +12,16 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 ## 前提条件
 
-**実行前に必ず `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込み、AI-SDDの原則を理解してください。**
+**実行前に必ず AI-SDD原則ドキュメントを読み込んでください。**
 
-このコマンドはsdd-workflowエージェントの原則に従って仕様書・設計書を生成します。
+AI-SDD原則ドキュメントのパス（以下の順序で検索し、最初に見つかったファイルを使用）：
+1. `.sdd/AI-SDD-PRINCIPLES.md`（プロジェクトルートから - プラグイン利用者向け）
+2. `../AI-SDD-PRINCIPLES.md`（このファイルからの相対パス - プラグイン開発者向け）
+3. `plugins/sdd-workflow-ja/AI-SDD-PRINCIPLES.md`（プロジェクトルートから - プラグイン開発者向け）
+
+AI-SDDの原則を理解してください。
+
+このコマンドはAI-SDD原則に従って仕様書・設計書を生成します。
 
 ### ディレクトリパスの解決
 
@@ -243,8 +250,9 @@ $ARGUMENTS
 5. 抽象仕様書を生成・保存（Specify）
    ↓
 6. spec-reviewer による原則準拠チェック（必須）
-   ├─ spec-reviewer エージェントを呼び出し
-   ├─ CONSTITUTION.md 準拠をチェック
+   ├─ spec-reviewer エージェントを呼び出し（--summary オプション）
+   ├─ **対象**: {機能名}_spec.md のみ（Design Docはまだ生成されていない）
+   ├─ CONSTITUTION.md 準拠をチェック（アーキテクチャ・開発手法原則に焦点）
    ├─ PRD との整合性をチェック
    ├─ 違反検出時: 自動修正を試行
    └─ 修正後、再度チェック
@@ -253,9 +261,10 @@ $ARGUMENTS
    ├─ 技術情報あり: 生成・保存（Plan）
    └─ 技術情報なし: スキップするか確認
    ↓
-8. Design Doc の原則準拠チェック（design 生成時）
-   ├─ spec-reviewer エージェントを呼び出し
-   ├─ CONSTITUTION.md 準拠をチェック
+8. Design Doc の原則準拠チェック（Design Doc を生成した場合のみ）
+   ├─ spec-reviewer エージェントを呼び出し（--summary オプション）
+   ├─ **対象**: {機能名}_design.md のみ（Specは既にステップ6でチェック済み）
+   ├─ CONSTITUTION.md 準拠をチェック（技術制約・アーキテクチャ原則に焦点）
    ├─ spec との整合性をチェック
    ├─ 違反検出時: 自動修正を試行
    └─ 修正後、再度チェック
@@ -282,8 +291,10 @@ CONSTITUTION.md から以下の原則を把握し、生成時に準拠してく�
 
 ### CONSTITUTION.md が存在しない場合
 
-- 原則チェックをスキップ
-- 生成結果に「CONSTITUTION.md が存在しないため、原則チェックは実施していません」と記載
+1. **原則準拠チェックをスキップ**
+2. **出力に記載**: "⚠️ CONSTITUTION.md が存在しないため、原則準拠チェックをスキップしました"
+3. **ユーザーに推奨**: "`/sdd_init` または `/constitution init` を実行してプロジェクト原則を作成してください"
+4. **仕様書・設計書生成は継続** (その他の品質チェックは通常通り実行)
 
 ## spec-reviewer による原則準拠チェック（必須）
 

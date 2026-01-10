@@ -9,9 +9,16 @@ Execute implementation following TDD (Test-Driven Development) approach based on
 
 ## Prerequisites
 
-**Before execution, you must read the `sdd-workflow:sdd-workflow` agent content to understand AI-SDD principles.**
+**Before execution, you must read the AI-SDD principles document.**
 
-This command performs implementation following the sdd-workflow agent's principles.
+AI-SDD principles document path (search in the following order and use the first file found):
+1. `.sdd/AI-SDD-PRINCIPLES.md` (from project root - for plugin users)
+2. `../AI-SDD-PRINCIPLES.md` (relative path from this file - for plugin development)
+3. `plugins/sdd-workflow/AI-SDD-PRINCIPLES.md` (from project root - for plugin development)
+
+Understand AI-SDD principles.
+
+This command performs implementation following AI-SDD principles.
 
 ### Directory Path Resolution
 

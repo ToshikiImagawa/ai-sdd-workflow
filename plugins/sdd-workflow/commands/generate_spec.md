@@ -12,9 +12,16 @@ Generates the following documents from input content according to the AI-SDD wor
 
 ## Prerequisites
 
-**Before execution, you must read `sdd-workflow:sdd-workflow` agent content to understand AI-SDD principles.**
+**Before execution, you must read the AI-SDD principles document.**
 
-This command follows the sdd-workflow agent principles for specification and design document generation.
+AI-SDD principles document path (search in the following order and use the first file found):
+1. `.sdd/AI-SDD-PRINCIPLES.md` (from project root - for plugin users)
+2. `../AI-SDD-PRINCIPLES.md` (relative path from this file - for plugin development)
+3. `plugins/sdd-workflow/AI-SDD-PRINCIPLES.md` (from project root - for plugin development)
+
+Understand AI-SDD principles.
+
+This command follows AI-SDD principles for specification and design document generation.
 
 ### Directory Path Resolution
 
@@ -244,7 +251,8 @@ Skip Design Doc generation and confirm with user in the following cases:
 5. Generate and save abstract specification (Specify)
    ↓
 6. Spec principle compliance check with spec-reviewer (Required)
-   ├─ Call spec-reviewer agent
+   ├─ Call spec-reviewer agent (--summary option)
+   ├─ **Target**: {feature-name}_spec.md only (Design Doc not yet generated)
    ├─ Check CONSTITUTION.md compliance (Architecture/Development principles focus)
    ├─ On violation detection: Attempt auto-fix
    └─ After fix, re-check
@@ -253,8 +261,9 @@ Skip Design Doc generation and confirm with user in the following cases:
    ├─ Technical info present: Generate and save (Plan)
    └─ No technical info: Confirm whether to skip
    ↓
-8. Design Doc principle compliance check with spec-reviewer (Required)
-   ├─ Call spec-reviewer agent
+8. Design Doc principle compliance check with spec-reviewer (Required, only if Design Doc was generated)
+   ├─ Call spec-reviewer agent (--summary option)
+   ├─ **Target**: {feature-name}_design.md only (Spec already checked in step 6)
    ├─ Check CONSTITUTION.md compliance (Technical constraints/Architecture focus)
    ├─ On violation detection: Attempt auto-fix
    └─ After fix, re-check
@@ -379,8 +388,10 @@ After loading CONSTITUTION.md, understand the following principles and ensure sp
 
 ### If CONSTITUTION.md Does Not Exist
 
-- Skip principle check
-- Note in output: "Principle check was not performed as CONSTITUTION.md does not exist"
+1. **Skip principle compliance check**
+2. **Note in output**: "⚠️ Principle compliance check was skipped as CONSTITUTION.md does not exist"
+3. **Recommend to user**: "Run `/sdd_init` or `/constitution init` to create project principles"
+4. **Continue with spec/design generation** (other quality checks will still be performed)
 
 ## Principle Compliance Check with spec-reviewer (Required)
 

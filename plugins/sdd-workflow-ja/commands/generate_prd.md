@@ -9,9 +9,16 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 ## 前提条件
 
-**実行前に必ず `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込み、AI-SDDの原則を理解してください。**
+**実行前に必ず AI-SDD原則ドキュメントを読み込んでください。**
 
-このコマンドはsdd-workflowエージェントの原則に従ってPRDを生成します。
+AI-SDD原則ドキュメントのパス（以下の順序で検索し、最初に見つかったファイルを使用）：
+1. `.sdd/AI-SDD-PRINCIPLES.md`（プロジェクトルートから - プラグイン利用者向け）
+2. `../AI-SDD-PRINCIPLES.md`（このファイルからの相対パス - プラグイン開発者向け）
+3. `plugins/sdd-workflow-ja/AI-SDD-PRINCIPLES.md`（プロジェクトルートから - プラグイン開発者向け）
+
+AI-SDDの原則を理解してください。
+
+このコマンドはAI-SDD原則に従ってPRDを生成します。
 
 ### ディレクトリパスの解決
 
@@ -239,8 +246,10 @@ CONSTITUTION.md から以下の原則を把握し、PRD 生成時に準拠して
 
 ### CONSTITUTION.md が存在しない場合
 
-- 原則チェックをスキップ
-- 生成結果に「CONSTITUTION.md が存在しないため、原則チェックは実施していません」と記載
+1. **原則準拠チェックをスキップ**
+2. **出力に記載**: "⚠️ CONSTITUTION.md が存在しないため、原則準拠チェックをスキップしました"
+3. **ユーザーに推奨**: "`/sdd_init` または `/constitution init` を実行してプロジェクト原則を作成してください"
+4. **PRD生成は継続** (その他の品質チェックは通常通り実行)
 
 ## prd-reviewer による原則準拠チェック（必須）
 

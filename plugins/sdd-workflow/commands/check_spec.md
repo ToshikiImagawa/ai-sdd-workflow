@@ -1,18 +1,28 @@
 ---
-description: "Check consistency between implementation code and specifications, detecting discrepancies"
+description: "Check consistency between implementation code and design documents (design), detecting discrepancies"
 allowed-tools: Read, Glob, Grep, AskUserQuestion
 ---
 
-# Check Spec - Specification Consistency Check
+# Check Spec - Design & Implementation Consistency Check
 
-Verifies consistency between implementation code and specifications (`*_spec.md`, `*_design.md`), detecting
-discrepancies.
+Verifies consistency between implementation code and design documents (`*_design.md`), detecting discrepancies.
+
+**Role**: This command specializes in **design ↔ implementation consistency checking**.
+**Document-level consistency** (PRD ↔ spec, spec ↔ design) is handled by the `spec-reviewer`
+agent when called with the `--full` option.
 
 ## Prerequisites
 
-**Before execution, you must read `sdd-workflow:sdd-workflow` agent content to understand AI-SDD principles.**
+**Before execution, you must read the AI-SDD principles document.**
 
-This command follows the sdd-workflow agent principles for consistency checking.
+AI-SDD principles document path (search in the following order and use the first file found):
+1. `.sdd/AI-SDD-PRINCIPLES.md` (from project root - for plugin users)
+2. `../AI-SDD-PRINCIPLES.md` (relative path from this file - for plugin development)
+3. `plugins/sdd-workflow/AI-SDD-PRINCIPLES.md` (from project root - for plugin development)
+
+Understand AI-SDD principles.
+
+This command follows AI-SDD principles for consistency checking.
 
 ### Directory Path Resolution
 
@@ -44,51 +54,50 @@ Implementation → task/ → *_design.md → *_spec.md → requirement/ → CONS
 
 $ARGUMENTS
 
+### Options
+
+- `--full`: In addition to consistency checking, also runs quality review by the `spec-reviewer` agent
+  - CONSTITUTION.md compliance check
+  - Completeness, clarity, and SysML compliance check
+  - Vague description detection
+
 ### Input Examples
 
 ```
-/check_spec user-auth
-/check_spec task-management
-/check_spec  # Without arguments, targets all specifications
+/check_spec user-auth              # Consistency check only (default)
+/check_spec task-management --full # Consistency check + quality review
+/check_spec --full                 # Comprehensive check for all specifications
+/check_spec                        # Without arguments, targets all specifications (consistency check only)
 ```
 
 ## Processing Flow
 
 ### 1. Identify Target Documents
 
-Both flat and hierarchical structures are supported.
+Target design documents (`*_design.md`). Both flat and hierarchical structures are supported.
 
 **For flat structure**:
 
 ```
-With argument → Target the following files:
-  - .sdd/requirement/{argument}.md (PRD, if exists)
-  - .sdd/specification/{argument}_spec.md
+With argument → Target the following file:
   - .sdd/specification/{argument}_design.md
-Without argument → Target all files under .sdd/specification/ (recursively)
+Without argument → Target all *_design.md files under .sdd/specification/ (recursively)
 ```
 
 **For hierarchical structure** (when argument contains `/`, or when specifying hierarchical path):
 
 ```
-Argument in "{parent-feature}/{feature-name}" format → Target the following files:
-  - .sdd/requirement/{parent-feature}/{feature-name}.md (PRD)
-  - .sdd/specification/{parent-feature}/{feature-name}_spec.md
+Argument in "{parent-feature}/{feature-name}" format → Target the following file:
   - .sdd/specification/{parent-feature}/{feature-name}_design.md
 
 Argument is "{parent-feature}" only → Target the following files:
-  - .sdd/requirement/{parent-feature}/index.md (parent feature PRD)
-  - .sdd/requirement/{parent-feature}/*.md (child feature PRDs)
-  - .sdd/specification/{parent-feature}/index_spec.md (parent feature spec)
-  - .sdd/specification/{parent-feature}/*_spec.md (child feature specs)
   - .sdd/specification/{parent-feature}/index_design.md (parent feature design)
   - .sdd/specification/{parent-feature}/*_design.md (child feature designs)
 ```
 
-**⚠️ Note the difference in naming conventions**:
+**⚠️ Naming convention**:
 
-- **Under requirement**: No suffix (`index.md`, `{feature-name}.md`)
-- **Under specification**: `_spec` or `_design` suffix required (`index_spec.md`, `{feature-name}_spec.md`)
+- **Under specification**: `_design` suffix required (`index_design.md`, `{feature-name}_design.md`)
 
 **Hierarchical structure input examples**:
 
@@ -97,34 +106,17 @@ Argument is "{parent-feature}" only → Target the following files:
 /check_spec auth                # Check entire auth domain
 ```
 
-### 2. Load Documents
+### 2. Load Design Documents
 
-Extract the following information from target documents:
+**Extract the following information from `*_design.md`**:
 
-**From PRD (`requirement/*.md`)** (if exists):
-
-| Item                            | Description                         |
-|:--------------------------------|:------------------------------------|
-| **Requirement IDs**             | UR-xxx, FR-xxx, NFR-xxx             |
-| **Functional Requirements**     | Functions the system should provide |
-| **Non-Functional Requirements** | Performance, security, etc.         |
-
-**From `*_spec.md`**:
-
-| Item                        | Description                             |
-|:----------------------------|:----------------------------------------|
-| **Public API**              | Function names, arguments, return types |
-| **Data Model**              | Type definitions, interfaces            |
-| **Functional Requirements** | List of functions to implement          |
-| **PRD Reference**           | Referenced requirement IDs              |
-
-**From `*_design.md`**:
-
-| Item                      | Description                            |
-|:--------------------------|:---------------------------------------|
-| **Module Structure**      | Directory structure, file organization |
-| **Technology Stack**      | Libraries, frameworks used             |
-| **Interface Definitions** | Interface definitions for each layer   |
+| Item                      | Description                                                                |
+|:--------------------------|:---------------------------------------------------------------------------|
+| **Module Structure**      | Directory structure, file organization                                     |
+| **Technology Stack**      | Libraries, frameworks used                                                 |
+| **Interface Definitions** | API signatures (function names, arguments, return values), type definitions, data models |
+| **Functional Requirements** | List of features to implement                                            |
+| **Implementation Approach** | Architecture patterns, design decisions                                  |
 
 ### 3. Verify Implementation Code
 
@@ -136,30 +128,9 @@ Search for code corresponding to specification contents:
 
 ### 4. Consistency Check Items
 
-#### CONSTITUTION ↔ Document Consistency (if constitution exists)
-
-| Check Target                        | Verification Content                                                           | Importance |
-|:------------------------------------|:-------------------------------------------------------------------------------|:-----------|
-| **Principle Compliance**            | Do specifications and design documents comply with project principles?         | High       |
-| **Development Standard Compliance** | Are defined development standards (code quality, testing, security, etc.) met? | Medium     |
-| **Technology Stack**                | Are permitted technology stacks being used?                                    | Medium     |
-
-#### PRD ↔ spec Consistency (if PRD exists)
-
-| Check Target                              | Verification Content                                   | Importance |
-|:------------------------------------------|:-------------------------------------------------------|:-----------|
-| **Requirement ID Mapping**                | Are PRD requirement IDs referenced in spec?            | High       |
-| **Functional Requirement Coverage**       | Are PRD functional requirements covered in spec?       | High       |
-| **Non-Functional Requirement Reflection** | Are PRD non-functional requirements reflected in spec? | Medium     |
-| **Terminology Consistency**               | Is same terminology used in PRD and spec?              | Low        |
-
-#### spec ↔ design Consistency
-
-| Check Target                 | Verification Content                       | Importance |
-|:-----------------------------|:-------------------------------------------|:-----------|
-| **API Definition Match**     | Is spec API detailed in design?            | High       |
-| **Type Definition Match**    | Do spec type definitions match design?     | High       |
-| **Constraint Consideration** | Are spec constraints considered in design? | Medium     |
+**Note**: This command specializes in **design ↔ implementation consistency checking**. **Document-level consistency**
+(PRD ↔ spec, spec ↔ design) and **quality review** (CONSTITUTION.md compliance, completeness, clarity) are handled by
+the `spec-reviewer` agent when using the `--full` option.
 
 #### design ↔ Implementation Consistency
 
@@ -192,34 +163,127 @@ Classify detected discrepancies as follows:
 - Minor technology stack differences
 - Missing comments/documentation
 
+### 6. Comprehensive Review (--full option only)
+
+When the `--full` option is specified, the `spec-reviewer` agent is invoked to perform comprehensive review.
+
+#### Review Content
+
+| Check Item                         | Description                                                                    |
+|:-----------------------------------|:-------------------------------------------------------------------------------|
+| **PRD ↔ spec Traceability**        | Verify PRD requirements are covered in spec (80% coverage threshold)           |
+| **spec ↔ design Consistency**      | Verify spec content is properly detailed in design                             |
+| **CONSTITUTION.md Compliance**     | Verify compliance with project principles                                      |
+| **Completeness**                   | Verify required sections (purpose, API, constraints, etc.) are present         |
+| **Clarity**                        | Detect vague descriptions ("nice to have", "appropriately", etc.)              |
+| **SysML Compliance**               | Verify requirement ID format (UR/FR/NFR-xxx) and traceability are proper       |
+
+#### Execution Timing
+
+- Executes after design ↔ implementation consistency check is complete
+- Performs comprehensive review for target documents (PRD, spec, design)
+- Generates traceability matrix (PRD → spec → design correspondence)
+
+**Note**: Comprehensive review requires additional execution time. For quick checks during development, run without `--full`, and use `--full` before PR creation or for periodic checks.
+
 ## Output Format
 
 ````markdown
-## Specification Consistency Check Results
+## Design & Implementation Consistency Check Results
 
 ### Target Documents
 
-- `.sdd/requirement/[{parent-feature}/]{feature-name}.md` (PRD, if exists)
-- `.sdd/specification/[{parent-feature}/]{feature-name}_spec.md`
 - `.sdd/specification/[{parent-feature}/]{feature-name}_design.md`
 
-※ For hierarchical structure, parent feature uses `index.md`, `index_spec.md`, `index_design.md`
+※ For hierarchical structure, parent feature uses `index_design.md`
 
 ### Check Results Summary
 
-| Check Target | Result | Count |
-|:---|:---|:---|
-| CONSTITUTION ↔ docs | Compliant / Non-compliant / No Constitution | {n} items |
-| PRD ↔ spec | Consistent / Inconsistent | {n} items |
-| spec ↔ design | Consistent / Inconsistent | {n} items |
-| design ↔ Implementation | Consistent / Inconsistent | {n} items |
+**design ↔ Implementation Consistency Check**:
 
-### PRD ↔ spec Consistency (if PRD exists)
+| Check Target                | Result                          | Count     |
+|:----------------------------|:--------------------------------|:----------|
+| design ↔ Implementation     | 🟢 Consistent / 🔴 Inconsistent | {n} items |
+
+**Document-level Consistency & Quality Review** (`--full` option only):
+
+Comprehensive review results from `spec-reviewer` agent displayed below.
+
+| Aspect                      | Result                          | Count     |
+|:----------------------------|:--------------------------------|:----------|
+| PRD ↔ spec Traceability     | 🟢 Consistent / 🔴 Inconsistent | {n} items |
+| spec ↔ design Consistency   | 🟢 Consistent / 🔴 Inconsistent | {n} items |
+| CONSTITUTION.md Compliance  | 🟢 Compliant / 🔴 Violation     | {n} items |
+| Completeness                | ✅ Good / ⚠️ Needs Improvement  | {n} items |
+| Clarity                     | ✅ Good / ⚠️ Needs Improvement  | {n} items |
+
+### 🔴 Critical (Immediate Action Required)
 
 | Requirement ID | PRD Requirement Content | Spec Mapping | Status |
 |:---|:---|:---|:---|
-| FR-001 | {Requirement content} | {Corresponding functional requirement} | Consistent / Not Mapped |
-| FR-002 | {Requirement content} | Not documented | Not Mapped |
+| UR-001 | {User requirement content} | {Corresponding user story} | 🟢 Covered / 🟡 Partially Covered |
+| FR-001 | {Functional requirement content} | {Corresponding functional requirement/API} | 🟢 Covered |
+| FR-002 | {Functional requirement content} | Not documented | 🔴 Not Covered |
+| NFR-001 | {Non-functional requirement content} | {Corresponding constraint/quality requirement} | 🟢 Covered |
+| NFR-002 | {Non-functional requirement content} | Partially documented | 🟡 Partially Covered |
+
+**Coverage: {X}% ({Covered+Partially Covered}/{Total Requirements})**
+
+⚠️ Warning: Coverage is below 80% (displayed only when coverage is below 80%)
+
+**Criteria**:
+- 🟢 **Covered**: PRD requirement is clearly documented in spec with defined implementation approach
+- 🟡 **Partially Covered**: Related description exists in spec but doesn't fully cover the requirement
+- 🔴 **Not Covered**: No corresponding description found in spec
+
+#### PRD ↔ spec Inconsistency Details
+
+##### 🔴 Not Covered Requirements ({n} items)
+
+###### FR-002: {Functional Requirement Title}
+
+**PRD States**:
+```
+{Detailed requirement content from PRD}
+```
+
+**Spec Status**:
+- No corresponding functional requirement documented
+- No related API definition found
+
+**Recommended Actions**:
+1. [ ] Add functional requirement to spec and clarify implementation approach
+2. [ ] Add API design if necessary
+3. [ ] Verify if PRD requirement is still valid (remove if obsolete)
+
+---
+
+##### 🟡 Partially Covered Requirements ({n} items)
+
+###### NFR-002: {Non-Functional Requirement Title}
+
+**PRD States**:
+```
+{Detailed requirement content from PRD}
+Example: Response time must be within 2 seconds at 95th percentile
+```
+
+**Spec States**:
+```
+{Related content in spec}
+Example: Design considering performance
+```
+
+**Missing Points**:
+- Specific numerical targets (95th percentile, 2 seconds) not documented
+- Performance measurement method not defined
+
+**Recommended Actions**:
+1. [ ] Add specific numerical targets to spec's constraints section
+2. [ ] Add performance measurement/verification method to design document
+3. [ ] Add monitoring requirements if necessary
+
+---
 
 ### Critical (Immediate Action Required)
 
@@ -283,11 +347,68 @@ Features implemented but not documented in specifications:
 |:---|:---|:---|
 | {Function/class name} | `{file path}` | Add to spec / Remove if unnecessary |
 
+---
+
+### Quality Review Results (--full option only)
+
+#### Specification Quality Score
+
+| Document                              | CONSTITUTION Compliance | Completeness | Clarity | SysML Compliance | Overall Rating    |
+|:--------------------------------------|:------------------------|:-------------|:--------|:-----------------|:------------------|
+| `.sdd/specification/{feature}_spec.md` | 🟢 Compliant / 🔴 Violation | ✅ / ⚠️       | ✅ / ⚠️  | ✅ / ⚠️           | 🟢 Good / 🟡 Needs Improvement |
+| `.sdd/specification/{feature}_design.md` | 🟢 Compliant / 🔴 Violation | ✅ / ⚠️       | ✅ / ⚠️  | -                | 🟢 Good / 🟡 Needs Improvement |
+
+#### Detected Issues
+
+##### 🔴 CONSTITUTION.md Violations ({n} items)
+
+- **Violation**: {Content violating project principles}
+- **Location**: `{filename}` section {section}
+- **Recommended Fix**: {How to fix}
+
+##### 🟡 Completeness Issues ({n} items)
+
+- **Missing Section**: {Required section name}
+- **Target File**: `{filename}`
+- **Recommended Action**: Add section and document {content}
+
+##### 🟡 Vague Descriptions ({n} items)
+
+- **Vague Expression**: "{Detected vague expression}"
+- **Location**: `{filename}` section {section}
+- **Recommended Fix**: Specify concrete criteria and implementation approach
+
+**Note**: The above is a brief summary. Detailed review results (principle violation details, auto-fix summary, etc.) will be output separately by the spec-reviewer agent.
+
+---
+
 ### Recommended Actions
 
-1. Resolve **Critical** discrepancies first
-2. Decide whether to modify specification or implementation
-3. After modifications, run `/check_spec` again to verify
+#### Priority Order
+
+1. **PRD ↔ spec Coverage Improvement** (if coverage is below 80%)
+   - Resolve 🔴 Not Covered requirements first
+   - Update 🟡 Partially Covered requirements to full coverage
+   - Target to raise coverage above 80%
+
+2. **Resolve Critical Discrepancies**
+   - API signature mismatches
+   - Implementation or removal of unimplemented features from spec
+   - Type definition mismatches
+
+3. **Address Warnings and Info**
+   - Ensure module structure consistency
+   - Document undocumented implementations in spec
+
+#### Resolution Flow
+
+1. Review PRD ↔ spec inconsistencies and assess each requirement's coverage status
+2. For Not Covered or Partially Covered requirements, determine:
+   - Is the requirement still valid? → If valid, add to spec
+   - Has the requirement become obsolete? → If obsolete, remove or deprecate from PRD
+3. Resolve spec ↔ design ↔ implementation discrepancies
+4. Decide whether to modify specification or implementation
+5. After modifications, run `/check_spec` again to verify
 
 ````
 

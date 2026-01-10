@@ -5,6 +5,63 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [2.3.0] - 2026-01-09
+
+### Changed
+
+#### Agents
+
+- **Role Separation**: Renamed `sdd-workflow` agent to `AI-SDD-PRINCIPLES.md`
+    - Separated principle definitions into an independent document
+    - Updated all commands, agents, and skills to reference `../AI-SDD-PRINCIPLES.md`
+    - Centralized AI-SDD principles for better maintainability
+
+- `spec-reviewer` - Added document traceability check functionality
+    - **PRD ↔ spec traceability check**: Verify PRD requirements are properly covered in spec
+        - Requirement ID (UR/FR/NFR) mapping verification
+        - Coverage rate calculation (80% threshold check)
+        - Classification of partial/missing coverage
+    - **spec ↔ design consistency check**: Verify spec content is properly detailed in design
+        - API definition elaboration check
+        - Type definition consistency check
+        - Constraint consideration check
+    - Added `Edit` to `allowed-tools` (for auto-fix support)
+    - Clarified input format and output format (`--summary` option support)
+
+#### Commands
+
+- `/check_spec` - **Specialized for design ↔ implementation consistency check**
+    - **[BREAKING]** Delegated document-to-document consistency checks (PRD↔spec, spec↔design) to `spec-reviewer`
+        - **Before (v2.2.0)**: Performed all consistency checks (CONSTITUTION↔docs, PRD↔spec, spec↔design, design↔implementation)
+        - **After (v2.3.0)**: Performs only design↔implementation consistency check (improved performance)
+        - **Migration**:
+            - If document-to-document consistency checks are needed: Use `/check_spec --full`
+            - If design↔implementation only is sufficient: Keep using `/check_spec` (same command as before)
+        - **Impact**: If using `/check_spec` in CI/CD pipeline, consider adding `--full` option
+    - Added `--full` option: Runs comprehensive review by `spec-reviewer` in addition to consistency check
+    - Limited target documents to `*_design.md`
+    - Simplified output format (focused on design↔implementation)
+
+- `/sdd_init` - Updated reference path
+    - Changed agent reference to `AI-SDD-PRINCIPLES.md`
+
+### Added
+
+#### Documentation
+
+- `AI-SDD-PRINCIPLES.md` - Independent document defining AI-SDD principles
+    - Separated principle definitions previously contained in `sdd-workflow` agent
+    - Commonly referenced by commands, agents, and skills
+
+#### README
+
+- Documented Windows platform incompatibility
+    - Added platform support matrix (macOS/Linux: ✅, Windows: ❌)
+    - Documented alternatives for Windows users (WSL, Git Bash)
+    - Future support plans (PowerShell version, cross-platform implementation under consideration)
+
 ## [2.2.0] - 2026-01-06
 
 ### Added

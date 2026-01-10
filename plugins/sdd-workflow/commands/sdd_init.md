@@ -15,15 +15,22 @@ Initialize AI-SDD (AI-driven Specification-Driven Development) workflow in the c
 
 ## Prerequisites
 
-**Before execution, you must read the `sdd-workflow:sdd-workflow` agent content to understand AI-SDD principles.**
+**Before execution, you must read the AI-SDD principles document.**
 
-This command initializes the project following the sdd-workflow agent's principles.
+AI-SDD principles document path (search in the following order and use the first file found):
+1. `.sdd/AI-SDD-PRINCIPLES.md` (from project root - for plugin users)
+2. `../AI-SDD-PRINCIPLES.md` (relative path from this file - for plugin development)
+3. `plugins/sdd-workflow/AI-SDD-PRINCIPLES.md` (from project root - for plugin development)
+
+Understand AI-SDD principles.
+
+This command initializes the project following AI-SDD principles.
 
 ### Configuration File (Optional)
 
 You can customize directory names by creating `.sdd-config.json` at project root.
 
-For configuration file details, refer to the "Project Configuration File" section in the `sdd-workflow:sdd-workflow` agent.
+For configuration file details, refer to the "Project Configuration File" section in the AI-SDD principles document.
 
 **Note**: If you want to use custom directory names during initialization, create `.sdd-config.json` first. The directory structure and CLAUDE.md content will be generated based on configuration values.
 
@@ -52,16 +59,20 @@ This command uses the following skills:
    ├─ .sdd/specification/
    └─ .sdd/task/
    ↓
-4. Generate project constitution (if not exist)
+4. Copy AI-SDD principles document
+   ├─ Read AI-SDD-PRINCIPLES.md from plugin root (Read tool)
+   └─ Save as .sdd/AI-SDD-PRINCIPLES.md (Write tool)
+   ↓
+5. Generate project constitution (if not exist)
    ├─ Check if .sdd/CONSTITUTION.md exists
    └─ If not exist: Generate using sdd-workflow:sdd-templates skill
    ↓
-5. Check existing templates
+6. Check existing templates
    ├─ .sdd/PRD_TEMPLATE.md
    ├─ .sdd/SPECIFICATION_TEMPLATE.md
    └─ .sdd/DESIGN_DOC_TEMPLATE.md
    ↓
-6. Generate missing templates
+7. Generate missing templates
    └─ Use sdd-workflow:sdd-templates skill
 ```
 
@@ -78,8 +89,7 @@ This project follows AI-SDD (AI-driven Specification-Driven Development) workflo
 
 ### Document Operations
 
-When operating files under `.sdd/` directory, always use the `sdd-workflow:sdd-workflow`
-agent to ensure proper AI-SDD workflow compliance.
+When operating files under `.sdd/` directory, refer to `.sdd/AI-SDD-PRINCIPLES.md` to ensure proper AI-SDD workflow compliance.
 
 **Trigger Conditions**:
 

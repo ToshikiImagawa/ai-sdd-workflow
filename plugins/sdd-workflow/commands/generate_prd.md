@@ -9,9 +9,16 @@ Generates PRD (Requirements Specification) from input business requirements acco
 
 ## Prerequisites
 
-**Before execution, you must read `sdd-workflow:sdd-workflow` agent content to understand AI-SDD principles.**
+**Before execution, you must read the AI-SDD principles document.**
 
-This command follows the sdd-workflow agent principles for PRD generation.
+AI-SDD principles document path (search in the following order and use the first file found):
+1. `.sdd/AI-SDD-PRINCIPLES.md` (from project root - for plugin users)
+2. `../AI-SDD-PRINCIPLES.md` (relative path from this file - for plugin development)
+3. `plugins/sdd-workflow/AI-SDD-PRINCIPLES.md` (from project root - for plugin development)
+
+Understand AI-SDD principles.
+
+This command follows AI-SDD principles for PRD generation.
 
 ### Directory Path Resolution
 
@@ -276,8 +283,10 @@ After loading CONSTITUTION.md, understand the following principles and ensure PR
 
 ### If CONSTITUTION.md Does Not Exist
 
-- Skip principle check
-- Note in output: "Principle check was not performed as CONSTITUTION.md does not exist"
+1. **Skip principle compliance check**
+2. **Note in output**: "⚠️ Principle compliance check was skipped as CONSTITUTION.md does not exist"
+3. **Recommend to user**: "Run `/sdd_init` or `/constitution init` to create project principles"
+4. **Continue with PRD generation** (other quality checks will still be performed)
 
 ## Principle Compliance Check with prd-reviewer (Required)
 

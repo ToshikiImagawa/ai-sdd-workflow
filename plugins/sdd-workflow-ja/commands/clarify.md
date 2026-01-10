@@ -9,9 +9,16 @@ allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 
 ## 前提条件
 
-**実行前に必ず `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込み、AI-SDDの原則を理解してください。**
+**実行前に必ず AI-SDD原則ドキュメントを読み込んでください。**
 
-このコマンドはsdd-workflowエージェントの原則に従って仕様の明確化を支援します。
+AI-SDD原則ドキュメントのパス（以下の順序で検索し、最初に見つかったファイルを使用）：
+1. `.sdd/AI-SDD-PRINCIPLES.md`（プロジェクトルートから - プラグイン利用者向け）
+2. `../AI-SDD-PRINCIPLES.md`（このファイルからの相対パス - プラグイン開発者向け）
+3. `plugins/sdd-workflow-ja/AI-SDD-PRINCIPLES.md`（プロジェクトルートから - プラグイン開発者向け）
+
+AI-SDDの原則を理解してください。
+
+このコマンドはAI-SDD原則に従って仕様の明確化を支援します。
 
 ### ディレクトリパスの解決
 

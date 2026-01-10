@@ -5,6 +5,63 @@
 形式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に基づき、
 [Semantic Versioning](https://semver.org/lang/ja/) に準拠しています。
 
+## [Unreleased]
+
+## [2.3.0] - 2026-01-09
+
+### Changed
+
+#### エージェント
+
+- **役割分離**: `sdd-workflow` エージェントを `AI-SDD-PRINCIPLES.md` に変更
+    - エージェントの原則定義部分を独立したドキュメントとして分離
+    - 全コマンド・エージェント・スキルの参照先を `../AI-SDD-PRINCIPLES.md` に更新
+    - AI-SDD原則の一元管理と保守性の向上
+
+- `spec-reviewer` - ドキュメント間トレーサビリティチェック機能を追加
+    - **PRD ↔ spec トレーサビリティチェック**: PRDの要求がspecで適切にカバーされているか確認
+        - 要求ID（UR/FR/NFR）のマッピング検証
+        - カバレッジ率の計算（80%閾値チェック）
+        - 部分対応・未対応の分類
+    - **spec ↔ design 整合性チェック**: specの内容がdesignで適切に詳細化されているか確認
+        - API定義の詳細化確認
+        - 型定義の一致確認
+        - 制約事項の考慮確認
+    - `allowed-tools` に `Edit` を追加（自動修正対応）
+    - 入力形式と出力フォーマットの明確化（`--summary` オプション対応）
+
+#### コマンド
+
+- `/check_spec` - **設計書（design）↔ 実装の整合性チェックに特化**
+    - **[BREAKING]** ドキュメント間整合性チェック（PRD↔spec、spec↔design）を `spec-reviewer` に委譲
+        - **変更前（v2.2.0）**: すべての整合性チェック（CONSTITUTION↔docs、PRD↔spec、spec↔design、design↔実装）を実行
+        - **変更後（v2.3.0）**: design↔実装の整合性チェックのみ実行（高速化）
+        - **移行方法**:
+            - ドキュメント間整合性も含む包括的チェックが必要な場合: `/check_spec --full` を使用
+            - design↔実装のみで十分な場合: `/check_spec` のまま（既存と同じコマンド）
+        - **影響**: CI/CDパイプラインで `/check_spec` を使用している場合、`--full` オプションの追加を検討してください
+    - `--full` オプションの追加: 整合性チェックに加えて `spec-reviewer` による包括的レビューを実行
+    - 対象ドキュメントを `*_design.md` に限定
+    - 出力フォーマットの簡素化（design↔実装に集中）
+
+- `/sdd_init` - 参照先の更新
+    - エージェント参照を `AI-SDD-PRINCIPLES.md` に変更
+
+### Added
+
+#### ドキュメント
+
+- `AI-SDD-PRINCIPLES.md` - AI-SDD原則を定義する独立ドキュメント
+    - 従来 `sdd-workflow` エージェントに含まれていた原則定義を分離
+    - コマンド・エージェント・スキルから共通参照される設計
+
+#### README
+
+- Windows 環境非対応の明記
+    - 対応環境マトリックスを追加（macOS/Linux: ✅、Windows: ❌）
+    - Windowsユーザー向け代替手段を記載（WSL、Git Bash）
+    - 将来的な対応方針（PowerShell版、クロスプラットフォーム実装の検討）
+
 ## [2.2.0] - 2026-01-06
 
 ### Added
@@ -15,7 +72,7 @@
     - CONSTITUTION.md準拠チェック（最重要機能）
     - 原則カテゴリ別チェック（ビジネス原則、アーキテクチャ原則、開発手法原則、技術制約）
     - 自動修正フロー（違反検出時に自動修正を試行）
-    - SysML要求図形式の妥当性検証
+    - SysML 要求図形式の妥当性検証
     - 曖昧な表現の検出と改善提案
 
 ### Changed
