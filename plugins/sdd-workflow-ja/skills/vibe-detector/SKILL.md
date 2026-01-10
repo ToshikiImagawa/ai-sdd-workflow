@@ -10,9 +10,16 @@ allowed-tools: Read, Glob, Grep, AskUserQuestion
 
 ## 前提条件
 
-**実行前に必ず `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込み、AI-SDDの原則を理解してください。**
+**実行前に必ず AI-SDD原則ドキュメントを読み込んでください。**
 
-このスキルはsdd-workflowエージェントの原則に従ってVibe Codingを検出します。
+AI-SDD原則ドキュメントのパス（以下の順序で検索し、最初に見つかったファイルを使用）：
+1. `.sdd/AI-SDD-PRINCIPLES.md`（プロジェクトルートから - プラグイン利用者向け）
+2. `../AI-SDD-PRINCIPLES.md`（このファイルからの相対パス - プラグイン開発者向け）
+3. `plugins/sdd-workflow-ja/AI-SDD-PRINCIPLES.md`（プロジェクトルートから - プラグイン開発者向け）
+
+AI-SDDの原則を理解してください。
+
+このスキルはAI-SDD原則に従ってVibe Codingを検出します。
 
 ### ディレクトリパスの解決
 
