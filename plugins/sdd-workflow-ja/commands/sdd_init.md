@@ -15,7 +15,19 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 ## 前提条件
 
-**実行前に必ず AI-SDD原則ドキュメントを読み込んでください。**
+**実行前に必ず AI-SDD原則ドキュメントとプラグインバージョンを読み込んでください。**
+
+### 1. プラグインバージョンの取得
+
+プラグインの `plugin.json` からバージョンを読み取ります：
+
+1. `plugins/sdd-workflow-ja/.claude-plugin/plugin.json` を読み込み
+2. `version` フィールドの値を取得（例: `"2.3.0"`）
+3. このバージョンを `{PLUGIN_VERSION}` として以降の処理で使用
+
+**重要**: CLAUDE.md のセクションタイトルには必ずこのバージョンを含めます（例: `## AI-SDD Instructions (v2.3.0)`）
+
+### 2. AI-SDD原則ドキュメントの読み込み
 
 AI-SDD原則ドキュメントのパス（以下の順序で検索し、最初に見つかったファイルを使用）：
 1. `.sdd/AI-SDD-PRINCIPLES.md`（プロジェクトルートから - プラグイン利用者向け）
@@ -62,6 +74,7 @@ AI-SDDの原則を理解してください。
    ↓
 4. AI-SDD原則ドキュメントをコピー
    ├─ プラグインルートのAI-SDD-PRINCIPLES.mdを読み込み（Read tool）
+   ├─ フロントマターのversionを{PLUGIN_VERSION}に更新
    └─ .sdd/AI-SDD-PRINCIPLES.md として保存（Write tool）
    ↓
 5. プロジェクト原則を生成（存在しない場合）
@@ -83,8 +96,10 @@ AI-SDDの原則を理解してください。
 
 `CLAUDE.md` に以下のセクションを追加します：
 
+**注意**: 以下のテンプレート内の `{PLUGIN_VERSION}` は、前提条件で取得したプラグインバージョンに置き換えてください。
+
 ````markdown
-## AI-SDD Instructions
+## AI-SDD Instructions (v{PLUGIN_VERSION})
 
 このプロジェクトはAI-SDD（AI駆動仕様駆動開発）ワークフローに従います。
 
@@ -182,9 +197,27 @@ specification/auth/index.md            # specification には _spec/_design が�
 
 ### 配置ルール
 
-1. **CLAUDE.md に既に "AI-SDD" セクションがある場合**: スキップ（初期化済み）
+1. **CLAUDE.md に既に "AI-SDD Instructions" セクションがある場合**:
+   - セクションタイトルのバージョンを確認（例: `## AI-SDD Instructions (v2.2.0)`）
+   - バージョンが現在のプラグインバージョンより古い場合:
+     - セクション全体を最新版に置き換え
+     - `.sdd/AI-SDD-PRINCIPLES.md` が存在しない場合は生成
+   - バージョンが同じ場合: スキップ（初期化済み）
 2. **CLAUDE.md が存在するが AI-SDD セクションがない場合**: セクションを末尾に追加
 3. **CLAUDE.md が存在しない場合**: セクションを含む新規ファイルを作成
+
+### マイグレーション対応（v2.2.0 → v2.3.0以降）
+
+v2.2.0以前で初期化したプロジェクトでは `.sdd/AI-SDD-PRINCIPLES.md` が存在しません。
+このコマンドを再実行すると以下の対応を行います：
+
+1. **AI-SDD-PRINCIPLES.md の生成**: プラグインの `AI-SDD-PRINCIPLES.md` を `.sdd/` にコピー
+2. **CLAUDE.md の更新**: セクションタイトルのバージョンを更新し、内容を最新版に置き換え
+
+**検出方法**:
+- CLAUDE.md に `## AI-SDD Instructions` セクションが存在する
+- かつ `.sdd/AI-SDD-PRINCIPLES.md` が存在しない
+- または、セクションタイトルのバージョンが現在のプラグインバージョンより古い
 
 ## プロジェクト原則生成
 

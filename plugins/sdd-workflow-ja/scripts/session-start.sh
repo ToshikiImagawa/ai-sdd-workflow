@@ -144,4 +144,102 @@ else
     output_env_vars
 fi
 
+# バージョン比較関数（メジャー・マイナーのみ比較、パッチは無視）
+# 戻り値: 0 = 同じまたは新しい, 1 = 古い
+compare_major_minor() {
+    local plugin_version
+    local project_version
+    plugin_version="$1"
+    project_version="$2"
+
+    # メジャー・マイナーを抽出
+    local plugin_major
+    local plugin_minor
+    local project_major
+    local project_minor
+    plugin_major="${plugin_version%%.*}"
+    plugin_minor="${plugin_version#*.}"; plugin_minor="${plugin_minor%%.*}"
+    project_major="${project_version%%.*}"
+    project_minor="${project_version#*.}"; project_minor="${project_minor%%.*}"
+
+    # 数値として比較
+    if [ "$project_major" -lt "$plugin_major" ] 2>/dev/null; then
+        return 1
+    elif [ "$project_major" -eq "$plugin_major" ] && [ "$project_minor" -lt "$plugin_minor" ] 2>/dev/null; then
+        return 1
+    fi
+    return 0
+}
+
+# AI-SDD-PRINCIPLES.md のバージョンチェック
+PRINCIPLES_FILE="${PROJECT_ROOT}/${DOCS_ROOT}/AI-SDD-PRINCIPLES.md"
+SDD_DIR="${PROJECT_ROOT}/${DOCS_ROOT}"
+PLUGIN_JSON="${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json"
+
+# .sdd/ ディレクトリが存在する場合のみチェック
+if [ -d "$SDD_DIR" ]; then
+    SHOW_WARNING=false
+    WARNING_REASON=""
+    PLUGIN_VERSION=""
+    PROJECT_VERSION=""
+
+    # プラグインバージョンを取得
+    if [ -f "$PLUGIN_JSON" ]; then
+        if command -v jq &> /dev/null; then
+            PLUGIN_VERSION=$(jq -r '.version // empty' "$PLUGIN_JSON" 2>/dev/null)
+        else
+            PLUGIN_VERSION=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLUGIN_JSON" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
+        fi
+    fi
+
+    if [ ! -f "$PRINCIPLES_FILE" ]; then
+        # AI-SDD-PRINCIPLES.md が存在しない
+        SHOW_WARNING=true
+        WARNING_REASON="missing"
+    elif [ -n "$PLUGIN_VERSION" ]; then
+        # AI-SDD-PRINCIPLES.md からバージョンを取得（フロントマター）
+        PROJECT_VERSION=$(grep -A5 '^---$' "$PRINCIPLES_FILE" 2>/dev/null | grep '^version:' | sed 's/version:[[:space:]]*["'\'']\?\([^"'\'']*\)["'\'']\?/\1/' | tr -d ' ')
+
+        if [ -z "$PROJECT_VERSION" ]; then
+            # バージョン情報がない（古い形式）
+            SHOW_WARNING=true
+            WARNING_REASON="no_version"
+        elif ! compare_major_minor "$PLUGIN_VERSION" "$PROJECT_VERSION"; then
+            # バージョンが古い
+            SHOW_WARNING=true
+            WARNING_REASON="outdated"
+        fi
+    fi
+
+    if [ "$SHOW_WARNING" = true ]; then
+        echo "" >&2
+        case "$WARNING_REASON" in
+            "missing")
+                echo "[AI-SDD Warning] AI-SDD-PRINCIPLES.md が見つかりません。" >&2
+                echo "" >&2
+                echo "このプロジェクトは v2.2.0 以前のプラグインで初期化された可能性があります。" >&2
+                ;;
+            "no_version")
+                echo "[AI-SDD Warning] AI-SDD-PRINCIPLES.md にバージョン情報がありません。" >&2
+                echo "" >&2
+                echo "古い形式の AI-SDD-PRINCIPLES.md が検出されました。" >&2
+                ;;
+            "outdated")
+                echo "[AI-SDD Warning] AI-SDD-PRINCIPLES.md のバージョンが古いです。" >&2
+                echo "" >&2
+                echo "  プラグインバージョン: v${PLUGIN_VERSION}" >&2
+                echo "  プロジェクトバージョン: v${PROJECT_VERSION}" >&2
+                ;;
+        esac
+        echo "" >&2
+        echo "以下のコマンドを実行して更新してください:" >&2
+        echo "  /sdd_init" >&2
+        echo "" >&2
+        echo "これにより以下が実行されます:" >&2
+        echo "  - .sdd/AI-SDD-PRINCIPLES.md の更新" >&2
+        echo "  - CLAUDE.md の AI-SDD セクションの更新" >&2
+        echo "" >&2
+    fi
+fi
+
 exit 0
