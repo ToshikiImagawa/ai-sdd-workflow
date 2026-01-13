@@ -292,6 +292,14 @@ After initialization, verify:
 3. **Project Constitution**: `.sdd/CONSTITUTION.md` exists
 4. **Templates**: All 3 template files exist in `.sdd/`
 
+## Cleanup
+
+After initialization is complete, perform the following cleanup:
+
+1. **Delete warning file**: Delete `.sdd/UPDATE_REQUIRED.md` if it exists
+   - This file is created by the `session-start` hook when version mismatch is detected
+   - It becomes unnecessary after initialization is complete
+
 ## Output
 
 On successful initialization, display:

@@ -138,11 +138,9 @@ if [ -n "$CLAUDE_ENV_FILE" ]; then
         mv "${CLAUDE_ENV_FILE}.tmp" "$CLAUDE_ENV_FILE" 2>/dev/null || true
     fi
     output_env_vars >> "$CLAUDE_ENV_FILE"
-else
-    # If CLAUDE_ENV_FILE is not available, output to stdout
-    # Claude Code hooks read stdout and interpret as environment variables
-    output_env_vars
 fi
+# Note: Do not output env vars if CLAUDE_ENV_FILE is not available
+# (would mix with JSON response in stdout)
 
 # Version comparison function (compare major.minor only, ignore patch)
 # Return: 0 = same or newer, 1 = older
@@ -198,7 +196,7 @@ if [ -d "$SDD_DIR" ]; then
         WARNING_REASON="missing"
     elif [ -n "$PLUGIN_VERSION" ]; then
         # Get version from AI-SDD-PRINCIPLES.md (frontmatter)
-        PROJECT_VERSION=$(grep -A5 '^---$' "$PRINCIPLES_FILE" 2>/dev/null | grep '^version:' | sed 's/version:[[:space:]]*["'\'']\?\([^"'\'']*\)["'\'']\?/\1/' | tr -d ' ')
+        PROJECT_VERSION=$(grep -A5 '^---$' "$PRINCIPLES_FILE" 2>/dev/null | grep '^version:' | sed 's/^version:[[:space:]]*["'\'']*\([^"'\'']*\)["'\'']*.*$/\1/')
 
         if [ -z "$PROJECT_VERSION" ]; then
             # No version info (old format)
@@ -212,33 +210,47 @@ if [ -d "$SDD_DIR" ]; then
     fi
 
     if [ "$SHOW_WARNING" = true ]; then
-        echo "" >&2
+        # Build warning message
+        WARNING_MESSAGE=""
         case "$WARNING_REASON" in
             "missing")
-                echo "[AI-SDD Warning] AI-SDD-PRINCIPLES.md not found." >&2
-                echo "" >&2
-                echo "This project may have been initialized with plugin v2.2.0 or earlier." >&2
+                WARNING_MESSAGE="AI-SDD-PRINCIPLES.md not found. This project may have been initialized with plugin v2.2.0 or earlier."
                 ;;
             "no_version")
-                echo "[AI-SDD Warning] AI-SDD-PRINCIPLES.md has no version info." >&2
-                echo "" >&2
-                echo "Old format AI-SDD-PRINCIPLES.md detected." >&2
+                WARNING_MESSAGE="AI-SDD-PRINCIPLES.md has no version info. Old format AI-SDD-PRINCIPLES.md detected."
                 ;;
             "outdated")
-                echo "[AI-SDD Warning] AI-SDD-PRINCIPLES.md version is outdated." >&2
-                echo "" >&2
-                echo "  Plugin version: v${PLUGIN_VERSION}" >&2
-                echo "  Project version: v${PROJECT_VERSION}" >&2
+                WARNING_MESSAGE="AI-SDD-PRINCIPLES.md version is outdated. Plugin: v${PLUGIN_VERSION}, Project: v${PROJECT_VERSION}"
                 ;;
         esac
-        echo "" >&2
-        echo "Run the following command to update:" >&2
-        echo "  /sdd_init" >&2
-        echo "" >&2
-        echo "This will:" >&2
-        echo "  - Update .sdd/AI-SDD-PRINCIPLES.md" >&2
-        echo "  - Update AI-SDD section in CLAUDE.md" >&2
-        echo "" >&2
+
+        # Create warning file (uppercase for visibility, standard naming)
+        WARNING_FILE="${PROJECT_ROOT}/${DOCS_ROOT}/UPDATE_REQUIRED.md"
+        cat > "$WARNING_FILE" << WARN_EOF
+# AI-SDD Update Required
+
+## Reason
+
+${WARNING_MESSAGE}
+
+## How to Fix
+
+Run the following command:
+
+\`\`\`
+/sdd_init
+\`\`\`
+
+This will:
+- Update .sdd/AI-SDD-PRINCIPLES.md
+- Update AI-SDD section in CLAUDE.md
+
+---
+This file will be automatically deleted after running /sdd_init.
+WARN_EOF
+
+        # Output to stderr (visible with --verbose)
+        echo "[AI-SDD] Update required. Please run /sdd_init." >&2
     fi
 fi
 

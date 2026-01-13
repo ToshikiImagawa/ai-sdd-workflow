@@ -138,11 +138,9 @@ if [ -n "$CLAUDE_ENV_FILE" ]; then
         mv "${CLAUDE_ENV_FILE}.tmp" "$CLAUDE_ENV_FILE" 2>/dev/null || true
     fi
     output_env_vars >> "$CLAUDE_ENV_FILE"
-else
-    # CLAUDE_ENV_FILE がない場合、stdout に出力
-    # Claude Code のフックは stdout を読み取り、環境変数として解釈する
-    output_env_vars
 fi
+# 注意: CLAUDE_ENV_FILE がない場合は環境変数を出力しない
+# （stdout に出力すると JSON レスポンスと混在するため）
 
 # バージョン比較関数（メジャー・マイナーのみ比較、パッチは無視）
 # 戻り値: 0 = 同じまたは新しい, 1 = 古い
@@ -198,7 +196,7 @@ if [ -d "$SDD_DIR" ]; then
         WARNING_REASON="missing"
     elif [ -n "$PLUGIN_VERSION" ]; then
         # AI-SDD-PRINCIPLES.md からバージョンを取得（フロントマター）
-        PROJECT_VERSION=$(grep -A5 '^---$' "$PRINCIPLES_FILE" 2>/dev/null | grep '^version:' | sed 's/version:[[:space:]]*["'\'']\?\([^"'\'']*\)["'\'']\?/\1/' | tr -d ' ')
+        PROJECT_VERSION=$(grep -A5 '^---$' "$PRINCIPLES_FILE" 2>/dev/null | grep '^version:' | sed 's/^version:[[:space:]]*["'\'']*\([^"'\'']*\)["'\'']*.*$/\1/')
 
         if [ -z "$PROJECT_VERSION" ]; then
             # バージョン情報がない（古い形式）
@@ -212,33 +210,47 @@ if [ -d "$SDD_DIR" ]; then
     fi
 
     if [ "$SHOW_WARNING" = true ]; then
-        echo "" >&2
+        # 警告メッセージを構築
+        WARNING_MESSAGE=""
         case "$WARNING_REASON" in
             "missing")
-                echo "[AI-SDD Warning] AI-SDD-PRINCIPLES.md が見つかりません。" >&2
-                echo "" >&2
-                echo "このプロジェクトは v2.2.0 以前のプラグインで初期化された可能性があります。" >&2
+                WARNING_MESSAGE="AI-SDD-PRINCIPLES.md が見つかりません。このプロジェクトは v2.2.0 以前のプラグインで初期化された可能性があります。"
                 ;;
             "no_version")
-                echo "[AI-SDD Warning] AI-SDD-PRINCIPLES.md にバージョン情報がありません。" >&2
-                echo "" >&2
-                echo "古い形式の AI-SDD-PRINCIPLES.md が検出されました。" >&2
+                WARNING_MESSAGE="AI-SDD-PRINCIPLES.md にバージョン情報がありません。古い形式の AI-SDD-PRINCIPLES.md が検出されました。"
                 ;;
             "outdated")
-                echo "[AI-SDD Warning] AI-SDD-PRINCIPLES.md のバージョンが古いです。" >&2
-                echo "" >&2
-                echo "  プラグインバージョン: v${PLUGIN_VERSION}" >&2
-                echo "  プロジェクトバージョン: v${PROJECT_VERSION}" >&2
+                WARNING_MESSAGE="AI-SDD-PRINCIPLES.md のバージョンが古いです。プラグイン: v${PLUGIN_VERSION}, プロジェクト: v${PROJECT_VERSION}"
                 ;;
         esac
-        echo "" >&2
-        echo "以下のコマンドを実行して更新してください:" >&2
-        echo "  /sdd_init" >&2
-        echo "" >&2
-        echo "これにより以下が実行されます:" >&2
-        echo "  - .sdd/AI-SDD-PRINCIPLES.md の更新" >&2
-        echo "  - CLAUDE.md の AI-SDD セクションの更新" >&2
-        echo "" >&2
+
+        # 警告ファイルを作成（大文字で目立つ標準的な命名）
+        WARNING_FILE="${PROJECT_ROOT}/${DOCS_ROOT}/UPDATE_REQUIRED.md"
+        cat > "$WARNING_FILE" << WARN_EOF
+# AI-SDD 更新が必要です
+
+## 理由
+
+${WARNING_MESSAGE}
+
+## 対応方法
+
+以下のコマンドを実行してください:
+
+\`\`\`
+/sdd_init
+\`\`\`
+
+これにより以下が実行されます:
+- .sdd/AI-SDD-PRINCIPLES.md の更新
+- CLAUDE.md の AI-SDD セクションの更新
+
+---
+このファイルは /sdd_init 実行後に自動削除されます。
+WARN_EOF
+
+        # stderr にも出力（--verbose 時に表示される）
+        echo "[AI-SDD] 更新が必要です。/sdd_init を実行してください。" >&2
     fi
 fi
 
