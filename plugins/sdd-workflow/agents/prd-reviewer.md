@@ -34,10 +34,9 @@ PRD review result report (evaluation summary, items requiring fixes, recommended
 
 **Before execution, you must read the AI-SDD principles document.**
 
-AI-SDD principles document path (search in the following order and use the first file found):
-1. `.sdd/AI-SDD-PRINCIPLES.md` (from project root - for plugin users)
-2. `../AI-SDD-PRINCIPLES.md` (relative path from this file - for plugin development)
-3. `plugins/sdd-workflow/AI-SDD-PRINCIPLES.md` (from project root - for plugin development)
+AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
+
+**Note**: This file is automatically updated at the start of each session.
 
 Understand AI-SDD principles, document structure, persistence rules, and Vibe Coding prevention details.
 

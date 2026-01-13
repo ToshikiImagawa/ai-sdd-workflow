@@ -15,13 +15,17 @@ Initialize AI-SDD (AI-driven Specification-Driven Development) workflow in the c
 
 ## Prerequisites
 
-**Before execution, you must read the AI-SDD principles document and plugin version.**
-
 ### 1. Get Plugin Version
 
-Read version from plugin's `plugin.json`:
+Read version from plugin's `plugin.json`.
 
-1. Read `plugins/sdd-workflow/.claude-plugin/plugin.json`
+**plugin.json path** (search in the following order and use the first file found):
+
+1. `$CLAUDE_PLUGIN_ROOT/.claude-plugin/plugin.json` (Claude Code environment variable)
+2. `plugins/sdd-workflow/.claude-plugin/plugin.json` (from project root - for plugin development)
+
+Steps:
+1. Read `plugin.json`
 2. Get the `version` field value (e.g., `"2.3.0"`)
 3. Use this version as `{PLUGIN_VERSION}` in subsequent processing
 
@@ -29,10 +33,11 @@ Read version from plugin's `plugin.json`:
 
 ### 2. Read AI-SDD Principles Document
 
-AI-SDD principles document path (search in the following order and use the first file found):
-1. `.sdd/AI-SDD-PRINCIPLES.md` (from project root - for plugin users)
-2. `../AI-SDD-PRINCIPLES.md` (relative path from this file - for plugin development)
-3. `plugins/sdd-workflow/AI-SDD-PRINCIPLES.md` (from project root - for plugin development)
+**Read the AI-SDD principles document.**
+
+AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
+
+**Note**: `.sdd/AI-SDD-PRINCIPLES.md` is automatically updated at session start (via session-start hook). This command does not need to manually copy it.
 
 Understand AI-SDD principles.
 
@@ -71,21 +76,16 @@ This command uses the following skills:
    ├─ .sdd/specification/
    └─ .sdd/task/
    ↓
-4. Copy AI-SDD principles document
-   ├─ Read AI-SDD-PRINCIPLES.md from plugin root (Read tool)
-   ├─ Update frontmatter version to {PLUGIN_VERSION}
-   └─ Save as .sdd/AI-SDD-PRINCIPLES.md (Write tool)
-   ↓
-5. Generate project constitution (if not exist)
+4. Generate project constitution (if not exist)
    ├─ Check if .sdd/CONSTITUTION.md exists
    └─ If not exist: Generate using sdd-workflow:sdd-templates skill
    ↓
-6. Check existing templates
+5. Check existing templates
    ├─ .sdd/PRD_TEMPLATE.md
    ├─ .sdd/SPECIFICATION_TEMPLATE.md
    └─ .sdd/DESIGN_DOC_TEMPLATE.md
    ↓
-7. Generate missing templates
+6. Generate missing templates
    └─ Use sdd-workflow:sdd-templates skill
 ```
 

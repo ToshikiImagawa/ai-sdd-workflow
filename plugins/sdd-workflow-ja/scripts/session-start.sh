@@ -117,6 +117,50 @@ if [ -f "$CONFIG_FILE" ]; then
     fi
 fi
 
+# .sdd/ ディレクトリの作成とAI-SDD原則ファイルのコピー
+SDD_DIR="${PROJECT_ROOT}/${DOCS_ROOT}"
+SOURCE_PRINCIPLES="${CLAUDE_PLUGIN_ROOT}/AI-SDD-PRINCIPLES.source.md"
+TARGET_PRINCIPLES="${SDD_DIR}/AI-SDD-PRINCIPLES.md"
+
+# .sdd/ ディレクトリが存在しない場合は作成
+if [ ! -d "$SDD_DIR" ]; then
+    mkdir -p "$SDD_DIR"
+    echo "[AI-SDD] ${DOCS_ROOT}/ ディレクトリを作成しました。" >&2
+fi
+
+# AI-SDD-PRINCIPLES.source.md を .sdd/AI-SDD-PRINCIPLES.md にコピー（常に上書き）
+if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
+    # プラグインバージョンを取得してフロントマターに埋め込む
+    PLUGIN_JSON="${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json"
+    PLUGIN_VERSION=""
+    if [ -f "$PLUGIN_JSON" ]; then
+        if command -v jq &> /dev/null; then
+            PLUGIN_VERSION=$(jq -r '.version // empty' "$PLUGIN_JSON" 2>/dev/null)
+        else
+            PLUGIN_VERSION=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLUGIN_JSON" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
+        fi
+    fi
+
+    # ソースファイルをコピーしてバージョンを更新
+    TEMP_FILE="${TARGET_PRINCIPLES}.tmp"
+    if [ -n "$PLUGIN_VERSION" ]; then
+        # フロントマターのversionを置換してコピー（一時ファイル経由で原子的に操作）
+        if sed "s|^version:.*$|version: \"${PLUGIN_VERSION}\"|" "$SOURCE_PRINCIPLES" > "$TEMP_FILE" 2>/dev/null; then
+            mv "$TEMP_FILE" "$TARGET_PRINCIPLES"
+            echo "[AI-SDD] AI-SDD-PRINCIPLES.md を v${PLUGIN_VERSION} に更新しました。" >&2
+        else
+            # sed が失敗した場合は一時ファイルを削除してフォールバック
+            rm -f "$TEMP_FILE"
+            echo "[AI-SDD] Warning: バージョン更新に失敗しました。バージョン情報なしでコピーします。" >&2
+            cp "$SOURCE_PRINCIPLES" "$TARGET_PRINCIPLES"
+        fi
+    else
+        # バージョン取得できない場合はそのままコピー
+        cp "$SOURCE_PRINCIPLES" "$TARGET_PRINCIPLES"
+        echo "[AI-SDD] AI-SDD-PRINCIPLES.md をコピーしました（バージョン不明）。" >&2
+    fi
+fi
+
 # 環境変数の出力
 # Claude Code が CLAUDE_ENV_FILE を提供する場合はそちらに書き出し
 # 提供されない場合は stdout に出力（Claude Code が読み取る）
@@ -169,69 +213,49 @@ compare_major_minor() {
     return 0
 }
 
-# AI-SDD-PRINCIPLES.md のバージョンチェック
-PRINCIPLES_FILE="${PROJECT_ROOT}/${DOCS_ROOT}/AI-SDD-PRINCIPLES.md"
-SDD_DIR="${PROJECT_ROOT}/${DOCS_ROOT}"
-PLUGIN_JSON="${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json"
+# CLAUDE.md のバージョンチェック
+# AI-SDD-PRINCIPLES.md は session-start で常に最新化されるため、
+# CLAUDE.md 内の AI-SDD セクションの更新が必要かどうかのみをチェック
+CLAUDE_MD="${PROJECT_ROOT}/CLAUDE.md"
+PLUGIN_JSON_CHECK="${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json"
 
-# .sdd/ ディレクトリが存在する場合のみチェック
-if [ -d "$SDD_DIR" ]; then
+if [ -d "$SDD_DIR" ] && [ -f "$CLAUDE_MD" ]; then
     SHOW_WARNING=false
-    WARNING_REASON=""
-    PLUGIN_VERSION=""
-    PROJECT_VERSION=""
+    PLUGIN_VERSION_CHECK=""
+    CLAUDE_VERSION=""
 
     # プラグインバージョンを取得
-    if [ -f "$PLUGIN_JSON" ]; then
+    if [ -f "$PLUGIN_JSON_CHECK" ]; then
         if command -v jq &> /dev/null; then
-            PLUGIN_VERSION=$(jq -r '.version // empty' "$PLUGIN_JSON" 2>/dev/null)
+            PLUGIN_VERSION_CHECK=$(jq -r '.version // empty' "$PLUGIN_JSON_CHECK" 2>/dev/null)
         else
-            PLUGIN_VERSION=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLUGIN_JSON" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
+            PLUGIN_VERSION_CHECK=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLUGIN_JSON_CHECK" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
         fi
     fi
 
-    if [ ! -f "$PRINCIPLES_FILE" ]; then
-        # AI-SDD-PRINCIPLES.md が存在しない
-        SHOW_WARNING=true
-        WARNING_REASON="missing"
-    elif [ -n "$PLUGIN_VERSION" ]; then
-        # AI-SDD-PRINCIPLES.md からバージョンを取得（フロントマター）
-        PROJECT_VERSION=$(grep -A5 '^---$' "$PRINCIPLES_FILE" 2>/dev/null | grep '^version:' | sed 's/^version:[[:space:]]*["'\'']*\([^"'\'']*\)["'\'']*.*$/\1/')
+    if [ -n "$PLUGIN_VERSION_CHECK" ]; then
+        # CLAUDE.md から AI-SDD バージョンを取得（## AI-SDD Instructions (vX.Y.Z) 形式）
+        CLAUDE_VERSION=$(grep -o '## AI-SDD Instructions (v[0-9.]*' "$CLAUDE_MD" 2>/dev/null | sed 's/.*v\([0-9.]*\).*/\1/')
 
-        if [ -z "$PROJECT_VERSION" ]; then
-            # バージョン情報がない（古い形式）
+        if [ -z "$CLAUDE_VERSION" ]; then
+            # CLAUDE.md に AI-SDD セクションがない
             SHOW_WARNING=true
-            WARNING_REASON="no_version"
-        elif ! compare_major_minor "$PLUGIN_VERSION" "$PROJECT_VERSION"; then
-            # バージョンが古い
+        elif ! compare_major_minor "$PLUGIN_VERSION_CHECK" "$CLAUDE_VERSION"; then
+            # CLAUDE.md のバージョンが古い
             SHOW_WARNING=true
-            WARNING_REASON="outdated"
         fi
     fi
 
     if [ "$SHOW_WARNING" = true ]; then
-        # 警告メッセージを構築
-        WARNING_MESSAGE=""
-        case "$WARNING_REASON" in
-            "missing")
-                WARNING_MESSAGE="AI-SDD-PRINCIPLES.md が見つかりません。このプロジェクトは v2.2.0 以前のプラグインで初期化された可能性があります。"
-                ;;
-            "no_version")
-                WARNING_MESSAGE="AI-SDD-PRINCIPLES.md にバージョン情報がありません。古い形式の AI-SDD-PRINCIPLES.md が検出されました。"
-                ;;
-            "outdated")
-                WARNING_MESSAGE="AI-SDD-PRINCIPLES.md のバージョンが古いです。プラグイン: v${PLUGIN_VERSION}, プロジェクト: v${PROJECT_VERSION}"
-                ;;
-        esac
-
-        # 警告ファイルを作成（大文字で目立つ標準的な命名）
+        # 警告ファイルを作成
         WARNING_FILE="${PROJECT_ROOT}/${DOCS_ROOT}/UPDATE_REQUIRED.md"
         cat > "$WARNING_FILE" << WARN_EOF
 # AI-SDD 更新が必要です
 
 ## 理由
 
-${WARNING_MESSAGE}
+CLAUDE.md の AI-SDD セクションが古いバージョンです。
+プラグイン: v${PLUGIN_VERSION_CHECK}, CLAUDE.md: v${CLAUDE_VERSION:-未設定}
 
 ## 対応方法
 
@@ -241,16 +265,20 @@ ${WARNING_MESSAGE}
 /sdd_init
 \`\`\`
 
-これにより以下が実行されます:
-- .sdd/AI-SDD-PRINCIPLES.md の更新
-- CLAUDE.md の AI-SDD セクションの更新
+これにより CLAUDE.md の AI-SDD セクションが更新されます。
 
 ---
 このファイルは /sdd_init 実行後に自動削除されます。
 WARN_EOF
 
         # stderr にも出力（--verbose 時に表示される）
-        echo "[AI-SDD] 更新が必要です。/sdd_init を実行してください。" >&2
+        echo "[AI-SDD] CLAUDE.md の更新が必要です。/sdd_init を実行してください。" >&2
+    else
+        # 警告が不要な場合、既存の UPDATE_REQUIRED.md があれば削除
+        WARNING_FILE="${PROJECT_ROOT}/${DOCS_ROOT}/UPDATE_REQUIRED.md"
+        if [ -f "$WARNING_FILE" ]; then
+            rm -f "$WARNING_FILE"
+        fi
     fi
 fi
 
