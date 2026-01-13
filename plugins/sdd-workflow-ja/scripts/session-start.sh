@@ -142,12 +142,22 @@ if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
     fi
 
     # ソースファイルをコピーしてバージョンを更新
+    TEMP_FILE="${TARGET_PRINCIPLES}.tmp"
     if [ -n "$PLUGIN_VERSION" ]; then
-        # フロントマターのversionを置換してコピー
-        sed "s/^version:.*$/version: \"${PLUGIN_VERSION}\"/" "$SOURCE_PRINCIPLES" > "$TARGET_PRINCIPLES"
+        # フロントマターのversionを置換してコピー（一時ファイル経由で原子的に操作）
+        if sed "s|^version:.*$|version: \"${PLUGIN_VERSION}\"|" "$SOURCE_PRINCIPLES" > "$TEMP_FILE" 2>/dev/null; then
+            mv "$TEMP_FILE" "$TARGET_PRINCIPLES"
+            echo "[AI-SDD] AI-SDD-PRINCIPLES.md を v${PLUGIN_VERSION} に更新しました。" >&2
+        else
+            # sed が失敗した場合は一時ファイルを削除してフォールバック
+            rm -f "$TEMP_FILE"
+            echo "[AI-SDD] Warning: バージョン更新に失敗しました。バージョン情報なしでコピーします。" >&2
+            cp "$SOURCE_PRINCIPLES" "$TARGET_PRINCIPLES"
+        fi
     else
         # バージョン取得できない場合はそのままコピー
         cp "$SOURCE_PRINCIPLES" "$TARGET_PRINCIPLES"
+        echo "[AI-SDD] AI-SDD-PRINCIPLES.md をコピーしました（バージョン不明）。" >&2
     fi
 fi
 

@@ -23,11 +23,8 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 **plugin.json のパス**（以下の順序で検索し、最初に見つかったファイルを使用）：
 
-1. `$SDD_PLUGIN_ROOT/.claude-plugin/plugin.json`（セッション開始フックで設定される環境変数）
-2. `$CLAUDE_PLUGIN_ROOT/.claude-plugin/plugin.json`（Claude Code提供の環境変数 - フォールバック）
-3. `plugins/sdd-workflow-ja/.claude-plugin/plugin.json`（プロジェクトルートから - プラグイン開発者向け）
-
-**注意**: `$SDD_PLUGIN_ROOT` はセッション開始フックで永続化されるプラグインルートパスです。`$CLAUDE_PLUGIN_ROOT` はClaude Codeが提供する環境変数ですが、一部のインストール方法では利用できない場合があります。
+1. `$CLAUDE_PLUGIN_ROOT/.claude-plugin/plugin.json`（Claude Code提供の環境変数）
+2. `plugins/sdd-workflow-ja/.claude-plugin/plugin.json`（プロジェクトルートから - プラグイン開発者向け）
 
 **取得手順**：
 

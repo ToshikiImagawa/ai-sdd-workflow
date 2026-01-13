@@ -142,10 +142,18 @@ if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
         fi
     fi
 
-    # Inject version into frontmatter
+    # Inject version into frontmatter (atomic operation via temp file)
+    TEMP_FILE="${TARGET_PRINCIPLES}.tmp"
     if [ -n "$PLUGIN_VERSION" ]; then
-        sed "s/^version:.*$/version: \"${PLUGIN_VERSION}\"/" "$SOURCE_PRINCIPLES" > "$TARGET_PRINCIPLES"
-        echo "[AI-SDD] AI-SDD-PRINCIPLES.md updated to v${PLUGIN_VERSION}." >&2
+        if sed "s|^version:.*$|version: \"${PLUGIN_VERSION}\"|" "$SOURCE_PRINCIPLES" > "$TEMP_FILE" 2>/dev/null; then
+            mv "$TEMP_FILE" "$TARGET_PRINCIPLES"
+            echo "[AI-SDD] AI-SDD-PRINCIPLES.md updated to v${PLUGIN_VERSION}." >&2
+        else
+            # Fallback if sed fails
+            rm -f "$TEMP_FILE"
+            echo "[AI-SDD] Warning: Failed to update version. Copying without version info." >&2
+            cp "$SOURCE_PRINCIPLES" "$TARGET_PRINCIPLES"
+        fi
     else
         cp "$SOURCE_PRINCIPLES" "$TARGET_PRINCIPLES"
         echo "[AI-SDD] AI-SDD-PRINCIPLES.md copied (version unknown)." >&2
