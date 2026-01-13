@@ -301,6 +301,12 @@ WARN_EOF
 
         # Output to stderr (visible with --verbose)
         echo "[AI-SDD] CLAUDE.md update required. Please run /sdd_init." >&2
+    else
+        # No warning needed, remove existing UPDATE_REQUIRED.md if present
+        WARNING_FILE="${PROJECT_ROOT}/${DOCS_ROOT}/UPDATE_REQUIRED.md"
+        if [ -f "$WARNING_FILE" ]; then
+            rm -f "$WARNING_FILE"
+        fi
     fi
 fi
 
