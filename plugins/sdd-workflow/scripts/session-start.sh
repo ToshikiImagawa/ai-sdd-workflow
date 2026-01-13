@@ -158,6 +158,13 @@ if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
         cp "$SOURCE_PRINCIPLES" "$TARGET_PRINCIPLES"
         echo "[AI-SDD] AI-SDD-PRINCIPLES.md copied (version unknown)." >&2
     fi
+else
+    # Log the reason for skipping
+    if [ -z "$CLAUDE_PLUGIN_ROOT" ]; then
+        echo "[AI-SDD] CLAUDE_PLUGIN_ROOT not set. Skipping AI-SDD-PRINCIPLES.md auto-sync." >&2
+    elif [ ! -f "$SOURCE_PRINCIPLES" ]; then
+        echo "[AI-SDD] Source file not found: $SOURCE_PRINCIPLES. Skipping auto-sync." >&2
+    fi
 fi
 
 # Environment variable output

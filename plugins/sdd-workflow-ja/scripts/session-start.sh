@@ -159,6 +159,13 @@ if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
         cp "$SOURCE_PRINCIPLES" "$TARGET_PRINCIPLES"
         echo "[AI-SDD] AI-SDD-PRINCIPLES.md をコピーしました（バージョン不明）。" >&2
     fi
+else
+    # スキップ理由をログに出力
+    if [ -z "$CLAUDE_PLUGIN_ROOT" ]; then
+        echo "[AI-SDD] CLAUDE_PLUGIN_ROOT が設定されていないため、AI-SDD-PRINCIPLES.md の自動同期をスキップします。" >&2
+    elif [ ! -f "$SOURCE_PRINCIPLES" ]; then
+        echo "[AI-SDD] ソースファイルが見つかりません: $SOURCE_PRINCIPLES。自動同期をスキップします。" >&2
+    fi
 fi
 
 # 環境変数の出力
