@@ -1,3 +1,7 @@
+---
+version: "2.3.0"
+---
+
 # AI-SDD Development Principles
 
 **Document Type**: Plugin Design Principles (not a sub-agent)

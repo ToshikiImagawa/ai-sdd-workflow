@@ -9,7 +9,19 @@ Define the project's non-negotiable principles (Constitution) and verify that al
 
 ## Prerequisites
 
-**Before execution, you must read the AI-SDD principles document.**
+### Plugin Update Check
+
+**Before execution, check if `.sdd/UPDATE_REQUIRED.md` exists.**
+
+If this file exists, the AI-SDD plugin needs to be updated. Display a warning to the user and prompt them to run the following command:
+
+```
+/sdd_init
+```
+
+### AI-SDD Principles Document
+
+**Read the AI-SDD principles document.**
 
 AI-SDD principles document path (search in the following order and use the first file found):
 1. `.sdd/AI-SDD-PRINCIPLES.md` (from project root - for plugin users)

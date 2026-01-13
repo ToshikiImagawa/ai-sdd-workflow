@@ -138,10 +138,120 @@ if [ -n "$CLAUDE_ENV_FILE" ]; then
         mv "${CLAUDE_ENV_FILE}.tmp" "$CLAUDE_ENV_FILE" 2>/dev/null || true
     fi
     output_env_vars >> "$CLAUDE_ENV_FILE"
-else
-    # If CLAUDE_ENV_FILE is not available, output to stdout
-    # Claude Code hooks read stdout and interpret as environment variables
-    output_env_vars
+fi
+# Note: Do not output env vars if CLAUDE_ENV_FILE is not available
+# (would mix with JSON response in stdout)
+
+# Version comparison function (compare major.minor only, ignore patch)
+# Return: 0 = same or newer, 1 = older
+compare_major_minor() {
+    local plugin_version
+    local project_version
+    plugin_version="$1"
+    project_version="$2"
+
+    # Extract major and minor using parameter expansion (no subshell)
+    local plugin_major
+    local plugin_minor
+    local project_major
+    local project_minor
+    plugin_major="${plugin_version%%.*}"
+    plugin_minor="${plugin_version#*.}"; plugin_minor="${plugin_minor%%.*}"
+    project_major="${project_version%%.*}"
+    project_minor="${project_version#*.}"; project_minor="${project_minor%%.*}"
+
+    # Compare as numbers
+    if [ "$project_major" -lt "$plugin_major" ] 2>/dev/null; then
+        return 1
+    elif [ "$project_major" -eq "$plugin_major" ] && [ "$project_minor" -lt "$plugin_minor" ] 2>/dev/null; then
+        return 1
+    fi
+    return 0
+}
+
+# AI-SDD-PRINCIPLES.md version check
+PRINCIPLES_FILE="${PROJECT_ROOT}/${DOCS_ROOT}/AI-SDD-PRINCIPLES.md"
+SDD_DIR="${PROJECT_ROOT}/${DOCS_ROOT}"
+PLUGIN_JSON="${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json"
+
+# Only check if .sdd/ directory exists
+if [ -d "$SDD_DIR" ]; then
+    SHOW_WARNING=false
+    WARNING_REASON=""
+    PLUGIN_VERSION=""
+    PROJECT_VERSION=""
+
+    # Get plugin version
+    if [ -f "$PLUGIN_JSON" ]; then
+        if command -v jq &> /dev/null; then
+            PLUGIN_VERSION=$(jq -r '.version // empty' "$PLUGIN_JSON" 2>/dev/null)
+        else
+            PLUGIN_VERSION=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLUGIN_JSON" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
+        fi
+    fi
+
+    if [ ! -f "$PRINCIPLES_FILE" ]; then
+        # AI-SDD-PRINCIPLES.md doesn't exist
+        SHOW_WARNING=true
+        WARNING_REASON="missing"
+    elif [ -n "$PLUGIN_VERSION" ]; then
+        # Get version from AI-SDD-PRINCIPLES.md (frontmatter)
+        PROJECT_VERSION=$(grep -A5 '^---$' "$PRINCIPLES_FILE" 2>/dev/null | grep '^version:' | sed 's/^version:[[:space:]]*["'\'']*\([^"'\'']*\)["'\'']*.*$/\1/')
+
+        if [ -z "$PROJECT_VERSION" ]; then
+            # No version info (old format)
+            SHOW_WARNING=true
+            WARNING_REASON="no_version"
+        elif ! compare_major_minor "$PLUGIN_VERSION" "$PROJECT_VERSION"; then
+            # Version is outdated
+            SHOW_WARNING=true
+            WARNING_REASON="outdated"
+        fi
+    fi
+
+    if [ "$SHOW_WARNING" = true ]; then
+        # Build warning message
+        WARNING_MESSAGE=""
+        case "$WARNING_REASON" in
+            "missing")
+                WARNING_MESSAGE="AI-SDD-PRINCIPLES.md not found. This project may have been initialized with plugin v2.2.0 or earlier."
+                ;;
+            "no_version")
+                WARNING_MESSAGE="AI-SDD-PRINCIPLES.md has no version info. Old format AI-SDD-PRINCIPLES.md detected."
+                ;;
+            "outdated")
+                WARNING_MESSAGE="AI-SDD-PRINCIPLES.md version is outdated. Plugin: v${PLUGIN_VERSION}, Project: v${PROJECT_VERSION}"
+                ;;
+        esac
+
+        # Create warning file (uppercase for visibility, standard naming)
+        WARNING_FILE="${PROJECT_ROOT}/${DOCS_ROOT}/UPDATE_REQUIRED.md"
+        cat > "$WARNING_FILE" << WARN_EOF
+# AI-SDD Update Required
+
+## Reason
+
+${WARNING_MESSAGE}
+
+## How to Fix
+
+Run the following command:
+
+\`\`\`
+/sdd_init
+\`\`\`
+
+This will:
+- Update .sdd/AI-SDD-PRINCIPLES.md
+- Update AI-SDD section in CLAUDE.md
+
+---
+This file will be automatically deleted after running /sdd_init.
+WARN_EOF
+
+        # Output to stderr (visible with --verbose)
+        echo "[AI-SDD] Update required. Please run /sdd_init." >&2
+    fi
 fi
 
 exit 0

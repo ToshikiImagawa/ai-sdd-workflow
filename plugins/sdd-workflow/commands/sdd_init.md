@@ -15,7 +15,19 @@ Initialize AI-SDD (AI-driven Specification-Driven Development) workflow in the c
 
 ## Prerequisites
 
-**Before execution, you must read the AI-SDD principles document.**
+**Before execution, you must read the AI-SDD principles document and plugin version.**
+
+### 1. Get Plugin Version
+
+Read version from plugin's `plugin.json`:
+
+1. Read `plugins/sdd-workflow/.claude-plugin/plugin.json`
+2. Get the `version` field value (e.g., `"2.3.0"`)
+3. Use this version as `{PLUGIN_VERSION}` in subsequent processing
+
+**Important**: The CLAUDE.md section title must include this version (e.g., `## AI-SDD Instructions (v2.3.0)`)
+
+### 2. Read AI-SDD Principles Document
 
 AI-SDD principles document path (search in the following order and use the first file found):
 1. `.sdd/AI-SDD-PRINCIPLES.md` (from project root - for plugin users)
@@ -61,6 +73,7 @@ This command uses the following skills:
    ↓
 4. Copy AI-SDD principles document
    ├─ Read AI-SDD-PRINCIPLES.md from plugin root (Read tool)
+   ├─ Update frontmatter version to {PLUGIN_VERSION}
    └─ Save as .sdd/AI-SDD-PRINCIPLES.md (Write tool)
    ↓
 5. Generate project constitution (if not exist)
@@ -82,8 +95,10 @@ This command uses the following skills:
 
 Add the following section to `CLAUDE.md`:
 
+**Note**: Replace `{PLUGIN_VERSION}` in the template below with the plugin version obtained in prerequisites.
+
 ````markdown
-## AI-SDD Instructions
+## AI-SDD Instructions (v{PLUGIN_VERSION})
 
 This project follows AI-SDD (AI-driven Specification-Driven Development) workflow.
 
@@ -181,9 +196,27 @@ This convention makes it visually clear whether the link target is a file or dir
 
 ### Placement Rules
 
-1. **If CLAUDE.md already has "AI-SDD" section**: Skip (already initialized)
+1. **If CLAUDE.md already has "AI-SDD Instructions" section**:
+   - Check the version in section title (e.g., `## AI-SDD Instructions (v2.2.0)`)
+   - If version is older than current plugin version:
+     - Replace entire section with latest version
+     - Generate `.sdd/AI-SDD-PRINCIPLES.md` if not exists
+   - If version is same: Skip (already initialized)
 2. **If CLAUDE.md exists but no AI-SDD section**: Append section to end
 3. **If CLAUDE.md doesn't exist**: Create new file with section
+
+### Migration Support (v2.2.0 → v2.3.0+)
+
+Projects initialized with v2.2.0 or earlier don't have `.sdd/AI-SDD-PRINCIPLES.md`.
+Re-running this command will perform the following:
+
+1. **Generate AI-SDD-PRINCIPLES.md**: Copy plugin's `AI-SDD-PRINCIPLES.md` to `.sdd/`
+2. **Update CLAUDE.md**: Update section title version and replace content with latest version
+
+**Detection Method**:
+- CLAUDE.md has `## AI-SDD Instructions` section
+- AND `.sdd/AI-SDD-PRINCIPLES.md` doesn't exist
+- OR section title version is older than current plugin version
 
 ## Project Constitution Generation
 
@@ -258,6 +291,14 @@ After initialization, verify:
     - `.sdd/task/` exists
 3. **Project Constitution**: `.sdd/CONSTITUTION.md` exists
 4. **Templates**: All 3 template files exist in `.sdd/`
+
+## Cleanup
+
+After initialization is complete, perform the following cleanup:
+
+1. **Delete warning file**: Delete `.sdd/UPDATE_REQUIRED.md` if it exists
+   - This file is created by the `session-start` hook when version mismatch is detected
+   - It becomes unnecessary after initialization is complete
 
 ## Output
 
