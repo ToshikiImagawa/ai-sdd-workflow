@@ -254,10 +254,9 @@ AI-SDD（AI駆動仕様駆動開発）における **Specify フェーズ** を�
 
 **実行前に必ず AI-SDD原則ドキュメントを読み込んでください。**
 
-AI-SDD原則ドキュメントのパス（以下の順序で検索し、最初に見つかったファイルを使用）：
-1. `.sdd/AI-SDD-PRINCIPLES.md`（プロジェクトルートから - プラグイン利用者向け）
-2. `../AI-SDD-PRINCIPLES.md`（このファイルからの相対パス - プラグイン開発者向け）
-3. `plugins/sdd-workflow-ja/AI-SDD-PRINCIPLES.md`（プロジェクトルートから - プラグイン開発者向け）
+AI-SDD原則ドキュメントのパス: `.sdd/AI-SDD-PRINCIPLES.md`
+
+**注意**: このファイルはセッション開始時に自動的に最新化されます。
 
 AI-SDDの原則・ドキュメント構成・永続性ルール・Vibe Coding防止の詳細を理解してください。
 

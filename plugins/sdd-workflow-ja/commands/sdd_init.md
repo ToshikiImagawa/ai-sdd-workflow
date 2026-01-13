@@ -15,13 +15,23 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 ## 前提条件
 
-**実行前に必ず AI-SDD原則ドキュメントとプラグインバージョンを読み込んでください。**
+**実行前に必ずプラグインバージョンとAI-SDD原則ドキュメントを読み込んでください。**
 
 ### 1. プラグインバージョンの取得
 
-プラグインの `plugin.json` からバージョンを読み取ります：
+プラグインの `plugin.json` からバージョンを読み取ります。
 
-1. `plugins/sdd-workflow-ja/.claude-plugin/plugin.json` を読み込み
+**plugin.json のパス**（以下の順序で検索し、最初に見つかったファイルを使用）：
+
+1. `$SDD_PLUGIN_ROOT/.claude-plugin/plugin.json`（セッション開始フックで設定される環境変数）
+2. `$CLAUDE_PLUGIN_ROOT/.claude-plugin/plugin.json`（Claude Code提供の環境変数 - フォールバック）
+3. `plugins/sdd-workflow-ja/.claude-plugin/plugin.json`（プロジェクトルートから - プラグイン開発者向け）
+
+**注意**: `$SDD_PLUGIN_ROOT` はセッション開始フックで永続化されるプラグインルートパスです。`$CLAUDE_PLUGIN_ROOT` はClaude Codeが提供する環境変数ですが、一部のインストール方法では利用できない場合があります。
+
+**取得手順**：
+
+1. 上記の順序で `plugin.json` を読み込み
 2. `version` フィールドの値を取得（例: `"2.3.0"`）
 3. このバージョンを `{PLUGIN_VERSION}` として以降の処理で使用
 
@@ -29,15 +39,13 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 ### 2. AI-SDD原則ドキュメントの読み込み
 
-AI-SDD原則ドキュメントのパス（以下の順序で検索し、最初に見つかったファイルを使用）：
+**AI-SDD原則ドキュメントを読み込んでください。**
 
-1. `.sdd/AI-SDD-PRINCIPLES.md`（プロジェクトルートから - プラグイン利用者向け）
-2. `../AI-SDD-PRINCIPLES.md`（このファイルからの相対パス - プラグイン開発者向け）
-3. `plugins/sdd-workflow-ja/AI-SDD-PRINCIPLES.md`（プロジェクトルートから - プラグイン開発者向け）
+AI-SDD原則ドキュメントのパス: `.sdd/AI-SDD-PRINCIPLES.md`
 
-AI-SDDの原則を理解してください。
+**注意**: `.sdd/AI-SDD-PRINCIPLES.md` はセッション開始時に自動的に最新化されます（session-start フックによる自動コピー）。このコマンドでは手動コピーは不要です。
 
-このコマンドはAI-SDD原則に従ってプロジェクトを初期化します。
+AI-SDDの原則を理解してください。このコマンドはAI-SDD原則に従ってプロジェクトを初期化します。
 
 ### 設定ファイル（オプション）
 
@@ -68,28 +76,25 @@ AI-SDDの原則を理解してください。
    ├─ CLAUDE.md が存在する場合: AI-SDD Instructionsセクションを追加
    └─ 存在しない場合: AI-SDD Instructionsを含む新規CLAUDE.mdを作成
    ↓
-3. .sdd/ ディレクトリ構造を作成
+3. .sdd/ ディレクトリ構造を作成（session-startで作成済みの場合はスキップ）
    ├─ .sdd/requirement/
    ├─ .sdd/specification/
    └─ .sdd/task/
    ↓
-4. AI-SDD原則ドキュメントをコピー
-   ├─ プラグインルートのAI-SDD-PRINCIPLES.mdを読み込み（Read tool）
-   ├─ フロントマターのversionを{PLUGIN_VERSION}に更新
-   └─ .sdd/AI-SDD-PRINCIPLES.md として保存（Write tool）
-   ↓
-5. プロジェクト原則を生成（存在しない場合）
+4. プロジェクト原則を生成（存在しない場合）
    ├─ .sdd/CONSTITUTION.md が存在するか確認
    └─ 存在しない場合: sdd-workflow-ja:sdd-templates スキルを使用して生成
    ↓
-6. 既存テンプレートを確認
+5. 既存テンプレートを確認
    ├─ .sdd/PRD_TEMPLATE.md
    ├─ .sdd/SPECIFICATION_TEMPLATE.md
    └─ .sdd/DESIGN_DOC_TEMPLATE.md
    ↓
-7. 不足しているテンプレートを生成
+6. 不足しているテンプレートを生成
    └─ sdd-workflow-ja:sdd-templates スキルを使用して生成
 ```
+
+**注意**: AI-SDD-PRINCIPLES.md は session-start フックによって自動的にコピー・最新化されるため、このコマンドでは処理しません。
 
 ## CLAUDE.md設定
 
@@ -209,17 +214,17 @@ specification/auth/index.md            # specification には _spec/_design が�
 
 ### マイグレーション対応（v2.2.0 → v2.3.0以降）
 
-v2.2.0以前で初期化したプロジェクトでは `.sdd/AI-SDD-PRINCIPLES.md` が存在しません。
+v2.2.0以前で初期化したプロジェクトでは CLAUDE.md の AI-SDD セクションが古い形式になっています。
 このコマンドを再実行すると以下の対応を行います：
 
-1. **AI-SDD-PRINCIPLES.md の生成**: プラグインの `AI-SDD-PRINCIPLES.md` を `.sdd/` にコピー
-2. **CLAUDE.md の更新**: セクションタイトルのバージョンを更新し、内容を最新版に置き換え
+1. **CLAUDE.md の更新**: セクションタイトルのバージョンを更新し、内容を最新版に置き換え
+
+**注意**: `.sdd/AI-SDD-PRINCIPLES.md` は session-start フックによって自動的にコピー・最新化されるため、このコマンドでの手動対応は不要です。
 
 **検出方法**:
 
 - CLAUDE.md に `## AI-SDD Instructions` セクションが存在する
-- かつ `.sdd/AI-SDD-PRINCIPLES.md` が存在しない
-- または、セクションタイトルのバージョンが現在のプラグインバージョンより古い
+- かつ、セクションタイトルのバージョンが現在のプラグインバージョンより古い
 
 ## プロジェクト原則生成
 

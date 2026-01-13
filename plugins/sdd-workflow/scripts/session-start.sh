@@ -117,6 +117,41 @@ if [ -f "$CONFIG_FILE" ]; then
     fi
 fi
 
+# Create .sdd/ directory and copy AI-SDD-PRINCIPLES.md
+SDD_DIR="${PROJECT_ROOT}/${DOCS_ROOT}"
+SOURCE_PRINCIPLES="${CLAUDE_PLUGIN_ROOT}/AI-SDD-PRINCIPLES.source.md"
+TARGET_PRINCIPLES="${SDD_DIR}/AI-SDD-PRINCIPLES.md"
+
+# Create .sdd/ directory if it doesn't exist
+if [ ! -d "$SDD_DIR" ]; then
+    mkdir -p "$SDD_DIR"
+    echo "[AI-SDD] ${DOCS_ROOT}/ directory created." >&2
+fi
+
+# Copy AI-SDD-PRINCIPLES.source.md to .sdd/AI-SDD-PRINCIPLES.md (always overwrite)
+if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
+    # Get plugin version from plugin.json
+    PLUGIN_JSON="${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json"
+    PLUGIN_VERSION=""
+
+    if [ -f "$PLUGIN_JSON" ]; then
+        if command -v jq &> /dev/null; then
+            PLUGIN_VERSION=$(jq -r '.version // empty' "$PLUGIN_JSON" 2>/dev/null)
+        else
+            PLUGIN_VERSION=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLUGIN_JSON" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
+        fi
+    fi
+
+    # Inject version into frontmatter
+    if [ -n "$PLUGIN_VERSION" ]; then
+        sed "s/^version:.*$/version: \"${PLUGIN_VERSION}\"/" "$SOURCE_PRINCIPLES" > "$TARGET_PRINCIPLES"
+        echo "[AI-SDD] AI-SDD-PRINCIPLES.md updated to v${PLUGIN_VERSION}." >&2
+    else
+        cp "$SOURCE_PRINCIPLES" "$TARGET_PRINCIPLES"
+        echo "[AI-SDD] AI-SDD-PRINCIPLES.md copied (version unknown)." >&2
+    fi
+fi
+
 # Environment variable output
 # If CLAUDE_ENV_FILE is provided by Claude Code, write to it
 # Otherwise output to stdout (for Claude Code to read)
@@ -169,9 +204,8 @@ compare_major_minor() {
     return 0
 }
 
-# AI-SDD-PRINCIPLES.md version check
-PRINCIPLES_FILE="${PROJECT_ROOT}/${DOCS_ROOT}/AI-SDD-PRINCIPLES.md"
-SDD_DIR="${PROJECT_ROOT}/${DOCS_ROOT}"
+# CLAUDE.md version check (AI-SDD-PRINCIPLES.md is now auto-updated)
+CLAUDE_MD="${PROJECT_ROOT}/CLAUDE.md"
 PLUGIN_JSON="${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json"
 
 # Only check if .sdd/ directory exists
@@ -190,13 +224,13 @@ if [ -d "$SDD_DIR" ]; then
         fi
     fi
 
-    if [ ! -f "$PRINCIPLES_FILE" ]; then
-        # AI-SDD-PRINCIPLES.md doesn't exist
+    if [ ! -f "$CLAUDE_MD" ]; then
+        # CLAUDE.md doesn't exist
         SHOW_WARNING=true
         WARNING_REASON="missing"
     elif [ -n "$PLUGIN_VERSION" ]; then
-        # Get version from AI-SDD-PRINCIPLES.md (frontmatter)
-        PROJECT_VERSION=$(grep -A5 '^---$' "$PRINCIPLES_FILE" 2>/dev/null | grep '^version:' | sed 's/^version:[[:space:]]*["'\'']*\([^"'\'']*\)["'\'']*.*$/\1/')
+        # Get version from CLAUDE.md (look for "sdd-workflow" version marker)
+        PROJECT_VERSION=$(grep -A5 'sdd-workflow' "$CLAUDE_MD" 2>/dev/null | grep 'version:' | head -n1 | sed 's/^.*version:[[:space:]]*["'\'']*\([^"'\'']*\)["'\'']*.*$/\1/')
 
         if [ -z "$PROJECT_VERSION" ]; then
             # No version info (old format)
@@ -214,13 +248,13 @@ if [ -d "$SDD_DIR" ]; then
         WARNING_MESSAGE=""
         case "$WARNING_REASON" in
             "missing")
-                WARNING_MESSAGE="AI-SDD-PRINCIPLES.md not found. This project may have been initialized with plugin v2.2.0 or earlier."
+                WARNING_MESSAGE="CLAUDE.md not found. AI-SDD workflow configuration may be incomplete."
                 ;;
             "no_version")
-                WARNING_MESSAGE="AI-SDD-PRINCIPLES.md has no version info. Old format AI-SDD-PRINCIPLES.md detected."
+                WARNING_MESSAGE="CLAUDE.md has no version info for sdd-workflow. Old format CLAUDE.md detected."
                 ;;
             "outdated")
-                WARNING_MESSAGE="AI-SDD-PRINCIPLES.md version is outdated. Plugin: v${PLUGIN_VERSION}, Project: v${PROJECT_VERSION}"
+                WARNING_MESSAGE="CLAUDE.md sdd-workflow version is outdated. Plugin: v${PLUGIN_VERSION}, Project: v${PROJECT_VERSION}"
                 ;;
         esac
 
@@ -242,15 +276,16 @@ Run the following command:
 \`\`\`
 
 This will:
-- Update .sdd/AI-SDD-PRINCIPLES.md
 - Update AI-SDD section in CLAUDE.md
+
+Note: .sdd/AI-SDD-PRINCIPLES.md is automatically updated at session start (already up-to-date).
 
 ---
 This file will be automatically deleted after running /sdd_init.
 WARN_EOF
 
         # Output to stderr (visible with --verbose)
-        echo "[AI-SDD] Update required. Please run /sdd_init." >&2
+        echo "[AI-SDD] CLAUDE.md update required. Please run /sdd_init." >&2
     fi
 fi
 
