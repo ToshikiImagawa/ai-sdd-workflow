@@ -103,6 +103,7 @@ AI-SDDの原則を理解してください。このコマンドはAI-SDD原則�
 
 ````markdown
 ## AI-SDD Instructions (v{PLUGIN_VERSION})
+<!-- sdd-workflow version: "{PLUGIN_VERSION}" -->
 
 このプロジェクトはAI-SDD（AI駆動仕様駆動開発）ワークフローに従います。
 
