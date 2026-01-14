@@ -1,7 +1,7 @@
 {
   "name": "sdd-workflow-ja",
   "description": "AI駆動仕様駆動開発（AI-SDD）ワークフローを支援する日本語プラグイン。Vibe Coding問題を防ぎ、仕様書を真実の源として高品質な実装を実現します。",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "author": {
     "name": "toshiki.imagawa",
     "url": "https://github.com/ToshikiImagawa"

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-01-14
+
+### Fixed
+
+#### Hooks
+
+- `session-start.sh` - Improved error handling with temporary file existence check
+    - Fixed `mv: No such file or directory` error when sed command fails
+    - Added `&& [ -f "$TEMP_FILE" ]` to verify temporary file existence before executing mv
+    - Improved fallback process to work properly
+    - Added warning file deletion process (else clause) to English version for consistency with Japanese version
+
 ## [2.3.0] - 2026-01-09
 
 ### Changed
