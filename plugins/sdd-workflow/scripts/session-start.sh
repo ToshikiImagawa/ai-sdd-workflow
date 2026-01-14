@@ -145,7 +145,7 @@ if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
     # Inject version into frontmatter (atomic operation via temp file)
     TEMP_FILE="${TARGET_PRINCIPLES}.tmp"
     if [ -n "$PLUGIN_VERSION" ]; then
-        if sed "s|^version:.*$|version: \"${PLUGIN_VERSION}\"|" "$SOURCE_PRINCIPLES" > "$TEMP_FILE" 2>/dev/null; then
+        if sed "s|^version:.*$|version: \"${PLUGIN_VERSION}\"|" "$SOURCE_PRINCIPLES" > "$TEMP_FILE" 2>/dev/null && [ -f "$TEMP_FILE" ]; then
             mv "$TEMP_FILE" "$TARGET_PRINCIPLES"
             echo "[AI-SDD] AI-SDD-PRINCIPLES.md updated to v${PLUGIN_VERSION}." >&2
         else
@@ -301,6 +301,12 @@ WARN_EOF
 
         # Output to stderr (visible with --verbose)
         echo "[AI-SDD] CLAUDE.md update required. Please run /sdd_init." >&2
+    else
+        # No warning needed, remove existing UPDATE_REQUIRED.md if present
+        WARNING_FILE="${PROJECT_ROOT}/${DOCS_ROOT}/UPDATE_REQUIRED.md"
+        if [ -f "$WARNING_FILE" ]; then
+            rm -f "$WARNING_FILE"
+        fi
     fi
 fi
 

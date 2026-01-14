@@ -145,7 +145,7 @@ if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
     TEMP_FILE="${TARGET_PRINCIPLES}.tmp"
     if [ -n "$PLUGIN_VERSION" ]; then
         # フロントマターのversionを置換してコピー（一時ファイル経由で原子的に操作）
-        if sed "s|^version:.*$|version: \"${PLUGIN_VERSION}\"|" "$SOURCE_PRINCIPLES" > "$TEMP_FILE" 2>/dev/null; then
+        if sed "s|^version:.*$|version: \"${PLUGIN_VERSION}\"|" "$SOURCE_PRINCIPLES" > "$TEMP_FILE" 2>/dev/null && [ -f "$TEMP_FILE" ]; then
             mv "$TEMP_FILE" "$TARGET_PRINCIPLES"
             echo "[AI-SDD] AI-SDD-PRINCIPLES.md を v${PLUGIN_VERSION} に更新しました。" >&2
         else
