@@ -99,7 +99,7 @@ Add the following section to `CLAUDE.md`:
 
 ````markdown
 ## AI-SDD Instructions (v{PLUGIN_VERSION})
-<!-- sdd-workflow version: "{PLUGIN_VERSION}" -->
+&lt;!-- sdd-workflow version: "{PLUGIN_VERSION}" --&gt;
 
 This project follows AI-SDD (AI-driven Specification-Driven Development) workflow.
 
