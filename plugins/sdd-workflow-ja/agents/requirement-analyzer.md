@@ -1,6 +1,6 @@
 ---
 name: requirement-analyzer
-description: "SysML要求図ベースで要求分析・追跡・検証を行う専門エージェント。要求ドキュメント（.sdd/requirement/*.md）のカバレッジギャップ、依存関係の競合、実装とのトレーサビリティを分析し、[must]/[recommend]/[nits]分類で実行可能なレポートと提案を生成します。"
+description: "要求分析が必要なとき、ユーザーが「要求を分析」「requirement分析」「要求図をチェック」「トレーサビリティ確認」「影響分析」と言ったとき、または /generate_spec や /generate_prd コマンドの前後で要求の妥当性チェックが必要なときに使用します。.sdd/requirement/*.md のSysML要求図を分析し、カバレッジギャップ、依存関係の競合、実装とのトレーサビリティを検証します。[must]/[recommend]/[nits]分類で実行可能なレポートと提案を生成し、要求分析対象のファイルパスまたは機能名が必要です。"
 model: sonnet
 color: blue
 allowed-tools: Read, Glob, Grep, Edit, AskUserQuestion

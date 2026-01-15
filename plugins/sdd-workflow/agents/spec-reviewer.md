@@ -1,6 +1,6 @@
 ---
 name: spec-reviewer
-description: "An agent that reviews specification quality, CONSTITUTION.md compliance, and provides improvement suggestions. Checks for ambiguous descriptions, missing sections, SysML validity, and attempts auto-fix on principle violations."
+description: "Use this agent when specification review is requested, after running /check_spec or /generate_spec commands when quality checks are needed, or when users say 'review spec', 'check specification', 'review design', or 'check design doc'. Reviews .sdd/specification/*_spec.md or *_design.md files for CONSTITUTION.md compliance, checking for ambiguous descriptions, missing sections, SysML validity, and PRD/spec/design traceability. Attempts auto-fix on detected violations. Requires the specification file path to review."
 model: sonnet
 color: blue
 allowed-tools: Read, Glob, Grep, Edit, AskUserQuestion

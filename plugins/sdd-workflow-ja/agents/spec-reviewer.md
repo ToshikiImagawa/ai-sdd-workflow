@@ -1,6 +1,6 @@
 ---
 name: spec-reviewer
-description: "仕様書の品質レビューとCONSTITUTION.md準拠チェックを行うエージェント。曖昧な記述、不足セクション、SysMLとしての妥当性をチェックし、違反時は自動修正を試行します。"
+description: "仕様書のレビューを依頼されたとき、/check_spec や /generate_spec コマンド実行後に品質チェックが必要なとき、またはユーザーが「仕様書をレビュー」「specをチェック」「spec品質確認」「設計書をチェック」「designをレビュー」と言ったときに使用します。.sdd/specification/*_spec.md または *_design.md の品質をCONSTITUTION.md準拠の観点からレビューし、曖昧な記述、不足セクション、SysML妥当性、PRD/spec/design間のトレーサビリティをチェックします。違反検出時は自動修正を試行し、レビュー対象の仕様書ファイルパスが必要です。"
 model: sonnet
 color: blue
 allowed-tools: Read, Glob, Grep, Edit, AskUserQuestion
