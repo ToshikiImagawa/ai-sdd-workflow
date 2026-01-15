@@ -1,5 +1,6 @@
 ---
 description: "プロジェクトの非交渉原則を定義・管理し、他ドキュメントとの同期を検証する"
+argument-hint: "<init|update|check>"
 allowed-tools: Read, Write, Edit, Glob, Grep, Skill
 ---
 

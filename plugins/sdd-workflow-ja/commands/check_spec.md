@@ -1,5 +1,6 @@
 ---
 description: "実装コードと設計書（design）の整合性をチェックし、差異を検出する"
+argument-hint: "<設計書ファイルパス>"
 allowed-tools: Read, Glob, Grep, AskUserQuestion
 ---
 

@@ -1,5 +1,6 @@
 ---
 description: "Execute TDD-based implementation and progressively complete checklist in tasks.md"
+argument-hint: "<task-file-path>"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 

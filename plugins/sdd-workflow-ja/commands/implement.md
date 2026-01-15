@@ -1,5 +1,6 @@
 ---
 description: "TDDベースの実装を実行し、tasks.mdのチェックリストを段階的に完了させる"
+argument-hint: "<タスクファイルパス>"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 

@@ -1,5 +1,6 @@
 ---
 description: "Generate Abstract Specification and Technical Design Document from input content"
+argument-hint: "<feature-name> [prd-file-path]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 

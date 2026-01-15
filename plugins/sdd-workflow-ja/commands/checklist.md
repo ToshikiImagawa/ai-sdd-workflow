@@ -1,5 +1,6 @@
 ---
 description: "仕様書・設計書から構造化されたIDとカテゴリ別の品質チェックリストを自動生成する"
+argument-hint: "<ファイルパス>"
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 

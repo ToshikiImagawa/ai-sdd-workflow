@@ -1,5 +1,6 @@
 ---
 description: "Analyze specifications and generate clarification questions to eliminate ambiguity before implementation"
+argument-hint: "[spec-file-path]"
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
