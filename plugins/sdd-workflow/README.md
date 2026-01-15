@@ -87,13 +87,12 @@ This command automatically:
 
 ### Agents
 
-| Agent                     | Description                                                                                                             |
-|:--------------------------|:------------------------------------------------------------------------------------------------------------------------|
-| `sdd-workflow`            | Manages AI-SDD development flow. Phase determination, Vibe Coding prevention, document consistency checks               |
-| `prd-reviewer`            | Reviews PRD quality and CONSTITUTION.md compliance. Attempts auto-fix on violations                                     |
-| `spec-reviewer`           | Reviews specification quality and CONSTITUTION.md compliance. Attempts auto-fix on violations                           |
-| `requirement-analyzer`    | SysML requirements diagram-based analysis, requirement tracking and verification                                        |
-| `clarification-assistant` | Specification clarification support. Analyzes requirements across 9 categories and integrates answers into specs        |
+| Agent                     | Description                                                                                                      |
+|:--------------------------|:-----------------------------------------------------------------------------------------------------------------|
+| `prd-reviewer`            | Reviews PRD quality and CONSTITUTION.md compliance. Attempts auto-fix on violations                              |
+| `spec-reviewer`           | Reviews specification quality and CONSTITUTION.md compliance. Attempts auto-fix on violations                    |
+| `requirement-analyzer`    | SysML requirements diagram-based analysis, requirement tracking and verification                                 |
+| `clarification-assistant` | Specification clarification support. Analyzes requirements across 9 categories and integrates answers into specs |
 
 ### Commands
 
@@ -128,14 +127,6 @@ This command automatically:
 **Note**: Hooks are automatically enabled when the plugin is installed. No additional configuration is required.
 
 ## Usage
-
-### sdd-workflow Agent
-
-The agent automatically performs the following when a task starts:
-
-1. **Phase Determination**: Identifies required phases based on task nature
-2. **Vibe Coding Prevention**: Detects vague instructions and promotes specification clarification
-3. **Document Management**: Guides specification/design document creation and updates
 
 ### Command Usage Examples
 
