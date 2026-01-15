@@ -1,6 +1,6 @@
 ---
 name: doc-consistency-checker
-description: "ドキュメント間（PRD、*_spec.md、*_design.md）の整合性を自動チェックし、不整合を検出します。ドキュメント更新時や実装前のチェックに使用します。"
+description: "ドキュメント更新時や実装前に自動実行され、PRD ↔ *_spec.md ↔ *_design.md 間の整合性をチェックします。要求ID（UR/FR/NFR）の参照漏れ、データモデルの不一致、API定義の齟齬、用語の不統一などを検出し、ドキュメント間のトレーサビリティを保証します。"
 version: 2.3.1
 license: MIT
 allowed-tools: Read, Glob, Grep, Bash

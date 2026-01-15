@@ -7,6 +7,73 @@
 
 ## [Unreleased]
 
+### Added
+
+#### ドキュメント
+
+- **PLUGIN.md** - Claude Codeプラグインとマーケットプレイス作成の包括的ガイド
+    - プラグイン基本構造（ディレクトリレイアウト、マーケットプレイス構成）
+    - マニフェストファイル（plugin.json, marketplace.json の詳細）
+    - コマンド、エージェント、スキルの実装（フロントマター、ベストプラクティス）
+    - MCP サーバー連携（外部ツール統合）
+    - フック実装（イベント駆動型自動化）
+    - マーケットプレイス公開プロセス（品質基準、配布モデル）
+- **CLAUDE.md** - PLUGIN.md への参照を追加（AGENTS.md と同様の構造）
+
+#### スキル
+
+- 全スキルに `version: 2.3.1` と `license: MIT` フィールドを追加
+    - vibe-detector
+    - doc-consistency-checker
+    - sdd-templates
+
+#### コマンド
+
+- 全コマンドに `argument-hint` フィールドを追加してユーザビリティ向上
+    - generate_spec: `<機能名> [PRDファイルパス]`
+    - generate_prd: `<機能名> [要件説明]`
+    - check_spec: `<設計書ファイルパス>`
+    - task_breakdown: `<設計書ファイルパス> [チケット番号]`
+    - task_cleanup: `<チケット番号>`
+    - constitution: `<init|update|check>`
+    - implement: `<タスクファイルパス>`
+    - clarify: `[仕様書ファイルパス]`
+    - checklist: `<ファイルパス>`
+
+### Changed
+
+#### マーケットプレイス
+
+- **marketplace.json** の改善
+    - `author.url` を追加（作成者への帰属）
+    - `category: "development"` を追加（マーケットプレイスフィルタリング）
+    - `tags` 配列を追加（検索の発見性向上）
+        - "specification-driven-development"
+        - "japanese" / "english"
+        - "workflow"
+        - "sysml"
+        - "requirements"
+        - "documentation"
+
+#### エージェント
+
+- 全エージェントの `description` をより明確に改善
+    - 機能説明スタイルから「いつ使うか」スタイルに変更
+    - 具体的なトリガーフレーズを追加（例: 「仕様書をレビュー」「specをチェック」）
+    - コマンドとの関係を明示（例: /check_spec や /generate_spec コマンド実行後）
+    - 必要な入力情報を明記（例: 仕様書ファイルパスが必要）
+    - 自己参照的な「エージェント」表現を削除
+    - 対象エージェント: spec-reviewer, requirement-analyzer, prd-reviewer, clarification-assistant
+
+#### スキル
+
+- 全スキルの `description` をより明確に改善
+    - 実行タイミングを明示（例: 実装開始前に自動実行、コマンドから自動呼び出し）
+    - 検出内容の具体化（例: 「いい感じに」「適当に」などの曖昧表現）
+    - トレーサビリティ保証の明記
+    - フォールバック動作の詳細説明
+    - 対象スキル: vibe-detector, doc-consistency-checker, sdd-templates
+
 ## [2.3.1] - 2026-01-14
 
 ### Fixed
