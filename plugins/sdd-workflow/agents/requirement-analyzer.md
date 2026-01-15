@@ -1,6 +1,6 @@
 ---
 name: requirement-analyzer
-description: "A specialized agent for SysML requirements diagram-based requirement analysis, tracking, and verification. Analyzes requirement documents (.sdd/requirement/*.md) for coverage gaps, dependency conflicts, and implementation traceability, generating actionable reports and proposals classified as [must]/[recommend]/[nits]."
+description: "Use this agent when requirement analysis is needed, when users say 'analyze requirements', 'check requirements diagram', 'verify traceability', or 'impact analysis', or before/after running /generate_spec or /generate_prd commands when requirement validation is needed. Analyzes .sdd/requirement/*.md SysML requirements diagrams for coverage gaps, dependency conflicts, and implementation traceability. Generates actionable reports and proposals classified as [must]/[recommend]/[nits]. Requires the requirement file path or feature name to analyze."
 model: sonnet
 color: blue
 allowed-tools: Read, Glob, Grep, Edit, AskUserQuestion

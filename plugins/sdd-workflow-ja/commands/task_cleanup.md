@@ -1,5 +1,6 @@
 ---
 description: "実装完了後のtask/ディレクトリを整理し、重要な設計判断を*_design.mdに統合してから削除する"
+argument-hint: "<チケット番号>"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 

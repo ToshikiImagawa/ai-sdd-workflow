@@ -15,9 +15,19 @@
       "description": "AI駆動仕様駆動開発（AI-SDD）ワークフローを支援する日本語プラグイン。Vibe Coding問題を防ぎ、仕様書を真実の源として高品質な実装を実現します。",
       "version": "2.3.1",
       "author": {
-        "name": "toshiki.imagawa"
+        "name": "toshiki.imagawa",
+        "url": "https://github.com/ToshikiImagawa"
       },
-      "license": "MIT"
+      "category": "development",
+      "license": "MIT",
+      "tags": [
+        "specification-driven-development",
+        "japanese",
+        "workflow",
+        "sysml",
+        "requirements",
+        "documentation"
+      ]
     },
     {
       "name": "sdd-workflow",
@@ -25,9 +35,19 @@
       "description": "A plugin supporting AI-driven Specification-Driven Development (AI-SDD) workflow. Prevents Vibe Coding problems and achieves high-quality implementations using specifications as the source of truth.",
       "version": "2.3.1",
       "author": {
-        "name": "toshiki.imagawa"
+        "name": "toshiki.imagawa",
+        "url": "https://github.com/ToshikiImagawa"
       },
-      "license": "MIT"
+      "category": "development",
+      "license": "MIT",
+      "tags": [
+        "specification-driven-development",
+        "english",
+        "workflow",
+        "sysml",
+        "requirements",
+        "documentation"
+      ]
     }
   ]
 }

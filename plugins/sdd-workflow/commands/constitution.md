@@ -1,5 +1,6 @@
 ---
 description: "Define and manage non-negotiable project principles (Constitution) and verify synchronization with other documents"
+argument-hint: "<init|update|check>"
 allowed-tools: Read, Write, Edit, Glob, Grep, Skill
 ---
 

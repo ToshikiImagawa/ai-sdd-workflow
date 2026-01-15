@@ -1,5 +1,6 @@
 ---
 description: "仕様書の不明点を9カテゴリでスキャンし、最大5つの質問を生成して仕様を明確化する"
+argument-hint: "[仕様書ファイルパス]"
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 

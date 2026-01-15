@@ -7,6 +7,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### Documentation
+
+- **PLUGIN.md** - Comprehensive guide for Claude Code plugin and marketplace creation
+    - Plugin basic structure (directory layout, marketplace structure)
+    - Manifest files (plugin.json, marketplace.json details)
+    - Commands, agents, skills implementation (frontmatter, best practices)
+    - MCP server integration (external tool integration)
+    - Hooks implementation (event-driven automation)
+    - Marketplace publishing process (quality standards, distribution model)
+- **CLAUDE.md** - Added reference to PLUGIN.md (similar to AGENTS.md structure)
+
+#### Skills
+
+- Added `version: 2.3.1` and `license: MIT` fields to all skills
+    - vibe-detector
+    - doc-consistency-checker
+    - sdd-templates
+
+#### Commands
+
+- Added `argument-hint` field to all commands for improved usability
+    - generate_spec: `<feature-name> [prd-file-path]`
+    - generate_prd: `<feature-name> [requirements-description]`
+    - check_spec: `<design-doc-path>`
+    - task_breakdown: `<design-doc-path> [ticket-number]`
+    - task_cleanup: `<ticket-number>`
+    - constitution: `<init|update|check>`
+    - implement: `<task-file-path>`
+    - clarify: `[spec-file-path]`
+    - checklist: `<file-path>`
+
+### Changed
+
+#### Marketplace
+
+- **marketplace.json** improvements
+    - Added `author.url` (creator attribution)
+    - Added `category: "development"` (marketplace filtering)
+    - Added `tags` array (search discoverability)
+        - "specification-driven-development"
+        - "japanese" / "english"
+        - "workflow"
+        - "sysml"
+        - "requirements"
+        - "documentation"
+
+#### Agents
+
+- Improved `description` for all agents with clearer usage scenarios
+    - Changed from functional description style to "when to use" style
+    - Added specific trigger phrases (e.g., "review spec", "check spec")
+    - Made explicit relationships with commands (e.g., after /check_spec or /generate_spec execution)
+    - Specified required input information (e.g., specification file path needed)
+    - Removed self-referential "agent" terminology
+    - Target agents: spec-reviewer, requirement-analyzer, prd-reviewer, clarification-assistant
+
+#### Skills
+
+- Improved `description` for all skills with clearer execution context
+    - Specified execution timing (e.g., automatically executed before implementation, invoked by commands)
+    - Specified detection details (e.g., ambiguous expressions like "make it nice", "somehow")
+    - Made explicit traceability guarantees
+    - Detailed fallback behavior explanation
+    - Target skills: vibe-detector, doc-consistency-checker, sdd-templates
+
 ## [2.3.1] - 2026-01-14
 
 ### Fixed

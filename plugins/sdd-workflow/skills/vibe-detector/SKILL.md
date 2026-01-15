@@ -1,6 +1,8 @@
 ---
 name: vibe-detector
-description: "Analyzes user input to automatically detect Vibe Coding (vague instructions) and assess risk. Used when detecting ambiguous implementation instructions or specification gaps."
+description: "Automatically executed before implementation to analyze user instructions and detect Vibe Coding (problems where AI must infer undefined requirements due to vague instructions). Warns when detecting ambiguous expressions like 'make it nice', 'somehow', 'same as before', specification gaps, or unclear requirements, prompting for clarification."
+version: 2.3.1
+license: MIT
 allowed-tools: Read, Glob, Grep, AskUserQuestion
 ---
 

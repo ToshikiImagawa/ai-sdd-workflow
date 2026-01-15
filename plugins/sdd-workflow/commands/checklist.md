@@ -1,5 +1,6 @@
 ---
 description: "Generate quality assurance checklists from specifications and plans with structured IDs and categories"
+argument-hint: "<file-path>"
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 

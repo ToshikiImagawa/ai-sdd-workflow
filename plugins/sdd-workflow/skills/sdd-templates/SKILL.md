@@ -1,6 +1,8 @@
 ---
 name: sdd-templates
-description: "Provides fallback templates for AI-SDD documents. Use only when project templates do not exist in .sdd/ directory."
+description: "Automatically invoked by /generate_spec, /generate_prd, /constitution commands to provide fallback templates (PRD_TEMPLATE.md, SPECIFICATION_TEMPLATE.md, DESIGN_DOC_TEMPLATE.md, CONSTITUTION.md) only when template files do not exist in the project's .sdd/ directory. Not used if project-specific templates exist."
+version: 2.3.1
+license: MIT
 allowed-tools: Read, Glob
 ---
 

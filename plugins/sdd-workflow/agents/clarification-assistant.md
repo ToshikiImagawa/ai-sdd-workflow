@@ -1,6 +1,6 @@
 ---
 name: clarification-assistant
-description: "A specification clarification assistant agent that systematically analyzes user requirements across 9 categories (Functional Scope, Data Model, Flow, etc.), identifies unclear points and ambiguities, and generates up to 5 high-impact questions. Calculates clarity scores and integrates user answers into appropriate specification sections to achieve 80%+ clarity before implementation."
+description: "Use this agent when resolving specification ambiguities, when users say 'clarify spec', 'identify unclear points', 'check spec ambiguity', or 'generate questions', or before running /generate_spec command when requirement clarification is needed. Systematically analyzes user requirements or existing specifications (.sdd/specification/*_spec.md) across 9 categories (Functional Scope, Data Model, Flow, Non-Functional Requirements, Integration, Edge Cases, Constraints, Terminology, Completion Criteria), identifies unclear points and ambiguities, and generates up to 5 prioritized questions. Calculates clarity scores and integrates user answers into specifications to achieve 80%+ clarity for implementation-ready specs. Works in coordination with vibe-detector skill to prevent Vibe Coding issues."
 model: sonnet
 color: blue
 allowed-tools: Read, Glob, Grep, Edit, Write, AskUserQuestion

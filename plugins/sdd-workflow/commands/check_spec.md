@@ -1,5 +1,6 @@
 ---
 description: "Check consistency between implementation code and design documents (design), detecting discrepancies"
+argument-hint: "<design-doc-path>"
 allowed-tools: Read, Glob, Grep, AskUserQuestion
 ---
 

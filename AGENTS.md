@@ -209,12 +209,12 @@ Coding防止の詳細を理解してください。**
 
 **環境変数 `SDD_*` を使用してディレクトリパスを解決します。**
 
-| 環境変数 | デフォルト値 | 説明 |
-|:--|:--|:--|
-| `SDD_ROOT` | `.sdd` | ルートディレクトリ |
-| `SDD_REQUIREMENT_PATH` | `.sdd/requirement` | PRD/要求仕様書ディレクトリ |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書ディレクトリ |
-| `SDD_TASK_PATH` | `.sdd/task` | タスクログディレクトリ |
+| 環境変数                     | デフォルト値               | 説明              |
+|:-------------------------|:---------------------|:----------------|
+| `SDD_ROOT`               | `.sdd`               | ルートディレクトリ       |
+| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/要求仕様書ディレクトリ |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書ディレクトリ   |
+| `SDD_TASK_PATH`          | `.sdd/task`          | タスクログディレクトリ     |
 
 **パス解決の優先順位:**
 
@@ -255,7 +255,8 @@ Coding防止の詳細を理解してください。**
   clarification-assistant → ユーザー回答を仕様書に統合 (Edit/Write)
 ```
 
-**例外**: `clarification-assistant` は仕様明確化後にユーザー回答を仕様書に統合するため、Writeツールを使用します。これは標準化されたセクションへの追記であり、コンテキスト損失の影響が小さいためです。
+**例外**: `clarification-assistant` は仕様明確化後にユーザー回答を仕様書に統合するため、Writeツールを使用します。
+これは標準化されたセクションへの追記であり、コンテキスト損失の影響が小さいためです。
 
 #### 3.2 委譲判断フロー
 

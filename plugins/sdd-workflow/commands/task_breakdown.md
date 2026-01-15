@@ -1,5 +1,6 @@
 ---
 description: "Break down tasks from technical design document, generating a list of independently testable small tasks"
+argument-hint: "<design-doc-path> [ticket-number]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 

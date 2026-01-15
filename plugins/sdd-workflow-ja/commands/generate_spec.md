@@ -1,5 +1,6 @@
 ---
 description: "入力された内容から抽象仕様書（Specification）と技術設計書（Design Doc）を生成する"
+argument-hint: "<機能名> [PRDファイルパス]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 

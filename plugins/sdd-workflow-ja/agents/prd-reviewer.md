@@ -1,6 +1,6 @@
 ---
 name: prd-reviewer
-description: "PRD（要求仕様書）の品質レビューとCONSTITUTION.md準拠チェックを行うエージェント。SysML要求図形式の妥当性、原則への準拠を検証し、違反時は自動修正を試行します。"
+description: "PRD（要求仕様書）のレビューを依頼されたとき、/generate_prd コマンド実行後に品質チェックが必要なとき、またはユーザーが「PRDをレビュー」「要求仕様書をチェック」「requirementをレビュー」と言ったときに使用します。.sdd/requirement/*.md のPRDファイルを対象に、CONSTITUTION.md準拠、SysML要求図形式の妥当性、必須セクションの完全性、要求IDのトレーサビリティを検証します。違反検出時は自動修正を試行し、レビュー対象のPRDファイルパスが必要です。注意: spec/design のレビューは spec-reviewer が担当します。"
 model: sonnet
 color: orange
 allowed-tools: Read, Glob, Grep, Edit, AskUserQuestion

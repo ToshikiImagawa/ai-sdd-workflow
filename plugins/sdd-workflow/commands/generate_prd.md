@@ -1,5 +1,6 @@
 ---
 description: "Generate PRD (Requirements Specification) in SysML requirements diagram format from business requirements"
+argument-hint: "<feature-name> [requirements-description]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 

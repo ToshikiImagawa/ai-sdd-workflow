@@ -1,6 +1,6 @@
 ---
 name: prd-reviewer
-description: "An agent that reviews PRD (Requirements Specification) quality and CONSTITUTION.md compliance. Validates SysML requirements diagram format, principle compliance, and attempts auto-fix on violations."
+description: "Use this agent when PRD (Product Requirements Document) review is requested, after running /generate_prd command when quality checks are needed, or when users say 'review PRD', 'check requirements spec', or 'review requirements'. Reviews .sdd/requirement/*.md PRD files for CONSTITUTION.md compliance, SysML requirements diagram format validity, required section completeness, and requirement ID traceability. Attempts auto-fix on detected violations. Requires the PRD file path to review. Note: spec/design reviews are handled by spec-reviewer."
 model: sonnet
 color: orange
 allowed-tools: Read, Glob, Grep, Edit, AskUserQuestion
