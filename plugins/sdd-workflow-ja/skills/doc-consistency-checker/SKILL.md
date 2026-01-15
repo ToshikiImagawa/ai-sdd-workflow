@@ -1,6 +1,8 @@
 ---
 name: doc-consistency-checker
 description: "ドキュメント間（PRD、*_spec.md、*_design.md）の整合性を自動チェックし、不整合を検出します。ドキュメント更新時や実装前のチェックに使用します。"
+version: 2.3.1
+license: MIT
 allowed-tools: Read, Glob, Grep, Bash
 ---
 

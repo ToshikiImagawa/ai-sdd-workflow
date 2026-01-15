@@ -1,6 +1,8 @@
 ---
 name: sdd-templates
 description: "Provides fallback templates for AI-SDD documents. Use only when project templates do not exist in .sdd/ directory."
+version: 2.3.1
+license: MIT
 allowed-tools: Read, Glob
 ---
 

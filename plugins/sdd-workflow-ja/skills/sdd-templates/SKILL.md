@@ -1,6 +1,8 @@
 ---
 name: sdd-templates
 description: "AI-SDDドキュメントのフォールバックテンプレートを提供します。プロジェクトに .sdd/ 配下のテンプレートが存在しない場合のみ使用してください。"
+version: 2.3.1
+license: MIT
 allowed-tools: Read, Glob
 ---
 

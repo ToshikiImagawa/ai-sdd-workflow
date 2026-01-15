@@ -1,6 +1,8 @@
 ---
 name: vibe-detector
 description: "Analyzes user input to automatically detect Vibe Coding (vague instructions) and assess risk. Used when detecting ambiguous implementation instructions or specification gaps."
+version: 2.3.1
+license: MIT
 allowed-tools: Read, Glob, Grep, AskUserQuestion
 ---
 
