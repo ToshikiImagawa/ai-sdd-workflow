@@ -10,8 +10,8 @@ allowed-tools: Read, Glob, Grep, AskUserQuestion
 
 ## 前提条件
 
-このエージェントは、Claude
-Code公式ドキュメントのベストプラクティス（https://code.claude.com/docs/en/best-practices）に基づいてレビューを行います。
+このエージェントは、[Claude Code公式ドキュメントのベストプラクティス](https://code.claude.com/docs/en/best-practices)
+に基づいてレビューを行います。
 
 ## 入力
 
@@ -22,8 +22,8 @@ $ARGUMENTS
 ```
 対象パス（必須）: プラグインディレクトリまたは特定ファイルへのパス
 オプション:
-  --focus <観点>  : 特定の観点のみレビュー（workflow|verification|context|claude-md|session|failures）
-  --summary       : 簡易出力モード
+  --focus <カテゴリ>  : 特定カテゴリのみレビュー（verification|workflow|context|interview|extensions|session|failures）
+  --summary           : 簡易出力モード
 ```
 
 ### 入力例
@@ -31,7 +31,7 @@ $ARGUMENTS
 ```
 claude-code-best-practices-reviewer plugins/sdd-workflow-ja
 claude-code-best-practices-reviewer plugins/sdd-workflow-ja/commands/generate_spec.md
-claude-code-best-practices-reviewer plugins/sdd-workflow-ja --focus workflow
+claude-code-best-practices-reviewer plugins/sdd-workflow-ja --focus extensions
 claude-code-best-practices-reviewer . --summary
 ```
 
@@ -41,11 +41,31 @@ claude-code-best-practices-reviewer . --summary
 
 ---
 
-## Claude Code ベストプラクティス概要
+## Claude Code ベストプラクティス全項目
 
-以下は https://code.claude.com/docs/en/best-practices の主要なベストプラクティスです。
+以下は https://code.claude.com/docs/en/best-practices の全セクションです。
 
-### 1. Explore First, Then Plan, Then Code
+---
+
+### カテゴリ1: 検証方法の提供（Verification）
+
+#### 1.1 Give Claude a Way to Verify Its Work
+
+**最も効果の高いプラクティス**: テスト、スクリーンショット、期待出力を提供してClaudeが自己チェックできるようにする。
+
+| 戦略             | Before                | After                                                                             |
+|:---------------|:----------------------|:----------------------------------------------------------------------------------|
+| **検証基準の提供**    | "メールアドレスを検証する関数を実装して" | "validateEmail関数を書いて。テストケース: valid@email.com は true、invalid は false。実装後にテストを実行して" |
+| **UI変更の視覚的検証** | "ダッシュボードを良くして"        | "[スクリーンショット貼り付け] このデザインを実装。結果のスクリーンショットを撮って元と比較"                                  |
+| **根本原因の対処**    | "ビルドが失敗している"          | "ビルドがこのエラーで失敗: [エラー]。修正してビルド成功を確認。エラーを抑制せず根本原因に対処"                                |
+
+**検証ツール**: テストスイート、リンター、出力をチェックするBashコマンド、Chrome拡張（UI検証）
+
+---
+
+### カテゴリ2: ワークフロー設計（Workflow）
+
+#### 2.1 Explore First, Then Plan, Then Code
 
 **4フェーズワークフロー**:
 
@@ -54,12 +74,11 @@ claude-code-best-practices-reviewer . --summary
 3. **Implement**（Normal Mode）: 計画に基づいてコーディング
 4. **Commit**: 記述的なメッセージでコミット・PR作成
 
-**スキップ可能な条件**:
+**スキップ可能な条件**（差分を1文で説明できる場合）:
 
 - タイポ修正
 - ログ行の追加
 - 変数のリネーム
-- **目安**: 差分を1文で説明できるならスキップ可
 
 **計画が必要な条件**:
 
@@ -67,30 +86,61 @@ claude-code-best-practices-reviewer . --summary
 - 複数ファイルの変更
 - 修正対象のコードに不慣れ
 
-### 2. Give Claude a Way to Verify Its Work
+---
 
-**最も効果の高いプラクティス**: Claudeが自己チェックできる手段を提供
+### カテゴリ3: コンテキストの提供（Context）
 
-| 戦略             | Before                | After                                                                                                  |
-|:---------------|:----------------------|:-------------------------------------------------------------------------------------------------------|
-| **検証基準の提供**    | "メールアドレスを検証する関数を実装して" | "validateEmail関数を書いて。テストケース: valid@email.com は true、invalid は false、test@invalid は false。実装後にテストを実行して" |
-| **UI変更の視覚的検証** | "ダッシュボードを良くして"        | "[スクリーンショット貼り付け] このデザインを実装して。結果のスクリーンショットを撮って元と比較。差分をリストアップして修正して"                                     |
-| **根本原因の対処**    | "ビルドが失敗している"          | "ビルドがこのエラーで失敗: [エラー貼り付け]。修正してビルド成功を確認。エラーを抑制せず根本原因に対処して"                                               |
+#### 3.1 Provide Specific Context in Your Prompts
 
-### 3. Provide Specific Context in Your Prompts
+| 戦略            | Before                        | After                                                                       |
+|:--------------|:------------------------------|:----------------------------------------------------------------------------|
+| **スコープを限定**   | "foo.pyにテストを追加して"             | "foo.pyのテストを書いて。ユーザーがログアウトしているエッジケースをカバー。モックは避けて"                           |
+| **ソースを指定**    | "なぜExecutionFactoryのAPIは変なの?" | "ExecutionFactoryのgit履歴を調べてAPIがどう進化したかまとめて"                                 |
+| **既存パターンを参照** | "カレンダーウィジェットを追加して"            | "ホームページの既存ウィジェット実装を見てパターンを理解。HotDogWidget.phpが良い例。そのパターンに従って実装"             |
+| **症状を説明**     | "ログインバグを直して"                  | "セッションタイムアウト後にログインが失敗。src/auth/の認証フロー、特にトークンリフレッシュを確認。問題を再現する失敗テストを書いてから修正" |
 
-| 戦略            | Before                        | After                                                                                     |
-|:--------------|:------------------------------|:------------------------------------------------------------------------------------------|
-| **スコープを限定**   | "foo.pyにテストを追加して"             | "foo.pyのテストを書いて。ユーザーがログアウトしているエッジケースをカバー。モックは避けて"                                         |
-| **ソースを指定**    | "なぜExecutionFactoryのAPIは変なの?" | "ExecutionFactoryのgit履歴を調べてAPIがどう進化したかまとめて"                                               |
-| **既存パターンを参照** | "カレンダーウィジェットを追加して"            | "ホームページの既存ウィジェット実装を見てパターンを理解して。HotDogWidget.phpが良い例。そのパターンに従って新しいカレンダーウィジェットを実装..."       |
-| **症状を説明**     | "ログインバグを直して"                  | "ユーザーからセッションタイムアウト後にログインが失敗するとの報告。src/auth/の認証フロー、特にトークンリフレッシュを確認。問題を再現する失敗テストを書いてから修正して" |
+#### 3.2 Provide Rich Content
 
-### 4. Configure Your Environment - CLAUDE.md
+- **`@` でファイル参照**: `@filename` - 応答前にClaudeが読み込む
+- **画像を直接貼り付け**: コピー/ペーストまたはドラッグ&ドロップ
+- **URLを提供**: ドキュメントやAPIリファレンス
+- **データをパイプ**: `cat error.log | claude` でファイル内容を送信
+- **Claudeに取得させる**: Bash、MCPツール、ファイル読み込みでコンテキスト取得を指示
 
-**効果的なCLAUDE.mdの要件**:
+---
 
-**含めるべき内容**:
+### カテゴリ4: コミュニケーション（Communication）
+
+#### 4.1 Ask Codebase Questions
+
+シニアエンジニアに聞くようにClaudeに質問:
+
+- "ログはどう動作している？"
+- "新しいAPIエンドポイントはどう作る？"
+- "foo.rsの134行目の `async move { ... }` は何をしている？"
+- "CustomerOnboardingFlowImplはどんなエッジケースを扱う？"
+
+#### 4.2 Let Claude Interview You（重要）
+
+大きな機能では、まずClaudeにインタビューさせる。`AskUserQuestion` ツールを使用。
+
+**プロセス**:
+
+1. 最小限の初期プロンプトを提供
+2. Claudeが技術実装、UI/UX、エッジケース、トレードオフについて質問
+3. 考慮していなかった難しい部分を掘り下げ
+4. 完全にカバーするまで続行
+5. ClaudeがSPEC.mdに仕様を記述
+
+**その後**: クリーンなコンテキストで新しいセッションを開始し、記述された仕様を参照して実装に集中
+
+---
+
+### カテゴリ5: 環境設定と拡張（Extensions）
+
+#### 5.1 Write an Effective CLAUDE.md
+
+**含めるべき内容** ✅:
 
 - Claudeが推測できないBashコマンド
 - デフォルトと異なるコードスタイルルール
@@ -100,7 +150,7 @@ claude-code-best-practices-reviewer . --summary
 - 開発環境の癖（必要な環境変数）
 - 一般的な落とし穴や非自明な動作
 
-**含めるべきでない内容**:
+**含めるべきでない内容** ❌:
 
 - コードを読めばわかること
 - Claudeが既に知っている標準的な言語規約
@@ -112,32 +162,193 @@ claude-code-best-practices-reviewer . --summary
 **ベストプラクティス**:
 
 - 短く人間が読めるように
-- コードのように扱う: 問題発生時にレビュー、定期的にプルーニング
+- 各行で「これを削除したらClaudeが間違える？」と自問
 - 重要なルールには強調（`IMPORTANT`, `YOU MUST`）を使用
+- `@path/to/import` 構文で他ファイルをインポート
 
-### 5. Manage Your Session
+#### 5.2 Configure Permissions
 
-**コース修正**:
+- `/permissions` で安全なコマンドを許可リスト登録
+- `/sandbox` でOS レベルの分離
+- `--dangerously-skip-permissions` はインターネットアクセスのないコンテナでのみ使用
 
-- `Esc`: 処理中に停止。コンテキストは保持され方向転換可能
-- `Esc + Esc` または `/rewind`: 巻き戻しメニューを開く
-- `"Undo that"`: Claudeに変更を元に戻させる
-- `/clear`: 無関係なタスク間でコンテキストをリセット
+#### 5.3 Use CLI Tools
+
+外部サービスとの連携には `gh`, `aws`, `gcloud`, `sentry-cli` などのCLIツールを活用。最もコンテキスト効率が良い方法。
+
+Claudeは未知のツールも学習可能: `"foo-cli-tool --help でfooツールを学習し、A, B, Cを解決して"`
+
+#### 5.4 Connect MCP Servers
+
+`claude mcp add` で外部ツール（Notion、Figma、データベースなど）を接続。
+
+#### 5.5 Set Up Hooks（重要）
+
+**Hooksの特性**: CLAUDE.mdと異なり、Hooksは**決定論的で実行が保証**される。
+
+例外なく毎回実行されるべきアクションにはHooksを使用:
+
+- "すべてのファイル編集後にeslintを実行するhookを書いて"
+- "migrationsフォルダへの書き込みをブロックするhookを書いて"
+
+`/hooks` で対話的に設定、または `.claude/settings.json` を直接編集。
+
+#### 5.6 Create Skills（重要）
+
+`.claude/skills/` に `SKILL.md` ファイルを作成してドメイン知識とワークフローを提供。
+
+**例: APIコンベンション**:
+
+```markdown
+---
+name: api-conventions
+description: REST API設計規約
+---
+
+# API Conventions
+
+- URLパスはkebab-case
+- JSONプロパティはcamelCase
+- リストエンドポイントには常にページネーション
+- URLパスでAPIバージョニング (/v1/, /v2/)
+```
+
+**ワークフロースキル**（手動呼び出し）:
+
+```markdown
+---
+name: fix-issue
+description: GitHubイシューを修正
+disable-model-invocation: true
+---
+
+GitHubイシューを分析して修正: $ARGUMENTS
+
+1. `gh issue view` でイシュー詳細を取得
+2. 問題を理解
+3. コードベースで関連ファイルを検索
+4. 必要な変更を実装
+5. テストを書いて実行
+6. lint/型チェックをパス
+7. 記述的なコミットメッセージを作成
+8. プッシュしてPR作成
+```
+
+`/fix-issue 1234` で呼び出し。
+
+#### 5.7 Create Custom Subagents（重要）
+
+`.claude/agents/` に専門エージェントを定義。別コンテキストで実行され、独自のallowed-toolsを持つ。
+
+**例: セキュリティレビュワー**:
+
+```markdown
+---
+name: security-reviewer
+description: セキュリティ脆弱性をレビュー
+tools: Read, Grep, Glob, Bash
+model: opus
+---
+
+あなたはシニアセキュリティエンジニアです。以下をレビュー:
+
+- インジェクション脆弱性（SQL, XSS, コマンドインジェクション）
+- 認証・認可の欠陥
+- コード内の秘密情報や認証情報
+- 安全でないデータ処理
+
+具体的な行参照と修正提案を提供。
+```
+
+`"サブエージェントを使ってこのコードのセキュリティ問題をレビューして"` で呼び出し。
+
+#### 5.8 Install Plugins
+
+`/plugin` でマーケットプレイスを閲覧。Pluginsはskills、hooks、MCPサーバー、サブエージェントをバンドル。
+
+#### 機能選択ガイド
+
+| 目的                         | 機能          |
+|:---------------------------|:------------|
+| ドメイン知識、再利用可能なワークフロー        | Skills      |
+| 決定論的で常に実行されるアクション          | Hooks       |
+| 分離されたタスク調査                 | Subagents   |
+| 外部統合（データベース、Figmaなど）       | MCP servers |
+| バンドルされたskills + hooks + 統合 | Plugins     |
+
+---
+
+### カテゴリ6: セッション管理（Session Management）
+
+#### 6.1 Course-Correct Early and Often
+
+- **`Esc`**: 処理中に停止。コンテキストは保持され方向転換可能
+- **`Esc + Esc` または `/rewind`**: 巻き戻しメニューを開く
+- **`"Undo that"`**: Claudeに変更を元に戻させる
+- **`/clear`**: 無関係なタスク間でコンテキストをリセット
 
 **ルール**: 同じ問題で2回以上修正したら、`/clear`して学んだことを含むより良いプロンプトで再開
 
-**コンテキスト管理**:
+#### 6.2 Manage Context Aggressively
 
 - タスク間で頻繁に `/clear`
 - `/compact <instructions>` でより細かい制御
+- CLAUDE.mdでカスタマイズ: `"コンパクト時は変更ファイルの完全リストとテストコマンドを常に保持"`
 
-**サブエージェントの活用**:
+#### 6.3 Use Subagents for Investigation
 
-- 調査を委任: `"use subagents to investigate X"`
-- サブエージェントは別コンテキストで探索し、要約のみを返す
-- メインの会話をクリーンに保つ
+調査を委任: `"サブエージェントを使ってXを調査して"`
 
-### 6. Avoid Common Failure Patterns
+サブエージェントは別コンテキストで探索し、要約のみを返す。メインの会話をクリーンに保つ。
+
+#### 6.4 Rewind with Checkpoints
+
+Claudeの各アクションがチェックポイントを作成。会話のみ、コードのみ、または両方を復元可能。
+
+`Escape` をダブルタップまたは `/rewind` でチェックポイントメニューを開く。
+
+#### 6.5 Resume Conversations
+
+```bash
+claude --continue    # 最新の会話を再開
+claude --resume      # 最近の会話から選択
+```
+
+`/rename` で記述的なセッション名を付ける（`"oauth-migration"`, `"debugging-memory-leak"`）。
+
+---
+
+### カテゴリ7: 自動化とスケーリング（Automation）
+
+#### 7.1 Run Headless Mode
+
+CI、pre-commitフック、スクリプトで `claude -p "prompt"` を使用。
+
+```bash
+# 一発クエリ
+claude -p "このプロジェクトが何をするか説明して"
+
+# スクリプト用の構造化出力
+claude -p "すべてのAPIエンドポイントをリスト" --output-format json
+
+# リアルタイム処理用ストリーミング
+claude -p "このログファイルを分析" --output-format stream-json
+```
+
+#### 7.2 Run Multiple Sessions / Writer-Reviewer Pattern
+
+| Session A (Writer)                   | Session B (Reviewer)                                                         |
+|:-------------------------------------|:-----------------------------------------------------------------------------|
+| "APIエンドポイント用のレートリミッターを実装"            | "@src/middleware/rateLimiter.ts のレートリミッター実装をレビュー。エッジケース、競合状態、既存パターンとの一貫性を確認" |
+| "フィードバック: [Session B出力]。これらの問題に対処して" | -                                                                            |
+
+#### 7.3 Fan Out Across Files
+
+大規模マイグレーションではタスクをループして `claude -p` を呼び出し、`--allowedTools` でスコープを限定。
+
+---
+
+### カテゴリ8: 一般的な失敗パターンの回避（Failure Patterns）
 
 | パターン             | 問題                                     | 修正方法                              |
 |:-----------------|:---------------------------------------|:----------------------------------|
@@ -151,35 +362,7 @@ claude-code-best-practices-reviewer . --summary
 
 ## レビュー観点
 
-### 1. ワークフロー設計（Explore → Plan → Implement）
-
-**チェック項目**:
-
-- コマンド/スキルが適切なフェーズ分離を促進しているか
-- 複雑なタスクで計画フェーズを推奨しているか
-- 小さなタスクでの不要な計画を強制していないか
-- 実装前にコードベース探索を促しているか
-
-**Good例**:
-
-```markdown
-## 実行フロー
-
-1. 既存の実装パターンを確認（Explore）
-2. 実装計画を立案（Plan）
-3. 計画に基づいて実装（Implement）
-4. テストで検証（Verify）
-```
-
-**Bad例**:
-
-```markdown
-## 実行手順
-
-1. すぐにコードを書く
-```
-
-### 2. 検証方法の提供（Verification）
+### 観点1: 検証方法の提供（Verification）
 
 **チェック項目**:
 
@@ -188,25 +371,16 @@ claude-code-best-practices-reviewer . --summary
 - エラー発生時に根本原因への対処を促しているか
 - 「動作確認」以上の具体的な検証基準があるか
 
-**Good例**:
+### 観点2: ワークフロー設計（Workflow）
 
-```markdown
-## 検証
+**チェック項目**:
 
-- 生成後にlintエラーがないことを確認
-- 既存テストが全てパスすることを確認
-- 生成したドキュメントにテンプレートの必須セクションが含まれていることを確認
-```
+- Explore → Plan → Implement のフェーズ分離を促進しているか
+- 複雑なタスクで計画フェーズを推奨しているか
+- 小さなタスクでの不要な計画を強制していないか
+- 実装前にコードベース探索を促しているか
 
-**Bad例**:
-
-```markdown
-## 完了
-
-生成が完了したらユーザーに通知します。
-```
-
-### 3. コンテキストの具体性（Context Specificity）
+### 観点3: コンテキストの具体性（Context）
 
 **チェック項目**:
 
@@ -214,63 +388,44 @@ claude-code-best-practices-reviewer . --summary
 - 既存パターンへの参照があるか
 - 症状・問題の具体的な説明を求めているか
 - 曖昧な指示を許容していないか（Vibe Coding防止）
+- Rich Content（@参照、画像、URL）の活用を促しているか
 
-**Good例**:
+### 観点4: インタビュー手法（Interview）
 
-```markdown
-## 入力要件
+**チェック項目**:
 
-- 対象機能名（必須）
-- 関連する既存仕様書パス（任意）
-- 参考にすべき既存実装パターン（任意）
-```
+- 大きな機能で `AskUserQuestion` を活用して仕様を引き出しているか
+- 技術実装、UI/UX、エッジケース、トレードオフを掘り下げているか
+- 仕様をドキュメント（SPEC.mdなど）に記録しているか
+- 実装は新しいセッションでクリーンなコンテキストから開始しているか
 
-**Bad例**:
+### 観点5: 拡張機能の設計（Extensions）
 
-```markdown
-## 入力
+**Skills チェック項目**:
 
-何か情報を入力してください。
-```
+- ドメイン知識が適切に構造化されているか
+- `disable-model-invocation: true` でワークフローを定義している場合、手順が明確か
+- `$ARGUMENTS` で引数を受け取っているか
 
-### 4. CLAUDE.md品質
+**Hooks チェック項目**:
 
-**チェック項目（プロジェクトのCLAUDE.mdを対象）**:
+- 決定論的に実行されるべきアクションがHooksとして実装されているか
+- CLAUDE.mdの指示ではなくHooksで保証すべき内容を識別しているか
+
+**Subagents チェック項目**:
+
+- allowed-toolsが最小限に設定されているか
+- 分離されたコンテキストで実行すべきタスクが適切に委任されているか
+- 再委譲を避ける設計になっているか
+
+**CLAUDE.md チェック項目**:
 
 - Claudeが推測できない情報のみ含まれているか
 - 短く人間が読みやすいか
-- 重要なルールに強調が使われているか
-- コードを読めばわかる情報が含まれていないか
-- 頻繁に変更される情報が含まれていないか
+- 重要なルールに強調（IMPORTANT等）が使われているか
+- 定期的なプルーニングが必要な肥大化がないか
 
-**Good例**:
-
-```markdown
-# CLAUDE.md
-
-## テスト
-
-- `npm test` でユニットテスト実行
-- IMPORTANT: テストは常に `--coverage` フラグ付きで実行
-
-## コードスタイル
-
-- インポートは相対パスではなくエイリアス（@/）を使用
-```
-
-**Bad例**:
-
-```markdown
-# CLAUDE.md
-
-## プロジェクト説明
-
-このプロジェクトはReactを使用したWebアプリケーションです。コンポーネントは
-src/components配下にあり、ページはsrc/pages配下にあります...
-（コードを読めばわかる詳細な説明が続く）
-```
-
-### 5. セッション管理（サブエージェント活用）
+### 観点6: セッション管理（Session Management）
 
 **チェック項目**:
 
@@ -279,27 +434,7 @@ src/components配下にあり、ページはsrc/pages配下にあります...
 - 適切なタイミングでの `/clear` を促しているか
 - コンテキスト効率化の考慮があるか
 
-**Good例**:
-
-```markdown
-## 設計方針
-
-レビュー処理はサブエージェントに委任し、結果の要約のみをメインコンテキストに返します。
-これによりメインコンテキストを開発作業に温存します。
-
-allowed-tools: Read, Glob, Grep, Edit, AskUserQuestion
-（Taskツールは含まない = 再委譲を防ぐ）
-```
-
-**Bad例**:
-
-```markdown
-## 設計方針
-
-全てのファイルを読み込んで詳細に分析します。
-```
-
-### 6. 一般的な失敗パターンの回避
+### 観点7: 失敗パターン回避（Failure Patterns）
 
 **チェック項目**:
 
@@ -330,10 +465,11 @@ allowed-tools: Read, Glob, Grep, Edit, AskUserQuestion
 
 | 観点 | 評価 | コメント |
 |:--|:--|:--|
-| ワークフロー設計 | 🟢 良好 / 🟡 改善推奨 / 🔴 要修正 | {コメント} |
-| 検証方法の提供 | 🟢 / 🟡 / 🔴 | {コメント} |
+| 検証方法の提供 | 🟢 良好 / 🟡 改善推奨 / 🔴 要修正 | {コメント} |
+| ワークフロー設計 | 🟢 / 🟡 / 🔴 | {コメント} |
 | コンテキストの具体性 | 🟢 / 🟡 / 🔴 | {コメント} |
-| CLAUDE.md品質 | 🟢 / 🟡 / 🔴 / N/A | {コメント} |
+| インタビュー手法 | 🟢 / 🟡 / 🔴 / N/A | {コメント} |
+| 拡張機能の設計 | 🟢 / 🟡 / 🔴 | {コメント} |
 | セッション管理 | 🟢 / 🟡 / 🔴 | {コメント} |
 | 失敗パターン回避 | 🟢 / 🟡 / 🔴 | {コメント} |
 
@@ -393,8 +529,7 @@ allowed-tools: Read, Glob, Grep, Edit, AskUserQuestion
 ### 2. CLAUDE.md の確認（存在する場合）
 
 ```
-プロジェクトルートまたは対象ディレクトリのCLAUDE.mdを読み込み、
-品質をチェック
+プロジェクトルートまたは対象ディレクトリのCLAUDE.mdを読み込み、品質をチェック
 ```
 
 ### 3. 各ファイルのレビュー
@@ -406,18 +541,26 @@ allowed-tools: Read, Glob, Grep, Edit, AskUserQuestion
 - ワークフロー設計（Explore→Plan→Implement の促進）
 - 検証方法の提供
 - コンテキストの具体性（入力要件の明確さ）
+- インタビュー手法（AskUserQuestionの活用）
 
 **agents/*.md**:
 
 - セッション管理（サブエージェント設計、allowed-tools）
 - 失敗パターン回避（無限探索防止）
+- 拡張機能の設計（Subagentsのベストプラクティス）
 - コンテキスト効率化
 
 **skills/**/SKILL.md**:
 
 - ワークフロー設計
 - 検証方法の提供
+- 拡張機能の設計（Skillsのベストプラクティス）
 - コンテキストの具体性
+
+**hooks/**:
+
+- 拡張機能の設計（Hooksのベストプラクティス）
+- 決定論的実行の適切な使用
 
 ### 4. 総合評価とレポート出力
 
