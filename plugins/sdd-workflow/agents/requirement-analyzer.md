@@ -36,6 +36,22 @@ sdd-workflow:requirement-analyzer .sdd/requirement/user-auth.md --add-requiremen
 
 Requirement analysis result report (requirement validity assessment, detected issues, traceability status, proposals)
 
+## Design Intent
+
+**This agent does NOT use the Task tool.**
+
+**Reasons**:
+- Requirement analysis needs to read PRDs (.sdd/requirement/*.md) and related specifications
+- Using Task tool for recursive exploration risks context explosion
+- Prioritizes context efficiency by using Read, Glob, Grep tools to efficiently identify and read necessary files
+
+**allowed-tools Design**:
+- `Read`: Read AI-SDD principles, PRDs, specifications, design documents
+- `Glob`: Search for requirement files, related documents
+- `Grep`: Search for requirement IDs, traceability links
+- `Edit`: Modify/add requirements, update traceability information
+- `AskUserQuestion`: Resolve requirement ambiguities, interactively add new requirements
+
 ## Prerequisites
 
 **Before execution, you must read the AI-SDD principles document.**

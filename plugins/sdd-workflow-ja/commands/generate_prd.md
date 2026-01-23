@@ -1,7 +1,7 @@
 ---
 description: "ビジネス要求からPRD（要求仕様書）をSysML要求図形式で生成する"
 argument-hint: "<機能名> [要件説明]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
 # Generate PRD - 要求仕様書の生成
@@ -333,6 +333,32 @@ PRD 生成後、**必ず `prd-reviewer` エージェントを呼び出して原�
     - `/generate_spec` で抽象仕様書と技術設計書を作成
     - PRDの要求IDを仕様書で参照
     - 既存specがある場合は更新を推奨
+
+## 生成後の検証
+
+### 自動検証（実行済み）
+
+生成時に以下の検証が自動実行されます：
+
+- [x] **prd-reviewer による原則準拠チェック**: CONSTITUTION.md への準拠を検証
+- [x] **既存spec/design との整合性確認**: 影響範囲を把握
+
+### 推奨する手動検証
+
+- [ ] 生成されたPRDの内容がビジネス要求と一致しているか確認
+- [ ] 要求ID（UR-xxx, FR-xxx, NFR-xxx）の一意性を確認
+- [ ] 優先度（MoSCoW）の分類が適切か確認
+- [ ] ステークホルダーとの認識合わせ
+
+### 検証コマンド
+
+```bash
+# PRDの品質チェック（CONSTITUTION.md準拠、完全性、明確性）
+/check_spec {機能名} --full
+
+# 仕様の明確度スキャン
+/clarify {機能名}
+```
 
 ## 注意事項
 

@@ -3,7 +3,6 @@ name: sdd-templates
 description: "/generate_spec、/generate_prd、/constitution コマンドから自動呼び出され、プロジェクトの .sdd/ 配下にテンプレートファイル（PRD_TEMPLATE.md、SPECIFICATION_TEMPLATE.md、DESIGN_DOC_TEMPLATE.md、CONSTITUTION.md）が存在しない場合のみフォールバックテンプレートを提供します。プロジェクト固有テンプレートが存在する場合は使用されません。"
 version: 2.3.1
 license: MIT
-allowed-tools: Read, Glob
 ---
 
 # SDD Templates - AI-SDDドキュメントテンプレート（フォールバック用）

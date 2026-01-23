@@ -23,7 +23,7 @@ If this file exists, the AI-SDD plugin needs to be updated. Display a warning to
 
 ### AI-SDD Principles Document
 
-**Read the AI-SDD principles document.**
+**Before execution, read the AI-SDD principles document.**
 
 AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
 
@@ -344,6 +344,40 @@ This will:
 /clarify user-auth --detail standard   # Top 5 questions (default)
 /clarify user-auth --detail comprehensive  # All identified issues
 ```
+
+## Post-Clarification Verification
+
+### Automatic Verification (Performed)
+
+The following verifications are automatically performed during clarification:
+
+- [x] **Nine Category Scan**: Comprehensively detect ambiguities across functional scope, data model, flow, etc.
+- [x] **Clarity Score Calculation**: Classify items as Clear/Partial/Missing and calculate overall score
+- [x] **Question Prioritization**: Select questions based on impact, risk, and blocker status
+
+### Recommended Manual Verification
+
+- [ ] Confirm overall clarity score is 80% or above
+- [ ] Verify all Missing items have been resolved
+- [ ] Confirm answers have been correctly integrated into specifications
+
+### Verification Commands
+
+```bash
+# Re-scan to verify clarity improvements
+/clarify {feature-name}
+
+# Consistency check (verify updated specifications)
+/check_spec {feature-name} --full
+```
+
+### Implementation Readiness Criteria
+
+| Clarity Score | Recommended Action |
+|:---|:---|
+| 80% or above | Ready for implementation |
+| 60-79% | Recommended to resolve Partial items |
+| Below 60% | Further clarification required before implementation |
 
 ## Notes
 

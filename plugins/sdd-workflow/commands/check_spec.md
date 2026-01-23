@@ -26,7 +26,7 @@ If this file exists, the AI-SDD plugin needs to be updated. Display a warning to
 
 ### AI-SDD Principles Document
 
-**Read the AI-SDD principles document.**
+**Before execution, read the AI-SDD principles document.**
 
 AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
 
@@ -81,6 +81,32 @@ $ARGUMENTS
 /check_spec --full                 # Comprehensive check for all specifications
 /check_spec                        # Without arguments, targets all specifications (consistency check only)
 ```
+
+### Scope Confirmation for No-Argument Execution
+
+**When executed without arguments, display the list of target files and ask for user confirmation before starting the process.**
+
+```markdown
+## Scope Confirmation
+
+No argument was specified, so the following files will be checked:
+
+| File | Path |
+|:--|:--|
+| {feature1}_design.md | .sdd/specification/{feature1}_design.md |
+| {feature2}_design.md | .sdd/specification/{feature2}_design.md |
+| ... | ... |
+
+**Total: {n} files**
+
+Do you want to proceed with this scope?
+- To check specific files only, re-run with a file name specified
+- Example: `/check_spec user-auth`
+```
+
+**Post-confirmation behavior**:
+- User approves → Execute check on all files
+- User cancels or specifies a particular file → Re-execute with the specified scope
 
 ## Processing Flow
 

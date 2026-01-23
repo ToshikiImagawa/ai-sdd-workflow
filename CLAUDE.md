@@ -61,54 +61,23 @@ Specify（仕様化） → Plan（計画） → Tasks（タスク分解） → I
 
 ### ドキュメント構造
 
-フラット構造と階層構造の両方をサポートします。
-
-#### フラット構造（小〜中規模プロジェクト向け）
-
 ```
 .sdd/
 ├── CONSTITUTION.md               # プロジェクト原則（最上位）
-├── PRD_TEMPLATE.md               # PRDテンプレート
-├── SPECIFICATION_TEMPLATE.md     # 抽象仕様書テンプレート
-├── DESIGN_DOC_TEMPLATE.md        # 技術設計書テンプレート
+├── *_TEMPLATE.md                 # 各種テンプレート
 ├── requirement/                  # PRD（要求仕様書）- 永続
-│   └── {機能名}.md
-├── specification/                # 永続的な知識資産
-│   ├── {機能名}_spec.md         # 抽象仕様書
-│   └── {機能名}_design.md       # 技術設計書
-└── task/                         # 一時的なタスクログ（実装完了後に削除）
-    └── {チケット番号}/
+├── specification/                # 仕様書・設計書 - 永続
+└── task/                         # タスクログ - 一時的（実装完了後に削除）
 ```
 
-#### 階層構造（中〜大規模プロジェクト向け）
+フラット構造（小〜中規模）と階層構造（中〜大規模）の両方をサポート。詳細は `plugins/sdd-workflow-ja/README.md` を参照。
 
-```
-.sdd/
-├── CONSTITUTION.md               # プロジェクト原則（最上位）
-├── PRD_TEMPLATE.md               # PRDテンプレート
-├── SPECIFICATION_TEMPLATE.md     # 抽象仕様書テンプレート
-├── DESIGN_DOC_TEMPLATE.md        # 技術設計書テンプレート
-├── requirement/                  # PRD（要求仕様書）- SysML要求図形式
-│   ├── {機能名}.md              # トップレベル機能
-│   └── {親機能名}/              # 親機能ディレクトリ
-│       ├── index.md             # 親機能の概要・要求一覧
-│       └── {子機能名}.md        # 子機能の要求仕様
-├── specification/                # 永続的な知識資産
-│   ├── {機能名}_spec.md         # トップレベル機能
-│   ├── {機能名}_design.md
-│   └── {親機能名}/              # 親機能ディレクトリ
-│       ├── index_spec.md        # 親機能の抽象仕様書
-│       ├── index_design.md      # 親機能の技術設計書
-│       ├── {子機能名}_spec.md   # 子機能の抽象仕様書
-│       └── {子機能名}_design.md # 子機能の技術設計書
-└── task/                         # 一時的なタスクログ（実装完了後に削除）
-    └── {チケット番号}/
-        └── xxx.md
-```
+### ファイル命名規則
 
-### ファイル命名規則（重要）
+**IMPORTANT: requirement と specification でサフィックスの有無が異なります。混同しないでください。**
 
-**requirement と specification でサフィックスの有無が異なります。混同しないでください。**
+- `requirement/` 配下: サフィックス**なし**（例: `user-login.md`）
+- `specification/` 配下: `_spec.md` または `_design.md` サフィックス**必須**
 
 | ディレクトリ            | ファイル種別 | 命名パターン                               | 例                                         |
 |:------------------|:-------|:-------------------------------------|:------------------------------------------|
@@ -116,27 +85,12 @@ Specify（仕様化） → Plan（計画） → Tasks（タスク分解） → I
 | **specification** | 抽象仕様書  | `{名前}_spec.md`（`_spec` サフィックス必須）     | `user-login_spec.md`, `index_spec.md`     |
 | **specification** | 技術設計書  | `{名前}_design.md`（`_design` サフィックス必須） | `user-login_design.md`, `index_design.md` |
 
-#### 階層構造での命名パターン比較
-
-```
-# requirement 配下（サフィックスなし）
-requirement/auth/index.md           # 親機能の概要
-requirement/auth/user-login.md      # 子機能の要求仕様
-requirement/auth/password-reset.md  # 子機能の要求仕様
-
-# specification 配下（_spec/_design サフィックス必須）
-specification/auth/index_spec.md        # 親機能の抽象仕様書
-specification/auth/index_design.md      # 親機能の技術設計書
-specification/auth/user-login_spec.md   # 子機能の抽象仕様書
-specification/auth/user-login_design.md # 子機能の技術設計書
-```
-
-**注意**: `specification/auth/user-login.md` は**誤り**です。必ず `_spec.md` または `_design.md` サフィックスを付けてください。
-
 ### ドキュメント永続性ルール
 
+**IMPORTANT: task/ ディレクトリは一時的なものです。実装完了後に削除してください。**
+
 - `requirement/`, `specification/*_spec.md`, `specification/*_design.md`: **永続**
-- `task/`: **一時的** - 実装完了後に削除。重要な設計判断は `*_design.md` に統合
+- `task/`: **一時的** - 重要な設計判断は `*_design.md` に統合してから削除
 
 ### ドキュメント依存関係
 
@@ -188,6 +142,18 @@ CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実
 
 曖昧な指示（「いい感じに」「適当に」「前と同じように」など）を検出した場合、仕様の明確化を促す。仕様書なしでの実装は避け、最低限
 `task/` に推測仕様を記録する。
+
+## テストと検証
+
+- プラグインJSON構文チェック: `cat plugins/*/.claude-plugin/*.json | jq .`
+- Markdownリンクの整合性: 各ドキュメント内の相対リンクが有効か確認
+- **IMPORTANT**: 新規コマンド/エージェント追加時は `plugin.json` への登録を忘れずに
+
+## 開発時の注意
+
+- プラグイン修正時は対象プラグインディレクトリ（`plugins/{plugin-name}/`）に限定して作業
+- 全プラグインへの変更が必要な場合は、明示的に確認してから実施
+- 「調査して」と依頼された場合は、まずスコープを確認してから探索
 
 ## プラグインエージェント設計ガイド
 

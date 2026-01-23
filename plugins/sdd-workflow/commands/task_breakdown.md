@@ -1,7 +1,7 @@
 ---
 description: "Break down tasks from technical design document, generating a list of independently testable small tasks"
 argument-hint: "<design-doc-path> [ticket-number]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
 # Task Breakdown
@@ -22,7 +22,7 @@ If this file exists, the AI-SDD plugin needs to be updated. Display a warning to
 
 ### AI-SDD Principles Document
 
-**Read the AI-SDD principles document.**
+**Before execution, read the AI-SDD principles document.**
 
 AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
 
@@ -338,6 +338,36 @@ If Serena MCP is enabled, semantic code analysis can be leveraged to improve tas
 
 Even without Serena, task breakdown is performed based on design document.
 Impact scope analysis must be done manually.
+
+## Post-Generation Verification
+
+### Automatic Verification (Performed)
+
+The following verifications are automatically performed during generation:
+
+- [x] **Requirement Coverage Check**: Verify PRD/spec requirements are covered by tasks
+- [x] **Dependency Consistency Check**: Confirm no contradictions in inter-task dependencies
+- [x] **Completion Criteria Specificity Check**: Verify each task has clear completion criteria
+
+### Recommended Manual Verification
+
+- [ ] Confirm task granularity is appropriate (1 task = hours to 1 day)
+- [ ] Verify dependency diagram is logically correct
+- [ ] Confirm no gaps in requirement coverage table
+- [ ] Verify Phase classification is appropriate
+
+### Verification Commands
+
+```bash
+# Confirm consistency with related design documents
+/check_spec {feature-name}
+
+# Verify any unclear points in specifications
+/clarify {feature-name}
+
+# Generate checklist to clarify quality criteria
+/checklist {feature-name} {ticket-number}
+```
 
 ## Notes
 

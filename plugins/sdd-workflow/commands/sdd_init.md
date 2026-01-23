@@ -1,6 +1,6 @@
 ---
 description: "Initialize AI-SDD workflow in the current project. Sets up CLAUDE.md and generates document templates."
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
 # SDD Init - AI-SDD Workflow Initializer
@@ -33,7 +33,7 @@ Steps:
 
 ### 2. Read AI-SDD Principles Document
 
-**Read the AI-SDD principles document.**
+**Before execution, read the AI-SDD principles document.**
 
 AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
 
