@@ -33,7 +33,7 @@ Steps:
 
 ### 2. Read AI-SDD Principles Document
 
-**Read the AI-SDD principles document.**
+**Before execution, read the AI-SDD principles document.**
 
 AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
 

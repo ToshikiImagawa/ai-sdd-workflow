@@ -23,7 +23,7 @@ If this file exists, the AI-SDD plugin needs to be updated. Display a warning to
 
 ### AI-SDD Principles Document
 
-**Read the AI-SDD principles document.**
+**Before execution, read the AI-SDD principles document.**
 
 AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
 

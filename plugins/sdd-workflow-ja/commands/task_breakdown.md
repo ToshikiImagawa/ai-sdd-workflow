@@ -22,7 +22,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 
 ### AI-SDD原則ドキュメントの読み込み
 
-**AI-SDD原則ドキュメントを読み込んでください。**
+**実行前に AI-SDD原則ドキュメントを読み込んでください。**
 
 AI-SDD原則ドキュメントのパス: `.sdd/AI-SDD-PRINCIPLES.md`
 

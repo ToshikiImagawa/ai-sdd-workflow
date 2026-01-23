@@ -23,7 +23,7 @@ If this file exists, the AI-SDD plugin needs to be updated. Display a warning to
 
 ### AI-SDD Principles Document
 
-**Read the AI-SDD principles document.**
+**Before execution, read the AI-SDD principles document.**
 
 AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
 
@@ -71,6 +71,35 @@ $ARGUMENTS
 /task_cleanup feature/task-management
 /task_cleanup  # Without arguments, targets entire task/
 ```
+
+### Scope Confirmation for No-Argument Execution
+
+**When executed without arguments, display the contents of the target directory and ask for user confirmation before starting the process.**
+
+```markdown
+## Scope Confirmation
+
+No argument was specified, so the following directories/files will be targeted for cleanup:
+
+| Type | Path | Last Modified |
+|:--|:--|:--|
+| Directory | .sdd/task/{ticket1}/ | YYYY-MM-DD |
+| Directory | .sdd/task/{ticket2}/ | YYYY-MM-DD |
+| File | .sdd/task/{file1}.md | YYYY-MM-DD |
+| ... | ... | ... |
+
+**Total: {n} items**
+
+⚠️ **Warning**: Cleanup involves deletion. Important design decisions will be integrated into `*_design.md`, but content deemed unnecessary for integration will be deleted.
+
+Do you want to proceed with this scope?
+- To target a specific directory only, re-run with a ticket number specified
+- Example: `/task_cleanup TICKET-123`
+```
+
+**Post-confirmation behavior**:
+- User approves → Execute cleanup on entire task/
+- User cancels or specifies a particular directory → Re-execute with the specified scope
 
 ## Processing Flow
 
