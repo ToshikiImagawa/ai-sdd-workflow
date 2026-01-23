@@ -51,6 +51,23 @@ Support the **Specify Phase** in AI-SDD (AI-driven Specification-Driven Developm
 | **Incomplete Specifications** | Prevents rework during implementation due to missing entries or ambiguous expressions in specifications |
 | **Implicit Assumptions** | Prevents misunderstandings from undocumented "obvious" assumptions |
 
+## Design Intent
+
+**This agent does NOT use the Task tool.**
+
+**Reasons**:
+- Specification clarification analyzes existing specifications (*_spec.md) and generates questions
+- Using Task tool for recursive exploration risks context explosion
+- Prioritizes context efficiency by using Read, Glob, Grep tools to efficiently identify and read necessary files
+
+**allowed-tools Design**:
+- `Read`: Read AI-SDD principles, specifications, design documents, PRDs
+- `Glob`: Search for specification files
+- `Grep`: Search for section names, terms
+- `Edit`: Integrate user answers into specifications
+- `Write`: Update specifications when new sections need to be added
+- `AskUserQuestion`: Present clarification questions, collect answers
+
 ## Responsibilities
 
 ### 1. Systematic Analysis of Requirements

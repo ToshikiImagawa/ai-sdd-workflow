@@ -223,37 +223,49 @@ compare_major_minor() {
 # CLAUDE.md のバージョンチェック
 # AI-SDD-PRINCIPLES.md は session-start で常に最新化されるため、
 # CLAUDE.md 内の AI-SDD セクションの更新が必要かどうかのみをチェック
+# 注: PLUGIN_VERSION は上部で既に取得済み
 CLAUDE_MD="${PROJECT_ROOT}/CLAUDE.md"
-PLUGIN_JSON_CHECK="${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json"
 
-if [ -d "$SDD_DIR" ] && [ -f "$CLAUDE_MD" ]; then
+# .sdd/ ディレクトリが存在する場合のみチェック
+if [ -d "$SDD_DIR" ]; then
     SHOW_WARNING=false
-    PLUGIN_VERSION_CHECK=""
+    WARNING_REASON=""
     CLAUDE_VERSION=""
 
-    # プラグインバージョンを取得
-    if [ -f "$PLUGIN_JSON_CHECK" ]; then
-        if command -v jq &> /dev/null; then
-            PLUGIN_VERSION_CHECK=$(jq -r '.version // empty' "$PLUGIN_JSON_CHECK" 2>/dev/null)
-        else
-            PLUGIN_VERSION_CHECK=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLUGIN_JSON_CHECK" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
-        fi
-    fi
-
-    if [ -n "$PLUGIN_VERSION_CHECK" ]; then
+    if [ ! -f "$CLAUDE_MD" ]; then
+        # CLAUDE.md が存在しない
+        SHOW_WARNING=true
+        WARNING_REASON="missing"
+    elif [ -n "$PLUGIN_VERSION" ]; then
         # CLAUDE.md から AI-SDD バージョンを取得（## AI-SDD Instructions (vX.Y.Z) 形式）
         CLAUDE_VERSION=$(grep -o '## AI-SDD Instructions (v[0-9.]*' "$CLAUDE_MD" 2>/dev/null | sed 's/.*v\([0-9.]*\).*/\1/')
 
         if [ -z "$CLAUDE_VERSION" ]; then
             # CLAUDE.md に AI-SDD セクションがない
             SHOW_WARNING=true
-        elif ! compare_major_minor "$PLUGIN_VERSION_CHECK" "$CLAUDE_VERSION"; then
+            WARNING_REASON="no_version"
+        elif ! compare_major_minor "$PLUGIN_VERSION" "$CLAUDE_VERSION"; then
             # CLAUDE.md のバージョンが古い
             SHOW_WARNING=true
+            WARNING_REASON="outdated"
         fi
     fi
 
     if [ "$SHOW_WARNING" = true ]; then
+        # 警告メッセージを構築
+        WARNING_MESSAGE=""
+        case "$WARNING_REASON" in
+            "missing")
+                WARNING_MESSAGE="CLAUDE.md が見つかりません。AI-SDD ワークフローの設定が不完全な可能性があります。"
+                ;;
+            "no_version")
+                WARNING_MESSAGE="CLAUDE.md に AI-SDD セクションがありません。旧形式の CLAUDE.md が検出されました。"
+                ;;
+            "outdated")
+                WARNING_MESSAGE="CLAUDE.md の AI-SDD セクションが古いバージョンです。プラグイン: v${PLUGIN_VERSION}, CLAUDE.md: v${CLAUDE_VERSION}"
+                ;;
+        esac
+
         # 警告ファイルを作成
         WARNING_FILE="${PROJECT_ROOT}/${DOCS_ROOT}/UPDATE_REQUIRED.md"
         cat > "$WARNING_FILE" << WARN_EOF
@@ -261,8 +273,7 @@ if [ -d "$SDD_DIR" ] && [ -f "$CLAUDE_MD" ]; then
 
 ## 理由
 
-CLAUDE.md の AI-SDD セクションが古いバージョンです。
-プラグイン: v${PLUGIN_VERSION_CHECK}, CLAUDE.md: v${CLAUDE_VERSION:-未設定}
+${WARNING_MESSAGE}
 
 ## 対応方法
 

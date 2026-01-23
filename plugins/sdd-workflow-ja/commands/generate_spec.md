@@ -1,7 +1,7 @@
 ---
 description: "入力された内容から抽象仕様書（Specification）と技術設計書（Design Doc）を生成する"
 argument-hint: "<機能名> [PRDファイルパス]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
 # Specification & Design Doc Generator
@@ -402,6 +402,35 @@ specの末尾に以下を追記（PRDが存在する場合）：
 2. **整合性チェック**:
     - PRDが存在する場合: PRD ↔ spec の整合性を確認・反映
     - spec ↔ design の整合性を確認
+
+## 生成後の検証
+
+### 自動検証（実行済み）
+
+生成時に以下の検証が自動実行されます：
+
+- [x] **spec-reviewer による原則準拠チェック**: CONSTITUTION.md への準拠を検証
+- [x] **PRD との整合性チェック**: 要求IDの参照、機能要件の網羅性を確認
+- [x] **テンプレート準拠チェック**: 必須セクションの存在を確認
+
+### 推奨する手動検証
+
+- [ ] 生成された仕様書の内容がユーザーの意図と一致しているか確認
+- [ ] 技術スタックの選定がプロジェクトの制約に合っているか確認
+- [ ] データモデルの型定義がプロジェクトの規約に従っているか確認
+
+### 検証コマンド
+
+```bash
+# 整合性チェック（design ↔ 実装）
+/check_spec {機能名}
+
+# 包括的レビュー（ドキュメント間整合性 + 品質）
+/check_spec {機能名} --full
+
+# 仕様の明確度スキャン
+/clarify {機能名}
+```
 
 ## Serena MCP 統合（オプション）
 

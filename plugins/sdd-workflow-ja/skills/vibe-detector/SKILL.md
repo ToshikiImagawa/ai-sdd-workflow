@@ -3,7 +3,6 @@ name: vibe-detector
 description: "実装開始前に自動実行され、ユーザーの指示を分析してVibe Coding（曖昧な指示によりAIが未定義要件を推測する問題）を検出します。「いい感じに」「適当に」「前と同じように」などの曖昧な表現、仕様不足、不明確な要件を発見した場合に警告を表示し、明確化を促します。"
 version: 2.3.1
 license: MIT
-allowed-tools: Read, Glob, Grep, AskUserQuestion
 ---
 
 # Vibe Detector - 曖昧な指示の自動検出

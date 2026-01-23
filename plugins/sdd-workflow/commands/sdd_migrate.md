@@ -227,3 +227,38 @@ Current settings:
 The plugin will operate based on this configuration.
 To change settings, manually edit `.sdd-config.json`.
 ```
+
+## Post-Migration Verification
+
+### Automatic Verification (Performed)
+
+The following verifications are automatically performed during migration:
+
+- [x] **Directory Existence Confirmation**: Verify directory structure before and after migration
+- [x] **Git Operation Success Confirmation**: Confirm success of `git mv` or configuration file generation
+
+### Recommended Manual Verification
+
+- [ ] Check changes with `git status`
+- [ ] Update existing scripts or CI/CD pipelines if they reference directory paths
+- [ ] Verify path references in CLAUDE.md have been correctly updated
+- [ ] Confirm links in other documents are correct
+
+### Verification Commands
+
+```bash
+# Check Git status
+git status
+
+# Verify directory structure
+ls -la .sdd/
+
+# Confirm AI-SDD commands work correctly
+/check_spec
+```
+
+### Post-Migration Recommended Actions
+
+1. Commit changes
+2. Notify team members of migration completion
+3. Update CI/CD pipeline path references (if necessary)

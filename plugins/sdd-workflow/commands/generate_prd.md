@@ -1,7 +1,7 @@
 ---
 description: "Generate PRD (Requirements Specification) in SysML requirements diagram format from business requirements"
 argument-hint: "<feature-name> [requirements-description]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
 # Generate PRD - Requirements Specification Generation
@@ -336,6 +336,32 @@ Include the following in output upon generation completion:
 
 **Auto-fixes applied**: {count} items
 **Manual fixes required**: {count} items (see details above)
+```
+
+## Post-Generation Verification
+
+### Automatic Verification (Performed)
+
+The following verifications are automatically performed during generation:
+
+- [x] **Principle Compliance Check via prd-reviewer**: Verify compliance with CONSTITUTION.md
+- [x] **Existing spec/design Consistency Check**: Understand impact scope
+
+### Recommended Manual Verification
+
+- [ ] Confirm the generated PRD content aligns with business requirements
+- [ ] Verify requirement ID (UR-xxx, FR-xxx, NFR-xxx) uniqueness
+- [ ] Confirm priority (MoSCoW) classification is appropriate
+- [ ] Stakeholder alignment review
+
+### Verification Commands
+
+```bash
+# PRD quality check (CONSTITUTION.md compliance, completeness, clarity)
+/check_spec {feature-name} --full
+
+# Specification clarity scan
+/clarify {feature-name}
 ```
 
 ## Notes

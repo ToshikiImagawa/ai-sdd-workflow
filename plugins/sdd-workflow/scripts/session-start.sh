@@ -220,38 +220,28 @@ compare_major_minor() {
 }
 
 # CLAUDE.md version check (AI-SDD-PRINCIPLES.md is now auto-updated)
+# Note: PLUGIN_VERSION is already obtained above
 CLAUDE_MD="${PROJECT_ROOT}/CLAUDE.md"
-PLUGIN_JSON="${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json"
 
 # Only check if .sdd/ directory exists
 if [ -d "$SDD_DIR" ]; then
     SHOW_WARNING=false
     WARNING_REASON=""
-    PLUGIN_VERSION=""
-    PROJECT_VERSION=""
-
-    # Get plugin version
-    if [ -f "$PLUGIN_JSON" ]; then
-        if command -v jq &> /dev/null; then
-            PLUGIN_VERSION=$(jq -r '.version // empty' "$PLUGIN_JSON" 2>/dev/null)
-        else
-            PLUGIN_VERSION=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLUGIN_JSON" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
-        fi
-    fi
+    CLAUDE_VERSION=""
 
     if [ ! -f "$CLAUDE_MD" ]; then
         # CLAUDE.md doesn't exist
         SHOW_WARNING=true
         WARNING_REASON="missing"
     elif [ -n "$PLUGIN_VERSION" ]; then
-        # Get version from CLAUDE.md (look for "sdd-workflow" version marker)
-        PROJECT_VERSION=$(grep -A5 'sdd-workflow' "$CLAUDE_MD" 2>/dev/null | grep 'version:' | head -n1 | sed 's/^.*version:[[:space:]]*["'\'']*\([^"'\'']*\)["'\'']*.*$/\1/')
+        # Get version from CLAUDE.md (## AI-SDD Instructions (vX.Y.Z) format)
+        CLAUDE_VERSION=$(grep -o '## AI-SDD Instructions (v[0-9.]*' "$CLAUDE_MD" 2>/dev/null | sed 's/.*v\([0-9.]*\).*/\1/')
 
-        if [ -z "$PROJECT_VERSION" ]; then
-            # No version info (old format)
+        if [ -z "$CLAUDE_VERSION" ]; then
+            # No AI-SDD section in CLAUDE.md
             SHOW_WARNING=true
             WARNING_REASON="no_version"
-        elif ! compare_major_minor "$PLUGIN_VERSION" "$PROJECT_VERSION"; then
+        elif ! compare_major_minor "$PLUGIN_VERSION" "$CLAUDE_VERSION"; then
             # Version is outdated
             SHOW_WARNING=true
             WARNING_REASON="outdated"
@@ -266,10 +256,10 @@ if [ -d "$SDD_DIR" ]; then
                 WARNING_MESSAGE="CLAUDE.md not found. AI-SDD workflow configuration may be incomplete."
                 ;;
             "no_version")
-                WARNING_MESSAGE="CLAUDE.md has no version info for sdd-workflow. Old format CLAUDE.md detected."
+                WARNING_MESSAGE="CLAUDE.md has no AI-SDD section. Old format CLAUDE.md detected."
                 ;;
             "outdated")
-                WARNING_MESSAGE="CLAUDE.md sdd-workflow version is outdated. Plugin: v${PLUGIN_VERSION}, Project: v${PROJECT_VERSION}"
+                WARNING_MESSAGE="CLAUDE.md AI-SDD section is outdated. Plugin: v${PLUGIN_VERSION}, CLAUDE.md: v${CLAUDE_VERSION}"
                 ;;
         esac
 
@@ -290,10 +280,7 @@ Run the following command:
 /sdd_init
 \`\`\`
 
-This will:
-- Update AI-SDD section in CLAUDE.md
-
-Note: .sdd/AI-SDD-PRINCIPLES.md is automatically updated at session start (already up-to-date).
+This will update the AI-SDD section in CLAUDE.md.
 
 ---
 This file will be automatically deleted after running /sdd_init.
