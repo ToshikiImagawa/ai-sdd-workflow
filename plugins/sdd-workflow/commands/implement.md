@@ -305,11 +305,8 @@ Then:
 
 **Notes**:
 
-- In environments where TaskList is unavailable, progress will be displayed in traditional markdown format
-- Command execution continues even if TaskList operations fail
-- Users can check progress anytime using `/tasks` command or `Ctrl+T`
-- Tasks persist across context compactions
-- Status area displays up to 10 tasks at a time (5 phases fit comfortably)
+- In environments where TaskList is unavailable, display progress in traditional markdown format
+- If TaskList operations fail, ignore errors and continue command execution
 
 #### Phase 1: Foundation (Setup)
 
