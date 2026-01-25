@@ -42,6 +42,15 @@
 
 ### Changed
 
+#### コマンド
+
+- **implement** - TaskList機能を使用した進捗管理に対応
+    - 各フェーズ開始時にTaskCreateでタスクを作成
+    - フェーズ実行中にTaskUpdateでステータスを更新（pending → in_progress → completed）
+    - 依存関係を設定して、前のフェーズ完了後に次のフェーズが開始されることを保証
+    - ユーザーは `/tasks` コマンドで実装の進捗状況を確認可能
+    - TaskList機能が利用できない環境でも、従来通りmarkdown形式で進捗を表示
+
 #### マーケットプレイス
 
 - **marketplace.json** の改善

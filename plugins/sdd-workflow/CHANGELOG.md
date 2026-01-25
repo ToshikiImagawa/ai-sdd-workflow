@@ -42,6 +42,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Commands
+
+- **implement** - Added TaskList-based progress management
+    - Creates tasks using TaskCreate at the start of each phase
+    - Updates task status using TaskUpdate during phase execution (pending → in_progress → completed)
+    - Sets dependencies to ensure next phase starts only after previous phase completes
+    - Users can check implementation progress using `/tasks` command
+    - Falls back to traditional markdown progress display when TaskList is unavailable
+
 #### Marketplace
 
 - **marketplace.json** improvements

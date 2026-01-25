@@ -105,7 +105,7 @@ Claude Codeで `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示�
 | `/task_cleanup`   | 実装完了後のtask/ディレクトリを整理し、設計判断を統合          |
 | `/task_breakdown` | 技術設計書からタスクを分解し、小タスクのリストを生成             |
 | `/clarify`        | 仕様書の不明点を9カテゴリでスキャンし、質問を生成して仕様を明確化      |
-| `/implement`      | TDDベースで5フェーズ順に実装を実行し、進捗をtasks.mdに自動マーク |
+| `/implement`      | TDDベースで5フェーズ順に実装を実行。TaskListで進捗追跡し、tasks.mdに自動マーク |
 | `/checklist`      | 仕様書・設計書から9カテゴリの品質チェックリストを自動生成          |
 | `/constitution`   | プロジェクトの非交渉原則を定義・管理                 |
 

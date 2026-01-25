@@ -106,7 +106,7 @@ This command automatically:
 | `/task_cleanup`   | Cleans up the task/ directory after implementation, integrating design decisions                             |
 | `/task_breakdown` | Breaks down tasks from the technical design document into a list of small tasks                              |
 | `/clarify`        | Scans specs across 9 categories, generates questions to clarify ambiguity                                    |
-| `/implement`      | TDD-based 5-phase implementation execution with automatic progress marking in tasks.md                       |
+| `/implement`      | TDD-based 5-phase implementation. Tracks progress with TaskList and auto-marks in tasks.md                  |
 | `/checklist`      | Auto-generates 9-category quality checklists from specs and design docs                                      |
 | `/constitution`   | Defines and manages non-negotiable project principles (constitution)                                         |
 

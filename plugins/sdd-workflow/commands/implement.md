@@ -1,7 +1,7 @@
 ---
 description: "Execute TDD-based implementation and progressively complete checklist in tasks.md"
 argument-hint: "<task-file-path>"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, TaskCreate, TaskUpdate, TaskList, TaskGet
 ---
 
 # Implement - TDD-Based Implementation Execution
@@ -191,7 +191,67 @@ Implementation proceeds through 5 phases progressively:
 - Ready to start Phase 1: Foundation
 ````
 
-### 2. Implementation Phases
+### 2. Task Management Initialization
+
+**Progress Management Using TaskList**:
+
+At the start of implementation, create tasks corresponding to each phase. This enables:
+- Users can check progress using `/tasks` command or `Ctrl+T`
+- Tasks appear in the terminal status area
+- Visual indicators show pending, in_progress, or completed status
+
+**Why Use TaskList**:
+
+This command involves 5 phases of complex multi-step work, meeting these criteria:
+- Complex tasks requiring 3+ steps
+- Each phase has clear completion criteria
+- Progress tracking provides value
+
+**Steps**:
+
+1. Create tasks for each phase using TaskCreate tool
+2. TaskCreate returns the ID of the created task
+3. If dependencies exist, use the previous task ID when creating subsequent tasks
+
+**Example: Creating Phase 1 Task**:
+
+```
+TaskCreate({
+  subject: "Execute setup phase",
+  description: "Create directory structure, create type definition files, define basic interfaces, setup test environment",
+  activeForm: "Executing setup phase"
+})
+```
+
+**Example: Creating Phase 2 Task (depends on Phase 1)**:
+
+After obtaining Phase 1's task ID, create Phase 2 task:
+
+```
+TaskCreate({
+  subject: "Create test cases",
+  description: "Create failing tests for each feature (TDD Red)",
+  activeForm: "Creating test cases"
+})
+```
+
+After creation, set dependency using TaskUpdate:
+
+```
+TaskUpdate({
+  taskId: "<Phase 2 task ID>",
+  addBlockedBy: ["<Phase 1 task ID>"]
+})
+```
+
+**Notes**:
+
+- `subject` should be in imperative form, short and concise (e.g., "Execute setup", "Create tests")
+- `activeForm` should use present continuous form (e.g., "Executing setup", "Creating tests")
+- All tasks are created with `pending` status
+- Dependencies are set using TaskUpdate after TaskCreate
+
+### 3. Implementation Phases
 
 Execute tasks in order following TDD principles:
 
@@ -208,6 +268,48 @@ Phase 4: Testing
    ↓
 Phase 5: Finishing (Polish)
 ```
+
+#### Phase Progress Management Using TaskList
+
+**At Phase Start**:
+
+Update task status to `in_progress` using TaskUpdate tool:
+
+```
+TaskUpdate({
+  taskId: "<target phase task ID>",
+  status: "in_progress"
+})
+```
+
+**During Phase Execution**:
+
+1. Execute phase tasks in order
+2. Update tasks.md to complete checklist
+3. Continuously run tests
+
+**At Phase Completion**:
+
+Update task status to `completed` using TaskUpdate tool:
+
+```
+TaskUpdate({
+  taskId: "<target phase task ID>",
+  status: "completed"
+})
+```
+
+Then:
+1. Run tests for verification
+2. Proceed to next phase
+
+**Notes**:
+
+- In environments where TaskList is unavailable, progress will be displayed in traditional markdown format
+- Command execution continues even if TaskList operations fail
+- Users can check progress anytime using `/tasks` command or `Ctrl+T`
+- Tasks persist across context compactions
+- Status area displays up to 10 tasks at a time (5 phases fit comfortably)
 
 #### Phase 1: Foundation (Setup)
 
@@ -320,7 +422,7 @@ Phase 5: Finishing (Polish)
 - Design document update
 ````
 
-### 3. Continuous Verification
+### 4. Continuous Verification
 
 After completing each task:
 
@@ -347,7 +449,7 @@ After completing each task:
 | Non-functional requirements met | ⚠      | Response time needs tuning  |
 ````
 
-### 4. Progress Tracking
+### 5. Progress Tracking
 
 **Auto-Progress Update in tasks.md**:
 
@@ -378,7 +480,7 @@ After completing each task:
 **Notes**: Chose Zod over Joi for better TypeScript integration
 ````
 
-### 5. Completion Verification
+### 6. Completion Verification
 
 When all tasks complete:
 
@@ -421,7 +523,7 @@ When all tasks complete:
 ✓ All checks passed - Ready to create PR
 ```
 
-### 6. Determine Starting Phase
+### 7. Determine Starting Phase
 
 ```
 - All Phase 1 tasks complete → Start from Phase 2
@@ -431,7 +533,7 @@ When all tasks complete:
 
 **When --phase option specified**: Force start from specified phase
 
-### 7. Execute Per Phase
+### 8. Execute Per Phase
 
 ```
 For each phase:
