@@ -338,22 +338,9 @@ PRD 生成後、**必ず `prd-reviewer` エージェントを呼び出して原�
 - [x] **prd-reviewer による原則準拠チェック**: CONSTITUTION.md への準拠を検証
 - [x] **既存spec/design との整合性確認**: 影響範囲を把握
 
-### 推奨する手動検証
+## 出力
 
-- [ ] 生成されたPRDの内容がビジネス要求と一致しているか確認
-- [ ] 要求ID（UR-xxx, FR-xxx, NFR-xxx）の一意性を確認
-- [ ] 優先度（MoSCoW）の分類が適切か確認
-- [ ] ステークホルダーとの認識合わせ
-
-### 検証コマンド
-
-```bash
-# PRDの品質チェック（CONSTITUTION.md準拠、完全性、明確性）
-/check_spec {機能名} --full
-
-# 仕様の明確度スキャン
-/clarify {機能名}
-```
+PRD生成完了時、`output-templates` スキルを使用してPRD生成完了メッセージを出力してください。
 
 ## 注意事項
 
