@@ -149,6 +149,63 @@ Or specify a particular template:
 Use the `breakdown` template from the `output-templates` skill to output task breakdown results.
 ```
 
+## Template Structure
+
+Each template has the following structure:
+
+1. **Fixed Sections**: Output as-is (e.g., "### Generated Files")
+2. **Placeholders**: Written in `{variable_name}` format, replaced with actual values at runtime
+3. **Conditional Sections**: Output only under specific conditions (e.g., "Only when --full option is specified")
+
+### Placeholder Types
+
+| Placeholder | Description | Example |
+|:--|:--|:--|
+| `{feature-name}` | Target feature name | "user-login" |
+| `{parent}` | Parent feature name (for hierarchical structure) | "auth/" |
+| `{n}` | Count or number | "3" |
+| `{task-name}` | Specific task name | "Implement user authentication API" |
+| `{count}` | Count value | "5 items" |
+
+### Handling Conditional Sections
+
+When template contains annotations like "※ In case of..." or "Only when --full option is specified", adjust output according to those conditions.
+
+## Usage Examples
+
+### Example 1: Using check_spec_output.md
+
+```markdown
+# Command Execution Flow
+
+1. Read: skills/output-templates/templates/check_spec_output.md
+2. Load the template
+3. Replace the following placeholders:
+   - `{feature-name}` → "user-login"
+   - `{n}` → actual number of discrepancies (e.g., "3")
+   - `{discrepancy-title}` → specific discrepancy description
+4. Check conditional section "Only when --full option is specified":
+   - Output relevant section only when --full is specified
+   - Skip when not specified
+5. Generate final output
+```
+
+### Example 2: Using breakdown_output.md
+
+```markdown
+# Generating Task Breakdown Results
+
+1. Read: skills/output-templates/templates/breakdown_output.md
+2. Load the template
+3. Replace placeholders in Mermaid diagram:
+   - `T1_1["1.1 Task name"]` → `T1_1["1.1 Implement user authentication API"]`
+   - Generate dynamically based on Phase and task ID
+4. Replace placeholders in task list:
+   - `{task-name}` → actual task name
+   - `{dependent-tasks}` → list of dependent tasks
+5. Generate final output
+```
+
 ## Updating Templates
 
 When updating templates, note the following:

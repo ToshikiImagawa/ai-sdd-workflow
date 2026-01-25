@@ -6,5 +6,27 @@
     "name": "toshiki.imagawa",
     "url": "https://github.com/ToshikiImagawa"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "skills": [
+    {
+      "name": "output-templates",
+      "path": "skills/output-templates/SKILL.md",
+      "description": "Provides output format templates for AI-SDD workflow commands (9 types: init, breakdown, check_spec, clarify, cleanup, constitution, migrate, prd, spec)"
+    },
+    {
+      "name": "sdd-templates",
+      "path": "skills/sdd-templates/SKILL.md",
+      "description": "Provides project document templates (PRD_TEMPLATE.md, SPECIFICATION_TEMPLATE.md, DESIGN_DOC_TEMPLATE.md, CONSTITUTION.md)"
+    },
+    {
+      "name": "vibe-detector",
+      "path": "skills/vibe-detector/SKILL.md",
+      "description": "Automatically executed before implementation to analyze user instructions and detect Vibe Coding (vague instructions), prompting for clarification"
+    },
+    {
+      "name": "doc-consistency-checker",
+      "path": "skills/doc-consistency-checker/SKILL.md",
+      "description": "Automatically executed during document updates or before implementation to check consistency between PRD ↔ *_spec.md ↔ *_design.md"
+    }
+  ]
 }
