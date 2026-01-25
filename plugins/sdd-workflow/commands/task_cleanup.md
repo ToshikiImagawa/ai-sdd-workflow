@@ -173,46 +173,9 @@ git rm .sdd/task/{target}/{file}
 git rm -r .sdd/task/{target}/
 ```
 
-## Output Format
+## Output
 
-````markdown
-## task/ Cleanup Confirmation
-
-### Target Directory
-
-`.sdd/task/{target}/`
-
-### File List
-
-| File | Last Updated | Status |
-|:---|:---|:---|
-| {filename} | YYYY-MM-DD | To Integrate / To Delete |
-
-### Content to Integrate (→ `*_design.md`)
-
-- [ ] **{Design Decision 1}**: {Summary}
-    - Integration Target: `.sdd/specification/{name}_design.md`
-    - Target Section: Design Decisions / Technology Stack / Other
-- [ ] **{Design Decision 2}**: {Summary}
-    - Integration Target: ...
-
-### Deletable Content
-
-- `{file1}`: Temporary investigation log
-- `{file2}`: Work progress notes
-- `{file3}`: Completed task list
-
-### Recommended Actions
-
-1. Add {design decision} to {section} in `{design.md}`
-2. Delete `task/{target}/`
-
-### Confirmation Items
-
-- [ ] Have all design decisions to integrate been identified?
-- [ ] Does deletable content contain no important information?
-- [ ] Is consistency with integration target document maintained?
-````
+Use the output-templates skill to display cleanup confirmation message.
 
 ## Notes
 

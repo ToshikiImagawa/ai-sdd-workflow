@@ -164,133 +164,9 @@ After receiving user answers:
 2. **Mark Resolved**: Track which questions have been addressed
 3. **Generate Diff**: Show what was added to specifications
 
-## Output Format
+## Output
 
-### Initial Clarification Report
-
-````markdown
-# Specification Clarification Report
-
-## Target Documents
-
-- `.sdd/requirement/[{parent-feature}/]{feature-name}.md` (PRD, if exists)
-- `.sdd/specification/[{parent-feature}/]{feature-name}_spec.md`
-- `.sdd/specification/[{parent-feature}/]{feature-name}_design.md`
-
-※ For hierarchical structure, parent feature uses `index.md`, `index_spec.md`, `index_design.md`
-
-## Category Analysis Summary
-
-| Category | Clear | Partial | Missing | Priority |
-|:---|:---|:---|:---|:---|
-| Functional Scope | ✓ | | | Low |
-| Data Model | | ✓ | | High |
-| Flow & Behavior | | | ✓ | High |
-| Non-Functional Requirements | ✓ | | | Low |
-| Integrations | | ✓ | | Medium |
-| Edge Cases | | | ✓ | High |
-| Constraints | ✓ | | | Low |
-| Terminology | ✓ | | | Low |
-| Completion Signals | | ✓ | | Medium |
-
-## High-Priority Clarification Questions
-
-### Q1: Data Model - User Status Field Nullability
-
-**Context**: The specification mentions a `status` field in the User model but doesn't specify if it can be null or what the default value should be.
-
-**Question**: Should the `status` field allow null values? If not, what should be the default value for new users?
-
-**Examples to Consider**:
-- Option A: Required field, default to "active"
-- Option B: Required field, default to "pending"
-- Option C: Optional field, null means "unverified"
-
-**Current Specification State**: Partial (mentioned but details missing)
-
-**Impact**: High - Affects database schema, validation logic, and API responses
-
----
-
-### Q2: Flow & Behavior - Authentication Failure Retry Logic
-
-**Context**: The spec describes authentication but doesn't specify behavior when authentication fails.
-
-**Question**: What should happen after failed authentication attempts? Should there be rate limiting or account locking?
-
-**Examples to Consider**:
-- Option A: No retry limit, allow indefinite attempts
-- Option B: Lock account after 5 failed attempts for 15 minutes
-- Option C: Exponential backoff: 1s, 5s, 15s, then lock
-
-**Current Specification State**: Missing
-
-**Impact**: High - Security and user experience implications
-
----
-
-{Continue for up to 5 questions}
-
-## Recommendations
-
-1. **Immediate Action Required**: Address Q1, Q2 (High Impact)
-2. **Before Implementation**: Clarify Q3, Q4 (Medium Impact)
-3. **Nice to Have**: Q5 (Low Impact, can be decided during implementation)
-
-## Next Steps
-
-1. Review questions with stakeholders
-2. Update specifications with answers using `/clarify {feature-name} --integrate`
-3. Re-run `/check_spec {feature-name}` to verify consistency
-````
-
-### After Integration
-
-````markdown
-# Clarification Integration Complete
-
-## Updated Documents
-
-- Updated `.sdd/specification/[{path}/]{feature-name}_spec.md`
-  - Added: User.status field nullability and default value
-  - Added: Authentication retry logic specification
-
-- Updated `.sdd/specification/[{path}/]{feature-name}_design.md`
-  - Added: Rate limiting implementation approach
-  - Added: Database schema constraints for status field
-
-## Changes Summary
-
-### Q1 Resolution: User Status Field
-```diff
-+ ### User Model
-+
-+ - `status`: Required field (string), default: "active"
-+ - Allowed values: "active", "inactive", "suspended"
-+ - Cannot be null
-```
-
-### Q2 Resolution: Authentication Retry Logic
-```diff
-+ ### Authentication Error Handling
-+
-+ Failed authentication attempts trigger progressive rate limiting:
-+ 1. First 3 attempts: Immediate retry allowed
-+ 2. Attempts 4-5: 5-second delay required
-+ 3. After 5 failures: Account locked for 15 minutes
-+ 4. After lock expires: Counter resets
-```
-
-## Remaining Ambiguities
-
-- Q3: Edge case handling for concurrent sessions (Medium priority)
-- Q5: Performance requirements for bulk operations (Low priority)
-
-## Recommended Next Steps
-
-1. Run `/task_breakdown {feature-name}` to generate implementation tasks
-2. Address remaining ambiguities during implementation if needed
-````
+Use the output-templates skill to display specification clarification report.
 
 ## Integration Mode
 
@@ -355,11 +231,6 @@ The following verifications are automatically performed during clarification:
 - [x] **Clarity Score Calculation**: Classify items as Clear/Partial/Missing and calculate overall score
 - [x] **Question Prioritization**: Select questions based on impact, risk, and blocker status
 
-### Recommended Manual Verification
-
-- [ ] Confirm overall clarity score is 80% or above
-- [ ] Verify all Missing items have been resolved
-- [ ] Confirm answers have been correctly integrated into specifications
 
 ### Verification Commands
 

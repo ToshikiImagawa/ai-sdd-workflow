@@ -255,7 +255,7 @@ If existing spec/design exists, verify the following after PRD generation:
 
 ### Handling When Updates Needed
 
-1. **Spec needs update**: Regenerate with `/generate_spec` or update manually
+1. **Spec needs update**: Regenerate with `/generate_spec` or recommend manual update to user
 2. **Design needs update**: Check if spec changes require design decision revision
 3. **Impact Scope Notification**: Clearly indicate to user which documents need updates
 
@@ -269,10 +269,9 @@ If existing spec/design exists, verify the following after PRD generation:
 2. **Consistency Check**:
     - If existing spec/design exists: Verify impact and notify if updates needed
 
-3. **Next Steps**:
-    - Create abstract specification and technical design document with `/generate_spec`
-    - Reference PRD requirement IDs in specification
-    - If existing spec exists, recommend update
+## Output
+
+Use the output-templates skill to output PRD generation complete message.
 
 ## Loading CONSTITUTION.md (Required)
 
@@ -313,7 +312,7 @@ After PRD generation, **you must call the `prd-reviewer` agent to check principl
    ↓
 3. If violations detected:
    ├─ Auto-fixable: Apply fix using Edit tool
-   └─ Not auto-fixable: Report locations needing manual fix
+   └─ Not auto-fixable: Report locations needing fixes to user
    ↓
 4. After fix, re-check to verify
    ↓
@@ -347,12 +346,6 @@ The following verifications are automatically performed during generation:
 - [x] **Principle Compliance Check via prd-reviewer**: Verify compliance with CONSTITUTION.md
 - [x] **Existing spec/design Consistency Check**: Understand impact scope
 
-### Recommended Manual Verification
-
-- [ ] Confirm the generated PRD content aligns with business requirements
-- [ ] Verify requirement ID (UR-xxx, FR-xxx, NFR-xxx) uniqueness
-- [ ] Confirm priority (MoSCoW) classification is appropriate
-- [ ] Stakeholder alignment review
 
 ### Verification Commands
 
