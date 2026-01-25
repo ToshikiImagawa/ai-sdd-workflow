@@ -9,11 +9,11 @@ as the source of truth.
 
 ## Supported Environments
 
-| OS | Support | Notes |
-|:---|:---:|:---|
-| macOS | ✅ | Fully supported |
-| Linux | ✅ | Fully supported |
-| Windows | ❌ | Not supported (see alternatives below) |
+| OS      | Support | Notes                                  |
+|:--------|:-------:|:---------------------------------------|
+| macOS   |    ✅    | Fully supported                        |
+| Linux   |    ✅    | Fully supported                        |
+| Windows |    ❌    | Not supported (see alternatives below) |
 
 ### Windows Limitations
 
@@ -22,12 +22,12 @@ The `session-start.sh` hook in this plugin is implemented as a bash script and d
 ### Alternatives for Windows Users
 
 1. **Use WSL (Windows Subsystem for Linux)** (Recommended)
-   - Install WSL2 and run Claude Code within the Linux environment
-   - [WSL Installation Guide](https://learn.microsoft.com/en-us/windows/wsl/install)
+    - Install WSL2 and run Claude Code within the Linux environment
+    - [WSL Installation Guide](https://learn.microsoft.com/en-us/windows/wsl/install)
 
 2. **Use Git Bash**
-   - Git Bash included with Git for Windows may allow bash scripts to run
-   - [Git for Windows](https://gitforwindows.org/)
+    - Git Bash included with Git for Windows may allow bash scripts to run
+    - [Git for Windows](https://gitforwindows.org/)
 
 ### Future Support Plans
 
@@ -106,7 +106,7 @@ This command automatically:
 | `/task_cleanup`   | Cleans up the task/ directory after implementation, integrating design decisions                             |
 | `/task_breakdown` | Breaks down tasks from the technical design document into a list of small tasks                              |
 | `/clarify`        | Scans specs across 9 categories, generates questions to clarify ambiguity                                    |
-| `/implement`      | TDD-based 5-phase implementation. Tracks progress with TaskList and auto-marks in tasks.md                  |
+| `/implement`      | TDD-based 5-phase implementation. Tracks progress with TaskList and auto-marks in tasks.md                   |
 | `/checklist`      | Auto-generates 9-category quality checklists from specs and design docs                                      |
 | `/constitution`   | Defines and manages non-negotiable project principles (constitution)                                         |
 
@@ -231,7 +231,8 @@ Includes session management and password reset functionality.
 /clarify user-auth
 ```
 
-Scans specifications across 9 categories and generates questions for unclear points. Answers are automatically integrated into specs.
+Scans specifications across 9 categories and generates questions for unclear points. Answers are automatically
+integrated into specs.
 
 #### Step 5: Task Breakdown
 
