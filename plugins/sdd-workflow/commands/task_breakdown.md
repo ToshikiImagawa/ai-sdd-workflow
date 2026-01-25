@@ -244,7 +244,9 @@ graph TD
 
 ````
 
-**Save Location**: `.sdd/task/{ticket-number}/tasks.md` or `.sdd/task/{feature-name}/tasks.md`
+## Output
+
+Use the output-templates skill to generate task breakdown results and save to .sdd/task/{ticket_number}/tasks.md or .sdd/task/{feature}/tasks.md.
 
 ## Requirement Coverage Verification
 
@@ -285,11 +287,6 @@ Add the following to task list end (if PRD/spec exists):
 2. **Requirement Coverage Verification**:
     - If PRD/spec exists: Verify all requirements are covered by tasks
     - Add coverage table to task list
-
-3. **Next Steps**:
-    - Start implementation from Phase 1 foundation tasks in order
-    - Check off each task upon completion
-    - After all tasks complete, clean up with `/task_cleanup`
 
 ## Serena MCP Integration (Optional)
 
@@ -337,7 +334,7 @@ If Serena MCP is enabled, semantic code analysis can be leveraged to improve tas
 ### Behavior When Serena is Not Configured
 
 Even without Serena, task breakdown is performed based on design document.
-Impact scope analysis must be done manually.
+If impact scope analysis is needed, recommend manual verification to user.
 
 ## Post-Generation Verification
 
@@ -349,12 +346,6 @@ The following verifications are automatically performed during generation:
 - [x] **Dependency Consistency Check**: Confirm no contradictions in inter-task dependencies
 - [x] **Completion Criteria Specificity Check**: Verify each task has clear completion criteria
 
-### Recommended Manual Verification
-
-- [ ] Confirm task granularity is appropriate (1 task = hours to 1 day)
-- [ ] Verify dependency diagram is logically correct
-- [ ] Confirm no gaps in requirement coverage table
-- [ ] Verify Phase classification is appropriate
 
 ### Verification Commands
 

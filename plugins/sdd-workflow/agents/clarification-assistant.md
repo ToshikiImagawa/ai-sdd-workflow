@@ -97,7 +97,7 @@ Evaluate each category item on a **3-level scale**:
 | Status         | Evaluation             | Description                             | Action                         |
 |:---------------|:-----------------------|:----------------------------------------|:-------------------------------|
 | **🟢 Clear**   | Clearly defined        | No issues                               | None                           |
-| **🟡 Partial** | Partially defined      | Supplementation recommended             | Generate questions             |
+| **🟡 Partial** | Partially defined      | Supplementation needed                  | Generate questions             |
 | **🔴 Missing** | Undefined or ambiguous | Must be clarified before implementation | Prioritize question generation |
 
 ### 3. High-Impact Question Generation
@@ -604,9 +604,9 @@ This agent is complementary to the `vibe-detector` skill:
 | **vibe-detector skill**           | Detection of vague instructions                                                 | Warning before implementation starts |
 | **clarification-assistant agent** | Systematic identification and clarification of unclear points in specifications | During specification creation/update |
 
-## Recommended Clarity Scores
+## Clarity Score Evaluation Criteria
 
-| Score Range      | Rating       | Recommended Action                                              |
+| Score Range      | Rating       | Action                                                          |
 |:-----------------|:-------------|:----------------------------------------------------------------|
 | **80% or above** | Good         | Ready to start implementation                                   |
 | **60-79%**       | Fair         | Answer additional questions before implementation               |

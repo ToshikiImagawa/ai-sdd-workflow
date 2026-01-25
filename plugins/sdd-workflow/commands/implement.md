@@ -1,7 +1,7 @@
 ---
 description: "Execute TDD-based implementation and progressively complete checklist in tasks.md"
 argument-hint: "<task-file-path>"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, TaskCreate, TaskUpdate, TaskList, TaskGet
 ---
 
 # Implement - TDD-Based Implementation Execution
@@ -14,7 +14,8 @@ Execute implementation following TDD (Test-Driven Development) approach based on
 
 **Before execution, check if `.sdd/UPDATE_REQUIRED.md` exists.**
 
-If this file exists, the AI-SDD plugin needs to be updated. Display a warning to the user and prompt them to run the following command:
+If this file exists, the AI-SDD plugin needs to be updated.
+Display a warning to the user and prompt them to run the following command:
 
 ```
 /sdd_init
@@ -49,7 +50,8 @@ This command performs implementation following AI-SDD principles.
 2. Check `.sdd-config.json` if environment variables are not set
 3. Use default values if neither exists
 
-This document uses default values for examples, but replace with custom values if environment variables or configuration file exists.
+This document uses default values for examples,
+but replace with custom values if environment variables or configuration file exists.
 
 ### Required Prerequisites
 
@@ -61,7 +63,8 @@ Verify the following exist before execution:
 | **Technical Design** | `.sdd/specification/{feature}_design.md` exists | `/generate_spec {feature}`  |
 | **Abstract Spec**    | `.sdd/specification/{feature}_spec.md` exists   | `/generate_spec {feature}`  |
 
-* For hierarchical structure: Add `[{path}/]` prefix (e.g., `auth/user-login_spec.md`). For parent features, use `index_spec.md`
+* For hierarchical structure: Add `[{path}/]` prefix (e.g., `auth/user-login_spec.md`).
+* For parent features, use `index_spec.md`
 
 ## Input
 
@@ -88,13 +91,13 @@ $ARGUMENTS
 
 Implementation proceeds through 5 phases progressively:
 
-| Phase | Phase Name         | Purpose                                    | TDD Approach                          |
-|:------|:-------------------|:-------------------------------------------|:--------------------------------------|
-| **1** | Setup (Foundation) | Directory structure, type definitions      | Setup test environment                |
-| **2** | Tests (Test-First) | Create test cases (Red)                    | Write failing tests first             |
-| **3** | Core (Core Implementation) | Main functionality implementation (Green) | Implement to pass tests              |
-| **4** | Integration        | Module integration (Green)                 | Write integration tests first, then implement |
-| **5** | Polish (Finishing) | Refactoring, documentation (Refactor)      | Improve code while maintaining tests  |
+| Phase | Phase Name                 | Purpose                                   | TDD Approach                                  |
+|:------|:---------------------------|:------------------------------------------|:----------------------------------------------|
+| **1** | Setup (Foundation)         | Directory structure, type definitions     | Setup test environment                        |
+| **2** | Tests (Test-First)         | Create test cases (Red)                   | Write failing tests first                     |
+| **3** | Core (Core Implementation) | Main functionality implementation (Green) | Implement to pass tests                       |
+| **4** | Integration                | Module integration (Green)                | Write integration tests first, then implement |
+| **5** | Polish (Finishing)         | Refactoring, documentation (Refactor)     | Improve code while maintaining tests          |
 
 ### Execution Rules per Phase
 
@@ -191,7 +194,69 @@ Implementation proceeds through 5 phases progressively:
 - Ready to start Phase 1: Foundation
 ````
 
-### 2. Implementation Phases
+### 2. Task Management Initialization
+
+**Progress Management Using TaskList**:
+
+At the start of implementation, create tasks corresponding to each phase. This enables:
+
+- Users can check progress using `/tasks` command or `Ctrl+T`
+- Tasks appear in the terminal status area
+- Visual indicators show pending, in_progress, or completed status
+
+**Why Use TaskList**:
+
+This command involves 5 phases of complex multi-step work, meeting these criteria:
+
+- Complex tasks requiring 3+ steps
+- Each phase has clear completion criteria
+- Progress tracking provides value
+
+**Steps**:
+
+1. Create tasks for each phase using TaskCreate tool
+2. TaskCreate returns the ID of the created task
+3. If dependencies exist, use the previous task ID when creating subsequent tasks
+
+**Example: Creating Phase 1 Task**:
+
+```
+TaskCreate({
+  subject: "Execute setup phase",
+  description: "Create directory structure, create type definition files, define basic interfaces, setup test environment",
+  activeForm: "Executing setup phase"
+})
+```
+
+**Example: Creating Phase 2 Task (depends on Phase 1)**:
+
+After obtaining Phase 1's task ID, create Phase 2 task:
+
+```
+TaskCreate({
+  subject: "Create test cases",
+  description: "Create failing tests for each feature (TDD Red)",
+  activeForm: "Creating test cases"
+})
+```
+
+After creation, set dependency using TaskUpdate:
+
+```
+TaskUpdate({
+  taskId: "<Phase 2 task ID>",
+  addBlockedBy: ["<Phase 1 task ID>"]
+})
+```
+
+**Notes**:
+
+- `subject` should be in imperative form, short and concise (e.g., "Execute setup", "Create tests")
+- `activeForm` should use present continuous form (e.g., "Executing setup", "Creating tests")
+- All tasks are created with `pending` status
+- Dependencies are set using TaskUpdate after TaskCreate
+
+### 3. Implementation Phases
 
 Execute tasks in order following TDD principles:
 
@@ -208,6 +273,61 @@ Phase 4: Testing
    ↓
 Phase 5: Finishing (Polish)
 ```
+
+#### Phase Progress Management Using TaskList
+
+**At Phase Start**:
+
+Update task status to `in_progress` using TaskUpdate tool:
+
+```
+TaskUpdate({
+  taskId: "<target phase task ID>",
+  status: "in_progress"
+})
+```
+
+**During Phase Execution**:
+
+1. Execute phase tasks in order
+2. Update tasks.md to complete checklist
+3. Continuously run tests
+
+**At Phase Completion**:
+
+Update task status to `completed` using TaskUpdate tool:
+
+```
+TaskUpdate({
+  taskId: "<target phase task ID>",
+  status: "completed"
+})
+```
+
+Then:
+
+1. Run tests for verification
+2. Proceed to next phase
+
+**Notes**:
+
+- In environments where TaskList is unavailable, display progress in traditional markdown format
+
+**TaskList Error Handling**:
+
+| Error Type | Action |
+|:--|:--|
+| TaskCreate tool does not exist | Fallback to markdown format, notify user |
+| Task creation succeeded but update failed | Log error and continue implementation |
+| Failed to retrieve task ID | Skip dependency setup, display warning |
+| TaskUpdate failed to set dependencies | Log error, allow next phase to start manually |
+
+**Verification Methods**:
+
+1. Verify the returned task ID after TaskCreate execution
+2. If task ID is empty or undefined, switch to fallback mode
+3. When falling back, notify user: "TaskList feature unavailable, displaying progress in markdown format"
+4. Log success/failure of TaskUpdate at the end of each phase
 
 #### Phase 1: Foundation (Setup)
 
@@ -320,7 +440,7 @@ Phase 5: Finishing (Polish)
 - Design document update
 ````
 
-### 3. Continuous Verification
+### 4. Continuous Verification
 
 After completing each task:
 
@@ -347,7 +467,7 @@ After completing each task:
 | Non-functional requirements met | ⚠      | Response time needs tuning  |
 ````
 
-### 4. Progress Tracking
+### 5. Progress Tracking
 
 **Auto-Progress Update in tasks.md**:
 
@@ -378,7 +498,7 @@ After completing each task:
 **Notes**: Chose Zod over Joi for better TypeScript integration
 ````
 
-### 5. Completion Verification
+### 6. Completion Verification
 
 When all tasks complete:
 
@@ -419,21 +539,25 @@ When all tasks complete:
 ### Ready for Review
 
 ✓ All checks passed - Ready to create PR
-```
-
-### 6. Determine Starting Phase
 
 ```
+
+### 7. Determine Starting Phase
+
+```
+
 - All Phase 1 tasks complete → Start from Phase 2
 - All Phase 2 tasks complete → Start from Phase 3
 - And so on...
+
 ```
 
 **When --phase option specified**: Force start from specified phase
 
-### 7. Execute Per Phase
+### 8. Execute Per Phase
 
 ```
+
 For each phase:
 
 1. Display task list for the phase
@@ -655,13 +779,13 @@ Auto-record decisions and issues during implementation in `.sdd/task/{ticket}/im
 
 ### Log Items
 
-| Item                           | Content Recorded                          |
-|:-------------------------------|:------------------------------------------|
+| Item                           | Content Recorded                           |
+|:-------------------------------|:-------------------------------------------|
 | **Implementation Decisions**   | Implementation decisions not in design doc |
-| **Issues & Solutions**         | Problems encountered and their solutions  |
-| **Alternative Considerations** | Alternatives not chosen and reasons       |
-| **Technical Discoveries**      | Insights gained during implementation     |
-| **Test Results**               | Test execution result records             |
+| **Issues & Solutions**         | Problems encountered and their solutions   |
+| **Alternative Considerations** | Alternatives not chosen and reasons        |
+| **Technical Discoveries**      | Insights gained during implementation      |
+| **Test Results**               | Test execution result records              |
 
 ### Log Usage
 
@@ -683,11 +807,11 @@ After implementation complete, integrate important content into `*_design.md` (e
 
 ### Test-First Principles
 
-| Principle                  | Details                                  |
-|:---------------------------|:-----------------------------------------|
-| **Write Tests First**      | Create test cases before implementation  |
-| **Small Steps**            | Implement only one feature at a time     |
-| **Minimum Implementation** | Write minimum code to pass tests         |
+| Principle                  | Details                                     |
+|:---------------------------|:--------------------------------------------|
+| **Write Tests First**      | Create test cases before implementation     |
+| **Small Steps**            | Implement only one feature at a time        |
+| **Minimum Implementation** | Write minimum code to pass tests            |
 | **Continuous Refactoring** | Always improve code while maintaining tests |
 
 ### Test Coverage Goals

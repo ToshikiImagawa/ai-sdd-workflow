@@ -110,81 +110,9 @@ Detect legacy structure when:
 2. **Legacy Requirements Directory**: `{root}/requirement-diagram/` exists
 3. **Legacy Task Directory**: `{root}/review/` exists and `{root}/task/` doesn't exist
 
-## Output Examples
+## Output
 
-### When Legacy Structure Detected
-
-````markdown
-## AI-SDD Migration
-
-### Detected Structure
-
-| Item                     | Current Value        | New Recommended Value |
-|:-------------------------|:---------------------|:----------------------|
-| Root Directory           | `.docs`              | `.sdd`                |
-| Requirements Directory   | `requirement-diagram` | `requirement`         |
-| Task Directory           | `review`             | `task`                |
-
-### Migration Options
-
-**A: Migrate to New Structure**
-
-- Rename directories to align with new naming convention
-- Recommended: New projects or early-stage projects
-
-**B: Keep Legacy Structure**
-
-- Generate `.sdd-config.json` to maintain current structure
-- Recommended: Existing projects with many external references
-
-Which option do you choose?
-````
-
-### After Migration Complete (Option A)
-
-````markdown
-## Migration Complete
-
-### Changes Applied
-
-- [x] Renamed `.docs/` → `.sdd/`
-- [x] Renamed `requirement-diagram/` → `requirement/`
-- [x] Renamed `review/` → `task/`
-- [x] Updated path references in CLAUDE.md
-
-### Next Steps
-
-1. Review existing scripts and references, update as needed
-2. Check changes with `git status`
-````
-
-### After Migration Complete (Option B)
-
-````markdown
-## Migration Complete
-
-### Generated Files
-
-- [x] Created `.sdd-config.json`
-
-### Configuration Content
-
-```json
-{
-  "root": ".docs",
-  "directories": {
-    "requirement": "requirement-diagram",
-    "specification": "specification",
-    "task": "review"
-  }
-}
-```
-
-### Next Steps
-
-1. Add `.sdd-config.json` to version control
-
-````
+Depending on migration status, use the output-templates skill to output migration results.
 
 ## Error Handling
 
@@ -237,12 +165,6 @@ The following verifications are automatically performed during migration:
 - [x] **Directory Existence Confirmation**: Verify directory structure before and after migration
 - [x] **Git Operation Success Confirmation**: Confirm success of `git mv` or configuration file generation
 
-### Recommended Manual Verification
-
-- [ ] Check changes with `git status`
-- [ ] Update existing scripts or CI/CD pipelines if they reference directory paths
-- [ ] Verify path references in CLAUDE.md have been correctly updated
-- [ ] Confirm links in other documents are correct
 
 ### Verification Commands
 

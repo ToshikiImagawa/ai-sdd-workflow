@@ -1,7 +1,7 @@
 ---
 description: "TDDベースの実装を実行し、tasks.mdのチェックリストを段階的に完了させる"
 argument-hint: "<タスクファイルパス>"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, TaskCreate, TaskUpdate, TaskList, TaskGet
 ---
 
 # Implement - TDDベース実装実行
@@ -191,7 +191,69 @@ $ARGUMENTS
 - Phase 1: Foundation の開始準備完了
 ````
 
-### 2. 実装フェーズ
+### 2. タスク管理の初期化
+
+**TaskListを使用した進捗管理**:
+
+実装開始時に、各フェーズに対応するタスクを作成します。これにより：
+
+- ユーザーは `/tasks` コマンドまたは `Ctrl+T` で進捗状況を確認できます
+- タスクはターミナルのステータスエリアに表示されます
+- pending（待機中）、in_progress（実行中）、completed（完了）の状態が視覚的に表示されます
+
+**TaskList使用の理由**:
+
+このコマンドは5つのフェーズからなる複雑な多段階タスクであり、以下の条件に該当します：
+
+- 3ステップ以上必要な複雑なタスク
+- 各フェーズが明確な完了条件を持つ
+- 進捗の追跡が有益
+
+**手順**:
+
+1. 各フェーズのタスクをTaskCreateツールで作成
+2. TaskCreateは作成したタスクのIDを返す
+3. 依存関係がある場合は、後続のタスク作成時に前のタスクIDを使用
+
+**Phase 1のタスク作成例**:
+
+```
+TaskCreate({
+  subject: "Execute setup phase",
+  description: "ディレクトリ構造の作成、型定義ファイルの作成、基本的なインターフェースの定義、テスト環境のセットアップ",
+  activeForm: "セットアップフェーズを実行中"
+})
+```
+
+**Phase 2のタスク作成例（Phase 1に依存）**:
+
+Phase 1のタスクIDを取得後、Phase 2のタスクを作成:
+
+```
+TaskCreate({
+  subject: "Create test cases",
+  description: "各機能に対応する失敗するテストを作成（TDD Red）",
+  activeForm: "テストケースを作成中"
+})
+```
+
+作成後、TaskUpdateで依存関係を設定:
+
+```
+TaskUpdate({
+  taskId: "<Phase 2のタスクID>",
+  addBlockedBy: ["<Phase 1のタスクID>"]
+})
+```
+
+**注意事項**:
+
+- `subject`は命令形で短く簡潔に記載（例: "Execute setup", "Create tests"）
+- `activeForm`は現在進行形で記載（例: "セットアップを実行中", "テストを作成中"）
+- すべてのタスクは`pending`ステータスで作成される
+- 依存関係はTaskCreateの後にTaskUpdateで設定する
+
+### 3. 実装フェーズ
 
 TDD原則に従って順番にタスクを実行:
 
@@ -207,8 +269,62 @@ Phase 3: Integration（統合）
 Phase 4: Testing（テスト）
    ↓
 Phase 5: Finishing（仕上げ）
+```
+
+#### TaskListを使用したフェーズ進捗管理
+
+**フェーズ開始時**:
+
+TaskUpdateツールでタスクのステータスを`in_progress`に変更:
 
 ```
+TaskUpdate({
+  taskId: "<対象フェーズのタスクID>",
+  status: "in_progress"
+})
+```
+
+**フェーズ実行中**:
+
+1. フェーズのタスクを順番に実行
+2. tasks.md を更新してチェックリストを完了
+3. 継続的にテストを実行
+
+**フェーズ完了時**:
+
+TaskUpdateツールでタスクのステータスを`completed`に変更:
+
+```
+TaskUpdate({
+  taskId: "<対象フェーズのタスクID>",
+  status: "completed"
+})
+```
+
+その後:
+
+1. テストを実行して検証
+2. 次のフェーズに進む
+
+**注意事項**:
+
+- TaskList機能が利用できない環境では、従来通りmarkdown形式で進捗を表示してください
+
+**TaskList エラーハンドリング**:
+
+| エラー種別 | 対応 |
+|:--|:--|
+| TaskCreateツールが存在しない | markdown形式にフォールバック、ユーザーに通知 |
+| タスク作成は成功したが更新に失敗 | エラーをログに記録し、実装は継続 |
+| タスクIDの取得に失敗 | 依存関係設定をスキップし、警告を表示 |
+| TaskUpdateで依存関係設定に失敗 | エラーを記録し、次のフェーズは手動で開始可能とする |
+
+**検証方法**:
+
+1. TaskCreate実行後、返却されたタスクIDを確認
+2. タスクIDが空またはundefinedの場合はフォールバックモードに切り替え
+3. フォールバック時はユーザーに「TaskList機能が利用できないため、markdown形式で進捗を表示します」と通知
+4. 各フェーズ完了時にTaskUpdateの成功/失敗をログに記録
 
 #### Phase 1: Foundation（基盤）
 
@@ -321,7 +437,7 @@ Phase 5: Finishing（仕上げ）
 - 設計書の更新
 ````
 
-### 3. 継続的な検証
+### 4. 継続的な検証
 
 各タスク完了後:
 
@@ -348,7 +464,7 @@ Phase 5: Finishing（仕上げ）
 | 非機能要件を満たす | ⚠ | レスポンス時間の調整が必要 |
 ````
 
-### 4. 進捗追跡
+### 5. 進捗追跡
 
 **tasks.md の自動進捗更新**:
 
@@ -379,7 +495,7 @@ Phase 5: Finishing（仕上げ）
 **備考**: TypeScript統合の向上のため、JoiではなくZodを採用
 ````
 
-### 5. 完了検証
+### 6. 完了検証
 
 すべてのタスクが完了したとき:
 
@@ -423,7 +539,7 @@ Phase 5: Finishing（仕上げ）
 
 ```
 
-### 6. 開始フェーズの決定
+### 7. 開始フェーズの決定
 
 ```
 
@@ -435,7 +551,7 @@ Phase 5: Finishing（仕上げ）
 
 **--phase オプション指定時**: 指定されたフェーズから強制的に開始
 
-### 7. フェーズごとの実行
+### 8. フェーズごとの実行
 
 ```
 

@@ -8,11 +8,11 @@ AI駆動仕様駆動開発（AI-SDD）ワークフローを支援する日本語
 
 ## 対応環境
 
-| OS | 対応状況 | 備考 |
-|:---|:---:|:---|
-| macOS | ✅ | フル対応 |
-| Linux | ✅ | フル対応 |
-| Windows | ❌ | 非対応（下記の代替手段を参照） |
+| OS      | 対応状況 | 備考              |
+|:--------|:----:|:----------------|
+| macOS   |  ✅   | フル対応            |
+| Linux   |  ✅   | フル対応            |
+| Windows |  ❌   | 非対応（下記の代替手段を参照） |
 
 ### Windows環境での制限事項
 
@@ -21,12 +21,12 @@ AI駆動仕様駆動開発（AI-SDD）ワークフローを支援する日本語
 ### Windowsユーザー向けの代替手段
 
 1. **WSL (Windows Subsystem for Linux) の使用**（推奨）
-   - WSL2をインストールし、Linux環境内でClaude Codeを実行してください
-   - [WSL インストールガイド](https://learn.microsoft.com/ja-jp/windows/wsl/install)
+    - WSL2をインストールし、Linux環境内でClaude Codeを実行してください
+    - [WSL インストールガイド](https://learn.microsoft.com/ja-jp/windows/wsl/install)
 
 2. **Git Bash の使用**
-   - Git for Windowsに付属するGit Bashを使用することで、bashスクリプトが実行可能になる場合があります
-   - [Git for Windows](https://gitforwindows.org/)
+    - Git for Windowsに付属するGit Bashを使用することで、bashスクリプトが実行可能になる場合があります
+    - [Git for Windows](https://gitforwindows.org/)
 
 ### 将来的な対応方針
 
@@ -86,28 +86,28 @@ Claude Codeで `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示�
 
 ### エージェント
 
-| エージェント                    | 説明                                        |
-|:--------------------------|:------------------------------------------|
+| エージェント                    | 説明                                           |
+|:--------------------------|:---------------------------------------------|
 | `prd-reviewer`            | PRDの品質レビューとCONSTITUTION.md準拠チェック。違反時は自動修正を試行 |
 | `spec-reviewer`           | 仕様書の品質レビューとCONSTITUTION.md準拠チェック。違反時は自動修正を試行 |
-| `requirement-analyzer`    | SysML要求図に基づく要求分析、トラッキング、検証                |
-| `clarification-assistant` | 仕様明確化支援。要件を9カテゴリで分析し、質問を生成して仕様書に統合        |
+| `requirement-analyzer`    | SysML要求図に基づく要求分析、トラッキング、検証                   |
+| `clarification-assistant` | 仕様明確化支援。要件を9カテゴリで分析し、質問を生成して仕様書に統合           |
 
 ### コマンド
 
-| コマンド              | 説明                                     |
-|:------------------|:---------------------------------------|
-| `/sdd_init`       | AI-SDDワークフローの初期化。CLAUDE.md設定とテンプレート生成  |
-| `/sdd_migrate`    | 旧バージョン（v1.x）からの移行。新構成への移行または互換性設定の生成   |
-| `/generate_spec`  | 入力から抽象仕様書と技術設計書を生成                     |
-| `/generate_prd`   | ビジネス要求からPRD（要求仕様書）をSysML要求図形式で生成       |
-| `/check_spec`     | 実装コードと仕様書の整合性をチェックし、差異を検出              |
-| `/task_cleanup`   | 実装完了後のtask/ディレクトリを整理し、設計判断を統合          |
-| `/task_breakdown` | 技術設計書からタスクを分解し、小タスクのリストを生成             |
-| `/clarify`        | 仕様書の不明点を9カテゴリでスキャンし、質問を生成して仕様を明確化      |
-| `/implement`      | TDDベースで5フェーズ順に実装を実行し、進捗をtasks.mdに自動マーク |
-| `/checklist`      | 仕様書・設計書から9カテゴリの品質チェックリストを自動生成          |
-| `/constitution`   | プロジェクトの非交渉原則を定義・管理                 |
+| コマンド              | 説明                                                |
+|:------------------|:--------------------------------------------------|
+| `/sdd_init`       | AI-SDDワークフローの初期化。CLAUDE.md設定とテンプレート生成             |
+| `/sdd_migrate`    | 旧バージョン（v1.x）からの移行。新構成への移行または互換性設定の生成              |
+| `/generate_spec`  | 入力から抽象仕様書と技術設計書を生成                                |
+| `/generate_prd`   | ビジネス要求からPRD（要求仕様書）をSysML要求図形式で生成                  |
+| `/check_spec`     | 実装コードと仕様書の整合性をチェックし、差異を検出                         |
+| `/task_cleanup`   | 実装完了後のtask/ディレクトリを整理し、設計判断を統合                     |
+| `/task_breakdown` | 技術設計書からタスクを分解し、小タスクのリストを生成                        |
+| `/clarify`        | 仕様書の不明点を9カテゴリでスキャンし、質問を生成して仕様を明確化                 |
+| `/implement`      | TDDベースで5フェーズ順に実装を実行。TaskListで進捗追跡し、tasks.mdに自動マーク |
+| `/checklist`      | 仕様書・設計書から9カテゴリの品質チェックリストを自動生成                     |
+| `/constitution`   | プロジェクトの非交渉原則を定義・管理                                |
 
 ### スキル
 

@@ -326,6 +326,10 @@ Add the following to spec's end (if PRD exists):
     - If PRD exists: Verify and reflect PRD ↔ spec consistency
     - Verify spec ↔ design consistency
 
+## Output
+
+Use the output-templates skill to output specification & design doc generation complete message.
+
 ## Post-Generation Verification
 
 ### Automatic Verification (Performed)
@@ -336,11 +340,6 @@ The following verifications are automatically performed during generation:
 - [x] **PRD Consistency Check**: Confirm requirement ID references and functional requirement coverage
 - [x] **Template Compliance Check**: Verify presence of required sections
 
-### Recommended Manual Verification
-
-- [ ] Confirm the generated specification content matches user intent
-- [ ] Verify technology stack selection aligns with project constraints
-- [ ] Confirm data model type definitions follow project conventions
 
 ### Verification Commands
 
@@ -397,7 +396,7 @@ If Serena MCP is enabled, existing codebase semantic analysis can be leveraged t
 ### Behavior When Serena is Not Configured
 
 Even without Serena, specifications are generated based on input content and PRD.
-Existing code reference must be done manually.
+If existing code reference is needed, recommend manual verification to user.
 
 ## Loading CONSTITUTION.md (Required)
 
@@ -447,7 +446,7 @@ After spec and design generation, **you must call the `spec-reviewer` agent to c
    ↓
 3. If violations detected:
    ├─ Auto-fixable: Apply fix using Edit tool
-   └─ Not auto-fixable: Report locations needing manual fix
+   └─ Not auto-fixable: Report locations needing fixes to user
    ↓
 4. After fix, re-check to verify
    ↓

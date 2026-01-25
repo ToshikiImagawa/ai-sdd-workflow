@@ -444,7 +444,7 @@ When executed standalone, output in the following detailed format.
 
 ### Missing Sections
 
-The following sections are recommended to be added:
+The following sections need to be added:
 
 | Section        | Reason          | Priority            |
 |:---------------|:----------------|:--------------------|
