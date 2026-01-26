@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.2] - 2026-01-26
+
+### Fixed
+
+#### Plugin Manifest
+
+- **Removed skills field from plugin.json** - Fixed plugin installation error
+    - Removed `skills` field as it is not supported in Claude Code's plugin.json schema
+    - Skills are automatically discovered from `skills/` directory
+    - Resolved "Invalid input" error during installation
+
 ## [2.4.1] - 2026-01-26
 
 ### Fixed

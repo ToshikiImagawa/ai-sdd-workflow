@@ -1,32 +1,10 @@
 {
   "name": "sdd-workflow-ja",
   "description": "AI駆動仕様駆動開発（AI-SDD）ワークフローを支援する日本語プラグイン。Vibe Coding問題を防ぎ、仕様書を真実の源として高品質な実装を実現します。",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "author": {
     "name": "toshiki.imagawa",
     "url": "https://github.com/ToshikiImagawa"
   },
-  "license": "MIT",
-  "skills": [
-    {
-      "name": "output-templates",
-      "path": "skills/output-templates/SKILL.md",
-      "description": "AI-SDDワークフローの各コマンドで使用する出力フォーマットテンプレートを提供（9種類: init, breakdown, check_spec, clarify, cleanup, constitution, migrate, prd, spec）"
-    },
-    {
-      "name": "sdd-templates",
-      "path": "skills/sdd-templates/SKILL.md",
-      "description": "プロジェクトのドキュメントテンプレート（PRD_TEMPLATE.md、SPECIFICATION_TEMPLATE.md、DESIGN_DOC_TEMPLATE.md、CONSTITUTION.md）を提供"
-    },
-    {
-      "name": "vibe-detector",
-      "path": "skills/vibe-detector/SKILL.md",
-      "description": "実装開始前に自動実行され、ユーザーの指示を分析してVibe Coding（曖昧な指示）を検出し、明確化を促す"
-    },
-    {
-      "name": "doc-consistency-checker",
-      "path": "skills/doc-consistency-checker/SKILL.md",
-      "description": "ドキュメント更新時や実装前に自動実行され、PRD ↔ *_spec.md ↔ *_design.md 間の整合性をチェック"
-    }
-  ]
+  "license": "MIT"
 }
