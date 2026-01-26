@@ -39,51 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         - `task_cleanup`: `<ticket-number>` → `[ticket-number]` (made optional)
     - Users can now understand correct argument formats when executing commands
 
-## [2.5.0] - 2026-01-25
-
-### Changed
-
-#### Architecture
-
-- **Output Format Separation** - Separated command output formats into `skills/output-templates/`
-    - Command md files now contain only Claude-facing instructions
-    - Output formats are managed as independent template files
-    - New skill: `output-templates` (includes 9 template files)
-    - Existing `sdd-templates` skill is now dedicated to project document templates
-
-### Added
-
-#### Skills
-
-- **output-templates** - New skill providing command output formats
-    - `init_output.md` - Initialization complete message
-    - `prd_output.md` - PRD generation complete message
-    - `spec_output.md` - Specification & design generation complete message
-    - `breakdown_output.md` - Task breakdown results
-    - `cleanup_output.md` - Cleanup confirmation
-    - `clarification_output.md` - Specification clarification report
-    - `check_spec_output.md` - Consistency check results
-    - `migrate_output.md` - Migration results
-    - `constitution_output.md` - Constitution management results
-
-### Fixed
-
-#### Commands
-
-- **Unified Prompt Expressions** - Removed user-facing explanations and unified to clear Claude-facing instructions
-    - Removed "Next Steps" list items (from plain text within "Post-Generation Actions" section)
-    - Removed "Recommended Manual Verification" sections (moved to output templates)
-    - Changed "manually" expressions to Claude-directed instructions (e.g., "recommend manual verification to user")
-    - Unified output format reference method (from file path to skill reference)
-    - Affected commands: `sdd_init`, `generate_prd`, `generate_spec`, `task_breakdown`, `task_cleanup`, `clarify`, `check_spec`, `sdd_migrate`, `constitution`
-
-#### Agents
-
-- **Unified Prompt Expressions** - Changed "recommended" expressions to directive forms
-    - spec-reviewer: "recommended to be added" → "need to be added"
-    - clarification-assistant: "Supplementation recommended" → "Supplementation needed"
-    - clarification-assistant: "Recommended Clarity Scores" → "Clarity Score Evaluation Criteria"
-
 ## [2.4.0] - 2026-01-25
 
 ### Added
@@ -105,6 +60,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - vibe-detector
     - doc-consistency-checker
     - sdd-templates
+- **output-templates** - New skill providing command output formats
+    - `init_output.md` - Initialization complete message
+    - `prd_output.md` - PRD generation complete message
+    - `spec_output.md` - Specification & design generation complete message
+    - `breakdown_output.md` - Task breakdown results
+    - `cleanup_output.md` - Cleanup confirmation
+    - `clarification_output.md` - Specification clarification report
+    - `check_spec_output.md` - Consistency check results
+    - `migrate_output.md` - Migration results
+    - `constitution_output.md` - Constitution management results
 
 #### Commands
 
@@ -120,6 +85,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - checklist: `<file-path>`
 
 ### Changed
+
+#### Architecture
+
+- **Output Format Separation** - Separated command output formats into `skills/output-templates/`
+    - Command md files now contain only Claude-facing instructions
+    - Output formats are managed as independent template files
+    - New skill: `output-templates` (includes 9 template files)
+    - Existing `sdd-templates` skill is now dedicated to project document templates
 
 #### Commands
 
@@ -161,6 +134,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Made explicit traceability guarantees
     - Detailed fallback behavior explanation
     - Target skills: vibe-detector, doc-consistency-checker, sdd-templates
+
+### Fixed
+
+#### Commands
+
+- **Unified Prompt Expressions** - Removed user-facing explanations and unified to clear Claude-facing instructions
+    - Removed "Next Steps" list items (from plain text within "Post-Generation Actions" section)
+    - Removed "Recommended Manual Verification" sections (moved to output templates)
+    - Changed "manually" expressions to Claude-directed instructions (e.g., "recommend manual verification to user")
+    - Unified output format reference method (from file path to skill reference)
+    - Affected commands: `sdd_init`, `generate_prd`, `generate_spec`, `task_breakdown`, `task_cleanup`, `clarify`, `check_spec`, `sdd_migrate`, `constitution`
+
+#### Agents
+
+- **Unified Prompt Expressions** - Changed "recommended" expressions to directive forms
+    - spec-reviewer: "recommended to be added" → "need to be added"
+    - clarification-assistant: "Supplementation recommended" → "Supplementation needed"
+    - clarification-assistant: "Recommended Clarity Scores" → "Clarity Score Evaluation Criteria"
 
 ## [2.3.1] - 2026-01-14
 

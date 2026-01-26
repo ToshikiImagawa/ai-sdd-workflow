@@ -39,51 +39,6 @@
         - `task_cleanup`: `<チケット番号>` → `[チケット番号]`（オプション化）
     - ユーザーがコマンド実行時に正確な引数形式を把握可能に
 
-## [2.5.0] - 2026-01-25
-
-### Changed
-
-#### アーキテクチャ
-
-- **出力フォーマットの分離** - コマンドの出力フォーマットを `skills/output-templates/` に分離
-    - コマンドmdファイルにはClaude向けの指示のみを記載
-    - 出力フォーマートは独立したテンプレートファイルとして管理
-    - 新規スキル: `output-templates` (9個のテンプレートファイルを含む)
-    - 既存の `sdd-templates` スキルはプロジェクトドキュメントテンプレート専用に
-
-### Added
-
-#### スキル
-
-- **output-templates** - コマンド出力フォーマットを提供する新しいスキル
-    - `init_output.md` - 初期化完了メッセージ
-    - `prd_output.md` - PRD生成完了メッセージ
-    - `spec_output.md` - 仕様書・設計書生成完了メッセージ
-    - `breakdown_output.md` - タスク分解結果
-    - `cleanup_output.md` - クリーンアップ確認
-    - `clarification_output.md` - 仕様明確化レポート
-    - `check_spec_output.md` - 整合性チェック結果
-    - `migrate_output.md` - マイグレーション結果
-    - `constitution_output.md` - 原則管理結果
-
-### Fixed
-
-#### コマンド
-
-- **プロンプト表現の統一** - ユーザー向け説明を削除し、Claude向けの明確な指示に統一
-    - 「次のステップ」リスト項目を削除（「生成後のアクション」セクション内の地の文から）
-    - 「推奨する手動検証」セクションを削除（出力テンプレートに移動）
-    - 「手動で〜」表現をClaude向けの指示に変更（例: "ユーザーに手動確認を推奨してください"）
-    - 出力フォーマート参照方法を統一（ファイルパス指定からスキル参照へ）
-    - 対象コマンド: `sdd_init`, `generate_prd`, `generate_spec`, `task_breakdown`, `task_cleanup`, `clarify`, `check_spec`, `sdd_migrate`, `constitution`
-
-#### エージェント
-
-- **プロンプト表現の統一** - 「推奨」表現を指示的な表現に変更
-    - spec-reviewer: "追加を推奨します" → "追加が必要です"
-    - clarification-assistant: "補足が推奨される" → "補足情報が必要"
-    - clarification-assistant: "推奨される明確度スコア" → "明確度スコアの評価基準"
-
 ## [2.4.0] - 2026-01-25
 
 ### Added
@@ -105,6 +60,16 @@
     - vibe-detector
     - doc-consistency-checker
     - sdd-templates
+- **output-templates** - コマンド出力フォーマットを提供する新しいスキル
+    - `init_output.md` - 初期化完了メッセージ
+    - `prd_output.md` - PRD生成完了メッセージ
+    - `spec_output.md` - 仕様書・設計書生成完了メッセージ
+    - `breakdown_output.md` - タスク分解結果
+    - `cleanup_output.md` - クリーンアップ確認
+    - `clarification_output.md` - 仕様明確化レポート
+    - `check_spec_output.md` - 整合性チェック結果
+    - `migrate_output.md` - マイグレーション結果
+    - `constitution_output.md` - 原則管理結果
 
 #### コマンド
 
@@ -120,6 +85,14 @@
     - checklist: `<ファイルパス>`
 
 ### Changed
+
+#### アーキテクチャ
+
+- **出力フォーマットの分離** - コマンドの出力フォーマットを `skills/output-templates/` に分離
+    - コマンドmdファイルにはClaude向けの指示のみを記載
+    - 出力フォーマートは独立したテンプレートファイルとして管理
+    - 新規スキル: `output-templates` (9個のテンプレートファイルを含む)
+    - 既存の `sdd-templates` スキルはプロジェクトドキュメントテンプレート専用に
 
 #### コマンド
 
@@ -161,6 +134,24 @@
     - トレーサビリティ保証の明記
     - フォールバック動作の詳細説明
     - 対象スキル: vibe-detector, doc-consistency-checker, sdd-templates
+
+### Fixed
+
+#### コマンド
+
+- **プロンプト表現の統一** - ユーザー向け説明を削除し、Claude向けの明確な指示に統一
+    - 「次のステップ」リスト項目を削除（「生成後のアクション」セクション内の地の文から）
+    - 「推奨する手動検証」セクションを削除（出力テンプレートに移動）
+    - 「手動で〜」表現をClaude向けの指示に変更（例: "ユーザーに手動確認を推奨してください"）
+    - 出力フォーマート参照方法を統一（ファイルパス指定からスキル参照へ）
+    - 対象コマンド: `sdd_init`, `generate_prd`, `generate_spec`, `task_breakdown`, `task_cleanup`, `clarify`, `check_spec`, `sdd_migrate`, `constitution`
+
+#### エージェント
+
+- **プロンプト表現の統一** - 「推奨」表現を指示的な表現に変更
+    - spec-reviewer: "追加を推奨します" → "追加が必要です"
+    - clarification-assistant: "補足が推奨される" → "補足情報が必要"
+    - clarification-assistant: "推奨される明確度スコア" → "明確度スコアの評価基準"
 
 ## [2.3.1] - 2026-01-14
 
