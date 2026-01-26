@@ -1,6 +1,6 @@
 ---
 description: "実装コードと設計書（design）の整合性をチェックし、差異を検出する"
-argument-hint: "<設計書ファイルパス>"
+argument-hint: "[機能名] [--full]"
 allowed-tools: Read, Glob, Grep, AskUserQuestion
 ---
 
@@ -64,6 +64,10 @@ AI-SDDの原則を理解してください。
 ## 入力
 
 $ARGUMENTS
+
+| 引数 | 必須 | 説明 |
+|:--|:--|:--|
+| `機能名` | - | 対象の機能名またはパス（例: `user-auth`, `auth/user-login`）。省略時は全設計書が対象 |
 
 ### オプション
 

@@ -1,6 +1,6 @@
 ---
 description: "Clean up task/ directory after implementation completion, integrating important design decisions into *_design.md before deletion"
-argument-hint: "<ticket-number>"
+argument-hint: "[ticket-number]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 
@@ -63,6 +63,10 @@ configuration file exists.
 ## Input
 
 $ARGUMENTS
+
+| Argument | Required | Description |
+|:--|:--|:--|
+| `ticket-number` | - | Target ticket number or path. Targets entire task/ if omitted |
 
 ### Input Examples
 

@@ -1,6 +1,6 @@
 ---
 description: "Execute TDD-based implementation and progressively complete checklist in tasks.md"
-argument-hint: "<task-file-path>"
+argument-hint: "<feature-name> [ticket-number]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, TaskCreate, TaskUpdate, TaskList, TaskGet
 ---
 
@@ -69,6 +69,11 @@ Verify the following exist before execution:
 ## Input
 
 $ARGUMENTS
+
+| Argument | Required | Description |
+|:--|:--|:--|
+| `feature-name` | ✅ | Target feature name or path (e.g., `user-auth`, `auth/user-login`) |
+| `ticket-number` | - | Task directory name. Uses feature-name if omitted |
 
 ### Input Format
 

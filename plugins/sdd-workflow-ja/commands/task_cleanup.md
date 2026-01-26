@@ -1,6 +1,6 @@
 ---
 description: "実装完了後のtask/ディレクトリを整理し、重要な設計判断を*_design.mdに統合してから削除する"
-argument-hint: "<チケット番号>"
+argument-hint: "[チケット番号]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 
@@ -61,6 +61,10 @@ AI-SDDの原則を理解してください。
 ## 入力
 
 $ARGUMENTS
+
+| 引数 | 必須 | 説明 |
+|:--|:--|:--|
+| `チケット番号` | - | 対象のチケット番号またはパス。省略時は task/ 全体が対象 |
 
 ### 入力例
 

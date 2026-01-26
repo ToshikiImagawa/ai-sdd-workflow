@@ -1,6 +1,6 @@
 ---
 description: "Analyze specifications and generate clarification questions to eliminate ambiguity before implementation"
-argument-hint: "[spec-file-path]"
+argument-hint: "<feature-name> [--interactive]"
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
@@ -65,6 +65,11 @@ This command is complementary to the `vibe-detector` skill:
 ## Input
 
 $ARGUMENTS
+
+| Argument | Required | Description |
+|:--|:--|:--|
+| `feature-name` | ✅ | Target feature name or path (e.g., `user-auth`, `auth/user-login`) |
+| `--interactive` | - | Interactive mode: Answer questions one at a time |
 
 ### Input Examples
 

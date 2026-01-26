@@ -1,6 +1,6 @@
 ---
 description: "入力された内容から抽象仕様書（Specification）と技術設計書（Design Doc）を生成する"
-argument-hint: "<機能名> [PRDファイルパス]"
+argument-hint: "<要件説明>"
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
@@ -77,6 +77,10 @@ AI-SDDの原則を理解してください。
 ## 入力
 
 $ARGUMENTS
+
+| 引数 | 必須 | 説明 |
+|:--|:--|:--|
+| `要件説明` | ✅ | 機能の説明テキスト。機能名は説明から抽出されます |
 
 ## 入力例
 

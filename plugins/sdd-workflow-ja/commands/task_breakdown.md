@@ -1,6 +1,6 @@
 ---
 description: "技術設計書からタスクを分解し、独立してテスト可能な小タスクのリストを生成する"
-argument-hint: "<設計書ファイルパス> [チケット番号]"
+argument-hint: "<機能名> [チケット番号]"
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
@@ -60,6 +60,11 @@ AI-SDDの原則を理解してください。
 ## 入力
 
 $ARGUMENTS
+
+| 引数 | 必須 | 説明 |
+|:--|:--|:--|
+| `機能名` | ✅ | 対象の機能名またはパス（例: `user-auth`, `auth/user-login`）。この値から設計書パスを解決します |
+| `チケット番号` | - | 出力ディレクトリ名に使用（例: `TICKET-123`） |
 
 ### 入力例
 

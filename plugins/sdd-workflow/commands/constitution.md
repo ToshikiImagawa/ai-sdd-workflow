@@ -1,6 +1,6 @@
 ---
 description: "Define and manage non-negotiable project principles (Constitution) and verify synchronization with other documents"
-argument-hint: "<init|update|check>"
+argument-hint: "<subcommand> [arguments]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Skill
 ---
 
@@ -77,6 +77,13 @@ A Project Constitution defines **non-negotiable principles that form the foundat
 ## Input
 
 $ARGUMENTS
+
+| Subcommand | Description | Additional Arguments |
+|:--|:--|:--|
+| `init` | Initialize constitution file | - |
+| `validate` | Validate constitution compliance | - |
+| `add` | Add new principle | `"principle-name"` |
+| `bump-version` | Version bump | `major\|minor\|patch` |
 
 ### Input Examples
 

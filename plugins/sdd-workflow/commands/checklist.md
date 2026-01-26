@@ -1,6 +1,6 @@
 ---
 description: "Generate quality assurance checklists from specifications and plans with structured IDs and categories"
-argument-hint: "<file-path>"
+argument-hint: "<feature-name> [ticket-number]"
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
@@ -56,6 +56,11 @@ configuration file exists.
 ## Input
 
 $ARGUMENTS
+
+| Argument | Required | Description |
+|:--|:--|:--|
+| `feature-name` | ✅ | Target feature name or path (e.g., `user-auth`, `auth/user-login`) |
+| `ticket-number` | - | Used for output directory name. Uses feature-name if omitted |
 
 ### Input Format
 

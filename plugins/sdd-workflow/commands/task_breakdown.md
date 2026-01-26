@@ -1,6 +1,6 @@
 ---
 description: "Break down tasks from technical design document, generating a list of independently testable small tasks"
-argument-hint: "<design-doc-path> [ticket-number]"
+argument-hint: "<feature-name> [ticket-number]"
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
@@ -61,6 +61,11 @@ configuration file exists.
 ## Input
 
 $ARGUMENTS
+
+| Argument | Required | Description |
+|:--|:--|:--|
+| `feature-name` | ✅ | Target feature name or path (e.g., `user-auth`, `auth/user-login`). Design doc path is resolved from this value |
+| `ticket-number` | - | Used for output directory name (e.g., `TICKET-123`) |
 
 ### Input Examples
 

@@ -1,6 +1,6 @@
 ---
 description: "TDDベースの実装を実行し、tasks.mdのチェックリストを段階的に完了させる"
-argument-hint: "<タスクファイルパス>"
+argument-hint: "<機能名> [チケット番号]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, TaskCreate, TaskUpdate, TaskList, TaskGet
 ---
 
@@ -66,6 +66,11 @@ AI-SDDの原則を理解してください。
 ## 入力
 
 $ARGUMENTS
+
+| 引数 | 必須 | 説明 |
+|:--|:--|:--|
+| `機能名` | ✅ | 対象の機能名またはパス（例: `user-auth`, `auth/user-login`） |
+| `チケット番号` | - | タスクディレクトリ名。省略時は機能名を使用 |
 
 ### 入力フォーマット
 

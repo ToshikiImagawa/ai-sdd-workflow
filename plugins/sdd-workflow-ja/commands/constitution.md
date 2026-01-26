@@ -1,6 +1,6 @@
 ---
 description: "プロジェクトの非交渉原則を定義・管理し、他ドキュメントとの同期を検証する"
-argument-hint: "<init|update|check>"
+argument-hint: "<サブコマンド> [引数]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Skill
 ---
 
@@ -77,6 +77,13 @@ AI-SDDの原則を理解してください。
 ## 入力
 
 $ARGUMENTS
+
+| サブコマンド | 説明 | 追加引数 |
+|:--|:--|:--|
+| `init` | 原則定義ファイルを初期化 | - |
+| `validate` | 原則準拠を検証 | - |
+| `add` | 新しい原則を追加 | `"原則名"` |
+| `bump-version` | バージョンアップ | `major\|minor\|patch` |
 
 ### 入力例
 

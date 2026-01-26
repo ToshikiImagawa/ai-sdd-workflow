@@ -1,6 +1,6 @@
 ---
 description: "ビジネス要求からPRD（要求仕様書）をSysML要求図形式で生成する"
-argument-hint: "<機能名> [要件説明]"
+argument-hint: "<要件説明>"
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
@@ -86,6 +86,10 @@ PRDは `CONSTITUTION.md` の原則に従って作成され、後続の仕様書�
 ## 入力
 
 $ARGUMENTS
+
+| 引数 | 必須 | 説明 |
+|:--|:--|:--|
+| `要件説明` | ✅ | ビジネス要求の説明テキスト。機能名は説明から抽出されます |
 
 ### 入力例
 

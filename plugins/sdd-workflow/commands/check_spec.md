@@ -1,6 +1,6 @@
 ---
 description: "Check consistency between implementation code and design documents (design), detecting discrepancies"
-argument-hint: "<design-doc-path>"
+argument-hint: "[feature-name] [--full]"
 allowed-tools: Read, Glob, Grep, AskUserQuestion
 ---
 
@@ -65,6 +65,10 @@ Implementation → task/ → *_design.md → *_spec.md → requirement/ → CONS
 ## Input
 
 $ARGUMENTS
+
+| Argument | Required | Description |
+|:--|:--|:--|
+| `feature-name` | - | Target feature name or path (e.g., `user-auth`, `auth/user-login`). If omitted, all design docs are targeted |
 
 ### Options
 

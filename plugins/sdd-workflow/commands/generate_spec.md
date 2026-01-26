@@ -1,6 +1,6 @@
 ---
 description: "Generate Abstract Specification and Technical Design Document from input content"
-argument-hint: "<feature-name> [prd-file-path]"
+argument-hint: "<requirements-description>"
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
@@ -78,6 +78,10 @@ Before generation, verify the following:
 ## Input
 
 $ARGUMENTS
+
+| Argument | Required | Description |
+|:--|:--|:--|
+| `requirements-description` | ✅ | Feature description text. Feature name is extracted from description |
 
 ## Input Examples
 

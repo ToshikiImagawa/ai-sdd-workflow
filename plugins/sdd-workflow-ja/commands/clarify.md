@@ -1,6 +1,6 @@
 ---
 description: "仕様書の不明点を9カテゴリでスキャンし、最大5つの質問を生成して仕様を明確化する"
-argument-hint: "[仕様書ファイルパス]"
+argument-hint: "<機能名> [--interactive]"
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
@@ -63,6 +63,11 @@ AI-SDDの原則を理解してください。
 ## 入力
 
 $ARGUMENTS
+
+| 引数 | 必須 | 説明 |
+|:--|:--|:--|
+| `機能名` | ✅ | 対象の機能名またはパス（例: `user-auth`, `auth/user-login`） |
+| `--interactive` | - | 対話モード: 質問に1つずつ回答する形式で進行 |
 
 ### 入力例
 
