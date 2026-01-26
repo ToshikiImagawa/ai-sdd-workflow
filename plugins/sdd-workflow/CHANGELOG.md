@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.1] - 2026-01-26
+
+### Fixed
+
+#### Commands
+
+- **argument-hint corrections and argument descriptions** - Fixed argument specifications to match actual usage
+    - Unified `argument-hint` expressions ("file-path" → "feature-name" corrections)
+    - Added argument description tables to each command (argument name, required/optional, description)
+    - Affected commands:
+        - `task_breakdown`: `<design-doc-path>` → `<feature-name> [ticket-number]`
+        - `check_spec`: `<design-doc-path>` → `[feature-name] [--full]`
+        - `checklist`: `<file-path>` → `<feature-name> [ticket-number]`
+        - `clarify`: `[spec-file-path]` → `<feature-name> [--interactive]`
+        - `constitution`: `<init|update|check>` → `<subcommand> [arguments]` (added subcommand details table)
+        - `generate_prd`: `<feature-name> [requirements-description]` → `<requirements-description>`
+        - `generate_spec`: `<feature-name> [prd-file-path]` → `<requirements-description>`
+        - `implement`: `<task-file-path>` → `<feature-name> [ticket-number]`
+        - `task_cleanup`: `<ticket-number>` → `[ticket-number]` (made optional)
+    - Users can now understand correct argument formats when executing commands
+
 ## [2.5.0] - 2026-01-25
 
 ### Changed
