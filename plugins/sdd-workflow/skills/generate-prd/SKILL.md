@@ -19,6 +19,12 @@ Generates PRD (Requirements Specification) from input business requirements acco
 - `references/prerequisites_principles.md` - Read AI-SDD principles document
 - `references/prerequisites_directory_paths.md` - Resolve directory paths using `SDD_*` environment variables
 
+**Read the following diagram reference guides:**
+
+- `references/usecase_diagram_guide.md` - Use case diagram notation guide for mermaid (flowchart-based)
+- `references/mermaid_notation_rules.md` - Requirements diagram notation rules for mermaid
+- `references/requirements_diagram_components.md` - Requirements diagram component definitions
+
 ### Template Preparation Flow
 
 1. Use `.sdd/PRD_TEMPLATE.md` (project template) if it exists
