@@ -1,6 +1,7 @@
 # sdd-workflow
 
-A unified Claude Code plugin supporting AI-driven Specification-Driven Development (AI-SDD) workflow with multi-language support.
+A unified Claude Code plugin supporting AI-driven Specification-Driven Development (AI-SDD) workflow with multi-language
+support.
 
 ## Overview
 
@@ -103,33 +104,34 @@ This command automatically:
 
 | Agent                     | Description                                                                                                      |
 |:--------------------------|:-----------------------------------------------------------------------------------------------------------------|
-| `prd-reviewer`            | Reviews PRD quality and CONSTITUTION.md compliance. Generates fix proposals for violations                        |
-| `spec-reviewer`           | Reviews specification quality and CONSTITUTION.md compliance. Generates fix proposals for violations              |
+| `prd-reviewer`            | Reviews PRD quality and CONSTITUTION.md compliance. Generates fix proposals for violations                       |
+| `spec-reviewer`           | Reviews specification quality and CONSTITUTION.md compliance. Generates fix proposals for violations             |
 | `requirement-analyzer`    | SysML requirements diagram-based analysis, requirement tracking and verification                                 |
 | `clarification-assistant` | Specification clarification support. Analyzes requirements across 9 categories and outputs integration proposals |
 
 ### Skills (User-Invocable)
 
-| Skill              | Description                                                                                                  |
-|:-------------------|:-------------------------------------------------------------------------------------------------------------|
-| `/sdd-init`        | AI-SDD workflow initialization. CLAUDE.md setup and template generation                                      |
-| `/sdd-migrate`     | Migration from legacy version (v1.x/v2.x). Migrate to new structure or generate compatibility config        |
-| `/generate-spec`   | Generates an abstract specification and technical design document from input                                 |
-| `/generate-prd`    | Generates a PRD (Requirements Specification) in SysML requirements diagram format from business requirements |
-| `/check-spec`      | Checks consistency between implementation code and specifications, detecting discrepancies                   |
-| `/task-cleanup`    | Cleans up the task/ directory after implementation, integrating design decisions                             |
-| `/task-breakdown`  | Breaks down tasks from the technical design document into a list of small tasks                              |
-| `/clarify`         | Scans specs across 9 categories, generates questions to clarify ambiguity                                    |
-| `/implement`       | TDD-based 5-phase implementation. Tracks progress with TaskList and auto-marks in tasks.md                   |
-| `/checklist`       | Auto-generates 9-category quality checklists from specs and design docs                                      |
-| `/constitution`    | Defines and manages non-negotiable project principles (constitution)                                         |
+| Skill             | Description                                                                                                  |
+|:------------------|:-------------------------------------------------------------------------------------------------------------|
+| `/sdd-init`       | AI-SDD workflow initialization. CLAUDE.md setup and template generation                                      |
+| `/sdd-migrate`    | Migration from legacy version (v1.x/v2.x). Migrate to new structure or generate compatibility config         |
+| `/generate-spec`  | Generates an abstract specification and technical design document from input                                 |
+| `/generate-prd`   | Generates a PRD (Requirements Specification) in SysML requirements diagram format from business requirements |
+| `/check-spec`     | Checks consistency between implementation code and specifications, detecting discrepancies                   |
+| `/task-cleanup`   | Cleans up the task/ directory after implementation, integrating design decisions                             |
+| `/task-breakdown` | Breaks down tasks from the technical design document into a list of small tasks                              |
+| `/clarify`        | Scans specs across 9 categories, generates questions to clarify ambiguity                                    |
+| `/implement`      | TDD-based 5-phase implementation. Tracks progress with TaskList and auto-marks in tasks.md                   |
+| `/checklist`      | Auto-generates 9-category quality checklists from specs and design docs                                      |
+| `/run-checklist`  | Automatically verifies checklist items by running tests, linters, and security scans                         |
+| `/constitution`   | Defines and manages non-negotiable project principles (constitution)                                         |
 
 ### Skills (Automatic)
 
-| Skill                     | Description                                                                                         |
-|:--------------------------|:----------------------------------------------------------------------------------------------------|
-| `vibe-detector`           | Analyzes user input to automatically detect Vibe Coding (vague instructions)                        |
-| `doc-consistency-checker` | Automatically checks consistency between documents (PRD, spec, design)                              |
+| Skill                     | Description                                                                  |
+|:--------------------------|:-----------------------------------------------------------------------------|
+| `vibe-detector`           | Analyzes user input to automatically detect Vibe Coding (vague instructions) |
+| `doc-consistency-checker` | Automatically checks consistency between documents (PRD, spec, design)       |
 
 ### Hooks
 
@@ -197,6 +199,16 @@ Executes implementation in 5 phases (Setup→Tests→Core→Integration→Polish
 ```
 
 Auto-generates 9-category quality checklists from specifications and design documents.
+
+#### Automated Checklist Verification
+
+```
+/run-checklist user-auth TICKET-123
+/run-checklist user-auth TICKET-123 --priority P1  # Run only P1 items
+/run-checklist user-auth TICKET-123 --category testing  # Run only testing category
+```
+
+Automatically executes verification commands (tests, linters, security scans) and records results in the checklist.
 
 #### Project Constitution Management
 
@@ -271,7 +283,15 @@ integrated into specs.
 
 Proceeds through 5 phases (Setup→Tests→Core→Integration→Polish) with automatic progress marking.
 
-#### Step 8: Consistency Check
+#### Step 8: Verify Checklist Items
+
+```
+/run-checklist user-auth TICKET-123
+```
+
+Automatically runs tests, linters, and security scans to verify checklist items. Generates verification report.
+
+#### Step 9: Consistency Check
 
 ```
 /check-spec user-auth
@@ -279,7 +299,7 @@ Proceeds through 5 phases (Setup→Tests→Core→Integration→Polish) with aut
 
 Verifies consistency between implementation and specifications, reporting any discrepancies.
 
-#### Step 9: Task Cleanup
+#### Step 10: Task Cleanup
 
 ```
 /task-cleanup TICKET-123
@@ -291,25 +311,26 @@ Cleans up temporary files and integrates important design decisions into `*_desi
 
 ### Breaking Changes in v3.0.0
 
-1. **Two plugins merged into one**: `sdd-workflow-ja` and `sdd-workflow` are now a single `sdd-workflow` plugin with multi-language support via `SDD_LANG`
+1. **Two plugins merged into one**: `sdd-workflow-ja` and `sdd-workflow` are now a single `sdd-workflow` plugin with
+   multi-language support via `SDD_LANG`
 2. **Commands converted to skills**: All 11 commands are now skills with hyphenated names
 3. **Command name changes**: Underscores replaced with hyphens (e.g., `/sdd_init` → `/sdd-init`)
 
 ### Command Name Migration
 
-| Old (v2.x)         | New (v3.0.0)       |
-|:--------------------|:-------------------|
-| `/sdd_init`         | `/sdd-init`        |
-| `/generate_spec`    | `/generate-spec`   |
-| `/generate_prd`     | `/generate-prd`    |
-| `/check_spec`       | `/check-spec`      |
-| `/task_breakdown`   | `/task-breakdown`  |
-| `/task_cleanup`     | `/task-cleanup`    |
-| `/sdd_migrate`      | `/sdd-migrate`     |
-| `/implement`        | `/implement`       |
-| `/clarify`          | `/clarify`         |
-| `/constitution`     | `/constitution`    |
-| `/checklist`        | `/checklist`       |
+| Old (v2.x)        | New (v3.0.0)      |
+|:------------------|:------------------|
+| `/sdd_init`       | `/sdd-init`       |
+| `/generate_spec`  | `/generate-spec`  |
+| `/generate_prd`   | `/generate-prd`   |
+| `/check_spec`     | `/check-spec`     |
+| `/task_breakdown` | `/task-breakdown` |
+| `/task_cleanup`   | `/task-cleanup`   |
+| `/sdd_migrate`    | `/sdd-migrate`    |
+| `/implement`      | `/implement`      |
+| `/clarify`        | `/clarify`        |
+| `/constitution`   | `/constitution`   |
+| `/checklist`      | `/checklist`      |
 
 ### Migration Steps
 
@@ -390,11 +411,11 @@ Add the following to your project's `.mcp.json`:
 
 ### Enhanced Features
 
-| Skill              | Enhancement with Serena                                                                       |
-|:-------------------|:----------------------------------------------------------------------------------------------|
-| `/generate-spec`   | References existing code API/type definitions for consistent specification generation         |
-| `/check-spec`      | Provides high-precision API implementation and signature verification via symbol-based search |
-| `/task-breakdown`  | Analyzes change impact scope for accurate task dependency mapping                             |
+| Skill             | Enhancement with Serena                                                                       |
+|:------------------|:----------------------------------------------------------------------------------------------|
+| `/generate-spec`  | References existing code API/type definitions for consistent specification generation         |
+| `/check-spec`     | Provides high-precision API implementation and signature verification via symbol-based search |
+| `/task-breakdown` | Analyzes change impact scope for accurate task dependency mapping                             |
 
 ### Without Serena
 
@@ -507,25 +528,37 @@ sdd-workflow/
 │   ├── prd-reviewer.md            # PRD review and CONSTITUTION compliance agent
 │   ├── spec-reviewer.md           # Specification review agent
 │   ├── requirement-analyzer.md    # Requirement analysis agent
-│   └── clarification-assistant.md # Specification clarification assistant
+│   ├── clarification-assistant.md # Specification clarification assistant
+│   ├── templates/{en,ja}/         # Agent output templates (language-specific)
+│   ├── references/                # Agent references (symlinks to shared)
+│   └── examples/                  # Agent usage examples
+├── shared/
+│   └── references/                # Centralized reference documentation
+│       ├── mermaid_notation_rules.md          # Mermaid syntax guide
+│       ├── usecase_diagram_guide.md           # Use case diagram guide
+│       ├── requirements_diagram_components.md # SysML requirements diagram
+│       ├── document_dependencies.md           # Document dependency chain
+│       └── prerequisites_*.md                 # Prerequisite references
 ├── skills/
-│   ├── sdd-init/SKILL.md          # AI-SDD workflow initialization
-│   ├── constitution/SKILL.md      # Project constitution management
-│   ├── generate-spec/SKILL.md     # Specification/design document generation
-│   ├── generate-prd/SKILL.md      # PRD generation
-│   ├── check-spec/SKILL.md        # Consistency check
-│   ├── task-breakdown/SKILL.md    # Task breakdown
-│   ├── implement/SKILL.md         # TDD-based implementation execution
-│   ├── clarify/SKILL.md           # Specification clarification
-│   ├── task-cleanup/SKILL.md      # Task cleanup
-│   ├── sdd-migrate/SKILL.md       # Migration from legacy version
-│   ├── checklist/SKILL.md         # Quality checklist generation
+│   ├── sdd-init/                  # AI-SDD workflow initialization
+│   ├── constitution/              # Project constitution management
+│   ├── generate-spec/             # Specification/design document generation
+│   ├── generate-prd/              # PRD generation
+│   ├── check-spec/                # Consistency check
+│   ├── task-breakdown/            # Task breakdown
+│   ├── implement/                 # TDD-based implementation execution
+│   ├── clarify/                   # Specification clarification
+│   ├── task-cleanup/              # Task cleanup
+│   ├── sdd-migrate/               # Migration from legacy version
+│   ├── checklist/                 # Quality checklist generation
+│   ├── run-checklist/             # Automated checklist verification
 │   ├── vibe-detector/             # Vibe Coding detection skill
-│   │   ├── SKILL.md
-│   │   └── templates/{en,ja}/
-│   ├── doc-consistency-checker/   # Document consistency checker
-│   │   ├── SKILL.md
-│   │   └── templates/{en,ja}/
+│   └── doc-consistency-checker/   # Document consistency checker
+│   # Each skill contains:
+│   # ├── SKILL.md                 # Skill definition
+│   # ├── templates/{en,ja}/       # Language-specific templates
+│   # ├── references/              # Symlinks to shared references
+│   # └── examples/                # Usage examples (optional)
 ├── hooks/
 │   └── hooks.json                 # Hooks configuration
 ├── scripts/
