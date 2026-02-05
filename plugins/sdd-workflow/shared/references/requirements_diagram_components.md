@@ -171,6 +171,27 @@ requirementDiagram
 
 **Note**: The `id` and `text` attributes are optional. If both are omitted, the compartment can be omitted entirely.
 
+#### Syntax Restrictions
+
+> **Important: ID naming restriction**
+>
+> Mermaid's `requirementDiagram` does **NOT support hyphens (`-`) in `id` values**. Hyphens are interpreted as relationship operators.
+>
+> - ❌ Invalid: `id: FR-001`, `id: user-auth-001`
+> - ✅ Valid: `id: FR_001`, `id: user_auth_001`
+>
+> **Always replace hyphens with underscores (`_`) in requirement IDs.**
+
+> **Important: Text value quoting**
+>
+> When using **non-ASCII characters** (Japanese, Chinese, etc.) or **special characters** in the `text` attribute, you **MUST enclose the value in double quotes**.
+>
+> - ❌ Invalid: `text: ユーザーがログインできること`
+> - ✅ Valid: `text: "ユーザーがログインできること"`
+> - ✅ Valid: `text: "User can login with email & password"`
+>
+> **Always use double quotes for `text` values containing non-ASCII or special characters.**
+
 #### Risk Level Values
 
 | Value    | Meaning                                               |
