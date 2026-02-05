@@ -349,22 +349,22 @@ PRD generation/update
    ↓
 prd-reviewer review (Required)
    ├─ CONSTITUTION.md compliance check
-   ├─ On violation: Attempt auto-fix
-   └─ If not fixable: Report locations needing manual fix
+   ├─ On violation: Output fix proposals
+   └─ Main agent reviews and applies approved fixes
    ↓
 spec generation/update
    ↓
 spec-reviewer review (Required)
    ├─ CONSTITUTION.md compliance check (Architecture principles focus)
    ├─ PRD ↔ spec consistency check
-   └─ On violation/inconsistency: Fix
+   └─ On violation/inconsistency: Output fix proposals → Main agent applies
    ↓
 design generation/update
    ↓
 spec-reviewer review (Required)
    ├─ CONSTITUTION.md compliance check (Technical constraints focus)
    ├─ spec ↔ design consistency check
-   └─ On violation/inconsistency: Fix
+   └─ On violation/inconsistency: Output fix proposals → Main agent applies
 ```
 
 ### Command and Review Agent Mapping

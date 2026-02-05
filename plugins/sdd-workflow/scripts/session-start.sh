@@ -18,6 +18,7 @@ DOCS_ROOT=".sdd"
 REQUIREMENT_DIR="requirement"
 SPECIFICATION_DIR="specification"
 TASK_DIR="task"
+SDD_LANG="en"
 
 # Legacy structure detection and migration warning
 LEGACY_DETECTED=false
@@ -54,6 +55,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
         cat > "$CONFIG_FILE" << EOF
 {
   "root": "${DOCS_ROOT}",
+  "lang": "en",
   "directories": {
     "requirement": "${REQUIREMENT_DIR}",
     "specification": "${SPECIFICATION_DIR}",
@@ -70,13 +72,14 @@ EOF
         echo "" >&2
         echo ".sdd-config.json auto-generated based on legacy structure." >&2
         echo "To migrate to new structure, run:" >&2
-        echo "  /sdd_migrate - Migrate to new structure" >&2
+        echo "  /sdd-migrate - Migrate to new structure" >&2
         echo "" >&2
     else
         # No legacy structure detected and no .sdd-config.json exists, auto-generate default config
         cat > "$CONFIG_FILE" << 'EOF'
 {
   "root": ".sdd",
+  "lang": "en",
   "directories": {
     "requirement": "requirement",
     "specification": "specification",
@@ -97,23 +100,28 @@ if [ -f "$CONFIG_FILE" ]; then
         CONFIGURED_SPECIFICATION=$(jq -r '.directories.specification // empty' "$CONFIG_FILE" 2>/dev/null)
         CONFIGURED_TASK=$(jq -r '.directories.task // empty' "$CONFIG_FILE" 2>/dev/null)
 
+        CONFIGURED_LANG=$(jq -r '.lang // empty' "$CONFIG_FILE" 2>/dev/null)
+
         # Override with configured values if present
         [ -n "$CONFIGURED_DOCS_ROOT" ] && DOCS_ROOT="$CONFIGURED_DOCS_ROOT"
         [ -n "$CONFIGURED_REQUIREMENT" ] && REQUIREMENT_DIR="$CONFIGURED_REQUIREMENT"
         [ -n "$CONFIGURED_SPECIFICATION" ] && SPECIFICATION_DIR="$CONFIGURED_SPECIFICATION"
         [ -n "$CONFIGURED_TASK" ] && TASK_DIR="$CONFIGURED_TASK"
+        [ -n "$CONFIGURED_LANG" ] && SDD_LANG="$CONFIGURED_LANG"
     else
         # jq not available, use grep for basic parsing
         CONFIGURED_DOCS_ROOT=$(grep -o '"root"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
         CONFIGURED_REQUIREMENT=$(grep -o '"requirement"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
         CONFIGURED_SPECIFICATION=$(grep -o '"specification"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
         CONFIGURED_TASK=$(grep -o '"task"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
+        CONFIGURED_LANG=$(grep -o '"lang"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
 
         # Override if configured
         [ -n "$CONFIGURED_DOCS_ROOT" ] && DOCS_ROOT="$CONFIGURED_DOCS_ROOT"
         [ -n "$CONFIGURED_REQUIREMENT" ] && REQUIREMENT_DIR="$CONFIGURED_REQUIREMENT"
         [ -n "$CONFIGURED_SPECIFICATION" ] && SPECIFICATION_DIR="$CONFIGURED_SPECIFICATION"
         [ -n "$CONFIGURED_TASK" ] && TASK_DIR="$CONFIGURED_TASK"
+        [ -n "$CONFIGURED_LANG" ] && SDD_LANG="$CONFIGURED_LANG"
     fi
 fi
 
@@ -178,6 +186,7 @@ output_env_vars() {
     echo "export SDD_REQUIREMENT_PATH=\"${DOCS_ROOT}/${REQUIREMENT_DIR}\""
     echo "export SDD_SPECIFICATION_PATH=\"${DOCS_ROOT}/${SPECIFICATION_DIR}\""
     echo "export SDD_TASK_PATH=\"${DOCS_ROOT}/${TASK_DIR}\""
+    echo "export SDD_LANG=\"$SDD_LANG\""
 }
 
 if [ -n "$CLAUDE_ENV_FILE" ]; then
@@ -277,17 +286,17 @@ ${WARNING_MESSAGE}
 Run the following command:
 
 \`\`\`
-/sdd_init
+/sdd-init
 \`\`\`
 
 This will update the AI-SDD section in CLAUDE.md.
 
 ---
-This file will be automatically deleted after running /sdd_init.
+This file will be automatically deleted after running /sdd-init.
 WARN_EOF
 
         # Output to stderr (visible with --verbose)
-        echo "[AI-SDD] CLAUDE.md update required. Please run /sdd_init." >&2
+        echo "[AI-SDD] CLAUDE.md update required. Please run /sdd-init." >&2
     else
         # No warning needed, remove existing UPDATE_REQUIRED.md if present
         WARNING_FILE="${PROJECT_ROOT}/${DOCS_ROOT}/UPDATE_REQUIRED.md"

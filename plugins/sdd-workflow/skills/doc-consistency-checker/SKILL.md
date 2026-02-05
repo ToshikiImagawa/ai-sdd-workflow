@@ -1,54 +1,36 @@
 ---
 name: doc-consistency-checker
 description: "Automatically executed during document updates or before implementation to check consistency between PRD ↔ *_spec.md ↔ *_design.md. Detects missing requirement ID (UR/FR/NFR) references, data model mismatches, API definition discrepancies, terminology inconsistencies, and ensures traceability between documents."
-version: 2.3.1
+version: 3.0.0
 license: MIT
+user-invocable: false
 ---
 
 # Doc Consistency Checker - Document Consistency Check
 
 Automatically checks consistency between AI-SDD documents (PRD, `*_spec.md`, `*_design.md`) and detects inconsistencies.
 
+## Language Configuration
+
+!`echo "Current language: ${SDD_LANG:-en}"`
+
+When reading templates, use the path: `templates/${SDD_LANG:-en}/`
+
 ## Prerequisites
 
-**Before execution, you must read `sdd-workflow:sdd-workflow` agent content to understand AI-SDD principles.**
+**Before execution, read the AI-SDD principles document.**
 
-This skill follows the sdd-workflow agent principles for document consistency checking.
+AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
 
-### Directory Path Resolution
+**Note**: This file is automatically updated at the start of each session.
 
-**Use `SDD_*` environment variables to resolve directory paths.**
+Understand AI-SDD principles, document structure, persistence rules, and Vibe Coding prevention details.
 
-| Environment Variable     | Default Value        | Description                    |
-|:-------------------------|:---------------------|:-------------------------------|
-| `SDD_ROOT`               | `.sdd`               | Root directory                 |
-| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/Requirements directory     |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | Specification/Design directory |
-| `SDD_TASK_PATH`          | `.sdd/task`          | Task log directory             |
-
-**Path Resolution Priority:**
-
-1. Use `SDD_*` environment variables if set
-2. Check `.sdd-config.json` if environment variables are not set
-3. Use default values if neither exists
-
-The following documentation uses default values, but replace with custom values if environment variables or
-configuration file exists.
+See `references/prerequisites_directory_paths.md` for directory path resolution using `SDD_*` environment variables.
 
 ## Document Dependencies
 
-```mermaid
-graph RL
-    IMPL[Implementation] --> DESIGN["*_design.md<br/>(Technical Design)"]
-    DESIGN --> SPEC["*_spec.md<br/>(Abstract Spec)"]
-    SPEC --> PRD["requirement/<br/>(PRD/Requirements)"]
-```
-
-**Meaning of Dependency Direction**:
-
-- `Implementation` is created referencing `*_design.md`
-- `*_design.md` is created referencing `*_spec.md`
-- `*_spec.md` is created referencing `requirement`
+See `references/document_dependencies.md` for the document dependency chain and direction meaning.
 
 ## Directory Structure Support
 
@@ -148,7 +130,7 @@ Consistency checks also consider parent-child relationships for hierarchical str
 
 ## Output Format
 
-Use [templates/consistency_report.md](templates/consistency_report.md) for consistency check output.
+Read `templates/${SDD_LANG:-en}/consistency_report.md` and use it for consistency check output.
 
 ## Check Execution Timing
 

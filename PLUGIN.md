@@ -4,8 +4,9 @@ Claude Codeプラグインとマーケットプレイスの作成ガイド
 
 ## 概要
 
-このドキュメントは、[anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official)
-リポジトリの解析結果に基づき、Claude Codeプラグインの構造、設計、公開方法を包括的にまとめたものです。
+このドキュメントは、Claude Codeプラグインの構造、設計、公開方法を包括的にまとめたものです。
+[公式ドキュメント](https://code.claude.com/docs/en/plugins)
+および[anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official)リポジトリに基づいています。
 
 ## 目次
 
@@ -15,9 +16,13 @@ Claude Codeプラグインとマーケットプレイスの作成ガイド
 4. [エージェント (Agents)](#エージェント-agents)
 5. [スキル (Skills)](#スキル-skills)
 6. [MCP サーバー連携](#mcp-サーバー連携)
-7. [フック (Hooks)](#フック-hooks)
-8. [マーケットプレイス公開](#マーケットプレイス公開)
-9. [ベストプラクティス](#ベストプラクティス)
+7. [LSP サーバー連携](#lsp-サーバー連携)
+8. [フック (Hooks)](#フック-hooks)
+9. [プラグインキャッシュとインストールスコープ](#プラグインキャッシュとインストールスコープ)
+10. [マーケットプレイス公開](#マーケットプレイス公開)
+11. [CLI コマンドリファレンス](#cli-コマンドリファレンス)
+12. [デバッグ](#デバッグ)
+13. [ベストプラクティス](#ベストプラクティス)
 
 ---
 
@@ -30,22 +35,27 @@ plugin-name/
 ├── .claude-plugin/
 │   └── plugin.json              # プラグインマニフェスト（必須）
 ├── .mcp.json                    # MCP サーバー設定（任意）
-├── commands/                    # スラッシュコマンド（任意）
+├── .lsp.json                    # LSP サーバー設定（任意）
+├── commands/                    # スラッシュコマンド（任意、legacy）
 │   ├── command-name.md
 │   └── another-command.md
 ├── agents/                      # 自律エージェント（任意）
 │   ├── agent-name.md
 │   └── another-agent.md
-├── skills/                      # モデル呼び出しスキル（任意）
+├── skills/                      # スキル（推奨、任意）
 │   └── skill-name/
 │       ├── SKILL.md            # スキル定義
 │       ├── README.md           # ドキュメント
 │       └── examples/           # サポートファイル（任意）
-├── hooks/                       # イベントフック（任意、高度な機能）
-│   ├── session-start.sh
-│   └── other-hooks.sh
+├── hooks/                       # フック設定（任意）
+│   └── hooks.json              # フック定義ファイル
+├── scripts/                     # フック用スクリプト（任意）
+│   └── session-start.sh
 └── README.md                    # プラグインドキュメント（推奨）
 ```
+
+> **Note**: `commands/` は引き続き動作しますが、新規作成は `skills/` を推奨します。スキルはコマンドの上位互換であり、より多くの機能（
+`context: fork`、フック設定、動的コンテキスト注入など）を利用できます。
 
 ### マーケットプレイスリポジトリ構造
 
@@ -90,28 +100,57 @@ marketplace-repository/
   "version": "1.0.0",
   "license": "MIT",
   "homepage": "https://github.com/username/plugin-name",
-  "url": "https://..."
+  "url": "https://...",
+  "strict": false
 }
 ```
 
-#### LSP専用フィールド（Language Server Protocol統合）
+#### コンポーネントパスフィールド
+
+plugin.json でコンポーネントの配置場所をカスタマイズできます。カスタムパスはデフォルトパスを**補完**します（上書きではない）。パスは
+`./` で始まる必要があります。
 
 ```json
 {
-  "strict": false,
-  "lspServers": {
-    "typescript": {
-      "command": "typescript-language-server",
-      "args": [
-        "--stdio"
-      ],
-      "extensionToLanguage": {
-        ".ts": "typescript",
-        ".tsx": "typescriptreact",
-        ".js": "javascript",
-        ".jsx": "javascriptreact"
+  "name": "plugin-name",
+  "description": "プラグインの説明",
+  "author": {
+    "name": "作成者名"
+  },
+  "commands": "./custom-commands",
+  "agents": "./custom-agents",
+  "skills": "./custom-skills",
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": "./.mcp.json",
+  "lspServers": "./.lsp.json",
+  "outputStyles": "./styles"
+}
+```
+
+| フィールド        | 型             | 説明                                 |
+|:-------------|:--------------|:-----------------------------------|
+| commands     | string        | コマンドディレクトリのカスタムパス                  |
+| agents       | string        | エージェントディレクトリのカスタムパス                |
+| skills       | string        | スキルディレクトリのカスタムパス                   |
+| hooks        | string/object | フック設定ファイルのパス、またはインラインでフック定義        |
+| mcpServers   | string/object | MCP 設定ファイルのパス、またはインラインで MCP サーバー定義 |
+| lspServers   | string/object | LSP 設定ファイルのパス、またはインラインで LSP サーバー定義 |
+| outputStyles | string        | 出力スタイルディレクトリのカスタムパス                |
+
+#### `${CLAUDE_PLUGIN_ROOT}` 環境変数
+
+プラグイン内のスクリプトやフックから、プラグインのルートディレクトリを参照するために `${CLAUDE_PLUGIN_ROOT}`
+環境変数が利用できます。これにより、プラグインがどこにインストールされても正しいパスを解決できます。
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "${CLAUDE_PLUGIN_ROOT}/scripts/session-start.sh"
       }
-    }
+    ]
   }
 }
 ```
@@ -169,6 +208,8 @@ marketplace-repository/
 
 ## コマンド (Commands)
 
+> **Note**: `commands/` は引き続き動作しますが、新規作成は `skills/` を推奨します。
+
 ### コマンドファイル形式
 
 - **配置場所**: `commands/command-name.md`
@@ -219,7 +260,9 @@ allowed-tools: [Bash]
 
 **重要な変数**:
 
-- `$ARGUMENTS`: ユーザーがコマンドに渡した引数
+- `$ARGUMENTS`: ユーザーがコマンドに渡した引数全体
+- `$ARGUMENTS[N]`: N番目の引数（0始まり）
+- `$N`: N番目の引数の省略記法（`$0`, `$1`, ...）
 
 ### コマンド設計のベストプラクティス
 
@@ -246,6 +289,12 @@ description: "このエージェントを呼び出すタイミング、トリガ
 model: sonnet
 color: blue
 allowed-tools: [ Read, Glob, Grep, Edit, Bash, TodoWrite ]
+skills: [ "plugin-name:skill-name" ]
+hooks:
+  PostToolUse:
+    - type: prompt
+      prompt: "ツール使用後の検証プロンプト"
+      matcher: Edit
 ---
 ```
 
@@ -259,6 +308,8 @@ allowed-tools: [ Read, Glob, Grep, Edit, Bash, TodoWrite ]
 | color         | string | No  | ターミナル出力の色（`red`, `green`, `blue`, など） |
 | allowed-tools | array  | No  | エージェントが使用できるツールのリスト                   |
 | tools         | array  | No  | `allowed-tools` の代替フィールド              |
+| skills        | array  | No  | プリロードするスキルのリスト                        |
+| hooks         | object | No  | エージェントスコープのフック設定                      |
 
 ### モデル選択ガイド
 
@@ -290,13 +341,13 @@ descriptionは**エージェント呼び出しのトリガー**となる最も�
 3. **タスク境界**: エージェントが**実行すること**と**実行しないこと**
 4. **入力要件**: エージェントが必要とする情報
 
-**良い例**（公式プラグインより）:
+**良い例**:
 
 ```yaml
 description: "プロジェクトガイドライン、スタイルガイド、ベストプラクティスへの準拠をレビューするために使用します。コードの記述・変更後、特にコミットやプルリクエスト作成前に積極的に使用すべきです。スタイル違反、潜在的な問題をチェックし、CLAUDE.mdに定義されたパターンに従っているかを確認します。レビューに集中すべきファイルを知る必要があります。"
 ```
 
-**悪い例**（曖昧で不明確）:
+**悪い例**:
 
 ```yaml
 description: "コードをレビューする"
@@ -361,6 +412,19 @@ $ARGUMENTS
 
 ## スキル (Skills)
 
+スキルはClaude Codeの拡張ポイントとして最も推奨されるコンポーネントです。コマンドの上位互換として、より柔軟な設定と実行モデルを提供します。
+
+### commands との違い
+
+| 機能            | commands         | skills                               |
+|:--------------|:-----------------|:-------------------------------------|
+| ユーザーからの直接呼び出し | `/command` で呼び出し | `user-invocable: true` で呼び出し可能       |
+| サブエージェントとして実行 | 不可               | `context: fork` で可能                  |
+| モデル自動呼び出し無効化  | 不可               | `disable-model-invocation: true` で可能 |
+| フック設定         | 不可               | スキルスコープのフック定義可能                      |
+| 動的コンテキスト注入    | 不可               | `` !`command` `` 構文で可能               |
+| サポートファイル      | 不可               | 同一ディレクトリ内のファイルを参照可能                  |
+
 ### スキルファイル形式
 
 - **配置場所**: `skills/skill-name/SKILL.md`
@@ -371,20 +435,90 @@ $ARGUMENTS
 ```yaml
 ---
 name: skill-name
-description: "このスキルは、ユーザーが「トリガーフレーズ」と尋ねたとき、または[トピック]について議論するときに使用されます。[機能]を提供します。"
+description: "このスキルは、ユーザーが「トリガーフレーズ」と尋ねたとき、または[トピック]について議論するときに使用されます。"
 version: 1.0.0
 license: MIT
+user-invocable: true
+argument-hint: "<引数の説明>"
+disable-model-invocation: false
+allowed-tools: [ Read, Glob, Grep, Edit ]
+context: fork
+agent: sonnet
+hooks:
+  PostToolUse:
+    - type: prompt
+      prompt: "検証プロンプト"
+      matcher: Edit
 ---
 ```
 
 **利用可能なフィールド**:
 
-| フィールド       | 型      | 必須  | 説明           |
-|:------------|:-------|:----|:-------------|
-| name        | string | Yes | スキル識別子       |
-| description | string | Yes | トリガー条件と機能    |
-| version     | string | No  | セマンティックバージョン |
-| license     | string | No  | ライセンスタイプ     |
+| フィールド                    | 型       | 必須  | 説明                                                     |
+|:-------------------------|:--------|:----|:-------------------------------------------------------|
+| name                     | string  | Yes | スキル識別子                                                 |
+| description              | string  | Yes | トリガー条件と機能の説明                                           |
+| version                  | string  | No  | セマンティックバージョン                                           |
+| license                  | string  | No  | ライセンスタイプ                                               |
+| user-invocable           | boolean | No  | `true` でユーザーが `/skill-name` で直接呼び出し可能                  |
+| argument-hint            | string  | No  | 引数のヒント（ユーザー呼び出し時に表示）                                   |
+| disable-model-invocation | boolean | No  | `true` でモデルによる自動呼び出しを無効化（ユーザー明示呼び出しのみ）                 |
+| allowed-tools            | array   | No  | スキル実行時に使用可能なツールのリスト                                    |
+| context                  | string  | No  | `fork` でサブエージェントコンテキストで実行                              |
+| agent                    | string  | No  | `context: fork` 時のエージェントタイプ（`sonnet`, `opus`, `haiku`） |
+| hooks                    | object  | No  | スキルスコープのフック設定                                          |
+
+### 文字列置換変数
+
+スキル本体（Markdown部分）では以下の変数が使用できます:
+
+| 変数                     | 説明                           |
+|:-----------------------|:-----------------------------|
+| `$ARGUMENTS`           | ユーザーが渡した引数全体                 |
+| `$ARGUMENTS[N]`        | N番目の引数（0始まり）                 |
+| `$N`                   | N番目の引数の省略記法（`$0`, `$1`, ...） |
+| `${CLAUDE_SESSION_ID}` | 現在のセッション ID                  |
+
+### 動的コンテキスト注入
+
+`` !`command` `` 構文を使用すると、スキル読み込み時にコマンドを実行し、その出力をスキルのコンテキストに注入できます。
+
+```markdown
+---
+name: project-info
+description: "プロジェクト情報を提供するスキル"
+---
+
+## 現在のGit状態
+
+!`git status --short`
+
+## 最近のコミット
+
+!`git log --oneline -5`
+
+## 指示
+
+上記のプロジェクト状態を踏まえて回答してください。
+```
+
+### サポートファイル
+
+`SKILL.md` と同じディレクトリ内のファイルは、スキルの実行時にコンテキストとして利用できます。
+
+```
+skills/
+└── my-skill/
+    ├── SKILL.md              # スキル定義（必須）
+    ├── templates/            # テンプレートファイル
+    │   └── template.md
+    ├── examples/             # 例ファイル
+    │   └── example.md
+    └── references/           # 参照資料
+        └── guide.md
+```
+
+SKILL.md 内で相対パスを使ってこれらのファイルを参照できます。
 
 ### description フィールドのベストプラクティス
 
@@ -394,27 +528,15 @@ license: MIT
 description: "このスキルは、ユーザーが「スキルをデモンストレート」「スキルフォーマットを表示」「スキルテンプレートを作成」と尋ねたとき、またはスキル開発パターンについて議論するときに使用されます。Claude Codeプラグインスキル作成のリファレンステンプレートを提供します。"
 ```
 
-### スキルディレクトリ構造
-
-```
-skills/
-└── skill-name/
-    ├── SKILL.md              # スキル定義（必須）
-    ├── README.md             # ドキュメント（任意）
-    ├── examples/             # 例ファイル（任意）
-    │   ├── example1.md
-    │   └── example2.md
-    └── reference/            # 参照資料（任意）
-        └── reference.md
-```
-
 ### スキル設計のベストプラクティス
 
 1. **明確なトリガーフレーズ**: description に具体的なフレーズを列挙
 2. **単一機能**: スキルは1つの能力に集中
 3. **構造化された整理**: 複雑なスキルはサブディレクトリで整理
-4. **例とリファレンス**: examples/ と reference/ を活用
+4. **例とリファレンス**: examples/ と references/ を活用
 5. **バージョン管理**: version フィールドで変更を追跡
+6. **`context: fork` の活用**: 重い処理はサブエージェントとして実行
+7. **ツール制限**: `allowed-tools` で最小限のツールのみ許可
 
 ---
 
@@ -422,7 +544,7 @@ skills/
 
 ### .mcp.json 形式
 
-- **配置場所**: `{plugin-name}/.mcp.json`
+- **配置場所**: `{plugin-name}/.mcp.json` または plugin.json の `mcpServers` でインライン定義
 - **目的**: Model Context Protocol サーバーを設定し、外部ツールと統合
 
 ### MCP 設定構造
@@ -451,20 +573,6 @@ skills/
 | url     | Yes | MCP サーバーのエンドポイント URL                |
 | headers | No  | HTTP ヘッダー（`${VAR_NAME}` で環境変数を参照可能） |
 
-### 実例: GitHub プラグイン
-
-```json
-{
-  "github": {
-    "type": "http",
-    "url": "https://api.githubcopilot.com/mcp/",
-    "headers": {
-      "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
-    }
-  }
-}
-```
-
 ### MCP 統合のベストプラクティス
 
 1. **環境変数の使用**: 認証情報は `${ENV_VAR_NAME}` で参照
@@ -474,75 +582,224 @@ skills/
 
 ---
 
+## LSP サーバー連携
+
+### LSP 設定形式
+
+- **配置場所**: `{plugin-name}/.lsp.json` または plugin.json の `lspServers` でインライン定義
+- **目的**: Language Server Protocol サーバーを設定し、IDE機能を提供
+
+### .lsp.json 構造
+
+```json
+{
+  "typescript": {
+    "command": "typescript-language-server",
+    "args": [
+      "--stdio"
+    ],
+    "extensionToLanguage": {
+      ".ts": "typescript",
+      ".tsx": "typescriptreact",
+      ".js": "javascript",
+      ".jsx": "javascriptreact"
+    }
+  }
+}
+```
+
+### plugin.json でのインライン定義
+
+```json
+{
+  "name": "my-lsp-plugin",
+  "description": "LSP統合プラグイン",
+  "author": {
+    "name": "作成者名"
+  },
+  "strict": false,
+  "lspServers": {
+    "typescript": {
+      "command": "typescript-language-server",
+      "args": [
+        "--stdio"
+      ],
+      "extensionToLanguage": {
+        ".ts": "typescript",
+        ".tsx": "typescriptreact"
+      }
+    }
+  }
+}
+```
+
+**フィールド説明**:
+
+| フィールド               | 必須  | 説明                 |
+|:--------------------|:----|:-------------------|
+| command             | Yes | LSP サーバーの実行コマンド    |
+| args                | No  | コマンドライン引数          |
+| extensionToLanguage | Yes | ファイル拡張子と言語IDのマッピング |
+
+### `strict` フィールド
+
+plugin.json の `strict` フィールドは LSP サーバー専用です。`false`（デフォルト）の場合、LSP
+サーバーが起動に失敗しても警告のみでプラグインの読み込みは続行されます。
+
+---
+
 ## フック (Hooks)
 
-フックは高度な機能で、特定のイベントでスクリプトを自動実行します。
-
-### フックの種類（Hookify プラグインより）
-
-1. **bash フック**: Bash ツールコマンドで発火
-2. **file フック**: Edit/Write/MultiEdit 操作で発火
-3. **stop フック**: Claude が応答を終了しようとする時に発火
-4. **prompt フック**: ユーザープロンプト送信時に発火
-5. **all フック**: すべてのイベントで発火
+フックは特定のイベントで自動的にコードや検証を実行する機能です。
 
 ### フック設定形式
 
-フックは `.claude/plugin-name.local.md` ファイルで設定:
+フックは `hooks/hooks.json` ファイルまたは plugin.json 内でインライン定義します。
 
-```yaml
----
-name: block-dangerous-rm
-enabled: true
-event: bash
-pattern: "rm -rf"
-action: block
----
+#### hooks/hooks.json での定義
 
-# 警告メッセージ
-
-このコマンドは重要なファイルを削除する可能性があります。以下を確認してください:
-  - パスが正しいか確認
-  - より安全な方法を検討
-  - バックアップがあるか確認
+```json
+{
+  "SessionStart": [
+    {
+      "type": "command",
+      "command": "${CLAUDE_PLUGIN_ROOT}/scripts/session-start.sh"
+    }
+  ],
+  "PreToolUse": [
+    {
+      "type": "command",
+      "command": "echo 'Tool about to be used'",
+      "matcher": "Bash"
+    }
+  ],
+  "PostToolUse": [
+    {
+      "type": "prompt",
+      "prompt": "ツール実行結果を検証し、問題があれば報告してください。",
+      "matcher": "Edit"
+    }
+  ]
+}
 ```
 
-**フロントマターフィールド**:
+#### plugin.json でのインライン定義
 
-| フィールド   | 型       | 説明                                              |
-|:--------|:--------|:------------------------------------------------|
-| name    | string  | フック識別子                                          |
-| enabled | boolean | フックの有効/無効                                       |
-| event   | string  | フックタイプ（`bash`, `file`, `stop`, `prompt`, `all`） |
-| pattern | string  | マッチする正規表現パターン                                   |
-| action  | string  | 実行するアクション（`warn`, `block`）                      |
+```json
+{
+  "name": "my-plugin",
+  "description": "フック付きプラグイン",
+  "author": {
+    "name": "作成者名"
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "type": "command",
+        "command": "${CLAUDE_PLUGIN_ROOT}/scripts/validate-prompt.sh"
+      }
+    ]
+  }
+}
+```
 
-### フック実装例: session-start
+### イベント一覧
 
-```bash
-#!/bin/bash
-# hooks/session-start.sh
+| イベント               | 発火タイミング              |
+|:-------------------|:---------------------|
+| SessionStart       | セッション開始時             |
+| SessionEnd         | セッション終了時             |
+| UserPromptSubmit   | ユーザーがプロンプトを送信した時     |
+| PreToolUse         | ツール実行前               |
+| PostToolUse        | ツール実行後（成功時）          |
+| PostToolUseFailure | ツール実行後（失敗時）          |
+| PermissionRequest  | 権限リクエスト時             |
+| Notification       | 通知発生時                |
+| SubagentStart      | サブエージェント起動時          |
+| SubagentStop       | サブエージェント停止時          |
+| Stop               | Claude が応答を終了しようとする時 |
+| PreCompact         | コンテキストコンパクト前         |
 
-# .sdd-config.json を読み込み、環境変数を設定
-if [ -f ".sdd-config.json" ]; then
-  export SDD_ROOT=$(jq -r '.root // ".sdd"' .sdd-config.json)
-  export SDD_REQUIREMENT_DIR=$(jq -r '.directories.requirement // "requirement"' .sdd-config.json)
-  # ...
-fi
+### フックタイプ
 
-# AI-SDD Instructions を表示
-if [ -f "${SDD_ROOT}/CONSTITUTION.md" ]; then
-  cat "${SDD_ROOT}/CONSTITUTION.md"
-fi
+| タイプ     | 説明              | 主な用途                     |
+|:--------|:----------------|:-------------------------|
+| command | シェルコマンドを実行      | スクリプト実行、環境変数設定、外部ツール呼び出し |
+| prompt  | Claudeにプロンプトを挿入 | 品質検証、ガイダンス注入             |
+| agent   | サブエージェントを起動     | 複雑な検証やレビュー               |
+
+### マッチャー (matcher)
+
+`PreToolUse`, `PostToolUse`, `PostToolUseFailure` イベントでは `matcher` フィールドでツール名を指定してフィルタリングできます。
+
+```json
+{
+  "PostToolUse": [
+    {
+      "type": "prompt",
+      "prompt": "編集内容がコーディング規約に準拠しているか確認してください。",
+      "matcher": "Edit"
+    },
+    {
+      "type": "command",
+      "command": "npm run lint",
+      "matcher": "Write"
+    }
+  ]
+}
+```
+
+### command タイプの入出力
+
+**入力**: フックコマンドには stdin で JSON が渡されます。JSON の内容はイベントタイプによって異なります。
+
+**出力**: コマンドの終了コードと stdout の JSON で制御できます。
+
+| 終了コード | 動作            |
+|:------|:--------------|
+| 0     | 正常終了（続行）      |
+| 2     | ブロック（操作を中止）   |
+| その他   | エラー（警告表示して続行） |
+
+**stdout JSON 出力例**:
+
+```json
+{
+  "result": "表示するメッセージ",
+  "suppressPrompt": true
+}
 ```
 
 ### フックのベストプラクティス
 
 1. **軽量に保つ**: フックは高速に実行すべき
-2. **エラーハンドリング**: 失敗時の挙動を明確に
-3. **ユーザー通知**: 何が起きているかを明示
-4. **設定可能に**: enabled フラグで有効/無効を切り替え可能に
-5. **ドキュメント化**: フックの目的と挙動を README に記載
+2. **マッチャーの活用**: 必要なイベントのみにフィルタリング
+3. **エラーハンドリング**: 失敗時の挙動を明確に
+4. **`${CLAUDE_PLUGIN_ROOT}`の使用**: スクリプトパスの解決に利用
+5. **prompt タイプの活用**: 品質ゲートとして検証プロンプトを挿入
+
+---
+
+## プラグインキャッシュとインストールスコープ
+
+### プラグインキャッシュ
+
+インストールされたプラグインは `~/.claude/plugins/` ディレクトリにキャッシュされます。プラグインの更新時には
+`claude plugin update` でキャッシュを更新します。
+
+### インストールスコープ
+
+| スコープ    | 説明                | 有効範囲                   |
+|:--------|:------------------|:-----------------------|
+| user    | ユーザーレベルのインストール    | そのユーザーの全プロジェクト         |
+| project | プロジェクトレベルのインストール  | 特定のプロジェクトのみ            |
+| local   | ローカルディレクトリのプラグイン  | `--plugin-dir` で指定した場合 |
+| managed | マーケットプレイス管理のプラグイン | マーケットプレイス経由            |
+
+### パストラバーサルの制限
+
+プラグインはセキュリティ上の理由から、プラグインルートディレクトリの外側にアクセスするパスを指定できません（`../`
+によるトラバーサルは禁止）。
 
 ---
 
@@ -571,19 +828,6 @@ fi
 - サードパーティパートナーとコミュニティ
 - 品質とセキュリティ基準を満たす必要がある
 - 主に MCP ベースの統合
-
-### インストール方法
-
-1. **直接インストール**:
-   ```
-   /plugin install {plugin-name}@claude-plugin-directory
-   ```
-
-2. **マーケットプレイスを閲覧**:
-   ```
-   /plugin
-   # その後「Discover」を選択
-   ```
 
 ### 公開プロセス
 
@@ -634,14 +878,84 @@ fi
 
 ---
 
+## CLI コマンドリファレンス
+
+### プラグイン管理コマンド
+
+```bash
+# プラグインのインストール
+claude plugin install <plugin-name>
+
+# プラグインのアンインストール
+claude plugin uninstall <plugin-name>
+
+# プラグインの有効化
+claude plugin enable <plugin-name>
+
+# プラグインの無効化
+claude plugin disable <plugin-name>
+
+# プラグインの更新
+claude plugin update [plugin-name]
+
+# インストール済みプラグインの一覧
+claude plugin list
+
+# マーケットプレイスの閲覧
+claude plugin
+# その後「Discover」を選択
+```
+
+### ローカル開発用コマンド
+
+```bash
+# ローカルディレクトリのプラグインを使用してClaude Codeを起動
+claude --plugin-dir ./path/to/plugin
+```
+
+---
+
+## デバッグ
+
+### デバッグモードの使用
+
+```bash
+# デバッグモードでClaude Codeを起動
+claude --debug
+```
+
+デバッグモードでは、プラグインの読み込み、フックの実行、エージェントの呼び出しなどの詳細なログが表示されます。
+
+### 一般的な問題と解決策
+
+| 問題                              | 原因                       | 解決策                              |
+|:--------------------------------|:-------------------------|:---------------------------------|
+| プラグインが読み込まれない                   | plugin.json の構文エラー       | `jq .` で JSON 構文チェック             |
+| コマンドが表示されない                     | フロントマターの形式エラー            | YAML フロントマターの区切り `---` を確認       |
+| フックが実行されない                      | hooks.json のパスまたは構文エラー   | `claude --debug` でフック読み込みを確認     |
+| エージェントが呼び出されない                  | description が不十分         | より具体的なトリガーフレーズを追加                |
+| `${CLAUDE_PLUGIN_ROOT}` が解決されない | プラグインがキャッシュにない           | `claude plugin update` でキャッシュを更新 |
+| スキルが自動的に呼び出されない                 | description にトリガーフレーズがない | 具体的なトリガーフレーズを description に追加    |
+
+### ログの確認
+
+```
+~/.claude/projects/<project-name>/
+  ├── conversation.jsonl  # メイン会話
+  └── sidechains/         # サブエージェントログ
+```
+
+---
+
 ## ベストプラクティス
 
-### コマンド設計
+### コマンド/スキル設計
 
-- **単一責任の原則**: 各コマンドは1つのタスクに集中
+- **単一責任の原則**: 各コマンド/スキルは1つのタスクに集中
 - **ツールアクセス制限**: `allowed-tools` で必要なツールのみ許可
 - **明確なヒント**: `argument-hint` でユーザーをガイド
 - **引数処理**: `$ARGUMENTS` 変数を適切に活用
+- **新規はスキルで作成**: `commands/` ではなく `skills/` を使用
 
 ### エージェント設計
 
@@ -659,7 +973,8 @@ fi
 - **具体的なトリガーフレーズ**: description に明確なフレーズを列挙
 - **単一機能に集中**: スキルは1つの能力に特化
 - **構造化された整理**: 複雑なスキルはサブディレクトリで整理
-- **例とリファレンス**: examples/ と reference/ を活用
+- **`context: fork` の活用**: 重い処理はサブエージェントとして実行
+- **`disable-model-invocation` の活用**: ユーザー明示呼び出しのみの場合に設定
 
 ### 一般的なガイドライン
 
@@ -671,33 +986,6 @@ fi
 6. **セキュリティ考慮**: 認証情報をハードコードしない
 7. **ライセンス明示**: LICENSE ファイルを含める
 8. **変更履歴**: CHANGELOG.md で変更を追跡
-
----
-
-## 現在の ai-sdd-workflow プラグインとの比較
-
-### 正しく実装されている点 ✓
-
-1. リポジトリルートに適切な `marketplace.json`
-2. 各プラグインに個別の `plugin.json`
-3. 適切なフロントマター（name, description, model, color, allowed-tools）を持つエージェント
-4. Commands 構造の実装
-5. Skills ディレクトリの存在
-6. session-start 機能を持つフック
-7. 包括的なドキュメント（CLAUDE.md, AGENTS.md）
-
-### 推奨される改善点
-
-1. **バージョンフィールド**: `plugin.json` に `version` を追加（marketplace.json にはある）
-2. **エージェント description**: より具体的なトリガーフレーズを追加
-3. **MCP 統合**: 外部ツール統合が必要な場合、`.mcp.json` の追加を検討
-4. **カテゴリフィールド**: マーケットプレイスプラグインに `category` を追加
-5. **例の追加**: skills ディレクトリに例ファイルを追加することを検討
-
-### 総評
-
-現在の `ai-sdd-workflow` プラグイン構造は、公式の規約に非常によく準拠しており、プロフェッショナルで整理されたClaude
-Codeプラグインマーケットプレイスを表現しています。
 
 ---
 
@@ -713,6 +1001,7 @@ Codeプラグインマーケットプレイスを表現しています。
 
 ## バージョン履歴
 
-| バージョン | 日付         | 変更内容                         |
-|:------|:-----------|:-----------------------------|
-| 1.0.0 | 2026-01-15 | 初版作成 - 公式リポジトリ解析に基づく包括的ガイド作成 |
+| バージョン | 日付         | 変更内容                                                 |
+|:------|:-----------|:-----------------------------------------------------|
+| 2.0.0 | 2026-02-03 | 公式ドキュメント（2026年版）に基づく全面更新 - スキル/フック/LSP/プラグインスキーマの最新化 |
+| 1.0.0 | 2026-01-15 | 初版作成 - 公式リポジトリ解析に基づく包括的ガイド作成                         |

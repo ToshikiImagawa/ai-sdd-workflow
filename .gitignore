@@ -1,15 +1,15 @@
+# OS
+.DS_Store
+Thumbs.db
+
 # IDE
 .idea/
 .vscode/
-*.swp
 *.swo
+*.swp
 
 # claude
 .claude/settings.local.json
 
 # direnv
 .envrc
-
-# OS
-.DS_Store
-Thumbs.db

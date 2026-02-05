@@ -1,59 +1,61 @@
 #!/bin/bash
 # session-start.sh
-# SessionStart フック用スクリプト
-# セッション開始時に .sdd-config.json を読み込み（存在しなければ生成）、環境変数を初期化する
+# SessionStart hook script
+# Loads .sdd-config.json at session start (generates if not exists) and initializes environment variables
 
-# プロジェクトルートを取得
+# Get project root
 if [ -n "$CLAUDE_PROJECT_DIR" ]; then
     PROJECT_ROOT="$CLAUDE_PROJECT_DIR"
 else
     PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 fi
 
-# .sdd-config.json のパス
+# Path to .sdd-config.json
 CONFIG_FILE="${PROJECT_ROOT}/.sdd-config.json"
 
-# デフォルト値
+# Default values
 DOCS_ROOT=".sdd"
 REQUIREMENT_DIR="requirement"
 SPECIFICATION_DIR="specification"
 TASK_DIR="task"
+SDD_LANG="ja"
 
-# 旧構成の検出とマイグレーション警告
+# Legacy structure detection and migration warning
 LEGACY_DETECTED=false
 LEGACY_DOCS_ROOT=""
 LEGACY_REQUIREMENT=""
 LEGACY_TASK=""
 
-# .sdd-config.json が存在しない場合のみ旧構成をチェック
+# Check for legacy structure only if .sdd-config.json doesn't exist
 if [ ! -f "$CONFIG_FILE" ]; then
-    # 旧ルートディレクトリ (.docs) の検出
+    # Detect legacy docs root (.docs)
     if [ -d "${PROJECT_ROOT}/.docs" ] && [ ! -d "${PROJECT_ROOT}/.sdd" ]; then
         LEGACY_DETECTED=true
         LEGACY_DOCS_ROOT=".docs"
         DOCS_ROOT=".docs"
     fi
 
-    # 旧要求仕様ディレクトリ (requirement-diagram) の検出
+    # Detect legacy requirement directory (requirement-diagram)
     if [ -d "${PROJECT_ROOT}/${DOCS_ROOT}/requirement-diagram" ]; then
         LEGACY_DETECTED=true
         LEGACY_REQUIREMENT="requirement-diagram"
         REQUIREMENT_DIR="requirement-diagram"
     fi
 
-    # 旧タスクディレクトリ (review) の検出
+    # Detect legacy task directory (review)
     if [ -d "${PROJECT_ROOT}/${DOCS_ROOT}/review" ] && [ ! -d "${PROJECT_ROOT}/${DOCS_ROOT}/task" ]; then
         LEGACY_DETECTED=true
         LEGACY_TASK="review"
         TASK_DIR="review"
     fi
 
-    # 旧構成が検出された場合
+    # If legacy structure detected
     if [ "$LEGACY_DETECTED" = true ]; then
-        # 旧構成の値で .sdd-config.json を自動生成
+        # Auto-generate .sdd-config.json with legacy values
         cat > "$CONFIG_FILE" << EOF
 {
   "root": "${DOCS_ROOT}",
+  "lang": "ja",
   "directories": {
     "requirement": "${REQUIREMENT_DIR}",
     "specification": "${SPECIFICATION_DIR}",
@@ -61,22 +63,23 @@ if [ ! -f "$CONFIG_FILE" ]; then
   }
 }
 EOF
-        echo "[AI-SDD Migration] 旧バージョンのディレクトリ構成を検出しました。" >&2
+        echo "[AI-SDD マイグレーション] レガシーディレクトリ構造を検出しました。" >&2
         echo "" >&2
-        echo "検出された旧構成:" >&2
+        echo "検出されたレガシー構造:" >&2
         [ -n "$LEGACY_DOCS_ROOT" ] && echo "  - ルートディレクトリ: .docs" >&2
-        [ -n "$LEGACY_REQUIREMENT" ] && echo "  - 要求仕様: requirement-diagram" >&2
+        [ -n "$LEGACY_REQUIREMENT" ] && echo "  - 要件定義: requirement-diagram" >&2
         [ -n "$LEGACY_TASK" ] && echo "  - タスクログ: review" >&2
         echo "" >&2
-        echo "旧構成に基づいて .sdd-config.json を自動生成しました。" >&2
-        echo "新構成に移行する場合は以下のコマンドを実行してください:" >&2
-        echo "  /sdd_migrate - 新構成への移行" >&2
+        echo "レガシー構造に基づいて .sdd-config.json を自動生成しました。" >&2
+        echo "新しい構造にマイグレーションするには、以下を実行してください:" >&2
+        echo "  /sdd-migrate - 新しい構造へマイグレーション" >&2
         echo "" >&2
     else
-        # 旧構成が検出されず、.sdd-config.json も存在しない場合、デフォルトの設定ファイルを自動生成
+        # No legacy structure detected and no .sdd-config.json exists, auto-generate default config
         cat > "$CONFIG_FILE" << 'EOF'
 {
   "root": ".sdd",
+  "lang": "ja",
   "directories": {
     "requirement": "requirement",
     "specification": "specification",
@@ -88,51 +91,57 @@ EOF
     fi
 fi
 
-# 設定ファイルが存在する場合は設定値を読み込む
+# Load configuration if file exists
 if [ -f "$CONFIG_FILE" ]; then
     if command -v jq &> /dev/null; then
-        # jqが利用可能な場合
+        # jq is available
         CONFIGURED_DOCS_ROOT=$(jq -r '.root // empty' "$CONFIG_FILE" 2>/dev/null)
         CONFIGURED_REQUIREMENT=$(jq -r '.directories.requirement // empty' "$CONFIG_FILE" 2>/dev/null)
         CONFIGURED_SPECIFICATION=$(jq -r '.directories.specification // empty' "$CONFIG_FILE" 2>/dev/null)
         CONFIGURED_TASK=$(jq -r '.directories.task // empty' "$CONFIG_FILE" 2>/dev/null)
 
-        # 設定値があれば上書き
+        CONFIGURED_LANG=$(jq -r '.lang // empty' "$CONFIG_FILE" 2>/dev/null)
+
+        # Override with configured values if present
         [ -n "$CONFIGURED_DOCS_ROOT" ] && DOCS_ROOT="$CONFIGURED_DOCS_ROOT"
         [ -n "$CONFIGURED_REQUIREMENT" ] && REQUIREMENT_DIR="$CONFIGURED_REQUIREMENT"
         [ -n "$CONFIGURED_SPECIFICATION" ] && SPECIFICATION_DIR="$CONFIGURED_SPECIFICATION"
         [ -n "$CONFIGURED_TASK" ] && TASK_DIR="$CONFIGURED_TASK"
+        [ -n "$CONFIGURED_LANG" ] && SDD_LANG="$CONFIGURED_LANG"
     else
-        # jqがない場合はgrepで簡易的に読み込み
+        # jq not available, use grep for basic parsing
         CONFIGURED_DOCS_ROOT=$(grep -o '"root"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
         CONFIGURED_REQUIREMENT=$(grep -o '"requirement"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
         CONFIGURED_SPECIFICATION=$(grep -o '"specification"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
         CONFIGURED_TASK=$(grep -o '"task"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
+        CONFIGURED_LANG=$(grep -o '"lang"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
 
-        # 設定値があれば上書き
+        # Override if configured
         [ -n "$CONFIGURED_DOCS_ROOT" ] && DOCS_ROOT="$CONFIGURED_DOCS_ROOT"
         [ -n "$CONFIGURED_REQUIREMENT" ] && REQUIREMENT_DIR="$CONFIGURED_REQUIREMENT"
         [ -n "$CONFIGURED_SPECIFICATION" ] && SPECIFICATION_DIR="$CONFIGURED_SPECIFICATION"
         [ -n "$CONFIGURED_TASK" ] && TASK_DIR="$CONFIGURED_TASK"
+        [ -n "$CONFIGURED_LANG" ] && SDD_LANG="$CONFIGURED_LANG"
     fi
 fi
 
-# .sdd/ ディレクトリの作成とAI-SDD原則ファイルのコピー
+# Create .sdd/ directory and copy AI-SDD-PRINCIPLES.md
 SDD_DIR="${PROJECT_ROOT}/${DOCS_ROOT}"
 SOURCE_PRINCIPLES="${CLAUDE_PLUGIN_ROOT}/AI-SDD-PRINCIPLES.source.md"
 TARGET_PRINCIPLES="${SDD_DIR}/AI-SDD-PRINCIPLES.md"
 
-# .sdd/ ディレクトリが存在しない場合は作成
+# Create .sdd/ directory if it doesn't exist
 if [ ! -d "$SDD_DIR" ]; then
     mkdir -p "$SDD_DIR"
-    echo "[AI-SDD] ${DOCS_ROOT}/ ディレクトリを作成しました。" >&2
+    echo "[AI-SDD] ${DOCS_ROOT}/ directory created." >&2
 fi
 
-# AI-SDD-PRINCIPLES.source.md を .sdd/AI-SDD-PRINCIPLES.md にコピー（常に上書き）
+# Copy AI-SDD-PRINCIPLES.source.md to .sdd/AI-SDD-PRINCIPLES.md (always overwrite)
 if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
-    # プラグインバージョンを取得してフロントマターに埋め込む
+    # Get plugin version from plugin.json
     PLUGIN_JSON="${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json"
     PLUGIN_VERSION=""
+
     if [ -f "$PLUGIN_JSON" ]; then
         if command -v jq &> /dev/null; then
             PLUGIN_VERSION=$(jq -r '.version // empty' "$PLUGIN_JSON" 2>/dev/null)
@@ -141,36 +150,34 @@ if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
         fi
     fi
 
-    # ソースファイルをコピーしてバージョンを更新
+    # Inject version into frontmatter (atomic operation via temp file)
     TEMP_FILE="${TARGET_PRINCIPLES}.tmp"
     if [ -n "$PLUGIN_VERSION" ]; then
-        # フロントマターのversionを置換してコピー（一時ファイル経由で原子的に操作）
         if sed "s|^version:.*$|version: \"${PLUGIN_VERSION}\"|" "$SOURCE_PRINCIPLES" > "$TEMP_FILE" 2>/dev/null && [ -f "$TEMP_FILE" ]; then
             mv "$TEMP_FILE" "$TARGET_PRINCIPLES"
-            echo "[AI-SDD] AI-SDD-PRINCIPLES.md を v${PLUGIN_VERSION} に更新しました。" >&2
+            echo "[AI-SDD] AI-SDD-PRINCIPLES.md updated to v${PLUGIN_VERSION}." >&2
         else
-            # sed が失敗した場合は一時ファイルを削除してフォールバック
+            # Fallback if sed fails
             rm -f "$TEMP_FILE"
-            echo "[AI-SDD] Warning: バージョン更新に失敗しました。バージョン情報なしでコピーします。" >&2
+            echo "[AI-SDD] Warning: Failed to update version. Copying without version info." >&2
             cp "$SOURCE_PRINCIPLES" "$TARGET_PRINCIPLES"
         fi
     else
-        # バージョン取得できない場合はそのままコピー
         cp "$SOURCE_PRINCIPLES" "$TARGET_PRINCIPLES"
-        echo "[AI-SDD] AI-SDD-PRINCIPLES.md をコピーしました（バージョン不明）。" >&2
+        echo "[AI-SDD] AI-SDD-PRINCIPLES.md copied (version unknown)." >&2
     fi
 else
-    # スキップ理由をログに出力
+    # Log the reason for skipping
     if [ -z "$CLAUDE_PLUGIN_ROOT" ]; then
-        echo "[AI-SDD] CLAUDE_PLUGIN_ROOT が設定されていないため、AI-SDD-PRINCIPLES.md の自動同期をスキップします。" >&2
+        echo "[AI-SDD] CLAUDE_PLUGIN_ROOT not set. Skipping AI-SDD-PRINCIPLES.md auto-sync." >&2
     elif [ ! -f "$SOURCE_PRINCIPLES" ]; then
-        echo "[AI-SDD] ソースファイルが見つかりません: $SOURCE_PRINCIPLES。自動同期をスキップします。" >&2
+        echo "[AI-SDD] Source file not found: $SOURCE_PRINCIPLES. Skipping auto-sync." >&2
     fi
 fi
 
-# 環境変数の出力
-# Claude Code が CLAUDE_ENV_FILE を提供する場合はそちらに書き出し
-# 提供されない場合は stdout に出力（Claude Code が読み取る）
+# Environment variable output
+# If CLAUDE_ENV_FILE is provided by Claude Code, write to it
+# Otherwise output to stdout (for Claude Code to read)
 output_env_vars() {
     echo "export SDD_ROOT=\"$DOCS_ROOT\""
     echo "export SDD_REQUIREMENT_DIR=\"$REQUIREMENT_DIR\""
@@ -179,29 +186,30 @@ output_env_vars() {
     echo "export SDD_REQUIREMENT_PATH=\"${DOCS_ROOT}/${REQUIREMENT_DIR}\""
     echo "export SDD_SPECIFICATION_PATH=\"${DOCS_ROOT}/${SPECIFICATION_DIR}\""
     echo "export SDD_TASK_PATH=\"${DOCS_ROOT}/${TASK_DIR}\""
+    echo "export SDD_LANG=\"$SDD_LANG\""
 }
 
 if [ -n "$CLAUDE_ENV_FILE" ]; then
-    # 既存のSDD_*環境変数を削除（重複書き込み対策）
+    # Remove existing SDD_* environment variables (prevent duplicate writes)
     if [ -f "$CLAUDE_ENV_FILE" ]; then
-        # 一時ファイルを使用してSDD_*で始まる行を除外
+        # Use temp file to exclude lines starting with SDD_
         grep -v '^export SDD_' "$CLAUDE_ENV_FILE" > "${CLAUDE_ENV_FILE}.tmp" 2>/dev/null || true
         mv "${CLAUDE_ENV_FILE}.tmp" "$CLAUDE_ENV_FILE" 2>/dev/null || true
     fi
     output_env_vars >> "$CLAUDE_ENV_FILE"
 fi
-# 注意: CLAUDE_ENV_FILE がない場合は環境変数を出力しない
-# （stdout に出力すると JSON レスポンスと混在するため）
+# Note: Do not output env vars if CLAUDE_ENV_FILE is not available
+# (would mix with JSON response in stdout)
 
-# バージョン比較関数（メジャー・マイナーのみ比較、パッチは無視）
-# 戻り値: 0 = 同じまたは新しい, 1 = 古い
+# Version comparison function (compare major.minor only, ignore patch)
+# Return: 0 = same or newer, 1 = older
 compare_major_minor() {
     local plugin_version
     local project_version
     plugin_version="$1"
     project_version="$2"
 
-    # メジャー・マイナーを抽出
+    # Extract major and minor using parameter expansion (no subshell)
     local plugin_major
     local plugin_minor
     local project_major
@@ -211,7 +219,7 @@ compare_major_minor() {
     project_major="${project_version%%.*}"
     project_minor="${project_version#*.}"; project_minor="${project_minor%%.*}"
 
-    # 数値として比較
+    # Compare as numbers
     if [ "$project_major" -lt "$plugin_major" ] 2>/dev/null; then
         return 1
     elif [ "$project_major" -eq "$plugin_major" ] && [ "$project_minor" -lt "$plugin_minor" ] 2>/dev/null; then
@@ -220,79 +228,77 @@ compare_major_minor() {
     return 0
 }
 
-# CLAUDE.md のバージョンチェック
-# AI-SDD-PRINCIPLES.md は session-start で常に最新化されるため、
-# CLAUDE.md 内の AI-SDD セクションの更新が必要かどうかのみをチェック
-# 注: PLUGIN_VERSION は上部で既に取得済み
+# CLAUDE.md version check (AI-SDD-PRINCIPLES.md is now auto-updated)
+# Note: PLUGIN_VERSION is already obtained above
 CLAUDE_MD="${PROJECT_ROOT}/CLAUDE.md"
 
-# .sdd/ ディレクトリが存在する場合のみチェック
+# Only check if .sdd/ directory exists
 if [ -d "$SDD_DIR" ]; then
     SHOW_WARNING=false
     WARNING_REASON=""
     CLAUDE_VERSION=""
 
     if [ ! -f "$CLAUDE_MD" ]; then
-        # CLAUDE.md が存在しない
+        # CLAUDE.md doesn't exist
         SHOW_WARNING=true
         WARNING_REASON="missing"
     elif [ -n "$PLUGIN_VERSION" ]; then
-        # CLAUDE.md から AI-SDD バージョンを取得（## AI-SDD Instructions (vX.Y.Z) 形式）
+        # Get version from CLAUDE.md (## AI-SDD Instructions (vX.Y.Z) format)
         CLAUDE_VERSION=$(grep -o '## AI-SDD Instructions (v[0-9.]*' "$CLAUDE_MD" 2>/dev/null | sed 's/.*v\([0-9.]*\).*/\1/')
 
         if [ -z "$CLAUDE_VERSION" ]; then
-            # CLAUDE.md に AI-SDD セクションがない
+            # No AI-SDD section in CLAUDE.md
             SHOW_WARNING=true
             WARNING_REASON="no_version"
         elif ! compare_major_minor "$PLUGIN_VERSION" "$CLAUDE_VERSION"; then
-            # CLAUDE.md のバージョンが古い
+            # Version is outdated
             SHOW_WARNING=true
             WARNING_REASON="outdated"
         fi
     fi
 
     if [ "$SHOW_WARNING" = true ]; then
-        # 警告メッセージを構築
+        # Build warning message
         WARNING_MESSAGE=""
         case "$WARNING_REASON" in
             "missing")
                 WARNING_MESSAGE="CLAUDE.md が見つかりません。AI-SDD ワークフローの設定が不完全な可能性があります。"
                 ;;
             "no_version")
-                WARNING_MESSAGE="CLAUDE.md に AI-SDD セクションがありません。旧形式の CLAUDE.md が検出されました。"
+                WARNING_MESSAGE="CLAUDE.md に AI-SDD セクションがありません。旧形式の CLAUDE.md を検出しました。"
                 ;;
             "outdated")
-                WARNING_MESSAGE="CLAUDE.md の AI-SDD セクションが古いバージョンです。プラグイン: v${PLUGIN_VERSION}, CLAUDE.md: v${CLAUDE_VERSION}"
+                WARNING_MESSAGE="CLAUDE.md の AI-SDD セクションが古いバージョンです。プラグイン: v${PLUGIN_VERSION}、CLAUDE.md: v${CLAUDE_VERSION}"
                 ;;
         esac
 
-        # 警告ファイルを作成
+        # Create warning file (uppercase for visibility, standard naming)
         WARNING_FILE="${PROJECT_ROOT}/${DOCS_ROOT}/UPDATE_REQUIRED.md"
         cat > "$WARNING_FILE" << WARN_EOF
-# AI-SDD 更新が必要です
+# AI-SDD Update Required
 
-## 理由
+## Reason
 
 ${WARNING_MESSAGE}
 
-## 対応方法
+## How to Fix
 
-以下のコマンドを実行してください:
+Run the following command:
 
 \`\`\`
-/sdd_init
+/sdd-init
 \`\`\`
 
-これにより CLAUDE.md の AI-SDD セクションが更新されます。
+This will update the AI-SDD section in CLAUDE.md.
 
 ---
-このファイルは /sdd_init 実行後に自動削除されます。
+This file will be automatically deleted after running /sdd-init.
 WARN_EOF
 
-        # stderr にも出力（--verbose 時に表示される）
-        echo "[AI-SDD] CLAUDE.md の更新が必要です。/sdd_init を実行してください。" >&2
+        # Output to stderr (visible with --verbose)
+        echo "[AI-SDD] CLAUDE.md update required. Please run /sdd-init." >&2
     else
-        # 警告が不要な場合、既存の UPDATE_REQUIRED.md があれば削除
+        # No warning needed, remove existing UPDATE_REQUIRED.md if present
         WARNING_FILE="${PROJECT_ROOT}/${DOCS_ROOT}/UPDATE_REQUIRED.md"
         if [ -f "$WARNING_FILE" ]; then
             rm -f "$WARNING_FILE"

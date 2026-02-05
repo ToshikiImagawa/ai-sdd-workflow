@@ -50,12 +50,12 @@ Claude Code (claude.ai/code) がこのリポジトリのプラグインエージ
 - CONSTITUTION.md 読み込み (3,000トークン)
 - PRD読み込み (2,000トークン)
 - 原則準拠チェック (5,000トークン)
-- 自動修正試行
+- 修正提案生成
 
 ↓ 要約結果 (500トークンのみ)
   "【CONSTITUTION準拠: 🟢】
-   自動修正: 2件
-   手動修正が必要: 0件"
+   修正提案: 2件
+   要議論: 0件"
 
 【メインコンテキスト】
 - レビュー結果(500トークン)を受け取る
@@ -84,11 +84,12 @@ Claude Code (claude.ai/code) がこのリポジトリのプラグインエージ
 
 | エージェント                    | 責務                 | スコープ                                  |
 |:--------------------------|:-------------------|:--------------------------------------|
-| `sdd-workflow`            | AI-SDD開発フロー全体の管理   | フェーズ判定、Vibe Coding防止、知識資産管理           |
 | `prd-reviewer`            | PRDの品質レビュー         | CONSTITUTION.md準拠チェック、SysML要求図形式検証    |
 | `spec-reviewer`           | spec/designの品質レビュー | CONSTITUTION.md準拠チェック、ドキュメント間トレーサビリティ |
 | `requirement-analyzer`    | 要求分析・追跡・検証         | SysML要求図分析、実装とのトレーサビリティ確認             |
 | `clarification-assistant` | 仕様明確化支援            | 9カテゴリ分析、不明点の洗い出し、質問生成                 |
+
+**共通参照ドキュメント**: `.sdd/AI-SDD-PRINCIPLES.md`（session-start.sh により自動更新）が全エージェント・スキル共通のAI-SDD原則参照ドキュメントです。
 
 **descriptionの書き方**:
 
@@ -100,7 +101,7 @@ description: "仕様書をレビューする"
 # ✅ Good: 明確で具体的
 
 description: "
-仕様書の品質レビューとCONSTITUTION.md準拠チェックを行うエージェント。曖昧な記述、不足セクション、SysMLとしての妥当性をチェックし、違反時は自動修正を試行します。"
+仕様書の品質レビューとCONSTITUTION.md準拠チェックを行うエージェント。曖昧な記述、不足セクション、SysMLとしての妥当性をチェックし、違反時は修正提案を出力します。"
 ```
 
 **Good descriptionの条件**:
@@ -108,7 +109,7 @@ description: "
 - 何をするか（動詞）
 - どのドキュメントを対象とするか
 - どのような観点でチェックするか
-- 結果としてどうなるか（自動修正等）
+- 結果としてどうなるか（修正提案の出力等）
 
 #### 2.2 入出力インターフェース
 
@@ -141,11 +142,11 @@ sdd-workflow-ja:spec-reviewer .sdd/specification/user-auth_spec.md --summary
 
 ## 前提条件
 
-**実行前に必ず `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込み、AI-SDDの原則を理解してください。**
+**実行前に必ず AI-SDD原則ドキュメント（`.sdd/AI-SDD-PRINCIPLES.md`）を読み込み、AI-SDDの原則を理解してください。**
 
 ## 出力
 
-レビュー結果レポート（評価サマリー、要修正項目、改善推奨項目、自動修正サマリー）
+レビュー結果レポート（評価サマリー、要修正項目、改善推奨項目、修正提案サマリー）
 ```
 
 **入出力設計のポイント**:
@@ -156,17 +157,70 @@ sdd-workflow-ja:spec-reviewer .sdd/specification/user-auth_spec.md --summary
 - 前提条件を明記（sdd-workflow参照、環境変数等）
 - 出力フォーマットを定義
 
-#### 2.3 allowed-toolsの設計方針
+#### 2.3 フロントマターフィールドの設計
+
+エージェントのフロントマターでは以下のフィールドを設計します。
+
+**標準フィールド**:
+
+```yaml
+---
+name: agent-name
+description: "詳細なトリガー説明"
+model: sonnet
+color: green
+allowed-tools: [ Read, Glob, Grep, AskUserQuestion ]
+---
+```
+
+**拡張フィールド**:
+
+| フィールド  | 型      | 説明                                |
+|:-------|:-------|:----------------------------------|
+| tools  | array  | `allowed-tools` の代替フィールド          |
+| skills | array  | プリロードするスキル（例: `["plugin:skill"]`） |
+| hooks  | object | エージェントスコープのフック設定                  |
+
+**`skills` フィールドの活用例**:
+
+```yaml
+---
+name: spec-reviewer
+description: "仕様書レビューエージェント"
+model: sonnet
+color: green
+allowed-tools: [ Read, Glob, Grep, AskUserQuestion ]
+skills: [ "sdd-workflow-ja:sdd-templates" ]
+---
+```
+
+スキルをプリロードすることで、エージェント実行時にスキルのコンテキスト（テンプレート、ルールなど）が自動的に利用可能になります。
+
+**`hooks` フィールドの活用例**:
+
+```yaml
+---
+name: spec-reviewer
+description: "仕様書レビューエージェント"
+model: sonnet
+color: green
+allowed-tools: [ Read, Glob, Grep, AskUserQuestion ]
+---
+```
+
+エージェントスコープのフックにより、そのエージェント内でのツール使用に対して自動検証を設定できます。なお、読み取り専用のサブエージェントではEditフックは不要です。
+
+#### 2.4 allowed-toolsの設計方針
 
 `allowed-tools` は **タスクの性質に応じて最小限** に設定します。
 
 **AI-SDDワークフローの設計パターン**:
 
-| エージェントタイプ                                               | allowed-tools                           | 理由                         |
-|:--------------------------------------------------------|:----------------------------------------|:---------------------------|
-| **レビュー系** (prd-reviewer, spec-reviewer)                 | Read, Glob, Grep, Edit, AskUserQuestion | コンテキスト効率化のため、Taskツールを使用しない |
-| **分析系** (requirement-analyzer, clarification-assistant) | 全ツール                                    | 柔軟な分析・探索が必要                |
-| **フロー管理系** (sdd-workflow)                               | 全ツール                                    | 全体フローを管理するため、すべてのツールが必要    |
+| エージェントタイプ                               | allowed-tools                                  | 理由                             |
+|:----------------------------------------|:-----------------------------------------------|:-------------------------------|
+| **レビュー系** (prd-reviewer, spec-reviewer) | Read, Glob, Grep, AskUserQuestion              | 読み取り専用。修正提案を出力し、メインエージェントが適用   |
+| **分析系** (requirement-analyzer)          | Read, Glob, Grep, AskUserQuestion              | 読み取り専用。分析結果と提案を出力              |
+| **分析系** (clarification-assistant)       | Read, Glob, Grep, AskUserQuestion              | 読み取り専用。統合提案を出力し、メインエージェントが適用   |
 
 **重要な制約**: **spec-reviewer は Task ツールを使用不可**
 
@@ -191,7 +245,7 @@ allowed-tools: Read, Glob, Grep, Edit, AskUserQuestion
 
 理由: 不要なツールを許可すると、エージェントが非効率な実装を選択する可能性がある。
 
-#### 2.4 前提条件の記述
+#### 2.5 前提条件の記述
 
 すべてのエージェントは **共通の理解基盤** を持つ必要があります。
 
@@ -200,10 +254,15 @@ allowed-tools: Read, Glob, Grep, Edit, AskUserQuestion
 ```markdown
 ## 前提条件
 
-**実行前に必ず `sdd-workflow-ja:sdd-workflow` エージェントの内容を読み込み、AI-SDDの原則・ドキュメント構成・永続性ルール・Vibe
-Coding防止の詳細を理解してください。**
+**実行前に必ず AI-SDD原則ドキュメントを読み込んでください。**
 
-このエージェントはsdd-workflowエージェントの原則に基づいて{タスク名}を行います。
+AI-SDD原則ドキュメントパス: `.sdd/AI-SDD-PRINCIPLES.md`
+
+**Note**: このファイルはセッション開始時に自動更新されます。
+
+AI-SDDの原則・ドキュメント構成・永続性ルール・Vibe Coding防止の詳細を理解してください。
+
+このエージェントはAI-SDD原則に基づいて{タスク名}を行います。
 
 ### ディレクトリパスの解決
 
@@ -235,28 +294,27 @@ Coding防止の詳細を理解してください。**
 | **複数ソースの探索** | 並列で行いたい検索、独立した視点で評価   | requirement-analyzer（トレーサビリティ確認） |
 | **仕様明確化分析**  | 9カテゴリの体系的分析、質問生成      | clarification-assistant          |
 
-**⚠️ 慎重に行うべきタスク (WRITE系)**:
+**⚠️ WRITE系はメインエージェントのみ**:
 
 | タスク          | 問題点                      | 対策                                           |
 |:-------------|:-------------------------|:---------------------------------------------|
-| **ドキュメント生成** | 重複したコンテキスト読み込みで無駄なトークン消費 | 基本的にメインエージェント（コマンド）で実行                       |
-| **ドキュメント修正** | コンテキスト損失が品質に影響           | **例外**: 自動修正（spec-reviewer, prd-reviewer）は許可 |
+| **ドキュメント生成** | 重複したコンテキスト読み込みで無駄なトークン消費 | メインエージェント（スキル）で実行                            |
+| **ドキュメント修正** | コンテキスト損失が品質に影響           | サブエージェントは修正提案を出力、メインエージェントが Edit を実行        |
 
 **AI-SDDワークフローにおけるWRITE系の扱い**:
 
 ```
-メインエージェント（コマンド）でドキュメント生成:
-  /generate_prd → PRD生成 (Write)
-  /generate_spec → spec/design生成 (Write)
+メインエージェント（スキル）でドキュメント生成・修正:
+  /generate_prd → PRD生成 (Write) + レビュー結果に基づく修正 (Edit)
+  /generate_spec → spec/design生成 (Write) + レビュー結果に基づく修正 (Edit)
+  /clarify → ユーザー回答に基づく仕様統合 (Edit/Write)
 
-サブエージェント（レビュー）で自動修正:
-  prd-reviewer → PRD自動修正 (Edit)
-  spec-reviewer → spec/design自動修正 (Edit)
-  clarification-assistant → ユーザー回答を仕様書に統合 (Edit/Write)
+サブエージェント（レビュー・分析）は読み取り専用:
+  prd-reviewer → PRDレビュー結果 + 修正提案を出力
+  spec-reviewer → spec/designレビュー結果 + 修正提案を出力
+  clarification-assistant → 仕様明確化分析 + 統合提案を出力
+  requirement-analyzer → 要求分析結果 + 改善提案を出力
 ```
-
-**例外**: `clarification-assistant` は仕様明確化後にユーザー回答を仕様書に統合するため、Writeツールを使用します。
-これは標準化されたセクションへの追記であり、コンテキスト損失の影響が小さいためです。
 
 #### 3.2 委譲判断フロー
 
@@ -274,14 +332,10 @@ READ系タスク? (レビュー、分析、検証)
   ↓
 WRITE系タスク? (ドキュメント生成、修正)
   ↓ YES
-メインエージェント（コマンド）で実行
+メインエージェント（スキル）で実行
   - PRD生成 → /generate_prd
   - spec/design生成 → /generate_spec
-
-  例外: 自動修正
-    - prd-reviewer (Edit)
-    - spec-reviewer (Edit)
-    - clarification-assistant (Edit/Write)
+  - サブエージェントの修正提案に基づく修正もメインで実行
 ```
 
 ### 4. エージェント間連携パターン
@@ -297,10 +351,11 @@ WRITE系タスク? (ドキュメント生成、修正)
   ↓
 2. prd-reviewer 自動実行
   ├─ CONSTITUTION.md 準拠チェック
-  ├─ 自動修正試行
-  └─ レビュー結果出力
+  └─ レビュー結果 + 修正提案を出力
   ↓
-3. ユーザーに結果を返す
+3. メインエージェントが修正提案をレビュー・適用 (Edit)
+  ↓
+4. ユーザーに結果を返す
 ```
 
 ```
@@ -311,16 +366,20 @@ WRITE系タスク? (ドキュメント生成、修正)
 2. spec-reviewer 自動実行 (spec)
   ├─ CONSTITUTION.md 準拠チェック
   ├─ PRD↔spec トレーサビリティチェック
-  └─ 自動修正試行
+  └─ レビュー結果 + 修正提案を出力
   ↓
-3. design生成 (Write)
+3. メインエージェントが修正提案をレビュー・適用 (Edit)
   ↓
-4. spec-reviewer 自動実行 (design)
+4. design生成 (Write)
+  ↓
+5. spec-reviewer 自動実行 (design)
   ├─ CONSTITUTION.md 準拠チェック
   ├─ spec↔design 整合性チェック
-  └─ 自動修正試行
+  └─ レビュー結果 + 修正提案を出力
   ↓
-5. ユーザーに結果を返す
+6. メインエージェントが修正提案をレビュー・適用 (Edit)
+  ↓
+7. ユーザーに結果を返す
 ```
 
 **オプション呼び出しパターン**: `--full` オプションで包括的チェックを実行します。
@@ -338,7 +397,103 @@ WRITE系タスク? (ドキュメント生成、修正)
 3. 統合結果を返す
 ```
 
-#### 4.2 エージェント間データフロー
+#### 4.2 サブエージェントとスキルの連携パターン
+
+サブエージェントとスキルの連携には主に2つのパターンがあります。
+
+**パターン1: `context: fork` を使ったスキル実行**
+
+スキルに `context: fork` を設定すると、スキルがサブエージェントとして独立したコンテキストで実行されます。
+
+```yaml
+# skills/heavy-analysis/SKILL.md
+---
+name: heavy-analysis
+description: "重い分析をサブエージェントとして実行するスキル"
+context: fork
+agent: sonnet
+allowed-tools: [ Read, Glob, Grep ]
+---
+
+## 分析手順
+
+1. $ARGUMENTS で指定されたファイルを読み込む
+2. 分析を実行
+3. 結果を要約して返す
+```
+
+```
+メインコンテキスト
+  ↓ スキル呼び出し
+サブエージェント（fork）で実行
+  - スキルの指示に従って分析
+  - 独立したコンテキストで処理
+  ↓ 要約結果を返す
+メインコンテキスト
+```
+
+**パターン2: エージェントに `skills` でスキルをプリロード**
+
+エージェントのフロントマターに `skills` を指定すると、エージェント実行時にスキルのコンテキストが自動的に読み込まれます。
+
+```yaml
+# agents/spec-reviewer.md
+---
+name: spec-reviewer
+description: "仕様書レビューエージェント"
+model: sonnet
+allowed-tools: [ Read, Glob, Grep, AskUserQuestion ]
+skills: [ "sdd-workflow-ja:sdd-templates" ]
+---
+```
+
+```
+サブエージェント起動
+  ↓ skills でプリロード
+sdd-templates スキルのコンテキストが自動注入
+  ↓
+エージェントがテンプレート情報を活用してレビュー実行
+```
+
+**パターン選択ガイド**:
+
+| パターン                   | 使用場面                  | メリット            |
+|:-----------------------|:----------------------|:----------------|
+| スキルに `context: fork`   | スキル単体で独立した処理を行いたい場合   | メインコンテキストを汚染しない |
+| エージェントに `skills` プリロード | エージェントにスキルの知識を付与したい場合 | エージェントの能力を拡張できる |
+
+#### 4.3 フック連携パターン
+
+エージェントやスキル内でフックを定義することで、ツール使用時に自動検証を組み込めます。
+
+**品質検証パターン（`prompt` タイプ）**:
+
+```yaml
+# エージェントフロントマターでのフック定義
+hooks:
+  PostToolUse:
+    - type: prompt
+      prompt: |
+        Edit操作の結果を検証してください:
+        1. CONSTITUTION.mdの原則に準拠しているか
+        2. ドキュメント間のトレーサビリティが維持されているか
+        3. 命名規則に従っているか
+      matcher: Edit
+```
+
+**自動レビューパターン（`agent` タイプ）**:
+
+```yaml
+hooks:
+  PostToolUse:
+    - type: agent
+      agent: spec-reviewer
+      matcher: Write
+```
+
+Write ツール使用後に自動的に spec-reviewer エージェントが起動し、書き込まれた内容をレビューします。
+
+#### 4.4 エージェント間データフロー
 
 エージェント間でデータを受け渡す方法:
 
@@ -347,18 +502,18 @@ WRITE系タスク? (ドキュメント生成、修正)
 | コマンド     | サブエージェント        | ファイルパス  | コマンド引数（`$ARGUMENTS`）  |
 | サブエージェント | CONSTITUTION.md | -       | Read ツールで読み込み         |
 | サブエージェント | PRD/spec/design | -       | Read ツールで読み込み         |
-| サブエージェント | PRD/spec/design | 自動修正内容  | Edit ツールで書き込み         |
+| サブエージェント | メインエージェント  | 修正提案   | レビュー結果に修正提案を含めて出力    |
 | サブエージェント | コマンド            | レビュー結果  | 要約結果を返す（500〜1000トークン） |
 
 **コンテキスト継承**:
 
-各エージェントは **sdd-workflowエージェントの原則を参照** することで、共通の理解基盤を持ちます：
+各エージェントは **`.sdd/AI-SDD-PRINCIPLES.md` を参照** することで、共通の理解基盤を持ちます：
 
-1. **実行前に sdd-workflow エージェントの内容を読み込む**（全エージェントの前提条件）
+1. **実行前に `.sdd/AI-SDD-PRINCIPLES.md` を読み込む**（全エージェントの前提条件）
 2. **CONSTITUTION.md の原則を理解する**（レビューエージェントの前提）
 3. **環境変数 `SDD_*` を使用してディレクトリパスを解決**（全エージェント共通）
 
-#### 4.3 再委譲の禁止
+#### 4.5 再委譲の禁止
 
 **重要な制約**: サブエージェントは自分自身または他のサブエージェントに再委譲してはいけません。
 
@@ -401,9 +556,9 @@ spec-reviewer
 **エージェントマニフェストでの制約表明**:
 
 ```markdown
-allowed-tools: Read, Glob, Grep, Edit, AskUserQuestion
+allowed-tools: Read, Glob, Grep, AskUserQuestion
 
-**注意**: このエージェントは Task ツールを使用しません。再委譲を避け、コンテキスト効率化を優先します。
+**注意**: このエージェントは Task ツール、Edit ツール、Write ツールを使用しません。再委譲を避け、読み取り専用でコンテキスト効率化を優先します。
 ```
 
 ### 5. 実践Tips
@@ -425,7 +580,7 @@ description: "仕様書をレビューする"
 # ✅ Good: 明確で具体的
 
 description: "
-仕様書の品質レビューとCONSTITUTION.md準拠チェックを行うエージェント。曖昧な記述、不足セクション、SysMLとしての妥当性をチェックし、違反時は自動修正を試行します。"
+仕様書の品質レビューとCONSTITUTION.md準拠チェックを行うエージェント。曖昧な記述、不足セクション、SysMLとしての妥当性をチェックし、違反時は修正提案を出力します。"
 ```
 
 #### 5.2 allowed-toolsを最小限にする
@@ -441,9 +596,9 @@ description: "
 
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, AskUserQuestion
 
-# ✅ Good: レビュー系エージェント（READ系）
+# ✅ Good: レビュー系エージェント（読み取り専用）
 
-allowed-tools: Read, Glob, Grep, Edit, AskUserQuestion
+allowed-tools: Read, Glob, Grep, AskUserQuestion
 ```
 
 #### 5.3 大きなコンテキストはファイルで委任
@@ -470,6 +625,20 @@ prompt: "対象PRDファイルパス: .sdd/requirement/user-auth.md"
 
 #### 5.4 デバッグ方法
 
+**`claude --debug` の活用**:
+
+```bash
+# デバッグモードでClaude Codeを起動
+claude --debug
+```
+
+デバッグモードでは以下の情報が確認できます:
+
+- エージェントの読み込み状態
+- フックの実行ログ
+- スキルのプリロード状況
+- ツール呼び出しの詳細
+
 **ログの場所**:
 
 ```
@@ -489,4 +658,11 @@ prompt: "対象PRDファイルパス: .sdd/requirement/user-auth.md"
 ```bash
 cd ~/.claude/projects/ai-sdd-workflow/
 grep -r "spec-reviewer" sidechains/
+```
+
+**ローカルプラグインのテスト**:
+
+```bash
+# ローカルのプラグインディレクトリを直接指定してテスト
+claude --plugin-dir ./plugins/sdd-workflow-ja
 ```
