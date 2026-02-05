@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0",
+  "principles": [
+    {
+      "id": "P1",
+      "name": "Specification-First",
+      "enforceable": true,
+      "checks": [
+        {
+          "type": "file_exists",
+          "pattern": ".sdd/specification/*_spec.md"
+        }
+      ]
+    }
+  ]
+}

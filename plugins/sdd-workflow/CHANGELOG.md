@@ -7,6 +7,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-02-03
+
+### Breaking Changes
+
+#### Plugin Consolidation
+
+- **Merged `sdd-workflow-ja` and `sdd-workflow` into a single unified plugin** (`sdd-workflow`)
+    - Language selection via `SDD_LANG` environment variable (from `.sdd-config.json` `lang` field, default: `en`)
+    - Templates split by language: `templates/ja/` and `templates/en/`
+    - SKILL.md and agent files are in English only
+    - Removed `sdd-workflow-ja` plugin entirely
+
+#### Commands Converted to Skills
+
+- **All 11 commands migrated to skills** with `user-invocable: true`
+    - `commands/` directory removed entirely
+    - All commands now live under `skills/{name}/SKILL.md`
+
+#### Command Name Changes (Underscore → Hyphen)
+
+| Old (v2.x)         | New (v3.0.0)       |
+|:--------------------|:-------------------|
+| `/sdd_init`         | `/sdd-init`        |
+| `/generate_spec`    | `/generate-spec`   |
+| `/generate_prd`     | `/generate-prd`    |
+| `/check_spec`       | `/check-spec`      |
+| `/task_breakdown`   | `/task-breakdown`  |
+| `/task_cleanup`     | `/task-cleanup`    |
+| `/sdd_migrate`      | `/sdd-migrate`     |
+
+### Added
+
+#### Multi-Language Support
+
+- **`SDD_LANG` environment variable** - Controls template language selection
+    - Set via `.sdd-config.json` `lang` field
+    - Supported values: `en` (default), `ja`
+    - `session-start.sh` reads `lang` from config and exports `SDD_LANG`
+
+#### Language-Specific Templates
+
+- All 4 existing skills now have language-separated templates:
+    - `sdd-templates/templates/{en,ja}/`
+    - `vibe-detector/templates/{en,ja}/`
+    - `doc-consistency-checker/templates/{en,ja}/`
+    - `output-templates/templates/{en,ja}/`
+- Japanese templates copied from former `sdd-workflow-ja` plugin
+
+### Changed
+
+#### Skills
+
+- **11 new skills created** from former commands:
+    - `sdd-init`, `constitution`, `generate-spec`, `generate-prd`, `check-spec`
+    - `task-breakdown`, `implement`, `clarify`, `task-cleanup`, `sdd-migrate`, `checklist`
+    - Each skill has appropriate `allowed-tools`, `user-invocable: true`, and optional `disable-model-invocation`
+- **4 existing skills updated** to v3.0.0 with language configuration support
+    - Added `## Language Configuration` section with dynamic `SDD_LANG` context injection
+    - Template path references updated to `templates/en/` format
+
+#### Agents
+
+- **spec-reviewer** - Added `skills` field: `["sdd-workflow:sdd-templates", "sdd-workflow:doc-consistency-checker"]`
+- **prd-reviewer** - Added `skills` field: `["sdd-workflow:sdd-templates"]`
+- All 4 agents updated with hyphenated command name references
+- All agent descriptions updated to reference new command names
+
+#### Configuration
+
+- **`.sdd-config.json`** - Added `lang` field for language configuration
+- **`session-start.sh`** - Added `SDD_LANG` reading and export
+- **`plugin.json`** - Updated to v3.0.0 with unified plugin description
+- **`marketplace.json`** - Removed `sdd-workflow-ja` entry, updated `sdd-workflow` to v3.0.0
+
+#### Documentation
+
+- **`CLAUDE.md`** - Updated repository structure to reflect single plugin with skills
+- **`README.md`** - Added migration guide from v2.x, updated all command references
+
+### Removed
+
+- **`plugins/sdd-workflow-ja/`** - Entire Japanese plugin directory (merged into `sdd-workflow`)
+- **`plugins/sdd-workflow/commands/`** - Entire commands directory (migrated to skills)
+
 ## [2.4.2] - 2026-01-26
 
 ### Fixed

@@ -1,14 +1,21 @@
 ---
 name: vibe-detector
 description: "Automatically executed before implementation to analyze user instructions and detect Vibe Coding (problems where AI must infer undefined requirements due to vague instructions). Warns when detecting ambiguous expressions like 'make it nice', 'somehow', 'same as before', specification gaps, or unclear requirements, prompting for clarification."
-version: 2.3.1
+version: 3.0.0
 license: MIT
+user-invocable: false
 ---
 
 # Vibe Detector - Automatic Detection of Vague Instructions
 
 Analyzes user input to detect Vibe Coding (the problem where AI must guess undefined requirements due to vague
 instructions).
+
+## Language Configuration
+
+!`echo "Current language: ${SDD_LANG:-en}"`
+
+When reading templates, use the path: `templates/${SDD_LANG:-en}/`
 
 ## Prerequisites
 
@@ -22,25 +29,7 @@ Understand AI-SDD principles.
 
 This skill follows AI-SDD principles for Vibe Coding detection.
 
-### Directory Path Resolution
-
-**Use `SDD_*` environment variables to resolve directory paths.**
-
-| Environment Variable     | Default Value        | Description                    |
-|:-------------------------|:---------------------|:-------------------------------|
-| `SDD_ROOT`               | `.sdd`               | Root directory                 |
-| `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/Requirements directory     |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | Specification/Design directory |
-| `SDD_TASK_PATH`          | `.sdd/task`          | Task log directory             |
-
-**Path Resolution Priority:**
-
-1. Use `SDD_*` environment variables if set
-2. Check `.sdd-config.json` if environment variables are not set
-3. Use default values if neither exists
-
-The following documentation uses default values, but replace with custom values if environment variables or
-configuration file exists.
+See `references/prerequisites_directory_paths.md` for directory path resolution using `SDD_*` environment variables.
 
 ## Detection Patterns
 
@@ -103,7 +92,7 @@ configuration file exists.
 
 ## Output Format
 
-Use [templates/risk_report.md](templates/risk_report.md) for risk detection output.
+Read `templates/${SDD_LANG:-en}/risk_report.md` and use it for risk detection output.
 
 **If template does not exist**: Generate output following the structure below:
 
@@ -141,7 +130,7 @@ Even when user refuses specification creation, ensure minimum guardrails:
 
 ### 1. Document Inferred Specifications
 
-Use [templates/assumed_spec.md](templates/assumed_spec.md) for creating inferred specification documents.
+Read `templates/${SDD_LANG:-en}/assumed_spec.md` and use it for creating inferred specification documents.
 
 **If template does not exist**: Generate document following the structure below:
 

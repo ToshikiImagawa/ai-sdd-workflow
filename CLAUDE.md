@@ -4,8 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-AI駆動仕様駆動開発（AI-SDD）ワークフローを支援するClaude Codeプラグイン（日本語対応）のマーケットプレイスリポジトリ。Vibe
-Coding問題を防ぎ、仕様書を真実の源として高品質な実装を実現する。
+AI駆動仕様駆動開発（AI-SDD）ワークフローを支援するClaude Codeプラグインのマーケットプレイスリポジトリ。Vibe
+Coding問題を防ぎ、仕様書を真実の源として高品質な実装を実現する。`SDD_LANG` 環境変数による多言語対応。
 
 ## リポジトリ構成
 
@@ -14,42 +14,46 @@ ai-sdd-workflow/
 ├── .claude-plugin/
 │   └── marketplace.json           # マーケットプレイスメタデータ
 ├── plugins/
-│   ├── sdd-workflow-ja/           # 日本語プラグイン
-│   │   ├── .claude-plugin/
-│   │   │   └── plugin.json        # プラグインマニフェスト
-│   │   ├── agents/
-│   │   │   ├── sdd-workflow.md    # AI-SDD開発フローエージェント
-│   │   │   ├── spec-reviewer.md   # 仕様書レビューエージェント
-│   │   │   └── requirement-analyzer.md  # 要求仕様分析エージェント
-│   │   ├── commands/
-│   │   │   ├── sdd_init.md        # AI-SDDワークフロー初期化
-│   │   │   ├── sdd_migrate.md     # 旧バージョンからの移行
-│   │   │   ├── generate_spec.md   # 仕様書・設計書生成
-│   │   │   ├── generate_prd.md    # PRD生成
-│   │   │   ├── check_spec.md      # 整合性チェック
-│   │   │   ├── task_cleanup.md    # タスククリーンアップ
-│   │   │   └── task_breakdown.md  # タスク分解
-│   │   ├── skills/
-│   │   │   ├── vibe-detector/     # Vibe Coding検出
-│   │   │   ├── doc-consistency-checker/
-│   │   │   └── sdd-templates/     # AI-SDDテンプレート
-│   │   ├── hooks/
-│   │   │   ├── session-start.sh   # セッション開始時の初期化
-│   │   │   └── settings.example.json
-│   │   ├── LICENSE
-│   │   ├── README.md
-│   │   └── CHANGELOG.md
-│   └── sdd-workflow/              # 英語プラグイン
+│   ├── sdd-workflow-ja/           # 日本語デフォルトプラグイン（sdd-workflowのsymlink薄ラッパー）
+│   └── sdd-workflow/              # 統合プラグイン（多言語対応）
 │       ├── .claude-plugin/
-│       │   └── plugin.json
+│       │   └── plugin.json        # プラグインマニフェスト
 │       ├── agents/
-│       ├── commands/
-│       ├── skills/
+│       │   ├── spec-reviewer.md   # 仕様書レビューエージェント
+│       │   ├── prd-reviewer.md    # PRDレビューエージェント
+│       │   ├── requirement-analyzer.md  # 要求仕様分析エージェント
+│       │   └── clarification-assistant.md  # 仕様明確化アシスタント
+│       ├── skills/                # 11スキル（旧commands）+ 4スキル（既存）
+│       │   ├── sdd-init/          # AI-SDDワークフロー初期化
+│       │   ├── constitution/      # プロジェクト原則管理
+│       │   ├── generate-spec/     # 仕様書・設計書生成
+│       │   ├── generate-prd/      # PRD生成
+│       │   ├── check-spec/        # 整合性チェック
+│       │   ├── task-breakdown/    # タスク分解
+│       │   ├── implement/         # TDD実装
+│       │   ├── clarify/           # 仕様明確化
+│       │   ├── task-cleanup/      # タスククリーンアップ
+│       │   ├── sdd-migrate/       # マイグレーション
+│       │   ├── checklist/         # 品質チェックリスト
+│       │   ├── vibe-detector/     # Vibe Coding検出
+│       │   │   └── templates/{en,ja}/
+│       │   ├── sdd-templates/     # AI-SDDテンプレート
+│       │   │   └── templates/{en,ja}/
+│       │   ├── doc-consistency-checker/  # ドキュメント整合性チェッカー
+│       │   │   └── templates/{en,ja}/
+│       │   └── output-templates/  # 出力テンプレート
+│       │       └── templates/{en,ja}/
 │       ├── hooks/
+│       │   └── hooks.json         # フック設定（JSON形式）
+│       ├── scripts/
+│       │   └── session-start.sh   # セッション開始時の初期化
+│       ├── AI-SDD-PRINCIPLES.source.md
 │       ├── LICENSE
 │       ├── README.md
 │       └── CHANGELOG.md
 ├── CLAUDE.md
+├── AGENTS.md
+├── PLUGIN.md
 └── README.md
 ```
 
@@ -70,7 +74,7 @@ Specify（仕様化） → Plan（計画） → Tasks（タスク分解） → I
 └── task/                         # タスクログ - 一時的（実装完了後に削除）
 ```
 
-フラット構造（小〜中規模）と階層構造（中〜大規模）の両方をサポート。詳細は `plugins/sdd-workflow-ja/README.md` を参照。
+フラット構造（小〜中規模）と階層構造（中〜大規模）の両方をサポート。詳細は `plugins/sdd-workflow/README.md` を参照。
 
 ### ファイル命名規則
 
@@ -102,11 +106,12 @@ CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実
 
 ### プロジェクト設定ファイル
 
-プロジェクトルートに `.sdd-config.json` を配置することで、ディレクトリ名をカスタマイズできます。
+プロジェクトルートに `.sdd-config.json` を配置することで、ディレクトリ名や言語をカスタマイズできます。
 
 ```json
 {
   "root": ".sdd",
+  "lang": "en",
   "directories": {
     "requirement": "requirement",
     "specification": "specification",
@@ -125,6 +130,7 @@ CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実
 | 環境変数                     | デフォルト値               | 説明             |
 |:-------------------------|:---------------------|:---------------|
 | `SDD_ROOT`               | `.sdd`               | ルートディレクトリ      |
+| `SDD_LANG`               | `en`                 | 言語設定           |
 | `SDD_REQUIREMENT_DIR`    | `requirement`        | 要求仕様書ディレクトリ名   |
 | `SDD_SPECIFICATION_DIR`  | `specification`      | 仕様書・設計書ディレクトリ名 |
 | `SDD_TASK_DIR`           | `task`               | タスクログディレクトリ名   |
@@ -147,13 +153,23 @@ CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実
 
 - プラグインJSON構文チェック: `cat plugins/*/.claude-plugin/*.json | jq .`
 - Markdownリンクの整合性: 各ドキュメント内の相対リンクが有効か確認
-- **IMPORTANT**: 新規コマンド/エージェント追加時は `plugin.json` への登録を忘れずに
+- **IMPORTANT**: 新規エージェント/スキル追加時は `plugin.json` への登録を忘れずに
+- プラグインデバッグ: `claude --debug` でプラグインの読み込み、フック実行、エージェント呼び出しの詳細ログを確認
+- ローカルテスト: `claude --plugin-dir ./plugins/sdd-workflow` でローカルのプラグインを直接テスト
 
 ## 開発時の注意
 
-- プラグイン修正時は対象プラグインディレクトリ（`plugins/{plugin-name}/`）に限定して作業
-- 全プラグインへの変更が必要な場合は、明示的に確認してから実施
+- プラグイン修正時は `plugins/sdd-workflow/` に限定して作業
 - 「調査して」と依頼された場合は、まずスコープを確認してから探索
+
+## CLAUDE.md 執筆のベストプラクティス
+
+公式ドキュメントに基づく CLAUDE.md の効果的な執筆ガイドライン:
+
+- **簡潔に保つ**: Claudeが推測できる一般的な情報は除外し、プロジェクト固有の重要事項のみ記載する
+- **`@path/to/file` 構文**: 他のファイルの内容をインポートできる。大きなドキュメントを分割して管理する際に活用
+- **検証方法の提供が最も効果が高い**: ビルドコマンド、テストコマンド、リントコマンドなどを明記することで、Claudeが自律的に品質を確認できる
+- **コンテキスト管理**: `/clear` コマンドでコンテキストをリセットし、サブエージェント（Task ツール）を活用して調査タスクを委任する
 
 ## プラグインエージェント設計ガイド
 
@@ -162,10 +178,10 @@ AI-SDDワークフロープラグインのサブエージェント設計・実�
 このガイドでは以下の内容を定義しています：
 
 1. **サブエージェントの基本概念**（コンテキスト独立性、トークン効率化）
-2. **エージェント設計原則**（役割、入出力、allowed-tools、前提条件）
+2. **エージェント設計原則**（役割、入出力、allowed-tools/tools/skills/hooks、前提条件）
 3. **委任すべきタスク vs メインで実行すべきタスク**
-4. **エージェント間連携パターン**
-5. **実践Tips**
+4. **エージェント間連携パターン**（スキル連携、フック連携を含む）
+5. **実践Tips**（デバッグ方法、`claude --debug` の活用）
 
 ## プラグイン開発ガイド
 
@@ -174,15 +190,17 @@ Claude Codeプラグインとマーケットプレイスの作成に関する包
 このガイドでは以下の内容を定義しています：
 
 1. **プラグイン基本構造**（ディレクトリレイアウト、マーケットプレイス構成）
-2. **マニフェストファイル**（plugin.json, marketplace.json の詳細）
-3. **コマンド、エージェント、スキルの実装**（フロントマター、ベストプラクティス）
-4. **MCP サーバー連携**（外部ツール統合）
-5. **フック実装**（イベント駆動型自動化）
-6. **マーケットプレイス公開プロセス**（品質基準、配布モデル）
+2. **マニフェストファイル**（plugin.json のコンポーネントパスフィールド、`${CLAUDE_PLUGIN_ROOT}` 環境変数）
+3. **コマンド（legacy）、エージェント、スキルの実装**（フロントマター、`context: fork`、動的コンテキスト注入）
+4. **MCP / LSP サーバー連携**（外部ツール統合、Language Server Protocol 統合）
+5. **フック実装**（JSON形式の `hooks.json`、イベント一覧、フックタイプ: command/prompt/agent）
+6. **プラグインキャッシュとインストールスコープ**（user/project/local/managed）
+7. **マーケットプレイス公開プロセス**（品質基準、配布モデル）
+8. **CLI コマンドリファレンス / デバッグ**
 
 ## 新しいプラグインの追加
 
 1. `plugins/{plugin-name}/` ディレクトリを作成
 2. `.claude-plugin/plugin.json` にプラグインマニフェストを配置
-3. agents, commands, skills, hooks を必要に応じて追加
+3. agents, skills, hooks を必要に応じて追加（新規コマンドは `skills/` を推奨）
 4. `.claude-plugin/marketplace.json` の `plugins` 配列に追加
