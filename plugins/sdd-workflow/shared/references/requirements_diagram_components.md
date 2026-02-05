@@ -17,22 +17,35 @@ Requirements diagrams serve several critical purposes in systems engineering:
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
-flowchart TB
-    subgraph RequirementsDiagram [Requirements Diagram Overview]
-        BR[Business Req]
-        SR1[System Req]
-        SR2[System Req]
-        BLK[Component]
-    end
+requirementDiagram
 
-    BR -->|《deriveReqt》| SR1
-    SR2 -->|《satisfy》| BLK
+    requirement Business_Req {
+        id: BR_001
+        text: "Business requirement"
+        risk: high
+        verifymethod: analysis
+    }
 
-    classDef req fill:#1a237e,stroke:#7986cb,color:#fff
-    classDef block fill:#1b5e20,stroke:#81c784,color:#fff
+    requirement System_Req1 {
+        id: SR_001
+        text: "System requirement 1"
+        risk: medium
+        verifymethod: test
+    }
 
-    class BR,SR1,SR2 req
-    class BLK block
+    requirement System_Req2 {
+        id: SR_002
+        text: "System requirement 2"
+        risk: medium
+        verifymethod: test
+    }
+
+    element Component {
+        type: Block
+    }
+
+    System_Req1 - derives -> Business_Req
+    Component - satisfies -> System_Req2
 ```
 
 ---
@@ -91,44 +104,170 @@ flowchart LR
 
 ---
 
-## 3. Requirement Element
+## 3. Mermaid Requirement Diagram Syntax
 
-### Structure
+Mermaid provides native support for requirement diagrams following SysML v1.6 specifications.
 
-A requirement element in SysML is represented as a rectangle with stereotype `《requirement》`:
+### Three Components
+
+A requirement diagram has three types of components:
+
+1. **Requirement** - The requirement definition with attributes
+2. **Element** - External elements (blocks, test cases, documents, etc.)
+3. **Relationship** - Connections between requirements and elements
+
+### Basic Structure
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
-flowchart TB
-    subgraph Requirement ["《requirement》<br/>Requirement Name"]
-        direction TB
-        attr1["id = REQ_001"]
-        attr2["text = Description..."]
-        attr3["risk = high"]
-        attr4["verifymethod = test"]
-    end
+requirementDiagram
 
-    classDef req fill:#1a237e,stroke:#7986cb,color:#fff
+    requirement Example_Requirement {
+        id: REQ_001
+        text: "Requirement description"
+        risk: medium
+        verifymethod: test
+    }
 
-    class Requirement req
+    element Example_Element {
+        type: simulation
+    }
+
+    Example_Element - satisfies -> Example_Requirement
+```
+
+### Requirement Types
+
+| Type                     | Description             | Example Use Case                       |
+|:-------------------------|:------------------------|:---------------------------------------|
+| `requirement`            | General requirement     | Overall system requirements            |
+| `functionalRequirement`  | Functional requirement  | Display function, operation function   |
+| `performanceRequirement` | Performance requirement | Response time, throughput              |
+| `interfaceRequirement`   | Interface requirement   | API design, UI components              |
+| `physicalRequirement`    | Physical requirement    | Size, weight, environmental constraints|
+| `designConstraint`       | Design constraint       | Technology stack, architecture limits  |
+
+### Requirement Definition Syntax
+
+```
+<type> user_defined_name {
+    id: user_defined_id
+    text: user_defined_text
+    risk: <risk>
+    verifymethod: <method>
+}
 ```
 
 ### Attributes
 
-| Attribute        | Description                                                | Example Values                                    |
-|:-----------------|:-----------------------------------------------------------|:--------------------------------------------------|
-| **id**           | Unique identifier for the requirement                      | `REQ_001`, `FR_001`, `PR_001`                     |
-| **text**         | Detailed description of what is required                   | "System shall allow users to login"               |
-| **risk**         | Risk level associated with implementing this requirement   | `high`, `medium`, `low`                           |
-| **verifymethod** | Method used to verify the requirement is satisfied         | `test`, `analysis`, `demonstration`, `inspection` |
+**Important: Attribute values are case-insensitive but lowercase is recommended**
+
+| Attribute        | Description                                              | Example Values                                    |
+|:-----------------|:---------------------------------------------------------|:--------------------------------------------------|
+| **id**           | Unique identifier for the requirement                    | `REQ_001`, `FR_001`, `PR_001`                     |
+| **text**         | Detailed description of what is required                 | `"System shall allow users to login"`             |
+| **risk**         | Risk level associated with implementing this requirement | `high`, `medium`, `low`                           |
+| **verifymethod** | Method used to verify the requirement is satisfied       | `test`, `analysis`, `demonstration`, `inspection` |
 
 **Note**: The `id` and `text` attributes are optional. If both are omitted, the compartment can be omitted entirely.
 
+#### Risk Level Values
+
+| Value    | Meaning                                               |
+|:---------|:------------------------------------------------------|
+| `low`    | Low risk (nice to have)                               |
+| `medium` | Medium risk (important but alternatives exist)        |
+| `high`   | High risk (business-critical, difficult to implement) |
+
+#### Verification Method Values
+
+| Value           | Meaning                       | Description                             |
+|:----------------|:------------------------------|:----------------------------------------|
+| `analysis`      | Verification by analysis      | Design review, static analysis          |
+| `inspection`    | Verification by inspection    | Code review, document review            |
+| `test`          | Verification by testing       | Unit test, integration test, E2E test   |
+| `demonstration` | Verification by demonstration | Operation verification on actual device |
+
 ---
 
-## 4. Relationships
+## 4. Element Definition
+
+Elements connect requirements to portions of other documents (blocks, test cases, documents, etc.).
+
+### Element Syntax
+
+```
+element user_defined_name {
+    type: user_defined_type
+    docref: user_defined_ref
+}
+```
+
+### Element Attributes
+
+| Attribute | Description                                 | Example Values                              |
+|:----------|:--------------------------------------------|:--------------------------------------------|
+| `type`    | Type of element (user-defined)              | `simulation`, `Block`, `word doc`, `test suite` |
+| `docref`  | Document reference (optional, user-defined) | `reqs/test_entity`, `github.com/repo`       |
+
+### Element Examples
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+requirementDiagram
+
+    element Test_Suite {
+        type: "test suite"
+        docref: "github.com/project/tests"
+    }
+
+    element Design_Doc {
+        type: "word doc"
+        docref: "docs/design.docx"
+    }
+
+    element IC_Card_Reader {
+        type: Block
+    }
+
+    element Simulation_Model {
+        type: simulation
+        docref: "models/payment.sim"
+    }
+```
+
+---
+
+## 5. Relationships
 
 Requirements diagrams use several relationship types to show how requirements relate to each other and to other model elements.
+
+### Relationship Types
+
+| Relationship | Notation              | Meaning                              |
+|:-------------|:----------------------|:-------------------------------------|
+| `contains`   | `A - contains -> B`   | A contains B (parent-child)          |
+| `copies`     | `A - copies -> B`     | A copies from B                      |
+| `derives`    | `A - derives -> B`    | A derives from B                     |
+| `satisfies`  | `A - satisfies -> B`  | A satisfies requirement B            |
+| `verifies`   | `A - verifies -> B`   | A verifies requirement B             |
+| `refines`    | `A - refines -> B`    | A refines requirement B              |
+| `traces`     | `A - traces -> B`     | A traces to B                        |
+
+### Bidirectional Notation
+
+Relationships can be written in either direction:
+
+```
+{source} - <type> -> {destination}
+{destination} <- <type> - {source}
+```
+
+Both are equivalent:
+```
+test_entity - satisfies -> test_req
+test_req <- satisfies - test_entity
+```
 
 ### Containment
 
@@ -136,17 +275,25 @@ Requirements diagrams use several relationship types to show how requirements re
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
-flowchart TB
-    Parent["《requirement》<br/>Parent"]
-    Child1["《requirement》<br/>Child1"]
-    Child2["《requirement》<br/>Child2"]
+requirementDiagram
 
-    Parent --- Child1
-    Parent --- Child2
+    requirement Parent {
+        id: REQ_001
+        text: "Parent requirement"
+    }
 
-    classDef req fill:#1a237e,stroke:#7986cb,color:#fff
+    requirement Child1 {
+        id: REQ_002
+        text: "Child requirement 1"
+    }
 
-    class Parent,Child1,Child2 req
+    requirement Child2 {
+        id: REQ_003
+        text: "Child requirement 2"
+    }
+
+    Parent - contains -> Child1
+    Parent - contains -> Child2
 ```
 
 #### Characteristics
@@ -160,17 +307,31 @@ flowchart TB
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
-flowchart TB
-    PB["《requirement》<br/>Purchase Beverage"]
-    PC["《requirement》<br/>Purchase Cans"]
-    PPB["《requirement》<br/>Purchase Bottles"]
+requirementDiagram
 
-    PB --- PC
-    PB --- PPB
+    requirement Purchase_Beverage {
+        id: REQ_001
+        text: "Users can purchase beverages"
+        risk: high
+        verifymethod: test
+    }
 
-    classDef req fill:#1a237e,stroke:#7986cb,color:#fff
+    requirement Purchase_Cans {
+        id: REQ_002
+        text: "Users can purchase cans"
+        risk: medium
+        verifymethod: test
+    }
 
-    class PB,PC,PPB req
+    requirement Purchase_Bottles {
+        id: REQ_003
+        text: "Users can purchase bottles"
+        risk: medium
+        verifymethod: test
+    }
+
+    Purchase_Beverage - contains -> Purchase_Cans
+    Purchase_Beverage - contains -> Purchase_Bottles
 ```
 
 This diagram states: "A vending machine that can purchase beverages MUST be able to purchase both cans AND bottles." These three requirements exist as an indivisible unit.
@@ -179,69 +340,426 @@ This diagram states: "A vending machine that can purchase beverages MUST be able
 
 ### Derive Dependency
 
-**Derive** (`《deriveReqt》`) indicates that one requirement is derived from another, more abstract requirement.
+**Derive** (`derives`) indicates that one requirement is derived from another, more abstract requirement.
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
-flowchart TB
-    B["《requirement》<br/>B (Concrete)<br/>← Source"]
-    A["《requirement》<br/>A (Abstract)<br/>← Target"]
+requirementDiagram
 
-    B -->|《deriveReqt》| A
+    requirement Concrete_Req {
+        id: REQ_002
+        text: "Concrete requirement (Source)"
+    }
 
-    classDef req fill:#1a237e,stroke:#7986cb,color:#fff
+    requirement Abstract_Req {
+        id: REQ_001
+        text: "Abstract requirement (Target)"
+    }
 
-    class B,A req
+    Concrete_Req - derives -> Abstract_Req
 ```
 
 #### Arrow Direction Semantics
 
 The arrow direction may seem counterintuitive, but it represents dependency:
 
-- **Changes to A affect B**: If the abstract requirement A changes, the concrete requirement B must also change
-- **Changes to B do NOT affect A**: There may be multiple ways to concretize A, so changing B doesn't change what A states
+- **Changes to Abstract affect Concrete**: If the abstract requirement changes, the concrete requirement must also change
+- **Changes to Concrete do NOT affect Abstract**: There may be multiple ways to concretize, so changing concrete doesn't change what abstract states
 
 #### Example: Payment Methods
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
-flowchart TB
-    Cash["《requirement》<br/>Cash Payment"]
-    EMoney["《requirement》<br/>E-money Payment"]
-    Pay["《requirement》<br/>Pay for Item"]
+requirementDiagram
 
-    Cash -->|《deriveReqt》| Pay
-    EMoney -->|《deriveReqt》| Pay
+    requirement Cash_Payment {
+        id: FR_001
+        text: "Accept cash payment"
+    }
 
-    classDef req fill:#1a237e,stroke:#7986cb,color:#fff
+    requirement EMoney_Payment {
+        id: FR_002
+        text: "Accept e-money payment"
+    }
 
-    class Cash,EMoney,Pay req
+    requirement Pay_for_Item {
+        id: REQ_001
+        text: "Users can pay for items"
+    }
+
+    Cash_Payment - derives -> Pay_for_Item
+    EMoney_Payment - derives -> Pay_for_Item
 ```
 
 "Pay for Item" is concretely realized by either "Cash Payment" or "E-money Payment".
 
-#### Business vs System Requirements
+---
 
-System requirements are typically derived from business requirements:
+### Refine Dependency
+
+**Refine** (`refines`) connects requirements to Use Cases or more detailed requirements, showing how a requirement will be realized.
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
-flowchart TB
-    SysReq["《requirement》<br/>System Req"]
-    BizReq["《requirement》<br/>Business Req"]
+requirementDiagram
 
-    SysReq -->|《deriveReqt》| BizReq
+    requirement Detail_Req {
+        id: REQ_002
+        text: "Detailed requirement"
+    }
 
-    classDef req fill:#1a237e,stroke:#7986cb,color:#fff
+    requirement High_Level_Req {
+        id: REQ_001
+        text: "High-level requirement"
+    }
 
-    class SysReq,BizReq req
+    Detail_Req - refines -> High_Level_Req
+```
+
+#### Purpose
+
+- **Clarify realization**: Shows what behavior realizes the requirement
+- **Verify completeness**: Confirm detailed requirements are neither excessive nor insufficient
+- High-level requirements state WHAT; detailed requirements describe HOW
+
+---
+
+### Satisfy Dependency
+
+**Satisfy** (`satisfies`) connects design elements to requirements, showing which component realizes the requirement.
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+requirementDiagram
+
+    requirement EMoney_Payment {
+        id: FR_002
+        text: "Accept e-money payment"
+        risk: medium
+        verifymethod: test
+    }
+
+    element IC_Card_Reader {
+        type: Block
+        docref: "hardware/ic-reader.md"
+    }
+
+    IC_Card_Reader - satisfies -> EMoney_Payment
+```
+
+#### Purpose
+
+- **Traceability**: Explicitly shows which hardware/software elements realize requirements
+- **Impact analysis**: Clarifies scope of impact when requirements change
+- **Verification**: Confirms all necessary elements are modeled
+
+---
+
+### Verify Dependency
+
+**Verify** (`verifies`) connects test cases to requirements, showing how requirements will be tested.
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+requirementDiagram
+
+    requirement Login_Requirement {
+        id: FR_001
+        text: "Users can login"
+        risk: high
+        verifymethod: test
+    }
+
+    element Login_Test_Suite {
+        type: "test suite"
+        docref: "tests/auth/login.test.ts"
+    }
+
+    Login_Test_Suite - verifies -> Login_Requirement
 ```
 
 ---
 
-### Rationale
+### Trace Dependency
 
-**Rationale** (`《rationale》`) documents WHY a requirement exists. Without rationale, the reason for a requirement may be forgotten during development.
+**Trace** (`traces`) shows a general traceability relationship between requirements, useful when no more specific relationship applies.
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+requirementDiagram
+
+    requirement Requirement_A {
+        id: REQ_001
+        text: "Requirement A"
+    }
+
+    requirement Requirement_B {
+        id: REQ_002
+        text: "Requirement B"
+    }
+
+    Requirement_A - traces -> Requirement_B
+```
+
+---
+
+### Copies Dependency
+
+**Copies** (`copies`) indicates that one requirement is copied from another source.
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+requirementDiagram
+
+    requirement Original_Req {
+        id: REQ_001
+        text: "Original requirement"
+    }
+
+    requirement Copied_Req {
+        id: REQ_002
+        text: "Copied requirement"
+    }
+
+    Copied_Req - copies -> Original_Req
+```
+
+---
+
+## 6. Styling Requirement Diagrams
+
+> **Note**: Native styling (`style`, `classDef`, `direction`) in `requirementDiagram` is **not yet supported** in most Mermaid renderers (including GitHub). Use `flowchart` for styled requirement visualizations.
+
+### Using Flowchart for Styled Requirements
+
+For styled requirements with custom colors, use `flowchart` instead:
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+flowchart TB
+    REQ1["《requirement》<br/>High Risk Requirement<br/>id: REQ_001"]
+    REQ2["《requirement》<br/>Low Risk Requirement<br/>id: REQ_002"]
+    ELEM["《element》<br/>Implementation Component"]
+
+    ELEM -->|satisfies| REQ1
+    REQ2 -->|derives| REQ1
+
+    classDef important fill:#bf360c,stroke:#ff8a65,color:#fff,stroke-width:2px
+    classDef normal fill:#1a237e,stroke:#7986cb,color:#fff
+    classDef element fill:#1b5e20,stroke:#81c784,color:#fff
+
+    class REQ1 important
+    class REQ2 normal
+    class ELEM element
+```
+
+### Recommended Dark Theme Color Palette
+
+| Element Type    | Fill Color | Stroke Color | Text Color |
+|:----------------|:-----------|:-------------|:-----------|
+| Requirement     | `#1a237e`  | `#7986cb`    | `#fff`     |
+| Use Case        | `#bf360c`  | `#ff8a65`    | `#fff`     |
+| Block/Component | `#1b5e20`  | `#81c784`    | `#fff`     |
+| Actor           | `#4a148c`  | `#ba68c8`    | `#fff`     |
+| Test Case       | `#006064`  | `#4dd0e1`    | `#fff`     |
+| Rationale       | `#f57f17`  | `#ffee58`    | `#000`     |
+
+---
+
+## 8. Markdown Formatting in Text
+
+Text fields support markdown formatting inside quotes:
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+requirementDiagram
+
+    requirement Formatted_Req {
+        id: REQ_001
+        text: "*italicized* and **bold** text supported"
+        risk: medium
+        verifymethod: test
+    }
+```
+
+**Note**: Use quotes for text containing special characters or markdown.
+
+---
+
+## 9. Common Mistakes
+
+| Incorrect                       | Correct                              | Explanation                           |
+|:--------------------------------|:-------------------------------------|:--------------------------------------|
+| `risk: High`                    | `risk: high`                         | Attribute values in lowercase         |
+| `verifymethod: Test`            | `verifymethod: test`                 | Attribute values in lowercase         |
+| `text: description with space`  | `text: "description with space"`     | Use quotes for multi-word text        |
+| `requirement name with space`   | `requirement_name_with_underscore`   | No spaces in names (use underscores)  |
+| `A -> satisfies -> B`           | `A - satisfies -> B`                 | Use single dash before relationship   |
+| `A - satisfies - B`             | `A - satisfies -> B`                 | Must include arrow `->` at end        |
+| `A - Satisfies -> B`            | `A - satisfies -> B`                 | Relationship names in lowercase       |
+| Unquoted text with keywords     | `text: "the analysis result"`        | Quote text containing keywords        |
+
+---
+
+## 10. Complete Examples
+
+### Comprehensive Requirement Diagram
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+requirementDiagram
+
+    requirement Task_Management {
+        id: REQ_001
+        text: "System shall manage tasks"
+        risk: high
+        verifymethod: test
+    }
+
+    functionalRequirement Create_Task {
+        id: FR_001
+        text: "User can create tasks"
+        risk: medium
+        verifymethod: test
+    }
+
+    functionalRequirement Edit_Task {
+        id: FR_002
+        text: "User can edit tasks"
+        risk: medium
+        verifymethod: test
+    }
+
+    performanceRequirement Response_Time {
+        id: PR_001
+        text: "Response time under 2 seconds"
+        risk: low
+        verifymethod: demonstration
+    }
+
+    interfaceRequirement API_Design {
+        id: IR_001
+        text: "RESTful API endpoints"
+        risk: medium
+        verifymethod: inspection
+    }
+
+    designConstraint Tech_Stack {
+        id: DC_001
+        text: "Use TypeScript and React"
+        risk: low
+        verifymethod: analysis
+    }
+
+    element TaskService {
+        type: Block
+        docref: "src/services/TaskService.ts"
+    }
+
+    element TaskAPI_Test {
+        type: "test suite"
+        docref: "tests/api/task.test.ts"
+    }
+
+    element Performance_Test {
+        type: "test suite"
+        docref: "tests/performance/response.test.ts"
+    }
+
+    Task_Management - contains -> Create_Task
+    Task_Management - contains -> Edit_Task
+    Task_Management - contains -> Response_Time
+    Create_Task - derives -> API_Design
+    API_Design - refines -> Tech_Stack
+    TaskService - satisfies -> Create_Task
+    TaskService - satisfies -> Edit_Task
+    TaskService - satisfies -> API_Design
+    TaskAPI_Test - verifies -> Create_Task
+    TaskAPI_Test - verifies -> Edit_Task
+    Performance_Test - verifies -> Response_Time
+```
+
+### Vending Machine Requirements
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+requirementDiagram
+
+    requirement Purchase_Beverage {
+        id: REQ_001
+        text: "Users can purchase beverages"
+        risk: high
+        verifymethod: test
+    }
+
+    functionalRequirement Select_Item {
+        id: FR_001
+        text: "Users can select items"
+        risk: medium
+        verifymethod: test
+    }
+
+    functionalRequirement Pay_for_Item {
+        id: FR_002
+        text: "Users can pay for items"
+        risk: high
+        verifymethod: test
+    }
+
+    functionalRequirement Cash_Payment {
+        id: FR_003
+        text: "Accept cash payment"
+        risk: low
+        verifymethod: test
+    }
+
+    functionalRequirement EMoney_Payment {
+        id: FR_004
+        text: "Accept e-money payment"
+        risk: medium
+        verifymethod: test
+    }
+
+    element Display_Panel {
+        type: Block
+        docref: "hardware/display.md"
+    }
+
+    element IC_Card_Reader {
+        type: Block
+        docref: "hardware/ic-reader.md"
+    }
+
+    element Cash_Unit {
+        type: Block
+        docref: "hardware/cash-unit.md"
+    }
+
+    element Payment_Tests {
+        type: "test suite"
+        docref: "tests/payment.test.ts"
+    }
+
+    Purchase_Beverage - contains -> Select_Item
+    Purchase_Beverage - contains -> Pay_for_Item
+    Cash_Payment - derives -> Pay_for_Item
+    EMoney_Payment - derives -> Pay_for_Item
+    Display_Panel - satisfies -> Select_Item
+    Cash_Unit - satisfies -> Cash_Payment
+    IC_Card_Reader - satisfies -> EMoney_Payment
+    Payment_Tests - verifies -> Cash_Payment
+    Payment_Tests - verifies -> EMoney_Payment
+```
+
+---
+
+## 11. Flowchart Alternative Representation
+
+When requirement diagrams need more visual flexibility, use `flowchart` as an alternative:
+
+### Rationale Element
+
+**Rationale** documents WHY a requirement exists:
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
@@ -258,38 +776,9 @@ flowchart LR
     class Rat rationale
 ```
 
-#### Benefits of Rationale
+### Use Case Refinement
 
-Recording rationale helps prevent incorrect implementation. In this example, e-money is needed for user convenience. From this rationale, we can judge that "a payment method requiring pre-registration does NOT satisfy this requirement" because it doesn't improve convenience.
-
----
-
-### Refine Dependency
-
-**Refine** (`《refine》`) connects requirements to Use Cases, showing how a requirement will be realized through system behavior.
-
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-flowchart TB
-    UC(["Use Case<br/>(Oval shape)"])
-    Req["《requirement》<br/>Requirement"]
-
-    UC -->|《refine》| Req
-
-    classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
-    classDef req fill:#1a237e,stroke:#7986cb,color:#fff
-
-    class UC usecase
-    class Req req
-```
-
-#### Purpose
-
-- **Clarify realization**: Shows what behavior (use case) realizes the requirement
-- **Verify completeness**: Confirm use cases are neither excessive nor insufficient
-- Requirements state WHAT the system must do; Use Cases describe HOW
-
-#### Example: Beverage Purchase
+Connect use cases to requirements using `《refine》`:
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
@@ -308,159 +797,11 @@ flowchart TB
     class Req req
 ```
 
-To purchase a beverage, users must "Select Item" and "Buy Item" - these use cases refine the requirement.
-
 ---
 
-### Satisfy Dependency
+## References
 
-**Satisfy** (`《satisfy》`) connects requirements to Blocks (design elements), showing which component realizes the requirement.
-
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-flowchart TB
-    Block["《block》<br/>Component"]
-    Req["《requirement》<br/>Requirement"]
-
-    Block -->|《satisfy》| Req
-
-    classDef block fill:#1b5e20,stroke:#81c784,color:#fff
-    classDef req fill:#1a237e,stroke:#7986cb,color:#fff
-
-    class Block block
-    class Req req
-```
-
-#### Purpose
-
-- **Traceability**: Explicitly shows which hardware/software elements realize requirements
-- **Impact analysis**: Clarifies scope of impact when requirements change
-- **Verification**: Confirms all necessary blocks are modeled
-
-#### Example: E-money Payment
-
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-flowchart TB
-    ICReader["《block》<br/>IC Card Reader"]
-    EMoneyReq["《requirement》<br/>E-money Payment"]
-
-    ICReader -->|《satisfy》| EMoneyReq
-
-    classDef block fill:#1b5e20,stroke:#81c784,color:#fff
-    classDef req fill:#1a237e,stroke:#7986cb,color:#fff
-
-    class ICReader block
-    class EMoneyReq req
-```
-
-This diagram shows:
-- IC Card Reader is needed to satisfy E-money Payment requirement
-- If the E-money Payment requirement changes (e.g., more e-money types), IC Card Reader must also change
-- For a machine without E-money Payment requirement, IC Card Reader is not needed
-
----
-
-### Verify Dependency
-
-**Verify** (`《verify》`) connects test cases to requirements, showing how requirements will be tested.
-
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-flowchart TB
-    TC["Test Case"]
-    Req["《requirement》<br/>Requirement"]
-
-    TC -->|《verify》| Req
-
-    classDef testcase fill:#006064,stroke:#4dd0e1,color:#fff
-    classDef req fill:#1a237e,stroke:#7986cb,color:#fff
-
-    class TC testcase
-    class Req req
-```
-
----
-
-### Trace Dependency
-
-**Trace** (`《trace》`) shows a general traceability relationship between requirements, useful when no more specific relationship applies.
-
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-flowchart TB
-    ReqA["《requirement》<br/>Requirement A"]
-    ReqB["《requirement》<br/>Requirement B"]
-
-    ReqA -->|《trace》| ReqB
-
-    classDef req fill:#1a237e,stroke:#7986cb,color:#fff
-
-    class ReqA,ReqB req
-```
-
----
-
-## 5. Mermaid Syntax Reference
-
-Mermaid supports requirement diagrams with the following syntax.
-
-### Requirement Types
-
-| Type                     | Description             | Example                                    |
-|:-------------------------|:------------------------|:-------------------------------------------|
-| `requirement`            | General requirement     | Overall system requirements                |
-| `functionalRequirement`  | Functional requirement  | Display function, operation function       |
-| `performanceRequirement` | Performance requirement | Response time, throughput                  |
-| `interfaceRequirement`   | Interface requirement   | API design, UI components                  |
-| `designConstraint`       | Design constraint       | Technology stack, architecture constraints |
-
-### Attributes
-
-- **id**: Unique identifier for requirement (e.g., `REQ_001`, `FR_001`, `PR_001`)
-- **text**: Requirement description
-- **risk**: Risk level (`high`, `medium`, `low`) *written in lowercase*
-- **verifymethod**: Verification method (`test`, `analysis`, `demonstration`, `inspection`) *written in lowercase*
-
-### Relationship Notation
-
-| Relationship | Notation                                 | Meaning                                                 |
-|:-------------|:-----------------------------------------|:--------------------------------------------------------|
-| `contains`   | `Parent Req - contains -> Child Req`     | Containment (parent contains child)                     |
-| `derives`    | `Concrete Req - derives -> Abstract Req` | Derivation (concrete requirement derives from abstract) |
-| `satisfies`  | `Implementation - satisfies -> Req`      | Satisfaction (implementation satisfies requirement)     |
-| `verifies`   | `Test Case - verifies -> Req`            | Verification (test verifies requirement)                |
-| `refines`    | `Detailed Req - refines -> Req`          | Refinement (defines requirement in more detail)         |
-| `traces`     | `Req A - traces -> Req B`                | Traceability (shows traceability between requirements)  |
-
-### Example Mermaid Diagram
-
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-requirementDiagram
-
-    requirement Purchase_Beverage {
-        id: "REQ_001"
-        text: "Users can purchase beverages"
-        risk: medium
-        verifymethod: test
-    }
-
-    functionalRequirement Select_Item {
-        id: "FR_001"
-        text: "Users can select items"
-    }
-
-    functionalRequirement Pay_for_Item {
-        id: "FR_002"
-        text: "Users can pay for items"
-    }
-
-    element IC_Card_Reader {
-        type: "Block"
-    }
-
-    Purchase_Beverage - contains -> Select_Item
-    Purchase_Beverage - contains -> Pay_for_Item
-    IC_Card_Reader - satisfies -> Pay_for_Item
-```
+- [Mermaid Official Documentation](https://mermaid.js.org/)
+- [Mermaid Requirement Diagram](https://mermaid.js.org/syntax/requirementDiagram.html)
+- [SysML v1.6 Specification](https://www.omg.org/spec/SysML/1.6/)
+- [Mermaid Live Editor](https://mermaid.live/)

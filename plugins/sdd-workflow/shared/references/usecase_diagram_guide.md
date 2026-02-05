@@ -252,6 +252,48 @@ flowchart TB
 
 ---
 
+### Generalization (Inheritance)
+
+**Generalization** shows inheritance relationships between actors or use cases.
+
+#### Actor Generalization
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+flowchart TB
+    User((User))
+    Admin((Admin))
+    Guest((Guest))
+
+    Admin --> User
+    Guest --> User
+
+    classDef actor fill:#4a148c,stroke:#ba68c8,color:#fff
+
+    class User,Admin,Guest actor
+```
+
+This shows that Admin and Guest are specialized types of User, inheriting the base actor's capabilities.
+
+#### Use Case Generalization
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+flowchart TB
+    Pay(["Pay"])
+    PayCash(["Pay with Cash"])
+    PayCard(["Pay with Card"])
+
+    PayCash --> Pay
+    PayCard --> Pay
+
+    classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
+
+    class Pay,PayCash,PayCard usecase
+```
+
+---
+
 ## 3. Use Case Diagram & Requirements Diagram
 
 ### Relationship Between Diagrams
@@ -289,7 +331,62 @@ flowchart TB
 
 ---
 
-## 4. Mermaid Implementation Guide
+## 4. Use Case Diagram & Sequence Diagram
+
+### Relationship Between Diagrams
+
+Use cases describe WHAT the system does. **Sequence diagrams** describe HOW those use cases are executed by showing the interaction between objects over time.
+
+### Linking Use Cases to Sequences
+
+Each use case can be detailed with one or more sequence diagrams:
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+flowchart LR
+    UC(["Buy Item"])
+    SD1["Sequence:<br/>Normal Flow"]
+    SD2["Sequence:<br/>Alternative Flow"]
+    SD3["Sequence:<br/>Error Flow"]
+
+    UC --> SD1
+    UC --> SD2
+    UC --> SD3
+
+    classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
+    classDef seq fill:#006064,stroke:#4dd0e1,color:#fff
+
+    class UC usecase
+    class SD1,SD2,SD3 seq
+```
+
+### Example: Buy Item Sequence
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+sequenceDiagram
+    autonumber
+    actor Consumer
+    participant VM as Vending Machine
+    participant PS as Payment System
+
+    Consumer->>VM: Select Item
+    VM->>VM: Check Availability
+    alt Item Available
+        VM-->>Consumer: Display Price
+        Consumer->>VM: Insert Payment
+        VM->>PS: Process Payment
+        PS-->>VM: Payment Confirmed
+        VM->>VM: Dispense Item
+        VM-->>Consumer: Item Dispensed
+    else Item Not Available
+        VM-->>Consumer: Show Error
+    end
+```
+
+---
+
+## 5. Mermaid Implementation Guide
 
 ### Mermaid Constraints
 
@@ -302,7 +399,10 @@ Mermaid does **NOT** have native support for use case diagrams. Use `flowchart` 
 | Direction | Description   | Use Case                        |
 |:----------|:--------------|:--------------------------------|
 | `TB`      | Top to Bottom | Standard vertical layout        |
+| `TD`      | Top Down      | Same as TB                      |
+| `BT`      | Bottom to Top | Reverse vertical flow           |
 | `LR`      | Left to Right | Horizontal layout (recommended) |
+| `RL`      | Right to Left | Reverse horizontal flow         |
 
 #### Actor Representation
 
@@ -321,7 +421,7 @@ flowchart LR
 
 #### Use Case Representation
 
-Use stadium shape `([ ])` for oval-like nodes representing use cases (or brackets `[ ]` for rectangles):
+Use stadium shape `([ ])` for oval-like nodes representing use cases:
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
@@ -358,6 +458,35 @@ flowchart LR
 
     class User actor
     class UC1,UC2,UC3 usecase
+```
+
+### Link Types
+
+| Type              | Syntax            | Description                    |
+|:------------------|:------------------|:-------------------------------|
+| Arrow             | `-->`             | Standard directed link         |
+| Open link         | `---`             | Undirected connection          |
+| Dotted arrow      | `-.->`            | Dependency, optional           |
+| Dotted line       | `-.-`             | Weak connection                |
+| Thick arrow       | `==>`             | Strong/main flow               |
+| Thick line        | `===`             | Strong undirected              |
+
+### Link Labels
+
+Add text to links using `|text|` syntax:
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+flowchart LR
+    A((Actor)) -->|uses| B(["Use Case"])
+    B -. include .-> C(["Included"])
+    D(["Extending"]) -. extend .-> B
+
+    classDef actor fill:#4a148c,stroke:#ba68c8,color:#fff
+    classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
+
+    class A actor
+    class B,C,D usecase
 ```
 
 ### Relationships
@@ -410,7 +539,62 @@ flowchart LR
 
 **Direction**: Arrow points from extending use case **to** base use case.
 
-### Complete Example
+---
+
+## 6. Styling
+
+### Using classDef
+
+Define reusable styles with `classDef`:
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+flowchart LR
+    User((User))
+    UC1(["Primary Use Case"])
+    UC2(["Secondary Use Case"])
+
+    User --> UC1
+    User --> UC2
+
+    classDef actor fill:#4a148c,stroke:#ba68c8,color:#fff
+    classDef primary fill:#bf360c,stroke:#ff8a65,color:#fff,stroke-width:2px
+    classDef secondary fill:#bf360c,stroke:#ff8a65,color:#fff,stroke-dasharray:5
+
+    class User actor
+    class UC1 primary
+    class UC2 secondary
+```
+
+### Inline Class Application
+
+Apply classes inline using `:::`:
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+flowchart LR
+    User((User)):::actor --> UC(["Action"]):::usecase
+
+    classDef actor fill:#4a148c,stroke:#ba68c8,color:#fff
+    classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
+```
+
+### Recommended Dark Theme Color Palette
+
+| Element Type    | Fill Color | Stroke Color | Text Color |
+|:----------------|:-----------|:-------------|:-----------|
+| Actor           | `#4a148c`  | `#ba68c8`    | `#fff`     |
+| Use Case        | `#bf360c`  | `#ff8a65`    | `#fff`     |
+| Requirement     | `#1a237e`  | `#7986cb`    | `#fff`     |
+| Block/Component | `#1b5e20`  | `#81c784`    | `#fff`     |
+| Test Case       | `#006064`  | `#4dd0e1`    | `#fff`     |
+| Rationale       | `#f57f17`  | `#ffee58`    | `#000`     |
+
+---
+
+## 7. Complete Examples
+
+### Task Management System
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
@@ -448,61 +632,119 @@ flowchart LR
     class UC1,UC2,UC3,UC4,UC5,UC6,UC7 usecase
 ```
 
-### Common Mistakes
+### E-Commerce System
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+flowchart TB
+    Customer((Customer))
+    Guest((Guest))
+    PaymentGateway((Payment<br/>Gateway))
+
+    subgraph ECommerce [E-Commerce System]
+        subgraph Browse [Browsing]
+            UC1(["Browse Products"])
+            UC2(["Search Products"])
+            UC3(["View Product Details"])
+        end
+
+        subgraph Cart [Shopping Cart]
+            UC4(["Add to Cart"])
+            UC5(["Update Cart"])
+            UC6(["Remove from Cart"])
+        end
+
+        subgraph Checkout [Checkout Process]
+            UC7(["Checkout"])
+            UC8(["Apply Discount"])
+            UC9(["Process Payment"])
+        end
+
+        UC10(["Login"])
+    end
+
+    Customer --> UC1
+    Customer --> UC4
+    Customer --> UC7
+    Guest --> UC1
+    Guest --> UC2
+
+    UC4 -. include .-> UC10
+    UC7 -. include .-> UC9
+    UC8 -. extend .-> UC7
+    UC9 --> PaymentGateway
+
+    classDef actor fill:#4a148c,stroke:#ba68c8,color:#fff
+    classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
+
+    class Customer,Guest,PaymentGateway actor
+    class UC1,UC2,UC3,UC4,UC5,UC6,UC7,UC8,UC9,UC10 usecase
+```
+
+### With Requirements Traceability
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+flowchart TB
+    subgraph Requirements [Requirements]
+        REQ1["《requirement》<br/>User Authentication"]
+        REQ2["《requirement》<br/>Task Management"]
+    end
+
+    subgraph UseCases [Use Cases]
+        UC1(["Login"])
+        UC2(["Register"])
+        UC3(["Create Task"])
+        UC4(["Edit Task"])
+    end
+
+    UC1 -->|《refine》| REQ1
+    UC2 -->|《refine》| REQ1
+    UC3 -->|《refine》| REQ2
+    UC4 -->|《refine》| REQ2
+
+    classDef req fill:#1a237e,stroke:#7986cb,color:#fff
+    classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
+
+    class REQ1,REQ2 req
+    class UC1,UC2,UC3,UC4 usecase
+```
+
+---
+
+## 8. Common Mistakes
 
 | Incorrect                          | Correct                            | Explanation                                   |
 |:-----------------------------------|:-----------------------------------|:----------------------------------------------|
 | `User((User))` without `flowchart` | `flowchart LR` then `User((User))` | Must declare diagram type first               |
 | `--include-->`                     | `-. include .->`                   | Use dotted line syntax for stereotypes        |
-| `<<include>>`                      | `include`                          | Mermaid doesn't support UML stereotype        |
+| `<<include>>`                      | `include`                          | Mermaid doesn't support UML stereotype syntax |
 | `Actor[User]`                      | `User((User))`                     | Use `(( ))` for actors, `([ ])` for use cases |
 | `UC1 -. include .-> UC2` (extend)  | `UC2 -. extend .-> UC1`            | Extend arrow goes FROM extending TO base      |
 | `system { ... }`                   | `subgraph System [ ... ] ... end`  | Use subgraph for system boundary              |
-| Spaces in node names               | Use underscores or camelCase       | `Create Task` → `CreateTask`                  |
+| Spaces in node names               | Use underscores or camelCase       | `Create Task` → `CreateTask` or `Create_Task` |
 | Missing `end` for subgraph         | Always close with `end`            | Each `subgraph` must have matching `end`      |
+| `-.include.->`                     | `-. include .->`                   | Spaces required around label                  |
+| `User -> UC`                       | `User --> UC`                      | Use double dash for arrows in flowchart       |
 
-### Style Tips
+---
 
-#### Adding Descriptions
-
-Use node text for brief descriptions:
-
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-flowchart LR
-    UC1(["Create Task<br/>Add new task with details"])
-
-    classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
-
-    class UC1 usecase
-```
-
-#### Grouping Related Use Cases
-
-Use nested subgraphs for categorization:
-
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-flowchart LR
-    subgraph System [Application]
-        subgraph Auth [Authentication]
-            UC1(["Login"])
-            UC2(["Logout"])
-        end
-        subgraph Tasks [Task Management]
-            UC3(["Create Task"])
-            UC4(["Delete Task"])
-        end
-    end
-
-    classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
-
-    class UC1,UC2,UC3,UC4 usecase
-```
-
-### Limitations
+## 9. Limitations
 
 1. **No native use case shape**: Mermaid uses stadium `([ ])` or rectangles `[ ]` instead of true ovals
-2. **No generalization arrows**: Actor/use case inheritance not directly supported
+2. **No generalization arrows**: Actor/use case inheritance requires workarounds with solid arrows
 3. **Limited styling**: Use CSS classes for custom styling if needed
 4. **Label positioning**: Stereotype labels (`include`, `extend`) appear on the line, not above it
+5. **No extension points**: Cannot specify extension points in extend relationships
+6. **No notes on actors**: Notes can only be attached to nodes, not positioned freely
+
+---
+
+## References
+
+- [Mermaid Official Documentation](https://mermaid.js.org/)
+- [Mermaid Flowchart Syntax](https://mermaid.js.org/syntax/flowchart.html)
+- [Mermaid Sequence Diagram](https://mermaid.js.org/syntax/sequenceDiagram.html)
+- [SysML v1.6 Specification](https://www.omg.org/spec/SysML/1.6/)
+- [Mermaid Live Editor](https://mermaid.live/)
+- [GitHub Mermaid Support](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams)
