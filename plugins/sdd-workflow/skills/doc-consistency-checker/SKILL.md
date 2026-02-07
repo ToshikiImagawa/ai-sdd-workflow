@@ -20,7 +20,7 @@ When reading templates, use the path: `templates/${SDD_LANG:-en}/`
 
 **Before execution, read the AI-SDD principles document.**
 
-AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
+AI-SDD principles document path: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/AI-SDD-PRINCIPLES.md`
 
 **Note**: This file is automatically updated at the start of each session.
 
@@ -39,7 +39,7 @@ Both flat and hierarchical structures are supported.
 **Flat Structure**:
 
 ```
-.sdd/
+${SDD_ROOT}/
 ├── CONSTITUTION.md                        # Project constitution (top-level)
 ├── requirement/{feature-name}.md
 └── specification/
@@ -50,7 +50,7 @@ Both flat and hierarchical structures are supported.
 **Hierarchical Structure**:
 
 ```
-.sdd/
+${SDD_ROOT}/
 ├── CONSTITUTION.md                        # Project constitution (top-level)
 ├── requirement/
 │   ├── {feature-name}.md                  # Top-level feature
