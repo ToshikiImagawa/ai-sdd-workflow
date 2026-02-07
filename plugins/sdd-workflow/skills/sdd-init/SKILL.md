@@ -5,7 +5,7 @@ version: 3.0.0
 license: MIT
 user-invocable: true
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # SDD Init - AI-SDD Workflow Initializer
@@ -17,6 +17,14 @@ Initialize AI-SDD (AI-driven Specification-Driven Development) workflow in the c
 1. **CLAUDE.md Configuration**: Add AI-SDD instructions to project's `CLAUDE.md`
 2. **Project Constitution Generation**: Create `.sdd/CONSTITUTION.md` (if not exist)
 3. **Template Generation**: Create document templates in `.sdd/` directory (if not exist)
+
+## Input
+
+$ARGUMENTS
+
+| Argument | Required | Description                                                                 |
+|:---------|:---------|:----------------------------------------------------------------------------|
+| `--ci`   | -        | CI/non-interactive mode. Auto-approves overwrites, skips user confirmations |
 
 ## Prerequisites
 
@@ -50,14 +58,28 @@ Understand AI-SDD principles.
 
 This command initializes the project following AI-SDD principles.
 
-### Configuration File (Optional)
+### Configuration File Management
 
-You can customize directory names by creating `.sdd-config.json` at project root.
+**Note**: Configuration file management is handled by `init-structure.sh` (Phase 1). The script automatically:
 
-For configuration file details, refer to the "Project Configuration File" section in the AI-SDD principles document.
+1. Checks if `.sdd-config.json` exists at project root
+2. If exists but missing `lang` field: Adds `"lang": "en"` (v3.0.0 migration)
+3. If not exists: Creates with the default configuration:
+   ```json
+   {
+     "root": ".sdd",
+     "lang": "en",
+     "directories": {
+       "requirement": "requirement",
+       "specification": "specification",
+       "task": "task"
+     }
+   }
+   ```
 
-**Note**: If you want to use custom directory names during initialization, create `.sdd-config.json` first. The
-directory structure and CLAUDE.md content will be generated based on configuration values.
+**Note**: The `lang` field determines the language for templates (`en` or `ja`).
+
+**Important**: If you want to use custom directory names, create `.sdd-config.json` **before** running this command.
 
 ### Template Sources
 
@@ -75,33 +97,65 @@ The `SDD_LANG` environment variable determines the language (default: `en`).
 
 ## Execution Flow
 
+**Optimized 2-Phase Execution** (reduces tool calls by 60-70%):
+
+### Phase 1: Shell Script (Static Operations)
+
+Execute `${CLAUDE_PLUGIN_ROOT}/skills/sdd-init/scripts/init-structure.sh` to perform static file operations.
+
+**What the script does:**
+
+1. **Manage Configuration File**:
+    - Check if `.sdd-config.json` exists
+    - If exists but no `lang`: Add `lang: "en"`
+    - If not exists: Create with default config
+
+2. **Ensure Root Directory Exists**:
+    - `mkdir -p .sdd/`
+    - Note: Subdirectories (requirement, specification, task) are created automatically when files are generated
+
+3. **Copy Templates** (if not exist):
+    - PRD_TEMPLATE.md (from `/generate-prd` skill)
+    - SPECIFICATION_TEMPLATE.md (from `/generate-spec` skill)
+    - DESIGN_DOC_TEMPLATE.md (from `/generate-spec` skill)
+    - Note: CONSTITUTION.md is NOT copied - use `/constitution init` to generate a customized version
+
+4. **Cleanup**:
+    - Delete `.sdd/UPDATE_REQUIRED.md` if exists
+
+5. **Export Environment Variables** to `$CLAUDE_ENV_FILE`:
+    - `SDD_ROOT`, `SDD_LANG`, `SDD_*_DIR`, `SDD_*_PATH`
+
+**Script execution:**
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/skills/sdd-init/scripts/init-structure.sh"
 ```
-1. Check current project state
-   |- Does CLAUDE.md exist?
-   |- Does .sdd/ directory exist?
-   |- Does .sdd/CONSTITUTION.md exist?
-   |
-2. Configure CLAUDE.md
-   |- If CLAUDE.md exists: Add AI-SDD Instructions section
-   |- If not exists: Create new CLAUDE.md with AI-SDD Instructions
-   |
-3. Create .sdd/ directory structure
-   |- .sdd/requirement/
-   |- .sdd/specification/
-   |- .sdd/task/
-   |
-4. Generate project constitution (if not exist)
-   |- Check if .sdd/CONSTITUTION.md exists
-   |- If not exist: Generate using /constitution skill's templates/${SDD_LANG:-en}/constitution_template.md
-   |
-5. Check existing templates
-   |- .sdd/PRD_TEMPLATE.md
-   |- .sdd/SPECIFICATION_TEMPLATE.md
-   |- .sdd/DESIGN_DOC_TEMPLATE.md
-   |
-6. Generate missing templates
-   |- Use each skill's templates/${SDD_LANG:-en}/ directory as base
+
+**Note**: The script reads configuration from `.sdd-config.json`
+and uses `$CLAUDE_ENV_FILE` to export variables for Claude's prompt context.
+
+### Phase 2: Update CLAUDE.md
+
+Execute `${CLAUDE_PLUGIN_ROOT}/skills/sdd-init/scripts/update-claude-md.sh` to automatically update CLAUDE.md.
+
+**What the script does:**
+
+1. **Read Plugin Version**: Extract version from `plugin.json`
+2. **Load Template**: Read `templates/${SDD_LANG}/claude_md_template.md` and replace `{PLUGIN_VERSION}`
+3. **Update CLAUDE.md**:
+    - If not exists: Create new CLAUDE.md with AI-SDD Instructions
+    - If exists without AI-SDD section: Append section
+    - If exists with old version: Update section with new version
+    - If exists with current version: Skip (already up to date)
+
+**Script execution:**
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/skills/sdd-init/scripts/update-claude-md.sh"
 ```
+
+**Note**: The script automatically detects the current state and performs the appropriate operation.
 
 ## CLAUDE.md Configuration
 
@@ -134,9 +188,11 @@ Re-running this command will perform the following:
 
 - CLAUDE.md has `## AI-SDD Instructions` section
 - AND `.sdd/AI-SDD-PRINCIPLES.md` doesn't exist
-- OR section title version is older than current plugin version
+- OR a section title version is older than the current plugin version
 
 ## Project Constitution Generation
+
+**Note**: CONSTITUTION.md is NOT generated by `/sdd-init`. Use `/constitution init` instead.
 
 ### What is a Project Constitution?
 
@@ -152,21 +208,29 @@ decisions**.
 
 ### Generation Process
 
-1. Check if `.sdd/CONSTITUTION.md` exists
-2. If not exist, read `/constitution` skill's `templates/${SDD_LANG:-en}/constitution_template.md` and generate
-3. Customize based on project context (language, framework, domain)
+**Use `/constitution init` command** to generate a customized CONSTITUTION.md:
+
+1. Analyzes project context (language, framework, domain)
+2. Generates customized constitution based on analysis
+3. Saves to `.sdd/CONSTITUTION.md`
+
+**Do NOT manually copy** `constitution_template.md` - the template is meant to be customized for your specific project.
 
 ### Constitution Management
 
-Use `/constitution` command to manage the constitution after initialization:
+Use `/constitution` command to manage the constitution:
 
 | Subcommand | Purpose                                       |
 |:-----------|:----------------------------------------------|
+| `init`     | Generate customized constitution file         |
 | `validate` | Verify specs/designs comply with constitution |
 | `add`      | Add new principles                            |
 | `sync`     | Synchronize templates with constitution       |
 
 ## Template Generation
+
+**Note**: Template generation is handled by `init-structure.sh` (Phase 1).
+All templates are copied from skill directories if they don't already exist.
 
 ### Templates to Generate
 
@@ -177,47 +241,35 @@ Use `/constitution` command to manage the constitution after initialization:
 | **Spec Template**        | `.sdd/SPECIFICATION_TEMPLATE.md` | Abstract system specification |
 | **Design Template**      | `.sdd/DESIGN_DOC_TEMPLATE.md`    | Technical design document     |
 
-### Generation Process
+### Generation Process (Automated by Shell Script)
+
+The shell script:
 
 1. **Check Existing Templates**: Skip if template already exists
-2. **Analyze Project Context**:
-    - Detect programming languages used
-    - Identify project structure and conventions
-    - Review existing documentation patterns
-3. **Generate Customized Templates**:
-    - Read base templates from each skill's `templates/${SDD_LANG:-en}/` directory
-    - Customize type syntax for project language (TypeScript, Python, Go, etc.)
-    - Adjust examples based on project domain
+2. **Copy Base Templates**: Copy from each skill's `templates/${SDD_LANG:-en}/` directory
+3. **No Overwrite**: Existing templates are never overwritten (users may have customized them)
 
-### Template Customization Points
-
-Customize during template generation based on project analysis:
-
-| Item                | Customization Content                                                                |
-|:--------------------|:-------------------------------------------------------------------------------------|
-| **Type Syntax**     | Adapt to project's primary language (e.g., TypeScript interfaces, Python type hints) |
-| **Directory Paths** | Reflect project's actual structure in examples                                       |
-| **Domain Examples** | Use relevant examples based on project type (web app, CLI, library, etc.)            |
+**Note**: Templates are copied as-is. For project-specific customization,
+users can manually edit templates after initialization.
 
 ## Post-Initialization Verification
 
-After initialization, verify:
+After Phase 1 and Phase 2 complete:
 
-1. **CLAUDE.md**: Contains AI-SDD Instructions section
-2. **Directory Structure**:
-    - `.sdd/requirement/` exists
-    - `.sdd/specification/` exists
-    - `.sdd/task/` exists
-3. **Project Constitution**: `.sdd/CONSTITUTION.md` exists
-4. **Templates**: All 3 template files exist in `.sdd/`
+1. **CLAUDE.md**: Verify update script output (created/appended/updated/skipped)
+2. **Templates**: Verify init-structure.sh output (created templates)
+3. **Configuration**: Verify `.sdd-config.json` exists
+
+**Note**: Both scripts output their results to stdout. Simply report what the scripts indicate.
+
+**Important**: CONSTITUTION.md is NOT generated by `/sdd-init`. Remind users to run `/constitution init` if they need it.
 
 ## Cleanup
 
-After initialization is complete, perform the following cleanup:
+**Note**: Cleanup is handled by `init-structure.sh` (Phase 1).
 
-1. **Delete warning file**: Delete `.sdd/UPDATE_REQUIRED.md` if it exists
-    - This file is created by the `session-start` hook when version mismatch is detected
-    - It becomes unnecessary after initialization is complete
+The script automatically deletes `.sdd/UPDATE_REQUIRED.md` if it exists. This file is created by the `session-start`
+hook when version mismatch is detected, and becomes unnecessary after initialization.
 
 ## Output
 

@@ -1,29 +1,19 @@
 ## AI-SDD Initialization Complete
 
-### CLAUDE.md
+### Results
 
-- [x] Added AI-SDD Instructions section
+**Phase 1 (Directory Structure & Templates)**:
+{PHASE1_OUTPUT}
 
-### Directory Structure
-
-- [x] Created .sdd/requirement/
-- [x] Created .sdd/specification/
-- [x] Created .sdd/task/
-
-### Project Principles
-
-- [x] Created .sdd/CONSTITUTION.md
-
-### Generated Templates
-
-- [x] .sdd/PRD_TEMPLATE.md
-- [x] .sdd/SPECIFICATION_TEMPLATE.md
-- [x] .sdd/DESIGN_DOC_TEMPLATE.md
+**Phase 2 (CLAUDE.md Update)**:
+{PHASE2_OUTPUT}
 
 ### Next Steps
 
-1. Review `.sdd/CONSTITUTION.md` and customize project principles
-2. Review generated templates and customize as needed
-3. Use `/generate_prd` to create your first PRD
-4. Use `/generate_spec` to create specifications from PRD
-5. Run `/constitution validate` to verify principle compliance
+1. **Review Configuration**: Check `.sdd-config.json` for directory paths and language settings
+2. **Create Constitution**: Run `/constitution init` to generate a customized CONSTITUTION.md
+3. **Customize Templates**: Review and customize templates in `.sdd/` as needed
+4. **Start Development**:
+   - Use `/generate-prd` to create your first PRD
+   - Use `/generate-spec` to create specifications from PRD
+   - Use `/constitution validate` to verify principle compliance

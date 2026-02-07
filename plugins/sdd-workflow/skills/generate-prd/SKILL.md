@@ -4,7 +4,7 @@ description: "Generate PRD (Requirements Specification) in SysML requirements di
 version: 3.0.0
 license: MIT
 user-invocable: true
-allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash
 ---
 
 # Generate PRD - Requirements Specification Generation
@@ -25,10 +25,25 @@ Generates PRD (Requirements Specification) from input business requirements acco
 - `references/mermaid_notation_rules.md` - Requirements diagram notation rules for mermaid
 - `references/requirements_diagram_components.md` - Requirements diagram component definitions
 
-### Template Preparation Flow
+### Template Preparation Flow (Optimized)
 
-1. Use `.sdd/PRD_TEMPLATE.md` (project template) if it exists
-2. If not, read `templates/${SDD_LANG:-en}/prd_template.md` from this skill directory and use it as the base template
+**Phase 1: Shell Script** - Execute `prepare-prd.sh` to pre-load templates and references:
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/skills/generate-prd/scripts/prepare-prd.sh"
+```
+
+This script:
+1. Checks `.sdd/PRD_TEMPLATE.md` (project template) first
+2. If not found, copies `templates/${SDD_LANG}/prd_template.md` to cache
+3. Copies all reference files to cache
+4. Exports environment variables to `$CLAUDE_ENV_FILE`:
+   - `GENERATE_PRD_TEMPLATE` - Path to cached template
+   - `GENERATE_PRD_REFERENCES` - Path to cached references
+
+**Phase 2: Claude** - **MUST read template from cache before generation**
+
+**CRITICAL**: You must explicitly read the template using Read tool. The `prepare-prd.sh` script only prepares the cache - it does NOT automatically inject the template content. Follow the "Template Loading (Required)" section in this document.
 
 ### Language Configuration
 
@@ -160,21 +175,50 @@ Does .sdd/specification/{parent-feature}/{feature-name}_design.md already exist?
 
 ## Output Format
 
-### Template Preparation
+### Template Loading (Required)
 
-Follow these steps to prepare the template:
+**Before PRD generation, you MUST load the template** using one of the following methods:
 
+**Method 1: Use cached template (Recommended - if prepare-prd.sh was executed)**:
+```
+Read: ${GENERATE_PRD_TEMPLATE}
+```
+
+**Method 2: Manual template selection (if cache not available)**:
 1. Check if `.sdd/PRD_TEMPLATE.md` exists
-2. **If exists**: Use that template
-3. **If not exists**: Read `templates/${SDD_LANG:-en}/prd_template.md` from this skill directory and use it as the base
-   template to generate `.sdd/PRD_TEMPLATE.md`
+2. **If exists**: Read `.sdd/PRD_TEMPLATE.md` using Read tool
+3. **If not exists**: Read `templates/${SDD_LANG:-en}/prd_template.md` from this skill directory using Read tool
+
+**Verification after loading**:
+- Confirm template language matches `SDD_LANG` environment variable
+- If mismatch detected, reload correct template
 
 ### Template Application Notes
 
-- Replace template placeholders (`{Feature Name}`, `{Requirement Name}`, etc.) based on input content
-- Sections with `<MUST>` markers are required, `<RECOMMENDED>` are recommended, `<OPTIONAL>` are optional
-- Use SysML requirementDiagram syntax for requirements diagrams
-- Manage requirement IDs (UR-xxx, FR-xxx, NFR-xxx) uniquely
+**IMPORTANT: You must strictly follow the loaded template structure and language**
+
+1. **Structure Compliance**:
+   - Preserve all `<MUST>` sections from template
+   - Include `<RECOMMENDED>` sections whenever possible
+   - Add `<OPTIONAL>` sections as needed
+   - Maintain template's section order and hierarchy
+
+2. **Placeholder Replacement**:
+   - Replace `{Feature Name}`, `{Requirement Name}`, etc. with actual content from input
+   - Preserve template formatting (headers, tables, code blocks)
+
+3. **Language Consistency**:
+   - **CRITICAL**: Generate PRD in the same language as the loaded template
+   - Do not mix languages - if template is in English, entire PRD must be in English
+   - If template is in Japanese, entire PRD must be in Japanese
+
+4. **Diagram Compliance**:
+   - Use SysML requirementDiagram syntax as shown in template
+   - Follow template's diagram structure examples
+
+5. **Requirement ID Management**:
+   - Manage requirement IDs (UR-xxx, FR-xxx, NFR-xxx, etc.) uniquely
+   - Follow template's ID naming conventions
 
 **Save Location**:
 
@@ -187,24 +231,34 @@ Follow these steps to prepare the template:
 ```
 1. Analyze input content
    |
-2. Load project principles (Required)
+2. Load PRD template (Required)
+   |- Read template using Method 1 or Method 2 (see "Template Loading" section)
+   |- Verify template language matches SDD_LANG
+   |- Understand template structure (<MUST>, <RECOMMENDED>, <OPTIONAL> sections)
+   |
+3. Load project principles (Required)
    |- If CONSTITUTION.md exists:
    |   |- Read .sdd/CONSTITUTION.md using Read tool
    |   |- Understand principle categories (B-xxx, A-xxx, D-xxx, T-xxx)
    |- If not exists: Skip (note this in output)
    |
-3. Vibe Coding risk assessment (skip if --ci)
+4. Vibe Coding risk assessment (skip if --ci)
    |- High: Confirm missing info with user -> Resume after response
    |- Medium: Confirm ambiguous points -> Resume after response
    |- Low: Proceed to next step
    |
-4. Check existing documents
+5. Check existing documents
    |- If PRD exists: Confirm overwrite (auto-approve if --ci)
    |- If spec/design exists: Understand impact scope
    |
-5. Generate and save PRD
+6. Generate PRD following loaded template
+   |- Replace placeholders with analyzed content
+   |- Maintain template structure and formatting
+   |- Ensure language consistency with template
    |
-6. Principle compliance check with prd-reviewer (skip if --ci)
+7. Save PRD to appropriate location
+   |
+8. Principle compliance check with prd-reviewer (skip if --ci)
    |- Call prd-reviewer agent
    |- Check CONSTITUTION.md compliance
    |- On violation detection: Review fix proposals and apply approved fixes (main agent)

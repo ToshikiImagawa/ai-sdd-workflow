@@ -2,7 +2,7 @@
   "name": "ai-sdd-workflow",
   "metadata": {
     "description": "AI-driven Specification-Driven Development (AI-SDD) workflow plugin marketplace. Supports multiple languages via SDD_LANG configuration.",
-    "version": "3.0.0"
+    "version": "3.0.1"
   },
   "owner": {
     "name": "toshiki.imagawa",
@@ -13,7 +13,7 @@
       "name": "sdd-workflow",
       "source": "./plugins/sdd-workflow",
       "description": "A unified plugin supporting AI-driven Specification-Driven Development (AI-SDD) workflow. Prevents Vibe Coding problems and achieves high-quality implementations using specifications as the source of truth. Supports multiple languages via SDD_LANG configuration.",
-      "version": "3.0.0",
+      "version": "3.0.1",
       "author": {
         "name": "toshiki.imagawa",
         "url": "https://github.com/ToshikiImagawa"
@@ -33,7 +33,7 @@
       "name": "sdd-workflow-ja",
       "source": "./plugins/sdd-workflow-ja",
       "description": "AI駆動仕様駆動開発（AI-SDD）ワークフローの日本語デフォルトプラグイン。sdd-workflowと同一機能で、SDD_LANGのデフォルトがjaに設定されています。",
-      "version": "3.0.0",
+      "version": "3.0.1",
       "author": {
         "name": "toshiki.imagawa",
         "url": "https://github.com/ToshikiImagawa"

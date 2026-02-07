@@ -75,10 +75,10 @@ graph TB
         Func3[機能3]
     end
 
-    Actor1 --> Func1
-    Actor1 --> Func2
-    Actor2 --> Func3
-    Func1 -. 依存 .-> Func3
+    Actor1 --- Func1
+    Actor1 --- Func2
+    Actor2 --- Func3
+    Func1 -.->|"&lt;&lt;包含&gt;&gt;"| Func3
 ```
 
 ## 2.2. ユースケース図（詳細） `<OPTIONAL>`
@@ -98,10 +98,10 @@ graph TB
         end
     end
 
-    Actor --> UseCase1
-    Actor --> UseCase2
-    UseCase1 -. 拡張 .-> Detail1
-    UseCase1 -. 拡張 .-> Detail2
+    Actor --- UseCase1
+    Actor --- UseCase2
+    Detail1 -.->|"&lt;&lt;拡張&gt;&gt;"| UseCase1
+    Detail2 -.->|"&lt;&lt;拡張&gt;&gt;"| UseCase1
 ```
 
 ## 2.3. 機能一覧（テキスト形式） `<MUST>`

@@ -87,13 +87,16 @@ flowchart LR
 
 Add text to links using `|text|` syntax:
 
+> **Note**: `<` and `>` characters in labels must be escaped using HTML entities.
+> Write `&lt;&lt;include&gt;&gt;` to display `<<include>>` correctly.
+
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
 flowchart LR
     A -->|Yes| B
     A -->|No| C
-    B -. include .-> D
-    C -. extend .-> E
+    B -.->|"&lt;&lt;include&gt;&gt;"| D
+    C -.->|"&lt;&lt;extend&gt;&gt;"| E
 ```
 
 ### Link Length
@@ -127,8 +130,8 @@ flowchart LR
         B[Process 2]
     end
 
-    Actor((Actor)) --> A
-    Actor --> B
+    Actor((Actor)) --- A
+    Actor --- B
 ```
 
 Nested subgraphs are supported:
@@ -954,8 +957,9 @@ flowchart LR
 | `text: description with space`   | `text: "description with space"`   | Use quotes for multi-word text       |
 | `requirement name with space`    | `requirement_name_with_underscore` | No spaces in names (use underscores) |
 | `User((User))` without flowchart | `flowchart LR` then `User((User))` | Must declare diagram type first      |
-| `--include-->`                   | `-. include .->`                   | Use dotted syntax for stereotypes    |
-| `<<include>>`                    | `include` (as label)               | Mermaid doesn't support UML syntax   |
+| `Actor --> UC` (association)     | `Actor --- UC`                     | Use solid line for associations      |
+| `-. include .->`                 | `-.->│"<<include>>"│`              | Use dotted arrow with stereotype     |
+| `-. extend .->`                  | `-.->│"<<extend>>"│`               | Use dotted arrow with stereotype     |
 | Missing `end` for subgraph       | Always close with `end`            | Each subgraph needs matching end     |
 | Spaces in node IDs               | `Create_Task` or `CreateTask`      | Use underscores or camelCase         |
 | Unquoted text with keywords      | `text: "the analysis result"`      | Quote text containing keywords       |
@@ -979,12 +983,12 @@ flowchart LR
         UC4(["Authenticate"])
     end
 
-    User --> UC1
-    User --> UC2
-    Admin --> UC3
-    UC1 -. include .-> UC4
-    UC2 -. include .-> UC4
-    UC3 -. include .-> UC4
+    User --- UC1
+    User --- UC2
+    Admin --- UC3
+    UC1 -.->|"&lt;&lt;include&gt;&gt;"| UC4
+    UC2 -.->|"&lt;&lt;include&gt;&gt;"| UC4
+    UC3 -.->|"&lt;&lt;include&gt;&gt;"| UC4
     classDef actor fill:#4a148c,stroke:#ba68c8,color:#fff
     classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
     class User,Admin actor

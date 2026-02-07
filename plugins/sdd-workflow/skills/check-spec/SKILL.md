@@ -4,7 +4,7 @@ description: "Check consistency between implementation code and design documents
 version: 3.0.0
 license: MIT
 user-invocable: true
-allowed-tools: Read, Glob, Grep, AskUserQuestion
+allowed-tools: Read, Glob, Grep, AskUserQuestion, Bash
 ---
 
 # Check Spec - Design & Implementation Consistency Check
@@ -70,6 +70,25 @@ Replace placeholders with actual file names and counts.
 - User cancels or specifies a particular file -> Re-execute with the specified scope
 
 ## Processing Flow
+
+**Optimized Execution Flow**:
+
+**Phase 1: Shell Script** - Execute `find-design-docs.sh` to scan design documents:
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/skills/check-spec/scripts/find-design-docs.sh" [feature-name]
+```
+
+This script:
+1. Finds all design documents (`*_design.md`) in flat or hierarchical structure
+2. Finds corresponding spec files (`*_spec.md`)
+3. Generates file mapping JSON (design → spec → implementation)
+4. Exports environment variables to `$CLAUDE_ENV_FILE`:
+   - `CHECK_SPEC_DESIGN_FILES` - List of design files
+   - `CHECK_SPEC_SPEC_FILES` - List of spec files
+   - `CHECK_SPEC_MAPPING` - JSON mapping file
+
+**Phase 2: Claude** - Read design docs from pre-scanned lists and perform consistency check
 
 ### 1. Identify Target Documents
 

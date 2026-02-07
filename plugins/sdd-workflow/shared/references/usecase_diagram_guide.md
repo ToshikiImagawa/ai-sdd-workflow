@@ -19,10 +19,10 @@ flowchart LR
         UC4(["Pay with E-money"])
     end
 
-    Consumer --> UC1
-    Consumer --> UC2
-    Consumer --> UC3
-    UC4 --> EMoneySystem
+    Consumer --- UC1
+    Consumer --- UC2
+    Consumer --- UC3
+    UC4 --- EMoneySystem
 
     classDef actor fill:#4a148c,stroke:#ba68c8,color:#fff
     classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
@@ -121,7 +121,7 @@ flowchart LR
         UC(["Use Case"])
     end
 
-    Actor --> UC
+    Actor --- UC
 
     classDef actor fill:#4a148c,stroke:#ba68c8,color:#fff
     classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
@@ -151,7 +151,7 @@ flowchart LR
     Consumer((Consumer))
     UC(["Buy Item"])
 
-    Consumer --> UC
+    Consumer --- UC
 
     classDef actor fill:#4a148c,stroke:#ba68c8,color:#fff
     classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
@@ -183,13 +183,16 @@ When analyzing use cases, you may find:
 
 In these cases, the include relationship helps split use cases for clarity.
 
+> **Note**: In Mermaid, `<` and `>` characters in labels must be escaped using HTML entities.
+> Write `&lt;&lt;include&gt;&gt;` to display `<<include>>` correctly.
+
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
 flowchart TB
     Base(["Base Use Case"])
     Included(["Included Use Case"])
 
-    Base -. include .-> Included
+    Base -.->|"&lt;&lt;include&gt;&gt;"| Included
 
     classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
 
@@ -209,8 +212,8 @@ flowchart TB
     PayCash(["Pay with Cash"])
     PayEMoney(["Pay with E-money"])
 
-    BuyItem -. include .-> PayCash
-    BuyItem -. include .-> PayEMoney
+    BuyItem -.->|"&lt;&lt;include&gt;&gt;"| PayCash
+    BuyItem -.->|"&lt;&lt;include&gt;&gt;"| PayEMoney
 
     classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
 
@@ -231,7 +234,7 @@ flowchart TB
     Extending(["Extending Use Case"])
     Base(["Base Use Case"])
 
-    Extending -. extend .-> Base
+    Extending -.->|"&lt;&lt;extend&gt;&gt;"| Base
 
     classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
 
@@ -449,9 +452,9 @@ flowchart LR
         UC3(["Delete Task"])
     end
 
-    User --> UC1
-    User --> UC2
-    User --> UC3
+    User --- UC1
+    User --- UC2
+    User --- UC3
 
     classDef actor fill:#4a148c,stroke:#ba68c8,color:#fff
     classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
@@ -478,9 +481,9 @@ Add text to links using `|text|` syntax:
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
 flowchart LR
-    A((Actor)) -->|uses| B(["Use Case"])
-    B -. include .-> C(["Included"])
-    D(["Extending"]) -. extend .-> B
+    A((Actor)) ---|uses| B(["Use Case"])
+    B -.->|"&lt;&lt;include&gt;&gt;"| C(["Included"])
+    D(["Extending"]) -.->|"&lt;&lt;extend&gt;&gt;"| B
 
     classDef actor fill:#4a148c,stroke:#ba68c8,color:#fff
     classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
@@ -493,12 +496,12 @@ flowchart LR
 
 #### Association (Actor to Use Case)
 
-Use solid arrows `-->` for associations:
+Use solid lines `---` for associations (bidirectional by default in SysML):
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
 flowchart LR
-    User((User)) --> UC1(["Login"])
+    User((User)) --- UC1(["Login"])
 
     classDef actor fill:#4a148c,stroke:#ba68c8,color:#fff
     classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
@@ -509,12 +512,12 @@ flowchart LR
 
 #### Include Relationship
 
-Use dotted arrows with label for include relationships. The base use case **always** includes the included use case:
+Use dotted arrows with `<<include>>` stereotype label. The base use case **always** includes the included use case:
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
 flowchart LR
-    UC1(["Create Order"]) -. include .-> UC2(["Validate User"])
+    UC1(["Create Order"]) -.->|"&lt;&lt;include&gt;&gt;"| UC2(["Validate User"])
 
     classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
 
@@ -525,12 +528,12 @@ flowchart LR
 
 #### Extend Relationship
 
-Use dotted arrows with label for extend relationships. The extending use case **optionally** extends the base use case:
+Use dotted arrows with `<<extend>>` stereotype label. The extending use case **optionally** extends the base use case:
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
 flowchart LR
-    UC2(["Apply Coupon"]) -. extend .-> UC1(["Checkout"])
+    UC2(["Apply Coupon"]) -.->|"&lt;&lt;extend&gt;&gt;"| UC1(["Checkout"])
 
     classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
 
@@ -612,18 +615,18 @@ flowchart LR
         UC7(["Bulk Delete"])
     end
 
-    User ---> UC1
-    User --> UC2
-    User --> UC4
-    Admin ---> UC3
-    Admin --> UC4
+    User --- UC1
+    User --- UC2
+    User --- UC4
+    Admin --- UC3
+    Admin --- UC4
 
-    UC1 -. include .-> UC5
-    UC2 -. include .-> UC5
-    UC3 -. include .-> UC5
+    UC1 -.->|"&lt;&lt;include&gt;&gt;"| UC5
+    UC2 -.->|"&lt;&lt;include&gt;&gt;"| UC5
+    UC3 -.->|"&lt;&lt;include&gt;&gt;"| UC5
 
-    UC6 -. extend .-> UC1
-    UC7 -. extend .-> UC3
+    UC6 -.->|"&lt;&lt;extend&gt;&gt;"| UC1
+    UC7 -.->|"&lt;&lt;extend&gt;&gt;"| UC3
 
     classDef actor fill:#4a148c,stroke:#ba68c8,color:#fff
     classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
@@ -663,16 +666,16 @@ flowchart TB
         UC10(["Login"])
     end
 
-    Customer --> UC1
-    Customer --> UC4
-    Customer --> UC7
-    Guest --> UC1
-    Guest --> UC2
+    Customer --- UC1
+    Customer --- UC4
+    Customer --- UC7
+    Guest --- UC1
+    Guest --- UC2
 
-    UC4 -. include .-> UC10
-    UC7 -. include .-> UC9
-    UC8 -. extend .-> UC7
-    UC9 --> PaymentGateway
+    UC4 -.->|"&lt;&lt;include&gt;&gt;"| UC10
+    UC7 -.->|"&lt;&lt;include&gt;&gt;"| UC9
+    UC8 -.->|"&lt;&lt;extend&gt;&gt;"| UC7
+    UC9 --- PaymentGateway
 
     classDef actor fill:#4a148c,stroke:#ba68c8,color:#fff
     classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
@@ -714,18 +717,18 @@ flowchart TB
 
 ## 8. Common Mistakes
 
-| Incorrect                          | Correct                            | Explanation                                   |
-|:-----------------------------------|:-----------------------------------|:----------------------------------------------|
-| `User((User))` without `flowchart` | `flowchart LR` then `User((User))` | Must declare diagram type first               |
-| `--include-->`                     | `-. include .->`                   | Use dotted line syntax for stereotypes        |
-| `<<include>>`                      | `include`                          | Mermaid doesn't support UML stereotype syntax |
-| `Actor[User]`                      | `User((User))`                     | Use `(( ))` for actors, `([ ])` for use cases |
-| `UC1 -. include .-> UC2` (extend)  | `UC2 -. extend .-> UC1`            | Extend arrow goes FROM extending TO base      |
-| `system { ... }`                   | `subgraph System [ ... ] ... end`  | Use subgraph for system boundary              |
-| Spaces in node names               | Use underscores or camelCase       | `Create Task` → `CreateTask` or `Create_Task` |
-| Missing `end` for subgraph         | Always close with `end`            | Each `subgraph` must have matching `end`      |
-| `-.include.->`                     | `-. include .->`                   | Spaces required around label                  |
-| `User -> UC`                       | `User --> UC`                      | Use double dash for arrows in flowchart       |
+| Incorrect                          | Correct                                 | Explanation                                             |
+|:-----------------------------------|:----------------------------------------|:--------------------------------------------------------|
+| `User((User))` without `flowchart` | `flowchart LR` then `User((User))`      | Must declare diagram type first                         |
+| `Actor --> UC` (association)       | `Actor --- UC`                          | Use solid line (not arrow) for associations             |
+| `-. include .->`                   | `-.->│"<<include>>"│`                   | Use dotted arrow with stereotype label                  |
+| `-. extend .->`                    | `-.->│"<<extend>>"│`                    | Use dotted arrow with stereotype label                  |
+| `<<include>>`                      | `│"<<include>>"│`                       | Use Mermaid link label syntax                           |
+| `Actor[User]`                      | `User((User))`                          | Use `(( ))` for actors, `([ ])` for use cases           |
+| `system { ... }`                   | `subgraph System [ ... ] ... end`       | Use subgraph for system boundary                        |
+| Spaces in node names               | Use underscores or camelCase            | `Create Task` → `CreateTask` or `Create_Task`           |
+| Missing `end` for subgraph         | Always close with `end`                 | Each `subgraph` must have matching `end`                |
+| `User -> UC`                       | `User --- UC`                           | Use double/triple dash in flowchart                     |
 
 ---
 
