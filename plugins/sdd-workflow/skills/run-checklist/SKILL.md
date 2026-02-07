@@ -28,7 +28,7 @@ The `SDD_LANG` environment variable determines the language (default: `en`).
 
 | Prerequisite   | Verification                             | Command to Generate              |
 |:---------------|:-----------------------------------------|:---------------------------------|
-| **Checklist**  | `.sdd/task/{ticket}/checklist.md` exists | `/checklist {feature} {ticket}`  |
+| **Checklist**  | `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/checklist.md` exists | `/checklist {feature} {ticket}`  |
 
 ## Input
 
@@ -54,7 +54,7 @@ $ARGUMENTS
 
 ### 1. Load Checklist
 
-Load the checklist file from `.sdd/task/{ticket}/checklist.md`.
+Load the checklist file from `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/checklist.md`.
 
 Parse each checklist item:
 - Extract CHK-ID (e.g., CHK-501)
@@ -105,7 +105,7 @@ Update checklist file with verification results:
 
 Read `templates/${SDD_LANG:-en}/report_format.md` for the report format template.
 
-Output verification summary to `.sdd/task/{ticket}/verification_report.md`.
+Output verification summary to `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/verification_report.md`.
 
 ## Output Format
 
@@ -130,7 +130,7 @@ Original checklist items are updated with verification status:
 
 ### Verification Report
 
-Save to: `.sdd/task/{ticket}/verification_report.md`
+Save to: `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/verification_report.md`
 
 ## TaskList Integration
 

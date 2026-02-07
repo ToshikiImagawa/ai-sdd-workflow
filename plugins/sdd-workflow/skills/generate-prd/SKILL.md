@@ -1,15 +1,24 @@
 ---
 name: generate-prd
 description: "Generate PRD (Requirements Specification) in SysML requirements diagram format from business requirements"
-version: 3.0.0
+version: 3.0.1
 license: MIT
 user-invocable: true
-allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash
+allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash, Skill
 ---
 
 # Generate PRD - Requirements Specification Generation
 
 Generates PRD (Requirements Specification) from input business requirements according to the AI-SDD workflow.
+
+## Hybrid Approach
+
+This skill operates in two modes:
+
+| Mode                      | Behavior | Description                                                                              |
+|:--------------------------|:---------|:-----------------------------------------------------------------------------------------|
+| **Interactive** (default) | Guide    | Each sub-skill is independent, user invokes sequentially. This skill proposes next steps |
+| **CI (`--ci`)**           | Wrapper  | This skill automatically executes sub-skills via Skill tool                              |
 
 ## Prerequisites
 
@@ -18,12 +27,6 @@ Generates PRD (Requirements Specification) from input business requirements acco
 - `references/prerequisites_plugin_update.md` - Check for plugin updates
 - `references/prerequisites_principles.md` - Read AI-SDD principles document
 - `references/prerequisites_directory_paths.md` - Resolve directory paths using `SDD_*` environment variables
-
-**Read the following diagram reference guides:**
-
-- `references/usecase_diagram_guide.md` - Use case diagram notation guide for mermaid (flowchart-based)
-- `references/mermaid_notation_rules.md` - Requirements diagram notation rules for mermaid
-- `references/requirements_diagram_components.md` - Requirements diagram component definitions
 
 ### Template Preparation Flow (Optimized)
 
@@ -34,16 +37,19 @@ bash "${CLAUDE_PLUGIN_ROOT}/skills/generate-prd/scripts/prepare-prd.sh"
 ```
 
 This script:
-1. Checks `.sdd/PRD_TEMPLATE.md` (project template) first
+
+1. Checks `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/PRD_TEMPLATE.md` (project template) first
 2. If not found, copies `templates/${SDD_LANG}/prd_template.md` to cache
 3. Copies all reference files to cache
 4. Exports environment variables to `$CLAUDE_ENV_FILE`:
-   - `GENERATE_PRD_TEMPLATE` - Path to cached template
-   - `GENERATE_PRD_REFERENCES` - Path to cached references
+    - `GENERATE_PRD_TEMPLATE` - Path to cached template
+    - `GENERATE_PRD_REFERENCES` - Path to cached references
 
 **Phase 2: Claude** - **MUST read template from cache before generation**
 
-**CRITICAL**: You must explicitly read the template using Read tool. The `prepare-prd.sh` script only prepares the cache - it does NOT automatically inject the template content. Follow the "Template Loading (Required)" section in this document.
+**CRITICAL**: You must explicitly read the template using Read tool. The `prepare-prd.sh` script only prepares the
+cache - it does NOT automatically inject the template content. Follow the "Template Loading (Required)" section in this
+document.
 
 ### Language Configuration
 
@@ -72,10 +78,10 @@ design documents.
 
 $ARGUMENTS
 
-| Argument                   | Required | Description                                                                                    |
-|:---------------------------|:---------|:-----------------------------------------------------------------------------------------------|
-| `requirements-description` | Yes      | Business requirements description text. Feature name is extracted from description             |
-| `--ci`                     | -        | CI/non-interactive mode. Skips Vibe Coding check, auto-approves overwrites, skips prd-reviewer |
+| Argument                   | Required | Description                                                                        |
+|:---------------------------|:---------|:-----------------------------------------------------------------------------------|
+| `requirements-description` | Yes      | Business requirements description text. Feature name is extracted from description |
+| `--ci`                     | -        | CI/non-interactive mode. Executes all sub-skills automatically, skips prd-reviewer |
 
 ### Input Examples
 
@@ -136,20 +142,20 @@ Check the following before generation. Both flat and hierarchical structures are
 **For flat structure**:
 
 ```
-Does .sdd/requirement/{feature-name}.md already exist? (PRD)
-Does .sdd/specification/{feature-name}_spec.md already exist? (spec)
-Does .sdd/specification/{feature-name}_design.md already exist? (design)
+Does ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md already exist? (PRD)
+Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md already exist? (spec)
+Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md already exist? (design)
 ```
 
 **For hierarchical structure** (when placing under parent feature):
 
 ```
-Does .sdd/requirement/{parent-feature}/index.md already exist? (parent feature PRD)
-Does .sdd/requirement/{parent-feature}/{feature-name}.md already exist? (child feature PRD)
-Does .sdd/specification/{parent-feature}/index_spec.md already exist? (parent feature spec)
-Does .sdd/specification/{parent-feature}/{feature-name}_spec.md already exist? (child feature spec)
-Does .sdd/specification/{parent-feature}/index_design.md already exist? (parent feature design)
-Does .sdd/specification/{parent-feature}/{feature-name}_design.md already exist? (child feature design)
+Does ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md already exist? (parent feature PRD)
+Does ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/{feature-name}.md already exist? (child feature PRD)
+Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md already exist? (parent feature spec)
+Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md already exist? (child feature spec)
+Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md already exist? (parent feature design)
+Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md already exist? (child feature design)
 ```
 
 **Note the difference in naming conventions**:
@@ -173,6 +179,78 @@ Does .sdd/specification/{parent-feature}/{feature-name}_design.md already exist?
 - After PRD generation, verify no impact on consistency with existing spec/design
 - If requirement IDs are added/changed, notify that spec/design may need updates
 
+## Generation Flow
+
+### Interactive Mode (Default)
+
+```
+1. Analyze input content
+   |
+2. Load PRD template (Required)
+   |- Read template using cached or manual method
+   |- Verify template language matches SDD_LANG
+   |
+3. Load project principles (Required)
+   |- If CONSTITUTION.md exists: Read and understand principles
+   |- If not exists: Skip (note in output)
+   |
+4. Vibe Coding risk assessment
+   |- High/Medium: Confirm with user
+   |- Low: Proceed
+   |
+5. Check existing documents
+   |- If PRD exists: Confirm overwrite
+   |- If spec/design exists: Understand impact scope
+   |
+6. Generate PRD text content (without full diagrams)
+   |- Generate basic structure following template
+   |- Include placeholder sections for diagrams
+   |
+7. Save PRD to ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md
+   |
+8. Principle compliance check with prd-reviewer
+   |- Call prd-reviewer agent
+   |- Apply approved fixes
+   |
+9. **Propose next steps to user**:
+   |- "To add use case diagram: `/generate-usecase-diagram {feature-name}`"
+   |- "To analyze requirements: `/analyze-requirements {feature-name}`"
+   |- "To add requirements diagram: `/generate-requirements-diagram {feature-name}`"
+   |- "To create complete PRD: `/generate-prd {requirements} --ci`"
+```
+
+### CI Mode (`--ci`)
+
+```
+1. Analyze input content
+   |
+2. Load PRD template (Required)
+   |
+3. Load project principles (if exists)
+   |
+4. Check existing documents (auto-approve overwrite)
+   |
+5. Execute sub-skills via Skill tool:
+   |
+   ├── Skill: /generate-usecase-diagram {requirements}
+   │   → Returns: Use case diagram Mermaid text
+   │
+   ├── Skill: /analyze-requirements {usecase-text}
+   │   → Returns: Requirements analysis (UR/FR/NFR tables)
+   │
+   ├── Skill: /generate-requirements-diagram {analysis-text}
+   │   → Returns: SysML requirements diagram Mermaid text
+   │
+   └── Skill: /finalize-prd {feature-name} {all-texts}
+       → Returns: Complete integrated PRD text
+   |
+6. Save complete PRD to ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md
+   |
+7. Skip prd-reviewer (CI mode)
+   |
+8. Output completion summary
+```
+
 ## Output Format
 
 ### Template Loading (Required)
@@ -180,16 +258,19 @@ Does .sdd/specification/{parent-feature}/{feature-name}_design.md already exist?
 **Before PRD generation, you MUST load the template** using one of the following methods:
 
 **Method 1: Use cached template (Recommended - if prepare-prd.sh was executed)**:
+
 ```
 Read: ${GENERATE_PRD_TEMPLATE}
 ```
 
 **Method 2: Manual template selection (if cache not available)**:
-1. Check if `.sdd/PRD_TEMPLATE.md` exists
-2. **If exists**: Read `.sdd/PRD_TEMPLATE.md` using Read tool
+
+1. Check if `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/PRD_TEMPLATE.md` exists
+2. **If exists**: Read `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/PRD_TEMPLATE.md` using Read tool
 3. **If not exists**: Read `templates/${SDD_LANG:-en}/prd_template.md` from this skill directory using Read tool
 
 **Verification after loading**:
+
 - Confirm template language matches `SDD_LANG` environment variable
 - If mismatch detected, reload correct template
 
@@ -198,80 +279,34 @@ Read: ${GENERATE_PRD_TEMPLATE}
 **IMPORTANT: You must strictly follow the loaded template structure and language**
 
 1. **Structure Compliance**:
-   - Preserve all `<MUST>` sections from template
-   - Include `<RECOMMENDED>` sections whenever possible
-   - Add `<OPTIONAL>` sections as needed
-   - Maintain template's section order and hierarchy
+    - Preserve all `<MUST>` sections from template
+    - Include `<RECOMMENDED>` sections whenever possible
+    - Add `<OPTIONAL>` sections as needed
+    - Maintain template's section order and hierarchy
 
 2. **Placeholder Replacement**:
-   - Replace `{Feature Name}`, `{Requirement Name}`, etc. with actual content from input
-   - Preserve template formatting (headers, tables, code blocks)
+    - Replace `{Feature Name}`, `{Requirement Name}`, etc. with actual content from input
+    - Preserve template formatting (headers, tables, code blocks)
 
 3. **Language Consistency**:
-   - **CRITICAL**: Generate PRD in the same language as the loaded template
-   - Do not mix languages - if template is in English, entire PRD must be in English
-   - If template is in Japanese, entire PRD must be in Japanese
+    - **CRITICAL**: Generate PRD in the same language as the loaded template
+    - Do not mix languages - if template is in English, entire PRD must be in English
+    - If template is in Japanese, entire PRD must be in Japanese
 
 4. **Diagram Compliance**:
-   - Use SysML requirementDiagram syntax as shown in template
-   - Follow template's diagram structure examples
+    - Use SysML requirementDiagram syntax as shown in template
+    - Follow template's diagram structure examples
 
 5. **Requirement ID Management**:
-   - Manage requirement IDs (UR-xxx, FR-xxx, NFR-xxx, etc.) uniquely
-   - Follow template's ID naming conventions
+    - Manage requirement IDs (UR-xxx, FR-xxx, NFR-xxx, etc.) uniquely
+    - Follow template's ID naming conventions
 
 **Save Location**:
 
-- Flat structure: `.sdd/requirement/{feature-name}.md`
-- Hierarchical structure (parent feature): `.sdd/requirement/{parent-feature}/index.md`
-- Hierarchical structure (child feature): `.sdd/requirement/{parent-feature}/{feature-name}.md`
-
-## Generation Flow
-
-```
-1. Analyze input content
-   |
-2. Load PRD template (Required)
-   |- Read template using Method 1 or Method 2 (see "Template Loading" section)
-   |- Verify template language matches SDD_LANG
-   |- Understand template structure (<MUST>, <RECOMMENDED>, <OPTIONAL> sections)
-   |
-3. Load project principles (Required)
-   |- If CONSTITUTION.md exists:
-   |   |- Read .sdd/CONSTITUTION.md using Read tool
-   |   |- Understand principle categories (B-xxx, A-xxx, D-xxx, T-xxx)
-   |- If not exists: Skip (note this in output)
-   |
-4. Vibe Coding risk assessment (skip if --ci)
-   |- High: Confirm missing info with user -> Resume after response
-   |- Medium: Confirm ambiguous points -> Resume after response
-   |- Low: Proceed to next step
-   |
-5. Check existing documents
-   |- If PRD exists: Confirm overwrite (auto-approve if --ci)
-   |- If spec/design exists: Understand impact scope
-   |
-6. Generate PRD following loaded template
-   |- Replace placeholders with analyzed content
-   |- Maintain template structure and formatting
-   |- Ensure language consistency with template
-   |
-7. Save PRD to appropriate location
-   |
-8. Principle compliance check with prd-reviewer (skip if --ci)
-   |- Call prd-reviewer agent
-   |- Check CONSTITUTION.md compliance
-   |- On violation detection: Review fix proposals and apply approved fixes (main agent)
-   |- After fix, re-check
-   |
-7. Check consistency with existing spec/design
-   |- If spec/design exists: Verify consistency
-   |- Updates needed: Notify recommendation to update spec/design
-   |
-8. Propose next steps
-   - Create abstract specification with /generate-spec
-   - If existing spec exists, recommend update
-```
+- Flat structure: `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md`
+- Hierarchical structure (parent feature): `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md`
+- Hierarchical structure (child feature):
+  `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/{feature-name}.md`
 
 ## Consistency Check with Existing spec/design
 
@@ -295,9 +330,9 @@ If existing spec/design exists, verify the following after PRD generation:
 ## Post-Generation Actions
 
 1. **Save File**:
-    - Flat structure: `.sdd/requirement/{feature-name}.md`
-    - Hierarchical structure: `.sdd/requirement/{parent-feature}/index.md` or
-      `.sdd/requirement/{parent-feature}/{feature-name}.md`
+    - Flat structure: `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md`
+    - Hierarchical structure: `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md` or
+      `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/{feature-name}.md`
 
 2. **Consistency Check**:
     - If existing spec/design exists: Verify impact and notify if updates needed
@@ -308,10 +343,10 @@ Use the `templates/${SDD_LANG:-en}/prd_output.md` template for output formatting
 
 ## Loading CONSTITUTION.md (Required)
 
-Before PRD generation, **you must read `.sdd/CONSTITUTION.md` using the Read tool**.
+Before PRD generation, **you must read `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md` using the Read tool**.
 
 ```
-Read: .sdd/CONSTITUTION.md
+Read: ${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md
 ```
 
 ### Post-Load Verification
@@ -332,7 +367,7 @@ After loading CONSTITUTION.md, understand the following principles and ensure PR
 3. **Recommend to user**: "Run `/sdd-init` or `/constitution init` to create project principles"
 4. **Continue with PRD generation** (other quality checks will still be performed)
 
-## Principle Compliance Check with prd-reviewer (Required)
+## Principle Compliance Check with prd-reviewer (Interactive Mode Only)
 
 > **CI Mode**: If `--ci` flag is specified, skip principle compliance check.
 
@@ -379,7 +414,7 @@ Include the following in output upon generation completion:
 
 The following verifications are automatically performed during generation:
 
-- [x] **Principle Compliance Check via prd-reviewer**: Verify compliance with CONSTITUTION.md
+- [x] **Principle Compliance Check via prd-reviewer**: Verify compliance with CONSTITUTION.md (Interactive mode)
 - [x] **Existing spec/design Consistency Check**: Understand impact scope
 
 ### Verification Commands
@@ -392,9 +427,22 @@ The following verifications are automatically performed during generation:
 /clarify {feature-name}
 ```
 
+## Sub-Skills Reference
+
+This skill can delegate to the following sub-skills:
+
+| Skill                            | Purpose                   | Context | Output              |
+|:---------------------------------|:--------------------------|:--------|:--------------------|
+| `/generate-usecase-diagram`      | Generate use case diagram | fork    | Mermaid text        |
+| `/analyze-requirements`          | Extract UR/FR/NFR         | fork    | Requirements tables |
+| `/generate-requirements-diagram` | Generate SysML diagram    | fork    | Mermaid text        |
+| `/finalize-prd`                  | Integrate all artifacts   | fork    | Complete PRD text   |
+
 ## Notes
 
 - PRD should **NOT include technical details** (that is the role of `*_spec.md` and `*_design.md`)
 - Manage requirement IDs uniquely so they can be referenced in subsequent documents
 - Classify priorities using MoSCoW method (Must/Should/Could/Won't)
 - Maintain high abstraction level and focus on "what" and "why"
+- In Interactive mode, user can selectively run sub-skills for incremental updates
+- In CI mode, all sub-skills are executed automatically for complete PRD generation

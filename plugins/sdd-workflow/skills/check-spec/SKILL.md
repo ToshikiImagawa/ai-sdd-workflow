@@ -98,19 +98,19 @@ Target design documents (`*_design.md`). Both flat and hierarchical structures a
 
 ```
 With argument -> Target the following file:
-  - .sdd/specification/{argument}_design.md
-Without argument -> Target all *_design.md files under .sdd/specification/ (recursively)
+  - ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{argument}_design.md
+Without argument -> Target all *_design.md files under ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/ (recursively)
 ```
 
 **For hierarchical structure** (when argument contains `/`, or when specifying hierarchical path):
 
 ```
 Argument in "{parent-feature}/{feature-name}" format -> Target the following file:
-  - .sdd/specification/{parent-feature}/{feature-name}_design.md
+  - ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md
 
 Argument is "{parent-feature}" only -> Target the following files:
-  - .sdd/specification/{parent-feature}/index_design.md (parent feature design)
-  - .sdd/specification/{parent-feature}/*_design.md (child feature designs)
+  - ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md (parent feature design)
+  - ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/*_design.md (child feature designs)
 ```
 
 **Naming convention**:

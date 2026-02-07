@@ -15,8 +15,8 @@ Initialize AI-SDD (AI-driven Specification-Driven Development) workflow in the c
 ## What This Command Does
 
 1. **CLAUDE.md Configuration**: Add AI-SDD instructions to project's `CLAUDE.md`
-2. **Project Constitution Generation**: Create `.sdd/CONSTITUTION.md` (if not exist)
-3. **Template Generation**: Create document templates in `.sdd/` directory (if not exist)
+2. **Project Constitution Generation**: Create `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md` (if not exist)
+3. **Template Generation**: Create document templates in `${SDD_ROOT}/` directory (if not exist)
 
 ## Input
 
@@ -49,9 +49,9 @@ Steps:
 
 **Before execution, read the AI-SDD principles document.**
 
-AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
+AI-SDD principles document path: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/AI-SDD-PRINCIPLES.md`
 
-**Note**: `.sdd/AI-SDD-PRINCIPLES.md` is automatically updated at session start (via session-start hook). This command
+**Note**: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/AI-SDD-PRINCIPLES.md` is automatically updated at session start (via session-start hook). This command
 does not need to manually copy it.
 
 Understand AI-SDD principles.
@@ -111,7 +111,7 @@ Execute `${CLAUDE_PLUGIN_ROOT}/skills/sdd-init/scripts/init-structure.sh` to per
     - If not exists: Create with default config
 
 2. **Ensure Root Directory Exists**:
-    - `mkdir -p .sdd/`
+    - `mkdir -p "${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/"`
     - Note: Subdirectories (requirement, specification, task) are created automatically when files are generated
 
 3. **Copy Templates** (if not exist):
@@ -121,7 +121,7 @@ Execute `${CLAUDE_PLUGIN_ROOT}/skills/sdd-init/scripts/init-structure.sh` to per
     - Note: CONSTITUTION.md is NOT copied - use `/constitution init` to generate a customized version
 
 4. **Cleanup**:
-    - Delete `.sdd/UPDATE_REQUIRED.md` if exists
+    - Delete `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/UPDATE_REQUIRED.md` if exists
 
 5. **Export Environment Variables** to `$CLAUDE_ENV_FILE`:
     - `SDD_ROOT`, `SDD_LANG`, `SDD_*_DIR`, `SDD_*_PATH`
@@ -171,23 +171,23 @@ Read `templates/${SDD_LANG:-en}/claude_md_template.md` and add its content to `C
     - Check the version in section title (e.g., `## AI-SDD Instructions (v2.2.0)`)
     - If version is older than current plugin version:
         - Replace entire section with latest version
-        - Generate `.sdd/AI-SDD-PRINCIPLES.md` if not exists
+        - Generate `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/AI-SDD-PRINCIPLES.md` if not exists
     - If version is same: Skip (already initialized)
 2. **If CLAUDE.md exists but no AI-SDD section**: Append section to end
 3. **If CLAUDE.md doesn't exist**: Create new file with section
 
 ### Migration Support (v2.2.0 -> v2.3.0+)
 
-Projects initialized with v2.2.0 or earlier don't have `.sdd/AI-SDD-PRINCIPLES.md`.
+Projects initialized with v2.2.0 or earlier don't have `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/AI-SDD-PRINCIPLES.md`.
 Re-running this command will perform the following:
 
-1. **Generate AI-SDD-PRINCIPLES.md**: Copy plugin's `AI-SDD-PRINCIPLES.md` to `.sdd/`
+1. **Generate AI-SDD-PRINCIPLES.md**: Copy plugin's `AI-SDD-PRINCIPLES.md` to `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/`
 2. **Update CLAUDE.md**: Update section title version and replace content with latest version
 
 **Detection Method**:
 
 - CLAUDE.md has `## AI-SDD Instructions` section
-- AND `.sdd/AI-SDD-PRINCIPLES.md` doesn't exist
+- AND `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/AI-SDD-PRINCIPLES.md` doesn't exist
 - OR a section title version is older than the current plugin version
 
 ## Project Constitution Generation
@@ -212,7 +212,7 @@ decisions**.
 
 1. Analyzes project context (language, framework, domain)
 2. Generates customized constitution based on analysis
-3. Saves to `.sdd/CONSTITUTION.md`
+3. Saves to `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md`
 
 **Do NOT manually copy** `constitution_template.md` - the template is meant to be customized for your specific project.
 
@@ -236,10 +236,10 @@ All templates are copied from skill directories if they don't already exist.
 
 | Template                 | Path                             | Purpose                       |
 |:-------------------------|:---------------------------------|:------------------------------|
-| **Project Constitution** | `.sdd/CONSTITUTION.md`           | Non-negotiable principles     |
-| **PRD Template**         | `.sdd/PRD_TEMPLATE.md`           | SysML-format requirements doc |
-| **Spec Template**        | `.sdd/SPECIFICATION_TEMPLATE.md` | Abstract system specification |
-| **Design Template**      | `.sdd/DESIGN_DOC_TEMPLATE.md`    | Technical design document     |
+| **Project Constitution** | `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md`           | Non-negotiable principles     |
+| **PRD Template**         | `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/PRD_TEMPLATE.md`           | SysML-format requirements doc |
+| **Spec Template**        | `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/SPECIFICATION_TEMPLATE.md` | Abstract system specification |
+| **Design Template**      | `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`    | Technical design document     |
 
 ### Generation Process (Automated by Shell Script)
 
@@ -268,7 +268,7 @@ After Phase 1 and Phase 2 complete:
 
 **Note**: Cleanup is handled by `init-structure.sh` (Phase 1).
 
-The script automatically deletes `.sdd/UPDATE_REQUIRED.md` if it exists. This file is created by the `session-start`
+The script automatically deletes `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/UPDATE_REQUIRED.md` if it exists. This file is created by the `session-start`
 hook when version mismatch is detected, and becomes unnecessary after initialization.
 
 ## Output

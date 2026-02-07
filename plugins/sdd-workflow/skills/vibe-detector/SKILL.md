@@ -21,7 +21,7 @@ When reading templates, use the path: `templates/${SDD_LANG:-en}/`
 
 **Before execution, you must read the AI-SDD principles document.**
 
-AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
+AI-SDD principles document path: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/AI-SDD-PRINCIPLES.md`
 
 **Note**: This file is automatically updated at the start of each session.
 
@@ -169,7 +169,7 @@ Read `templates/${SDD_LANG:-en}/assumed_spec.md` and use it for creating inferre
 - {Risk...}
 ```
 
-**Save Location**: `.sdd/task/{ticket}/assumed-spec.md`
+**Save Location**: `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/assumed-spec.md`
 
 ### 2. Set Verification Points
 

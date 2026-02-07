@@ -60,20 +60,20 @@ Both flat and hierarchical structures are supported.
 **For flat structure**:
 
 ```
-Load .sdd/requirement/{feature-name}.md (PRD, if exists)
-Load .sdd/specification/{feature-name}_spec.md (if exists)
-Load .sdd/specification/{feature-name}_design.md (if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md (PRD, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md (if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md (if exists)
 ```
 
 **For hierarchical structure** (when argument contains `/`):
 
 ```
-Load .sdd/requirement/{parent-feature}/index.md (parent feature PRD, if exists)
-Load .sdd/requirement/{parent-feature}/{feature-name}.md (child feature PRD, if exists)
-Load .sdd/specification/{parent-feature}/index_spec.md (parent feature spec, if exists)
-Load .sdd/specification/{parent-feature}/{feature-name}_spec.md (child feature spec, if exists)
-Load .sdd/specification/{parent-feature}/index_design.md (parent feature design, if exists)
-Load .sdd/specification/{parent-feature}/{feature-name}_design.md (child feature design, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md (parent feature PRD, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/{feature-name}.md (child feature PRD, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md (parent feature spec, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md (child feature spec, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md (parent feature design, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md (child feature design, if exists)
 ```
 
 **Note the difference in naming conventions**:

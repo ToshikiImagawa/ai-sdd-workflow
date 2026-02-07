@@ -79,11 +79,11 @@ Create a constitution file in the project:
 /constitution init
 ```
 
-**Generated File**: `.sdd/CONSTITUTION.md`
+**Generated File**: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md`
 
 **Processing Flow**:
 
-1. Check if `.sdd/CONSTITUTION.md` already exists
+1. Check if `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md` already exists
 2. If exists: Skip (respecting an existing constitution)
 3. If not exist:
     - Read `templates/${SDD_LANG:-en}/constitution_template.md`
@@ -185,7 +185,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/skills/constitution/scripts/validate-files.sh"
 
 This script:
 
-1. Scans all requirement files (`.sdd/requirement/**/*.md`)
+1. Scans all requirement files (`${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/**/*.md`)
 2. Scans all specification files (`*_spec.md`)
 3. Scans all design files (`*_design.md`)
 4. Generates file lists and summary JSON
@@ -199,12 +199,12 @@ This script:
 
 **Validation Targets**:
 
-- `.sdd/requirement/**/*.md`
-- `.sdd/specification/**/*_spec.md`
-- `.sdd/specification/**/*_design.md`
-- `.sdd/PRD_TEMPLATE.md`
-- `.sdd/SPECIFICATION_TEMPLATE.md`
-- `.sdd/DESIGN_DOC_TEMPLATE.md`
+- `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/**/*.md`
+- `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/**/*_spec.md`
+- `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/**/*_design.md`
+- `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/PRD_TEMPLATE.md`
+- `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/SPECIFICATION_TEMPLATE.md`
+- `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`
 
 **Validation Items**:
 
@@ -355,11 +355,11 @@ This script:
 
 ## Documents Updated
 
-- [x] `.sdd/SPECIFICATION_TEMPLATE.md`
+- [x] `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/SPECIFICATION_TEMPLATE.md`
     - Added P1 reference to API section
     - Updated constraints to include P3
 
-- [x] `.sdd/DESIGN_DOC_TEMPLATE.md`
+- [x] `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`
     - Added "Principle Compliance" section
     - Updated decision framework to match constitution
 
@@ -400,7 +400,7 @@ Constraints), principle hierarchy, verification items, and change history, see:
 
 **Reference**: `examples/constitution_file_structure.md`
 
-**Save Location**: `.sdd/CONSTITUTION.md`
+**Save Location**: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md`
 
 ## Output
 
@@ -412,8 +412,8 @@ Depending on sub command, use the `templates/${SDD_LANG:-en}/constitution_output
 
 | Document                         | Sync Content                          |
 |:---------------------------------|:--------------------------------------|
-| `.sdd/SPECIFICATION_TEMPLATE.md` | Add principle reference sections      |
-| `.sdd/DESIGN_DOC_TEMPLATE.md`    | Add principle compliance checklist    |
+| `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/SPECIFICATION_TEMPLATE.md` | Add principle reference sections      |
+| `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`    | Add principle compliance checklist    |
 | `*_spec.md`                      | Design based on principles            |
 | `*_design.md`                    | Explicitly state principle compliance |
 
@@ -532,7 +532,7 @@ Export constitution to machine-readable format:
 /constitution export --format json
 ```
 
-Output: `.sdd/constitution.json`
+Output: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/constitution.json`
 
 For an example JSON format, see: `examples/constitution_as_code.json`
 
@@ -540,7 +540,7 @@ Use in CI/CD pipelines for automated validation.
 
 ## Notes
 
-- Constitution file should be placed directly under `.sdd/` (`.sdd/CONSTITUTION.md`)
+- Constitution file should be placed directly under `${SDD_ROOT}/` (`${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md`)
 - Constitution is a living document, updated as team learns
 - Version all changes to track evolution
 - Major version changes may require code migration
