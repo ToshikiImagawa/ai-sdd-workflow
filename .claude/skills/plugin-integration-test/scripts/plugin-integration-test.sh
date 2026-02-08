@@ -47,6 +47,35 @@ setup() {
         echo "テストディレクトリ作成: ${test_dir} (git initialized)"
     done
 
+    # 追加テストケース: sdd-workflow + 既存 .sdd-config.json (lang: ja)
+    # このテストは、既存の設定ファイルの言語設定がスキルに正しく引き継がれるかを検証する
+    local ja_config_test_dir="${TEST_BASE}/sdd-workflow-with-ja-config"
+    mkdir -p "$ja_config_test_dir"
+    cd "$ja_config_test_dir"
+
+    # git init + 空 CLAUDE.md をコミット
+    git init -q
+    echo "" > CLAUDE.md
+    git add CLAUDE.md
+    git commit -q -m "initial commit"
+
+    # 事前に lang: "ja" の .sdd-config.json を配置
+    cat > ".sdd-config.json" << 'EOF'
+{
+  "root": ".sdd",
+  "lang": "ja",
+  "directories": {
+    "requirement": "requirement",
+    "specification": "specification",
+    "task": "task"
+  }
+}
+EOF
+    git add .sdd-config.json
+    git commit -q -m "add .sdd-config.json with lang: ja"
+
+    echo "テストディレクトリ作成: ${ja_config_test_dir} (git initialized, .sdd-config.json with lang: ja)"
+
     # ログディレクトリ
     mkdir -p "${TEST_BASE}/logs"
     echo "ログディレクトリ作成: ${TEST_BASE}/logs"
@@ -58,19 +87,25 @@ setup() {
     for plugin_dir in "$PLUGINS_DIR"/*/; do
         echo "  - $(basename "$plugin_dir")"
     done
+    echo "追加テストケース:"
+    echo "  - sdd-workflow-with-ja-config (sdd-workflow + 既存 lang: ja 設定)"
 }
 
 # --- Phase 2: サブセッション実行 (session-start + 基本検証) ---
 run_test() {
     local plugin_dir="$1"
+    local test_case_name="${2:-}"  # オプショナル: テストケース名（省略時はプラグイン名を使用）
     local plugin_name
     plugin_name="$(basename "$plugin_dir")"
-    local test_dir="${TEST_BASE}/${plugin_name}"
-    local log_dir="${TEST_BASE}/logs/${plugin_name}"
+
+    # テストケース名が指定されていればそれを使用、なければプラグイン名を使用
+    local effective_name="${test_case_name:-$plugin_name}"
+    local test_dir="${TEST_BASE}/${effective_name}"
+    local log_dir="${TEST_BASE}/logs/${effective_name}"
 
     mkdir -p "$log_dir"
 
-    echo "=== Phase 2: session-start テスト [${plugin_name}] ==="
+    echo "=== Phase 2: session-start テスト [${effective_name}] (plugin: ${plugin_name}) ==="
 
     local start_time
     start_time=$(date +%s)
@@ -118,14 +153,18 @@ run_test() {
 # --- Phase 3: /sdd-init テスト ---
 run_sdd_init_test() {
     local plugin_dir="$1"
+    local test_case_name="${2:-}"  # オプショナル: テストケース名（省略時はプラグイン名を使用）
     local plugin_name
     plugin_name="$(basename "$plugin_dir")"
-    local test_dir="${TEST_BASE}/${plugin_name}"
-    local log_dir="${TEST_BASE}/logs/${plugin_name}"
+
+    # テストケース名が指定されていればそれを使用、なければプラグイン名を使用
+    local effective_name="${test_case_name:-$plugin_name}"
+    local test_dir="${TEST_BASE}/${effective_name}"
+    local log_dir="${TEST_BASE}/logs/${effective_name}"
 
     mkdir -p "$log_dir"
 
-    echo "=== Phase 3: /sdd-init テスト [${plugin_name}] ==="
+    echo "=== Phase 3: /sdd-init テスト [${effective_name}] (plugin: ${plugin_name}) ==="
 
     local start_time
     start_time=$(date +%s)
@@ -195,14 +234,18 @@ run_sdd_init_test() {
 # --- Phase 3b: 生成系スキルテスト ---
 run_gen_skills_test() {
     local plugin_dir="$1"
+    local test_case_name="${2:-}"  # オプショナル: テストケース名（省略時はプラグイン名を使用）
     local plugin_name
     plugin_name="$(basename "$plugin_dir")"
-    local test_dir="${TEST_BASE}/${plugin_name}"
-    local log_dir="${TEST_BASE}/logs/${plugin_name}"
+
+    # テストケース名が指定されていればそれを使用、なければプラグイン名を使用
+    local effective_name="${test_case_name:-$plugin_name}"
+    local test_dir="${TEST_BASE}/${effective_name}"
+    local log_dir="${TEST_BASE}/logs/${effective_name}"
 
     mkdir -p "$log_dir"
 
-    echo "=== Phase 3b: 生成系スキルテスト [${plugin_name}] ==="
+    echo "=== Phase 3b: 生成系スキルテスト [${effective_name}] (plugin: ${plugin_name}) ==="
 
     local phase_start
     phase_start=$(date +%s)
@@ -288,12 +331,16 @@ run_gen_skills_test() {
 # --- Phase 4: ログ収集 ---
 collect_logs() {
     local plugin_dir="$1"
+    local test_case_name="${2:-}"  # オプショナル: テストケース名（省略時はプラグイン名を使用）
     local plugin_name
     plugin_name="$(basename "$plugin_dir")"
-    local test_dir="${TEST_BASE}/${plugin_name}"
-    local log_dir="${TEST_BASE}/logs/${plugin_name}"
 
-    echo "=== Phase 4: ログ収集 [${plugin_name}] ==="
+    # テストケース名が指定されていればそれを使用、なければプラグイン名を使用
+    local effective_name="${test_case_name:-$plugin_name}"
+    local test_dir="${TEST_BASE}/${effective_name}"
+    local log_dir="${TEST_BASE}/logs/${effective_name}"
+
+    echo "=== Phase 4: ログ収集 [${effective_name}] (plugin: ${plugin_name}) ==="
 
     if [ ! -d "$log_dir" ]; then
         echo "ログディレクトリが見つかりません: $log_dir"
@@ -385,18 +432,44 @@ generate_summary() {
 | /generate-spec 実行 | - | |
 | 仕様書 言語検証 | - | 日本語で生成されていること |
 
+### sdd-workflow-with-ja-config (既存設定継承テスト: sdd-workflow + lang: ja)
+
+> このテストは、既存の `.sdd-config.json` (lang: ja) がある状態で `sdd-workflow` プラグインを使用した場合に、設定が正しく継承されるかを検証します。
+
+| テスト項目 | 結果 | 備考 |
+|-----------|------|------|
+| session-start.sh 実行 | - | 既存 .sdd-config.json を上書きしないこと |
+| .sdd-config.json 保持 | - | lang: ja が維持されていること |
+| SDD_LANG 言語設定 (config.json) | - | 期待値: ja（既存設定を継承） |
+| .sdd ディレクトリ作成 | - | |
+| AI-SDD-PRINCIPLES.md 配置 | - | |
+| /sdd-init 実行 | - | |
+| CLAUDE.md AI-SDD セクション | - | |
+| CLAUDE.md 言語検証 | - | 日本語テンプレートで生成されていること |
+| /constitution init 実行 | - | |
+| CONSTITUTION.md 言語検証 | - | **日本語で生成されていること（重要）** |
+| /generate-prd 実行 | - | |
+| PRD 言語検証 | - | 日本語で生成されていること |
+| /generate-spec 実行 | - | |
+| 仕様書 言語検証 | - | 日本語で生成されていること |
+
 ## 実行時間
 
 SUMMARY_EOF
 
-    # 実行時間テーブルを追加
+    # テストケース一覧（プラグイン + 追加テストケース）
+    local test_cases=()
     for plugin_dir in "$PLUGINS_DIR"/*/; do
-        local plugin_name
-        plugin_name="$(basename "$plugin_dir")"
-        local log_dir="${TEST_BASE}/logs/${plugin_name}"
+        test_cases+=("$(basename "$plugin_dir")")
+    done
+    test_cases+=("sdd-workflow-with-ja-config")
+
+    # 実行時間テーブルを追加
+    for test_case in "${test_cases[@]}"; do
+        local log_dir="${TEST_BASE}/logs/${test_case}"
         local timing_file="${log_dir}/timing.log"
 
-        echo "### ${plugin_name}" >> "$summary_file"
+        echo "### ${test_case}" >> "$summary_file"
         echo "" >> "$summary_file"
 
         if [ -f "$timing_file" ]; then
@@ -434,18 +507,16 @@ SUMMARY_EOF
     echo "" >> "$summary_file"
 
     # ログファイル一覧を追加
-    for plugin_dir in "$PLUGINS_DIR"/*/; do
-        local plugin_name
-        plugin_name="$(basename "$plugin_dir")"
-        local log_dir="${TEST_BASE}/logs/${plugin_name}"
+    for test_case in "${test_cases[@]}"; do
+        local log_dir="${TEST_BASE}/logs/${test_case}"
 
-        echo "### ${plugin_name}" >> "$summary_file"
+        echo "### ${test_case}" >> "$summary_file"
         echo "" >> "$summary_file"
 
         if [ -d "$log_dir" ]; then
             for f in "$log_dir"/*; do
                 if [ -f "$f" ]; then
-                    echo "- \`logs/${plugin_name}/$(basename "$f")\`" >> "$summary_file"
+                    echo "- \`logs/${test_case}/$(basename "$f")\`" >> "$summary_file"
                 fi
             done
         else
@@ -468,45 +539,48 @@ case "${1:-help}" in
         ;;
     run)
         if [ -z "${2:-}" ]; then
-            echo "Usage: $0 run <plugin_dir>"
+            echo "Usage: $0 run <plugin_dir> [test_case_name]"
             exit 1
         fi
-        run_test "$2"
+        run_test "$2" "${3:-}"
         ;;
     sdd-init)
         if [ -z "${2:-}" ]; then
-            echo "Usage: $0 sdd-init <plugin_dir>"
+            echo "Usage: $0 sdd-init <plugin_dir> [test_case_name]"
             exit 1
         fi
-        run_sdd_init_test "$2"
+        run_sdd_init_test "$2" "${3:-}"
         ;;
     gen-skills)
         if [ -z "${2:-}" ]; then
-            echo "Usage: $0 gen-skills <plugin_dir>"
+            echo "Usage: $0 gen-skills <plugin_dir> [test_case_name]"
             exit 1
         fi
-        run_gen_skills_test "$2"
+        run_gen_skills_test "$2" "${3:-}"
         ;;
     collect)
         if [ -z "${2:-}" ]; then
-            echo "Usage: $0 collect <plugin_dir>"
+            echo "Usage: $0 collect <plugin_dir> [test_case_name]"
             exit 1
         fi
-        collect_logs "$2"
+        collect_logs "$2" "${3:-}"
         ;;
     summary)
         generate_summary
         ;;
     help|*)
-        echo "Usage: $0 {setup|run|sdd-init|gen-skills|collect|summary} [plugin_dir]"
+        echo "Usage: $0 {setup|run|sdd-init|gen-skills|collect|summary} [plugin_dir] [test_case_name]"
         echo ""
         echo "Commands:"
-        echo "  setup                  テスト環境を構築"
-        echo "  run <plugin_dir>       session-start テスト実行"
-        echo "  sdd-init <plugin_dir>  /sdd-init テスト実行"
-        echo "  gen-skills <plugin_dir>  生成系スキルテスト実行"
-        echo "  collect <plugin_dir>   ログ収集"
-        echo "  summary                TEST_SUMMARY.md 生成"
+        echo "  setup                              テスト環境を構築"
+        echo "  run <plugin_dir> [test_case_name]  session-start テスト実行"
+        echo "  sdd-init <plugin_dir> [test_case_name]  /sdd-init テスト実行"
+        echo "  gen-skills <plugin_dir> [test_case_name]  生成系スキルテスト実行"
+        echo "  collect <plugin_dir> [test_case_name]   ログ収集"
+        echo "  summary                            TEST_SUMMARY.md 生成"
+        echo ""
+        echo "test_case_name: オプション。テストケース名（省略時はプラグイン名を使用）"
+        echo "                例: sdd-workflow-with-ja-config"
         exit 1
         ;;
 esac
