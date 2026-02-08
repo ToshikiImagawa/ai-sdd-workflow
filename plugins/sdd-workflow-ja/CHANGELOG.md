@@ -7,16 +7,52 @@
 
 ## [Unreleased]
 
-## [3.0.1] - 2026-02-06
+## [3.0.1] - 2026-02-09
 
 ### 追加
 
-#### スキル
+#### 新規スキル（PRD生成ワークフロー）
+
+- **`/generate-usecase-diagram`** - ユースケース図生成スキル
+    - ビジネス要件からMermaid flowchart形式のユースケース図を生成
+    - `context: fork` でコンテキスト分離
+    - Interactive と CI（`--ci`）モードをサポート
+    - テキストのみ返却（ファイル書き込みなし）
+
+- **`/analyze-requirements`** - 要求分析スキル
+    - UR（ユーザー要求）、FR（機能要求）、NFR（非機能要求）を抽出
+    - `context: fork` でコンテキスト分離
+    - MoSCoW優先度付けとリスク評価をサポート
+    - テキストのみ返却（ファイル書き込みなし）
+
+- **`/generate-requirements-diagram`** - SysML要求図生成スキル
+    - 要求分析からMermaid requirementDiagramを生成
+    - `context: fork` でコンテキスト分離
+    - 要求間関係（contains, derives, traces）をサポート
+    - テキストのみ返却（ファイル書き込みなし）
+
+- **`/finalize-prd`** - PRD統合スキル
+    - ユースケース図、要求分析、要求図を統合して完全なPRDを作成
+    - `context: fork` でコンテキスト分離
+    - PRDテンプレート構造に従う
+    - テキストのみ返却（ファイル書き込みなし）
+
+#### スキル機能強化
 
 - **`sdd-init`** - `.sdd-config.json` の `lang` フィールド自動管理機能を追加
     - 設定ファイルが存在しない場合: デフォルト設定（`lang: "en"` 含む）で新規作成
     - 設定ファイルに `lang` フィールドがない場合（v3.0.0マイグレーション）: `lang: "en"` を追加
     - 実行フローにステップ1.5「Manage Configuration File」を追加
+    - シェルスクリプト追加: `init-structure.sh`, `update-claude-md.sh`
+
+- **`check-spec`** - ファイルスキャン用シェルスクリプトを追加
+    - `scripts/find-design-docs.sh` - ClaudeのGlob/Grepオーバーヘッドを削減するための設計ドキュメント事前スキャン
+
+- **`constitution`** - 検証用シェルスクリプトを追加
+    - `scripts/validate-files.sh` - 検証のためのrequirement/spec/designファイル事前スキャン
+
+- **`generate-spec`** - 準備用シェルスクリプトを追加
+    - `scripts/prepare-spec.sh` - 仕様生成のためのファイル前処理
 
 #### ドキュメント
 
@@ -24,7 +60,35 @@
     - `<` と `>` を含むラベル（`<<include>>` など）はHTMLエンティティでエスケープが必要
     - 例: `&lt;&lt;include&gt;&gt;` と記述して `<<include>>` を表示
 
+- **Progressive Disclosure用参照ファイルを追加**
+    - `clarify/references/nine_category_analysis.md` - 9カテゴリ分析の定義
+    - `constitution/references/best_practices.md` - Constitutionベストプラクティス
+    - `constitution/examples/validation_report.md` - 検証レポート例
+
 ### 変更
+
+#### スキルアーキテクチャ
+
+- **`generate-prd`** - オーケストレーターパターンにリファクタリング
+    - 4つのサブスキルをオーケストレート: `/generate-usecase-diagram`, `/analyze-requirements`, `/generate-requirements-diagram`, `/finalize-prd`
+    - サブスキルは `context: fork` でコンテキスト分離して実行
+    - サブスキルはテキストのみ返却; `generate-prd` がファイル書き込みを担当
+    - SKILL.mdを374行から140行に削減
+    - ワークフロー追跡用のProgress Checklistを追加
+
+- **全スキル** - Claude Code Skills Best Practices準拠
+    - 全スキルに `$ARGUMENTS` プレースホルダーと `## Input` セクションを追加
+    - 不足していた `allowed-tools` をフロントマターに追加
+    - 出力前の `Quality Checks` セクションを追加
+    - SKILL.mdファイルを500行以下に維持（Progressive Disclosureパターン）
+    - 詳細コンテンツを `references/` と `examples/` ディレクトリに移動
+
+- **`constitution`** - 558行から392行に削減
+    - 検証レポート例を `examples/validation_report.md` に移動
+    - ベストプラクティスを `references/best_practices.md` に移動
+
+- **`clarify`** - 行数を削減
+    - 9カテゴリ分析を `references/nine_category_analysis.md` に移動
 
 #### 共有リファレンス
 
@@ -40,7 +104,7 @@
     - Include/Extendラベル形式を更新
     - Common Mistakesセクションを更新
 
-#### スキル
+#### テンプレート
 
 - **`generate-prd`** - PRDテンプレートのユースケース図記法を修正
     - `templates/en/prd_template.md`: アソシエーション、Include、Extend表記を更新

@@ -7,16 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.0.1] - 2026-02-06
+## [3.0.1] - 2026-02-09
 
 ### Added
 
-#### Skills
+#### New Skills (PRD Generation Workflow)
+
+- **`/generate-usecase-diagram`** - Use case diagram generation skill
+    - Generates Mermaid flowchart-based use case diagrams from business requirements
+    - `context: fork` for context isolation
+    - Supports Interactive and CI (`--ci`) modes
+    - Returns text only (no file write)
+
+- **`/analyze-requirements`** - Requirements analysis skill
+    - Extracts UR (User Requirements), FR (Functional Requirements), NFR (Non-Functional Requirements)
+    - `context: fork` for context isolation
+    - Supports MoSCoW prioritization and risk assessment
+    - Returns text only (no file write)
+
+- **`/generate-requirements-diagram`** - SysML requirements diagram generation skill
+    - Generates Mermaid requirementDiagram from requirements analysis
+    - `context: fork` for context isolation
+    - Supports requirement relationships (contains, derives, traces)
+    - Returns text only (no file write)
+
+- **`/finalize-prd`** - PRD integration skill
+    - Integrates use case diagram, requirements analysis, and requirements diagram into complete PRD
+    - `context: fork` for context isolation
+    - Follows PRD template structure
+    - Returns text only (no file write)
+
+#### Skills Enhancements
 
 - **`sdd-init`** - Added automatic `.sdd-config.json` `lang` field management
     - If config file doesn't exist: Create with default settings (including `lang: "en"`)
     - If config file exists but missing `lang` field (v3.0.0 migration): Add `lang: "en"`
     - Added step 1.5 "Manage Configuration File" to execution flow
+    - Added shell scripts: `init-structure.sh`, `update-claude-md.sh`
+
+- **`check-spec`** - Added shell script for file scanning
+    - `scripts/find-design-docs.sh` - Pre-scans design documents to reduce Claude's Glob/Grep overhead
+
+- **`constitution`** - Added shell script for validation
+    - `scripts/validate-files.sh` - Pre-scans requirement/spec/design files for validation
+
+- **`generate-spec`** - Added shell script for preparation
+    - `scripts/prepare-spec.sh` - Pre-processes files for spec generation
 
 #### Documentation
 
@@ -24,7 +60,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Labels containing `<` and `>` (like `<<include>>`) must be escaped using HTML entities
     - Example: Write `&lt;&lt;include&gt;&gt;` to display `<<include>>`
 
+- **Added reference files for Progressive Disclosure**
+    - `clarify/references/nine_category_analysis.md` - 9-category analysis definitions
+    - `constitution/references/best_practices.md` - Constitution best practices
+    - `constitution/examples/validation_report.md` - Validation report example
+
 ### Changed
+
+#### Skills Architecture
+
+- **`generate-prd`** - Refactored to orchestrator pattern
+    - Now orchestrates 4 sub-skills: `/generate-usecase-diagram`, `/analyze-requirements`, `/generate-requirements-diagram`, `/finalize-prd`
+    - Sub-skills run with `context: fork` for context isolation
+    - Sub-skills return text only; `generate-prd` handles file writes
+    - Reduced SKILL.md from 374 lines to 140 lines
+    - Added Progress Checklist for workflow tracking
+
+- **All skills** - Claude Code Skills Best Practices compliance
+    - Added `$ARGUMENTS` placeholder and `## Input` section to all skills
+    - Added `allowed-tools` to frontmatter where missing
+    - Added `Quality Checks` section before output
+    - SKILL.md files kept under 500 lines (Progressive Disclosure pattern)
+    - Detailed content moved to `references/` and `examples/` directories
+
+- **`constitution`** - Reduced from 558 to 392 lines
+    - Moved validation report example to `examples/validation_report.md`
+    - Moved best practices to `references/best_practices.md`
+
+- **`clarify`** - Reduced line count
+    - Moved 9-category analysis to `references/nine_category_analysis.md`
 
 #### Shared References
 
@@ -40,7 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Updated Include/Extend label format
     - Updated Common Mistakes section
 
-#### Skills
+#### Templates
 
 - **`generate-prd`** - Fixed use case diagram notation in PRD templates
     - `templates/en/prd_template.md`: Updated association, Include, Extend notation
