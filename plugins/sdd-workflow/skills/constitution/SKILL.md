@@ -215,110 +215,7 @@ This script:
 | **Contradiction Detection** | Are there descriptions contrary to principles? |
 | **Template Sync**           | Do templates reflect latest constitution?      |
 
-**Validation Check**:
-
-````markdown
-# Constitution Compliance Report
-
-**Constitution Version**: 2.0.0
-**Validation Date**: YYYY-MM-DD
-**Project**: {Project Name}
-
-## Compliance Summary
-
-| Principle | Status | Score |
-|:---|:---|:---|
-| P1: Specification-First | Compliant | 95% |
-| P2: Test-First | Partial | 78% |
-| P3: Library-First | Compliant | 100% |
-| P4: API Versioning | Non-Compliant | 45% |
-
-## Detailed Analysis
-
-### P1: Specification-First Development
-
-**Status**: Compliant (95%)
-
-**Verification**:
-
-- [x] All features have specifications
-- [x] Specs exist before implementation
-- [ ] 2 legacy features missing specs (user-profile, settings)
-
-**Recommendations**:
-
-- Create specs for legacy features: user-profile, settings
-- Run `/generate-spec` for these features
-
----
-
-### P2: Test-First Implementation
-
-**Status**: Partial Compliance (78%)
-
-**Verification**:
-
-- [x] Test coverage >=80% (Current: 78.3%)
-- [ ] Not all features follow TDD commit pattern
-- [x] Code review includes test verification
-
-**Recommendations**:
-
-- Increase coverage by 1.7% to meet threshold
-- Enforce commit message convention for new code
-- Focus on user-profile module (current coverage: 65%)
-
----
-
-### P4: API Versioning
-
-**Status**: Non-Compliant (45%)
-
-**Verification**:
-
-- [ ] Only 45% of APIs include version numbers
-- [ ] No versioning strategy documented
-- [x] Breaking changes are documented
-
-**Recommendations**:
-
-- Document API versioning strategy in constitution
-- Add version prefix to all API endpoints
-- Create migration guide for breaking changes
-
----
-
-## Action Items
-
-### Critical (Block Deployment)
-
-1. **P4 Compliance**: Implement API versioning
-    - Add `/api/v1/` prefix to all endpoints
-    - Document versioning strategy
-    - Update client code
-
-### High Priority
-
-2. **P2 Compliance**: Increase test coverage to 80%+
-    - Focus on user-profile module
-    - Add edge case tests
-
-3. **P1 Compliance**: Create missing specifications
-    - user-profile feature
-    - settings feature
-
-### Medium Priority
-
-4. Enforce commit message convention
-5. Update code review checklist
-
-## Next Steps
-
-1. Address critical action items
-2. Re-run validation after fixes
-3. Update constitution if patterns emerge
-
-````
+**Validation Output Format**: See `examples/validation_report.md` for the complete report template.
 
 ### 6. Sync Principles (sync)
 
@@ -410,12 +307,12 @@ Depending on sub command, use the `templates/${SDD_LANG:-en}/constitution_output
 
 ### Documents to Synchronize
 
-| Document                         | Sync Content                          |
-|:---------------------------------|:--------------------------------------|
+| Document                                                      | Sync Content                          |
+|:--------------------------------------------------------------|:--------------------------------------|
 | `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/SPECIFICATION_TEMPLATE.md` | Add principle reference sections      |
 | `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`    | Add principle compliance checklist    |
-| `*_spec.md`                      | Design based on principles            |
-| `*_design.md`                    | Explicitly state principle compliance |
+| `*_spec.md`                                                   | Design based on principles            |
+| `*_design.md`                                                 | Explicitly state principle compliance |
 
 ### Sync Verification
 
@@ -464,41 +361,12 @@ Major version bump required for any of the following:
 
 ## Best Practices
 
-### When to Create Constitution
+See `references/best_practices.md` for detailed guidance on:
 
-| Project Stage        | Recommended Action                         |
-|:---------------------|:-------------------------------------------|
-| **New Project**      | Create constitution in setup phase         |
-| **Existing Project** | Create constitution to formalize practices |
-| **Team Scaling**     | Create constitution to ensure consistency  |
-| **Quality Issues**   | Create constitution to raise standards     |
-
-### Principle Design Guidelines
-
-**Good Principles Are**:
-
-- Clear and unambiguous
-- Enforceable (can be checked)
-- Justified (has clear rationale)
-- Practical (can be followed)
-- Specific (not vague)
-
-**Bad Principles Are**:
-
-- Vague ("Write good code")
-- Unenforceable ("Be creative")
-- Unjustified ("Because I said so")
-- Impractical ("100% coverage on everything")
-- Contradictory (conflicts with other principles)
-
-### Constitution vs. Style Guide
-
-| Document         | Purpose                   | Examples                            |
-|:-----------------|:--------------------------|:------------------------------------|
-| **Constitution** | Non-negotiable principles | TDD, Spec-first, Security standards |
-| **Style Guide**  | Coding conventions        | Naming, formatting, comment style   |
-
-Both are important, but constitution takes precedence.
+- When to create a constitution
+- Principle design guidelines (good vs. bad principles)
+- Constitution vs. style guide comparison
+- Advanced features (principle templates, constitution as code)
 
 ## AI-SDD Workflow Integration
 
@@ -516,42 +384,9 @@ Implementation (Code)
 
 Constitution principles are checked at each level.
 
-## Advanced Features
-
-### Principle Templates
-
-Common principle templates you can adapt:
-
-**Reference**: `examples/principle_template.md`
-
-### Constitution as Code
-
-Export constitution to machine-readable format:
-
-```
-/constitution export --format json
-```
-
-Output: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/constitution.json`
-
-For an example JSON format, see: `examples/constitution_as_code.json`
-
-Use in CI/CD pipelines for automated validation.
-
 ## Notes
 
-- Constitution file should be placed directly under `${SDD_ROOT}/` (`${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md`)
-- Constitution is a living document, updated as team learns
-- Version all changes to track evolution
-- Major version changes may require code migration
+- Constitution file location: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md`
 - Keep principles few (3-7) and high-impact
-- Too many principles = ignored principles
-- Review constitution quarterly for relevance
-- Constitution applies to AI-generated code too
-- Use `/constitution validate` in PR checks
-- Constitution violations should block merge (with explicit override process)
-- Constitution changes should be made with team-wide consensus
-- Always consider impact on existing specs/designs
-- Explicitly state "why this principle is necessary"
-- Define principles in verifiable form
 - Constitution versioning follows semantic versioning
+- See `references/best_practices.md` for additional recommendations

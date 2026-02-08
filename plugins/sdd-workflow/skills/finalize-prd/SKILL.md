@@ -35,14 +35,20 @@ This skill operates in two modes:
 
 ## Prerequisites
 
-**Read the PRD template:**
+**Read the following prerequisite references before execution:**
 
-1. `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/PRD_TEMPLATE.md` (if exists)
-2. `templates/${SDD_LANG:-en}/prd_template.md` (fallback)
+| File                                                    | Purpose                                  |
+|:--------------------------------------------------------|:-----------------------------------------|
+| `../shared/references/prerequisites_directory_paths.md` | Resolve `${SDD_*}` environment variables |
 
-**Read project principles if available:**
+**Load PRD template** (in order):
 
-- `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md` - Project principles for compliance
+1. `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/PRD_TEMPLATE.md` — Project-specific template
+2. `templates/${SDD_LANG:-en}/prd_template.md` — Fallback default
+
+**Load if exists:**
+
+- `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md` — For principle compliance
 
 ## Input
 

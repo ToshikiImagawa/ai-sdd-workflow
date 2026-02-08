@@ -4,6 +4,7 @@ description: "Automatically executed during document updates or before implement
 version: 3.0.0
 license: MIT
 user-invocable: false
+allowed-tools: Read, Glob, Grep
 ---
 
 # Doc Consistency Checker - Document Consistency Check
@@ -27,6 +28,17 @@ AI-SDD principles document path: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/AI-SDD-PRINC
 Understand AI-SDD principles, document structure, persistence rules, and Vibe Coding prevention details.
 
 See `references/prerequisites_directory_paths.md` for directory path resolution using `SDD_*` environment variables.
+
+## Input
+
+This skill is triggered automatically via hooks during document updates or before implementation. It scans documents based on feature context.
+
+| Input Source       | Description                                                    |
+|:-------------------|:---------------------------------------------------------------|
+| Feature context    | Current feature being worked on (from task or document update) |
+| Document paths     | Automatically resolved from `${SDD_*}` environment variables   |
+
+**Note**: This skill is `user-invocable: false` and cannot be called directly. Use `/check-spec` for manual consistency checks.
 
 ## Document Dependencies
 
