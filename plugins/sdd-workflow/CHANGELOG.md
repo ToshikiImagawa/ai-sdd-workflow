@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.2] - 2026-02-09
+
+### Fixed
+
+- **`sdd-init`** - Fixed language setting inheritance from `.sdd-config.json`
+    - `update-claude-md.sh` now reads `SDD_LANG` directly from `.sdd-config.json` instead of relying on environment variable
+    - Previously, when `lang: "ja"` was set in `.sdd-config.json`, the `## AI-SDD Instructions` section in `CLAUDE.md` was incorrectly generated in English
+    - Root cause: `CLAUDE_ENV_FILE` writes from `init-structure.sh` were not reflected in the same shell session when `update-claude-md.sh` ran
+
 ## [3.0.1] - 2026-02-09
 
 ### Added

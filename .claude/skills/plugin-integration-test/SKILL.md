@@ -51,27 +51,41 @@ bash "${SCRIPT}" setup
 
 これにより `/tmp/ai-sdd-plugin-test/` 以下にプラグインごとのテストディレクトリが作成される（git init + 空 CLAUDE.md のコミット済み）。
 
+**追加テストケース**: `sdd-workflow-with-ja-config` ディレクトリも作成され、事前に `lang: "ja"` の `.sdd-config.json` が配置される。このテストケースは、既存の設定ファイルの言語設定がスキルに正しく継承されるかを検証する。
+
 ### Phase 2: session-start テスト
 
-各プラグインに対して `run` コマンドを実行する。以下の2つのコマンドを順番に実行する（確認不要）。
+各プラグインに対して `run` コマンドを実行する。以下の3つのコマンドを順番に実行する（確認不要）。
 
 ```bash
 bash "${SCRIPT}" run "${PLUGINS_DIR}/sdd-workflow"
 bash "${SCRIPT}" run "${PLUGINS_DIR}/sdd-workflow-ja"
 ```
 
+**追加テストケース（既存設定継承テスト）**:
+```bash
+# sdd-workflow-with-ja-config: 既存の .sdd-config.json (lang: ja) + sdd-workflow プラグイン
+bash "${SCRIPT}" run "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-ja-config
+```
+
 内部で `claude --plugin-dir <plugin_dir> --print -p` によるサブセッションを起動し、session-start フックを実行させる。
 フックが生成する以下のファイルを直接検証する（環境変数は `CLAUDE_ENV_FILE` 経由で設定されるため、サブセッション内の `echo` では取得できない）:
 - `.sdd-config.json` の生成と `lang` フィールドの値（`SDD_LANG` の代替検証）
 - `.sdd/` ディレクトリと `AI-SDD-PRINCIPLES.md` の配置
+- **既存設定継承テスト**: 既存の `.sdd-config.json` が上書きされず、`lang: ja` が維持されること
 
 ### Phase 3: /sdd-init テスト
 
-各プラグインに対して `sdd-init` コマンドを実行する。以下の2つのコマンドを並列または順番に実行する（確認不要）。
+各プラグインに対して `sdd-init` コマンドを実行する。以下のコマンドを順番に実行する（確認不要）。
 
 ```bash
 bash "${SCRIPT}" sdd-init "${PLUGINS_DIR}/sdd-workflow"
 bash "${SCRIPT}" sdd-init "${PLUGINS_DIR}/sdd-workflow-ja"
+```
+
+**追加テストケース（既存設定継承テスト）**:
+```bash
+bash "${SCRIPT}" sdd-init "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-ja-config
 ```
 
 **前提条件チェック**: `/sdd-init` 実行前に `session-start.sh` が正しく実行されたかを検証する。以下のファイルが存在するかチェックし、結果を `session-start-check.log` に記録する:
@@ -86,11 +100,16 @@ bash "${SCRIPT}" sdd-init "${PLUGINS_DIR}/sdd-workflow-ja"
 
 ### Phase 3b: 生成系スキルテスト
 
-各プラグインに対して `gen-skills` コマンドを実行する。Phase 3（`/sdd-init`）の完了後に、以下の2つのコマンドを並列実行する（確認不要、timeout=300000）。
+各プラグインに対して `gen-skills` コマンドを実行する。Phase 3（`/sdd-init`）の完了後に、以下のコマンドを並列実行する（確認不要、timeout=300000）。
 
 ```bash
 bash "${SCRIPT}" gen-skills "${PLUGINS_DIR}/sdd-workflow"
 bash "${SCRIPT}" gen-skills "${PLUGINS_DIR}/sdd-workflow-ja"
+```
+
+**追加テストケース（既存設定継承テスト）**:
+```bash
+bash "${SCRIPT}" gen-skills "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-ja-config
 ```
 
 内部で以下のスキルをサブセッションで実行し、生成ファイルと言語を検証する:
@@ -107,7 +126,7 @@ bash "${SCRIPT}" gen-skills "${PLUGINS_DIR}/sdd-workflow-ja"
 各プラグインのログを収集する。以下のコマンドを1つのBash呼び出しで実行する（確認不要）。
 
 ```bash
-bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow" && bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow-ja"
+bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow" && bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow-ja" && bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-ja-config
 ```
 
 ### Phase 5: ログ読み取りとテスト結果判定
@@ -161,6 +180,9 @@ bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow" && bash "${SCRIPT}" colle
 |-----------|-------------|---------------------|
 | sdd-workflow | `en` | `This project follows AI-SDD` |
 | sdd-workflow-ja | `ja` | `このプロジェクトは AI-SDD` |
+| sdd-workflow-with-ja-config | `ja` | `このプロジェクトは AI-SDD` |
+
+**sdd-workflow-with-ja-config** は、`sdd-workflow` プラグインを使用しているが、既存の `.sdd-config.json` で `lang: "ja"` が設定されているケース。このテストにより、既存設定がスキル実行時に正しく継承されるかを検証する。
 
 ### Phase 6: TEST_SUMMARY.md 生成
 

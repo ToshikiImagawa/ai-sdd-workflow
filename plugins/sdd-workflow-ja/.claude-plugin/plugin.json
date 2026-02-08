@@ -1,7 +1,7 @@
 {
   "name": "sdd-workflow-ja",
   "description": "AI駆動仕様駆動開発（AI-SDD）ワークフローを支援する日本語デフォルトプラグイン。sdd-workflowと同一機能で、SDD_LANGのデフォルトがjaに設定されています。",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "author": {
     "name": "toshiki.imagawa",
     "url": "https://github.com/ToshikiImagawa"
