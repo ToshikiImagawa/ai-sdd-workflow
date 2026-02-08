@@ -1,1 +1,0 @@
-../../../shared/references/requirements_diagram_components.md

@@ -132,19 +132,74 @@ Check Quality Checks items before returning output.
 
 ## Output Format
 
-Use the `templates/${SDD_LANG:-en}/requirements_diagram_output.md` template for output formatting.
+**IMPORTANT**: This skill returns text only. It does NOT write files.
 
-**Read the output template before returning results.**
+Return the following markdown structure:
 
-## Output
+```markdown
+## Requirements Diagram (SysML)
 
-**IMPORTANT: This skill returns TEXT only. It does NOT write files.**
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+requirementDiagram
+    requirement Task_Management {
+        id: UR_001
+        text: "Users can efficiently manage tasks"
+        risk: high
+        verifymethod: demonstration
+    }
 
-The output consists of:
+    functionalRequirement Create_Task {
+        id: FR_001
+        text: "User can create new tasks"
+        risk: high
+        verifymethod: test
+    }
 
-1. **Mermaid requirementDiagram code block** - The SysML requirements diagram
-2. **Diagram Structure** - Hierarchical view of requirements
-3. **Relationship Summary** - Table of all relationships with rationale
+    functionalRequirement Edit_Task {
+        id: FR_002
+        text: "User can edit existing tasks"
+        risk: medium
+        verifymethod: test
+    }
+
+    functionalRequirement Delete_Task {
+        id: FR_003
+        text: "User can delete tasks"
+        risk: medium
+        verifymethod: test
+    }
+
+    performanceRequirement Response_Time {
+        id: NFR_001
+        text: "Response time under 1 second"
+        risk: medium
+        verifymethod: demonstration
+    }
+
+    Task_Management - contains -> Create_Task
+    Task_Management - contains -> Edit_Task
+    Task_Management - contains -> Delete_Task
+    Response_Time - traces -> Create_Task
+```
+
+## Diagram Structure
+
+- **UR_001**: Task_Management (User Requirement)
+  - **FR_001**: Create_Task (contains)
+  - **FR_002**: Edit_Task (contains)
+  - **FR_003**: Delete_Task (contains)
+- **NFR_001**: Response_Time → traces → FR_001
+
+## Relationship Summary
+
+| From    | Relationship | To      | Rationale                                 |
+|:--------|:-------------|:--------|:------------------------------------------|
+| UR_001  | contains     | FR_001  | Task creation is part of task management  |
+| UR_001  | contains     | FR_002  | Task editing is part of task management   |
+| UR_001  | contains     | FR_003  | Task deletion is part of task management  |
+| NFR_001 | traces       | FR_001  | Response time affects task creation UX    |
+```
 
 The caller (generate-prd or user) is responsible for saving the output to a file if needed.
 
