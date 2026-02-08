@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-02-06
+
+### Added
+
+#### Skills
+
+- **`sdd-init`** - Added automatic `.sdd-config.json` `lang` field management
+    - If config file doesn't exist: Create with default settings (including `lang: "en"`)
+    - If config file exists but missing `lang` field (v3.0.0 migration): Add `lang: "en"`
+    - Added step 1.5 "Manage Configuration File" to execution flow
+
+#### Documentation
+
+- **Added notes to Mermaid notation guides**
+    - Labels containing `<` and `>` (like `<<include>>`) must be escaped using HTML entities
+    - Example: Write `&lt;&lt;include&gt;&gt;` to display `<<include>>`
+
+### Changed
+
+#### Shared References
+
+- **`usecase_diagram_guide.md`** - Fixed use case diagram relationship notation to UML standard
+    - Association: `-->` → `---` (solid line, bidirectional)
+    - Include: `-. include .->` → `-.->|"<<include>>"|` (dotted arrow with stereotype label)
+    - Extend: `-. extend .->` → `-.->|"<<extend>>"|` (dotted arrow with stereotype label)
+    - Updated Common Mistakes table
+    - Updated all Mermaid code examples to new notation
+
+- **`mermaid_notation_rules.md`** - Updated use case diagram notation
+    - Fixed association notation to `---`
+    - Updated Include/Extend label format
+    - Updated Common Mistakes section
+
+#### Skills
+
+- **`generate-prd`** - Fixed use case diagram notation in PRD templates
+    - `templates/en/prd_template.md`: Updated association, Include, Extend notation
+    - `templates/ja/prd_template.md`: Same fixes (keeping Japanese labels `<<包含>>`, `<<拡張>>`)
+
 ## [3.0.0] - 2026-02-06
 
 ### Added

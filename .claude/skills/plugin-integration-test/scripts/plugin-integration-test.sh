@@ -72,12 +72,15 @@ run_test() {
 
     echo "=== Phase 2: session-start テスト [${plugin_name}] ==="
 
+    local start_time
+    start_time=$(date +%s)
+
     # claude サブセッションを起動して session-start フックを実行させる
     # session-start.sh は CLAUDE_ENV_FILE 経由で環境変数を設定するため、
     # echo による環境変数確認はサンドボックス制限で動作しない。
     # 代わりに、フックが生成するファイル（.sdd-config.json, .sdd/ ディレクトリ）を直接検証する。
     cd "$test_dir"
-    claude --plugin-dir "$plugin_dir" --print -p "session-start フックが実行されました。このメッセージが表示されれば正常です。" > "$log_dir/session-start.log" 2>&1 || true
+    echo "session-start フックが実行されました。このメッセージが表示されれば正常です。" | claude --plugin-dir "$plugin_dir" --print > "$log_dir/session-start.log" 2>&1 || true
 
     echo "ログ保存: $log_dir/session-start.log"
 
@@ -103,6 +106,12 @@ run_test() {
         echo "AI-SDD-PRINCIPLES.md 保存完了"
     fi
 
+    local end_time
+    end_time=$(date +%s)
+    local elapsed=$((end_time - start_time))
+    echo "session-start:${elapsed}" >> "$log_dir/timing.log"
+    echo "実行時間: ${elapsed}秒"
+
     echo ""
 }
 
@@ -117,6 +126,9 @@ run_sdd_init_test() {
     mkdir -p "$log_dir"
 
     echo "=== Phase 3: /sdd-init テスト [${plugin_name}] ==="
+
+    local start_time
+    start_time=$(date +%s)
 
     # 前提条件チェック: session-start.sh が実行されたか確認
     echo "--- session-start 実行確認 ---"
@@ -152,9 +164,9 @@ run_sdd_init_test() {
     echo "  .sdd/AI-SDD-PRINCIPLES.md: $([ -f "$test_dir/.sdd/AI-SDD-PRINCIPLES.md" ] && echo 'exists' || echo 'missing')" >> "$log_dir/session-start-check.log"
     echo "session-start-check.log 保存完了"
 
-    echo "--- /sdd-init 実行 ---"
+    echo "--- /sdd-init --ci 実行 ---"
     cd "$test_dir"
-    claude --plugin-dir "$plugin_dir" --print -p "/sdd-init" > "$log_dir/sdd-init.log" 2>&1 || true
+    echo "/sdd-init --ci" | claude --plugin-dir "$plugin_dir" --print > "$log_dir/sdd-init.log" 2>&1 || true
 
     echo "ログ保存: $log_dir/sdd-init.log"
 
@@ -171,6 +183,12 @@ run_sdd_init_test() {
         echo "CLAUDE.md 保存完了"
     fi
 
+    local end_time
+    end_time=$(date +%s)
+    local elapsed=$((end_time - start_time))
+    echo "sdd-init:${elapsed}" >> "$log_dir/timing.log"
+    echo "実行時間: ${elapsed}秒"
+
     echo ""
 }
 
@@ -186,11 +204,20 @@ run_gen_skills_test() {
 
     echo "=== Phase 3b: 生成系スキルテスト [${plugin_name}] ==="
 
+    local phase_start
+    phase_start=$(date +%s)
+
     # /constitution init テスト
     echo "--- /constitution init テスト ---"
     cd "$test_dir"
-    claude --plugin-dir "$plugin_dir" --print -p "/constitution init" > "$log_dir/constitution-init.log" 2>&1 || true
-    echo "ログ保存: $log_dir/constitution-init.log"
+    local start_time
+    start_time=$(date +%s)
+    echo "/constitution init" | claude --plugin-dir "$plugin_dir" --print > "$log_dir/constitution-init.log" 2>&1 || true
+    local end_time
+    end_time=$(date +%s)
+    local elapsed=$((end_time - start_time))
+    echo "constitution-init:${elapsed}" >> "$log_dir/timing.log"
+    echo "ログ保存: $log_dir/constitution-init.log (${elapsed}秒)"
 
     # CONSTITUTION.md を保存
     if [ -f "$test_dir/.sdd/CONSTITUTION.md" ]; then
@@ -201,8 +228,12 @@ run_gen_skills_test() {
     # /generate-prd テスト（ダミー要件）
     echo "--- /generate-prd テスト ---"
     cd "$test_dir"
-    claude --plugin-dir "$plugin_dir" --print -p "/generate-prd --ci A sample task management feature. Users can create, edit, and delete tasks." > "$log_dir/generate-prd.log" 2>&1 || true
-    echo "ログ保存: $log_dir/generate-prd.log"
+    start_time=$(date +%s)
+    echo "/generate-prd --ci A sample task management feature. Users can create, edit, and delete tasks." | claude --plugin-dir "$plugin_dir" --print > "$log_dir/generate-prd.log" 2>&1 || true
+    end_time=$(date +%s)
+    elapsed=$((end_time - start_time))
+    echo "generate-prd:${elapsed}" >> "$log_dir/timing.log"
+    echo "ログ保存: $log_dir/generate-prd.log (${elapsed}秒)"
 
     # 生成された PRD ファイルを保存
     if [ -d "$test_dir/.sdd/requirement" ]; then
@@ -219,8 +250,12 @@ run_gen_skills_test() {
     # /generate-spec テスト（ダミー要件）
     echo "--- /generate-spec テスト ---"
     cd "$test_dir"
-    claude --plugin-dir "$plugin_dir" --print -p "/generate-spec --ci User authentication feature. Supports login and logout with email and password." > "$log_dir/generate-spec.log" 2>&1 || true
-    echo "ログ保存: $log_dir/generate-spec.log"
+    start_time=$(date +%s)
+    echo "/generate-spec --ci User authentication feature. Supports login and logout with email and password." | claude --plugin-dir "$plugin_dir" --print > "$log_dir/generate-spec.log" 2>&1 || true
+    end_time=$(date +%s)
+    elapsed=$((end_time - start_time))
+    echo "generate-spec:${elapsed}" >> "$log_dir/timing.log"
+    echo "ログ保存: $log_dir/generate-spec.log (${elapsed}秒)"
 
     # 生成された仕様書ファイルを保存
     if [ -d "$test_dir/.sdd/specification" ]; then
@@ -241,6 +276,12 @@ run_gen_skills_test() {
         echo "sdd-structure-after-gen.log 保存完了"
     fi
 
+    local phase_end
+    phase_end=$(date +%s)
+    local phase_elapsed=$((phase_end - phase_start))
+    echo "gen-skills-total:${phase_elapsed}" >> "$log_dir/timing.log"
+    echo "Phase 3b 合計実行時間: ${phase_elapsed}秒"
+
     echo ""
 }
 
@@ -249,6 +290,7 @@ collect_logs() {
     local plugin_dir="$1"
     local plugin_name
     plugin_name="$(basename "$plugin_dir")"
+    local test_dir="${TEST_BASE}/${plugin_name}"
     local log_dir="${TEST_BASE}/logs/${plugin_name}"
 
     echo "=== Phase 4: ログ収集 [${plugin_name}] ==="
@@ -256,6 +298,24 @@ collect_logs() {
     if [ ! -d "$log_dir" ]; then
         echo "ログディレクトリが見つかりません: $log_dir"
         return 1
+    fi
+
+    # .sdd-config.json をログディレクトリにコピー（まだコピーされていない場合）
+    if [ -f "$test_dir/.sdd-config.json" ] && [ ! -f "$log_dir/config.json" ]; then
+        cp "$test_dir/.sdd-config.json" "$log_dir/config.json"
+        echo "config.json を収集しました"
+    fi
+
+    # .sdd/ ディレクトリ構造を記録（session-start 後、まだ記録されていない場合）
+    if [ -d "$test_dir/.sdd" ] && [ ! -f "$log_dir/sdd-structure-after-session.log" ]; then
+        find "$test_dir/.sdd" -type f | sort > "$log_dir/sdd-structure-after-session.log" 2>&1 || true
+        echo "sdd-structure-after-session.log を収集しました"
+    fi
+
+    # AI-SDD-PRINCIPLES.md をコピー（まだコピーされていない場合）
+    if [ -f "$test_dir/.sdd/AI-SDD-PRINCIPLES.md" ] && [ ! -f "$log_dir/AI-SDD-PRINCIPLES.md" ]; then
+        cp "$test_dir/.sdd/AI-SDD-PRINCIPLES.md" "$log_dir/AI-SDD-PRINCIPLES.md"
+        echo "AI-SDD-PRINCIPLES.md を収集しました"
     fi
 
     echo "収集済みログファイル:"
@@ -325,9 +385,53 @@ generate_summary() {
 | /generate-spec 実行 | - | |
 | 仕様書 言語検証 | - | 日本語で生成されていること |
 
-## ログファイル
+## 実行時間
 
 SUMMARY_EOF
+
+    # 実行時間テーブルを追加
+    for plugin_dir in "$PLUGINS_DIR"/*/; do
+        local plugin_name
+        plugin_name="$(basename "$plugin_dir")"
+        local log_dir="${TEST_BASE}/logs/${plugin_name}"
+        local timing_file="${log_dir}/timing.log"
+
+        echo "### ${plugin_name}" >> "$summary_file"
+        echo "" >> "$summary_file"
+
+        if [ -f "$timing_file" ]; then
+            echo "| フェーズ | 実行時間 |" >> "$summary_file"
+            echo "|---------|----------|" >> "$summary_file"
+
+            while IFS=: read -r phase seconds; do
+                local minutes=$((seconds / 60))
+                local remaining_seconds=$((seconds % 60))
+                if [ "$minutes" -gt 0 ]; then
+                    echo "| ${phase} | ${minutes}分${remaining_seconds}秒 (${seconds}秒) |" >> "$summary_file"
+                else
+                    echo "| ${phase} | ${seconds}秒 |" >> "$summary_file"
+                fi
+            done < "$timing_file"
+
+            # 合計時間を計算
+            local total_seconds=0
+            while IFS=: read -r phase seconds; do
+                if [ "$phase" != "gen-skills-total" ]; then
+                    total_seconds=$((total_seconds + seconds))
+                fi
+            done < "$timing_file"
+
+            local total_minutes=$((total_seconds / 60))
+            local total_remaining=$((total_seconds % 60))
+            echo "| **合計** | **${total_minutes}分${total_remaining}秒 (${total_seconds}秒)** |" >> "$summary_file"
+        else
+            echo "タイミング情報なし" >> "$summary_file"
+        fi
+        echo "" >> "$summary_file"
+    done
+
+    echo "## ログファイル" >> "$summary_file"
+    echo "" >> "$summary_file"
 
     # ログファイル一覧を追加
     for plugin_dir in "$PLUGINS_DIR"/*/; do

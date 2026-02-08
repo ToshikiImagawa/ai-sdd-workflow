@@ -4,6 +4,7 @@ description: "Automatically executed before implementation to analyze user instr
 version: 3.0.0
 license: MIT
 user-invocable: false
+allowed-tools: Read, Glob, Grep, AskUserQuestion
 ---
 
 # Vibe Detector - Automatic Detection of Vague Instructions
@@ -21,7 +22,7 @@ When reading templates, use the path: `templates/${SDD_LANG:-en}/`
 
 **Before execution, you must read the AI-SDD principles document.**
 
-AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
+AI-SDD principles document path: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/AI-SDD-PRINCIPLES.md`
 
 **Note**: This file is automatically updated at the start of each session.
 
@@ -30,6 +31,18 @@ Understand AI-SDD principles.
 This skill follows AI-SDD principles for Vibe Coding detection.
 
 See `references/prerequisites_directory_paths.md` for directory path resolution using `SDD_*` environment variables.
+
+## Input
+
+This skill is triggered automatically via hooks when the user submits a message.
+It receives user input context for analysis.
+
+| Input Source   | Description                                           |
+|:---------------|:------------------------------------------------------|
+| User message   | The user's instruction or request text                |
+| Existing specs | Loaded from `${SDD_SPECIFICATION_PATH}/` if available |
+
+**Note**: This skill is `user-invocable: false` and cannot be called directly with `/vibe-detector`.
 
 ## Detection Patterns
 
@@ -169,7 +182,7 @@ Read `templates/${SDD_LANG:-en}/assumed_spec.md` and use it for creating inferre
 - {Risk...}
 ```
 
-**Save Location**: `.sdd/task/{ticket}/assumed-spec.md`
+**Save Location**: `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/assumed-spec.md`
 
 ### 2. Set Verification Points
 

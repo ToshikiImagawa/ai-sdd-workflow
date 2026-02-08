@@ -2,12 +2,24 @@
 name: plugin-integration-test
 description: "sdd-workflow / sdd-workflow-ja プラグインの統合テストを実行する。session-start.sh、環境変数、/sdd-init を検証しログを記録する。"
 disable-model-invocation: true
-allowed-tools: Bash(bash:*), Read
+context: fork
+user-invocable: true
+allowed-tools: Bash, Read
+allowed-prompts:
+  - tool: Bash
+    prompt: "*"
 ---
 
 # Plugin Integration Test
 
 sdd-workflow / sdd-workflow-ja プラグインの統合テストを実行し、session-start.sh のフック動作・環境変数設定・`/sdd-init` スキルの動作を検証する。
+
+## 実行ポリシー
+
+**このスキルは自動実行モードで動作します:**
+- Phase 1～6を順番に自動実行する
+- 各フェーズの実行前にユーザーに確認を求めない
+- 全てのフェーズ完了後に結果を報告する
 
 ## 前提条件
 
@@ -25,6 +37,8 @@ TEST_BASE = /tmp/ai-sdd-plugin-test
 
 ## 処理フロー
 
+**IMPORTANT: 以下の Phase 1～6 を自動的に順番に実行してください。各フェーズの実行前にユーザーに確認を求めず、連続して実行してください。**
+
 以下の Phase を順番に実行する。
 
 ### Phase 1: 環境構築
@@ -39,7 +53,7 @@ bash "${SCRIPT}" setup
 
 ### Phase 2: session-start テスト
 
-各プラグインに対して `run` コマンドを実行する。`${PLUGINS_DIR}` 内の各プラグインディレクトリに対して順番に実行すること。
+各プラグインに対して `run` コマンドを実行する。以下の2つのコマンドを順番に実行する（確認不要）。
 
 ```bash
 bash "${SCRIPT}" run "${PLUGINS_DIR}/sdd-workflow"
@@ -53,7 +67,7 @@ bash "${SCRIPT}" run "${PLUGINS_DIR}/sdd-workflow-ja"
 
 ### Phase 3: /sdd-init テスト
 
-各プラグインに対して `sdd-init` コマンドを実行する。
+各プラグインに対して `sdd-init` コマンドを実行する。以下の2つのコマンドを並列または順番に実行する（確認不要）。
 
 ```bash
 bash "${SCRIPT}" sdd-init "${PLUGINS_DIR}/sdd-workflow"
@@ -65,14 +79,14 @@ bash "${SCRIPT}" sdd-init "${PLUGINS_DIR}/sdd-workflow-ja"
 - `.sdd/` ディレクトリ
 - `.sdd/AI-SDD-PRINCIPLES.md`
 
-内部で `claude --plugin-dir <plugin_dir> --print -p "/sdd-init"` を実行し、以下を検証する:
+内部で `claude --plugin-dir <plugin_dir> --print -p "/sdd-init --ci"` を実行し、以下を検証する（`--ci` フラグで非対話モード実行）:
 - `/sdd-init` スキルの正常実行
 - `.sdd/` 配下のディレクトリ構造生成
 - `CLAUDE.md` への AI-SDD セクション追記
 
 ### Phase 3b: 生成系スキルテスト
 
-各プラグインに対して `gen-skills` コマンドを実行する。Phase 3（`/sdd-init`）の完了後に実行すること。
+各プラグインに対して `gen-skills` コマンドを実行する。Phase 3（`/sdd-init`）の完了後に、以下の2つのコマンドを並列実行する（確認不要、timeout=300000）。
 
 ```bash
 bash "${SCRIPT}" gen-skills "${PLUGINS_DIR}/sdd-workflow"
@@ -90,16 +104,15 @@ bash "${SCRIPT}" gen-skills "${PLUGINS_DIR}/sdd-workflow-ja"
 
 ### Phase 4: ログ収集
 
-各プラグインのログを収集する。
+各プラグインのログを収集する。以下のコマンドを1つのBash呼び出しで実行する（確認不要）。
 
 ```bash
-bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow"
-bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow-ja"
+bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow" && bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow-ja"
 ```
 
 ### Phase 5: ログ読み取りとテスト結果判定
 
-収集した各ログファイルを `Read` ツールで読み取り、テスト結果を判定する。
+収集した各ログファイルを `Read` ツールで読み取り、テスト結果を判定する。複数のログファイルを並列に読み取る（確認不要）。
 
 読み取るログファイル（各プラグインについて）:
 
@@ -118,6 +131,7 @@ bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow-ja"
 13. **`/tmp/ai-sdd-plugin-test/logs/<plugin>/generate-spec.log`** - `/generate-spec` の実行ログ
 14. **`/tmp/ai-sdd-plugin-test/logs/<plugin>/spec-*.md`** - 生成された仕様書ファイルの内容と言語
 15. **`/tmp/ai-sdd-plugin-test/logs/<plugin>/sdd-structure-after-gen.log`** - 生成系スキル実行後のファイル構造
+16. **`/tmp/ai-sdd-plugin-test/logs/<plugin>/timing.log`** - 各コマンドの実行時間（`<phase>:<seconds>` 形式）
 
 #### 判定基準
 
@@ -160,9 +174,29 @@ bash "${SCRIPT}" summary
 
 ## 出力
 
-テスト完了後、以下を報告する:
+**全てのPhase（1～6）を自動実行した後**、テスト完了メッセージとして以下を報告する:
 
 1. 各プラグインの各テスト項目の PASS / FAIL
 2. 全体の成功率（PASS数 / 全テスト数）
-3. FAIL がある場合は該当ログの抜粋と原因の推定
-4. `/tmp/ai-sdd-plugin-test/TEST_SUMMARY.md` のパス
+3. **各コマンドの実行時間集計**（`timing.log` から読み取り、テーブル形式で表示）
+4. FAIL がある場合は該当ログの抜粋と原因の推定
+5. `/tmp/ai-sdd-plugin-test/TEST_SUMMARY.md` のパス
+
+### 実行時間の表示形式
+
+各プラグインについて、以下の形式でタイミング情報を表示すること:
+
+```markdown
+### <plugin-name> 実行時間
+
+| フェーズ | 実行時間 |
+|---------|----------|
+| session-start | X秒 |
+| sdd-init | X秒 |
+| constitution-init | X秒 |
+| generate-prd | X秒 |
+| generate-spec | X秒 |
+| **合計** | **X分Y秒 (Z秒)** |
+```
+
+**重要**: Phase 1～6の実行中にユーザーに進行確認を求めないこと。

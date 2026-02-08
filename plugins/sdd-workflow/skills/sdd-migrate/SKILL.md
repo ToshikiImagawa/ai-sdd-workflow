@@ -12,6 +12,23 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 Migrate legacy AI-SDD directory structure (v1.x) to new version (v2.0.0).
 
+## Prerequisites
+
+**Read the following prerequisite references before execution:**
+
+- `../shared/references/prerequisites_plugin_update.md` - Check for plugin updates
+- `../shared/references/prerequisites_directory_paths.md` - Resolve directory paths using `SDD_*` environment variables
+
+## Input
+
+$ARGUMENTS
+
+This command takes no arguments. It automatically detects the current directory structure.
+
+```
+/sdd-migrate
+```
+
 ### Language Configuration
 
 Output templates are located under `templates/${SDD_LANG:-en}/` within this skill directory.

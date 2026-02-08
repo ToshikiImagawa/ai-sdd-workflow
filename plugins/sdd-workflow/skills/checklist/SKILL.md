@@ -58,22 +58,22 @@ Both flat and hierarchical structures are supported.
 **For flat structure**:
 
 ```
-Load .sdd/requirement/{feature-name}.md (PRD, if exists)
-Load .sdd/specification/{feature-name}_spec.md (required)
-Load .sdd/specification/{feature-name}_design.md (required)
-Load .sdd/task/{ticket}/tasks.md (if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md (PRD, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md (required)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md (required)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/tasks.md (if exists)
 ```
 
 **For hierarchical structure** (when argument contains `/`):
 
 ```
-Load .sdd/requirement/{parent-feature}/index.md (parent feature PRD, if exists)
-Load .sdd/requirement/{parent-feature}/{feature-name}.md (child feature PRD, if exists)
-Load .sdd/specification/{parent-feature}/index_spec.md (parent feature spec, if exists)
-Load .sdd/specification/{parent-feature}/{feature-name}_spec.md (child feature spec, required)
-Load .sdd/specification/{parent-feature}/index_design.md (parent feature design, if exists)
-Load .sdd/specification/{parent-feature}/{feature-name}_design.md (child feature design, required)
-Load .sdd/task/{ticket}/tasks.md (if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md (parent feature PRD, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/{feature-name}.md (child feature PRD, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md (parent feature spec, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md (child feature spec, required)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md (parent feature design, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md (child feature design, required)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/tasks.md (if exists)
 ```
 
 **Note the difference in naming conventions**:
@@ -177,7 +177,7 @@ For a complete checklist example with all categories (CHK-101 through CHK-903), 
 
 The example includes 9 categories (Requirements, Specification, Design, Implementation, Testing, Documentation, Security, Performance, Deployment) with 60 total items across P1/P2/P3 priority levels.
 
-**Save Location**: `.sdd/task/{ticket}/checklist.md`
+**Save Location**: `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/checklist.md`
 
 ## Checklist Template Integration
 

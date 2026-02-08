@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 # Task Cleanup - Task Log Cleanup
 
-Organizes documents under `.sdd/task/`, integrating important design decisions into `.sdd/specification/*_design.md`
+Organizes documents under `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/`, integrating important design decisions into `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/*_design.md`
 before deletion.
 
 ## Prerequisites
@@ -65,15 +65,15 @@ Replace placeholders with actual directory/file names, types, dates, and counts.
 ### 1. Identify Target Directory
 
 ```
-With argument -> Target .sdd/task/{argument}/
-Without argument -> Target entire .sdd/task/
+With argument -> Target ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{argument}/
+Without argument -> Target entire ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/
 ```
 
 ### 2. Check Target Files
 
 ```bash
 # Get file list in target directory
-ls -la .sdd/task/{target}/
+ls -la ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{target}/
 
 # Check last update date for each file
 git log -1 --format="%ci" -- <file_path>
@@ -126,10 +126,10 @@ When performing integration:
 
 ```bash
 # Delete files
-git rm .sdd/task/{target}/{file}
+git rm ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{target}/{file}
 
 # Delete entire directory (after all files processed)
-git rm -r .sdd/task/{target}/
+git rm -r ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{target}/
 ```
 
 ## Output

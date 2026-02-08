@@ -21,7 +21,7 @@
 ### Next Steps
 
 1. Review PRD content and adjust as needed
-2. Create abstract specification and technical design with `/generate_spec`
+2. Create abstract specification and technical design with `/generate-spec`
 3. Reference PRD requirement IDs in specifications
 
 ### Recommended Manual Verification
@@ -35,7 +35,7 @@
 
 ```bash
 # PRD quality check (CONSTITUTION.md compliance, completeness, clarity)
-/check_spec {feature} --full
+/check-spec {feature} --full
 
 # Specification clarity scan
 /clarify {feature}

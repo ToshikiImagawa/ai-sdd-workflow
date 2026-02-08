@@ -56,20 +56,20 @@ Both flat and hierarchical structures are supported.
 **For flat structure**:
 
 ```
-Load .sdd/requirement/{feature-name}.md (PRD, if exists)
-Load .sdd/specification/{feature-name}_spec.md (if exists)
-Load .sdd/specification/{feature-name}_design.md (required)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md (PRD, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md (if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md (required)
 ```
 
 **For hierarchical structure** (when argument contains `/`):
 
 ```
-Load .sdd/requirement/{parent-feature}/index.md (parent feature PRD, if exists)
-Load .sdd/requirement/{parent-feature}/{feature-name}.md (child feature PRD, if exists)
-Load .sdd/specification/{parent-feature}/index_spec.md (parent feature spec, if exists)
-Load .sdd/specification/{parent-feature}/{feature-name}_spec.md (child feature spec, if exists)
-Load .sdd/specification/{parent-feature}/index_design.md (parent feature design, if exists)
-Load .sdd/specification/{parent-feature}/{feature-name}_design.md (child feature design, required)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md (parent feature PRD, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/{feature-name}.md (child feature PRD, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md (parent feature spec, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md (child feature spec, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md (parent feature design, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md (child feature design, required)
 ```
 
 **Note the difference in naming conventions**:
@@ -151,7 +151,7 @@ The example includes 5 phases (Foundation, Core Implementation, Integration, Tes
 
 ## Output
 
-Use the `templates/${SDD_LANG:-en}/breakdown_output.md` template for output formatting. Save results to .sdd/task/{ticket_number}/tasks.md or .sdd/task/{feature}/tasks.md.
+Use the `templates/${SDD_LANG:-en}/breakdown_output.md` template for output formatting. Save results to ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket_number}/tasks.md or ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{feature}/tasks.md.
 
 ## Requirement Coverage Verification
 
@@ -179,7 +179,7 @@ Add the following to task list end (if PRD/spec exists):
 ## Post-Generation Actions
 
 1. **Save File**:
-    - `.sdd/task/{target}/tasks.md`
+    - `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{target}/tasks.md`
 
 2. **Requirement Coverage Verification**:
     - If PRD/spec exists: Verify all requirements are covered by tasks

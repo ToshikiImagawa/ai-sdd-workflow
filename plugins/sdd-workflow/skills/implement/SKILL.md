@@ -25,9 +25,9 @@ Verify the following exist before execution:
 
 | Prerequisite         | Verification                                    | Command to Generate          |
 |:---------------------|:------------------------------------------------|:-----------------------------|
-| **Task Breakdown**   | `.sdd/task/{ticket}/tasks.md` exists            | `/task-breakdown {feature}`  |
-| **Technical Design** | `.sdd/specification/{feature}_design.md` exists | `/generate-spec {feature}`   |
-| **Abstract Spec**    | `.sdd/specification/{feature}_spec.md` exists   | `/generate-spec {feature}`   |
+| **Task Breakdown**   | `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/tasks.md` exists            | `/task-breakdown {feature}`  |
+| **Technical Design** | `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature}_design.md` exists | `/generate-spec {feature}`   |
+| **Abstract Spec**    | `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature}_spec.md` exists   | `/generate-spec {feature}`   |
 
 * For hierarchical structure: Add `[{path}/]` prefix (e.g., `auth/user-login_spec.md`).
 * For parent features, use `index_spec.md`
@@ -139,7 +139,7 @@ After completing each task:
 
 Read `templates/${SDD_LANG:-en}/continuous_verification.md` for auto-checks, spec consistency checks, and progress update format.
 
-**Progress Log** `.sdd/task/{ticket}/implementation_progress.md`:
+**Progress Log** `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/implementation_progress.md`:
 
 For an example progress log format, see: `examples/implementation_progress_log.md`
 

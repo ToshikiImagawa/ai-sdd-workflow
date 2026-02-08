@@ -38,10 +38,10 @@ The `SDD_LANG` environment variable determines the language (default: `en`).
 
 $ARGUMENTS
 
-| Argument | Required | Description |
-|:--|:--|:--|
-| `feature-name` | Yes | Target feature name or path (e.g., `user-auth`, `auth/user-login`) |
-| `--interactive` | - | Interactive mode: Answer questions one at a time |
+| Argument        | Required | Description                                                        |
+|:----------------|:---------|:-------------------------------------------------------------------|
+| `feature-name`  | Yes      | Target feature name or path (e.g., `user-auth`, `auth/user-login`) |
+| `--interactive` | -        | Interactive mode: Answer questions one at a time                   |
 
 ### Input Examples
 
@@ -60,20 +60,20 @@ Both flat and hierarchical structures are supported.
 **For flat structure**:
 
 ```
-Load .sdd/requirement/{feature-name}.md (PRD, if exists)
-Load .sdd/specification/{feature-name}_spec.md (if exists)
-Load .sdd/specification/{feature-name}_design.md (if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md (PRD, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md (if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md (if exists)
 ```
 
 **For hierarchical structure** (when argument contains `/`):
 
 ```
-Load .sdd/requirement/{parent-feature}/index.md (parent feature PRD, if exists)
-Load .sdd/requirement/{parent-feature}/{feature-name}.md (child feature PRD, if exists)
-Load .sdd/specification/{parent-feature}/index_spec.md (parent feature spec, if exists)
-Load .sdd/specification/{parent-feature}/{feature-name}_spec.md (child feature spec, if exists)
-Load .sdd/specification/{parent-feature}/index_design.md (parent feature design, if exists)
-Load .sdd/specification/{parent-feature}/{feature-name}_design.md (child feature design, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md (parent feature PRD, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/{feature-name}.md (child feature PRD, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md (parent feature spec, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md (child feature spec, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md (parent feature design, if exists)
+Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md (child feature design, if exists)
 ```
 
 **Note the difference in naming conventions**:
@@ -83,57 +83,19 @@ Load .sdd/specification/{parent-feature}/{feature-name}_design.md (child feature
 
 ### 2. Nine Category Analysis
 
-Analyze specifications across these categories:
+Analyze specifications across 9 key categories. See `references/nine_category_analysis.md` for:
 
-| Category                           | Analysis Focus                       | Examples of Ambiguity                   |
-|:-----------------------------------|:-------------------------------------|:----------------------------------------|
-| **1. Functional Scope**            | What the feature does vs doesn't do  | Edge cases, boundary conditions         |
-| **2. Data Model**                  | Data structures, types, constraints  | Field nullability, validation rules     |
-| **3. Flow & Behavior**             | State transitions, error handling    | Rollback behavior, retry logic          |
-| **4. Non-Functional Requirements** | Performance, security, scalability   | Response time requirements, rate limits |
-| **5. Integrations**                | External system dependencies         | Authentication methods, API versions    |
-| **6. Edge Cases**                  | Boundary conditions, error scenarios | Empty states, network failures          |
-| **7. Constraints**                 | Technical limitations, trade-offs    | Browser support, data size limits       |
-| **8. Terminology**                 | Domain-specific terms                | Consistent naming, acronym definitions  |
-| **9. Completion Signals**          | "Done" criteria, success metrics     | Acceptance criteria, test coverage      |
+- Full category definitions and analysis focus
+- Clarity level classification (Clear / Partial / Missing)
+- Question prioritization criteria
+- Question format template
 
-### 3. Classify Clarity Level
+### 3. Generate Clarification Questions
 
-For each category, classify clarity as:
+Based on category analysis, generate up to 5 high-impact questions using the format in
+`references/nine_category_analysis.md`.
 
-| Level       | Criteria                               | Example                             |
-|:------------|:---------------------------------------|:------------------------------------|
-| **Clear**   | Fully specified with explicit examples | "Return 404 when user ID not found" |
-| **Partial** | Concept exists but details missing     | "Handle errors appropriately"       |
-| **Missing** | Not mentioned in specifications        | No mention of authentication flow   |
-
-### 4. Generate Clarification Questions
-
-Generate up to 5 high-impact questions prioritizing:
-
-**Selection Criteria**:
-
-1. **Impact**: Would ambiguity cause major implementation divergence?
-2. **Frequency**: Will this decision affect multiple modules?
-3. **Risk**: Could wrong assumptions require significant rework?
-
-**Question Format**:
-
-````markdown
-### Q{n}: {Category} - {Question Title}
-
-**Context**: {Brief explanation of why this matters}
-
-**Question**: {Specific question requiring user decision}
-
-**Examples to Consider**:
-- Option A: {Example}
-- Option B: {Example}
-
-**Current Specification State**: Clear / Partial / Missing
-````
-
-### 5. Integrate Answers
+### 4. Integrate Answers
 
 After receiving user answers, the **main agent (this skill)** applies the integration:
 
@@ -142,7 +104,8 @@ After receiving user answers, the **main agent (this skill)** applies the integr
 3. **Mark Resolved**: Track which questions have been addressed
 4. **Generate Diff**: Show what was added to specifications
 
-**Note**: The `clarification-assistant` agent outputs integration proposals (target file, section, content). This skill applies the actual edits.
+**Note**: The `clarification-assistant` agent outputs integration proposals (target file, section, content). This skill
+applies the actual edits.
 
 ## Output
 
@@ -211,7 +174,6 @@ The following verifications are automatically performed during clarification:
 - [x] **Clarity Score Calculation**: Classify items as Clear/Partial/Missing and calculate overall score
 - [x] **Question Prioritization**: Select questions based on impact, risk, and blocker status
 
-
 ### Verification Commands
 
 ```bash
@@ -224,11 +186,11 @@ The following verifications are automatically performed during clarification:
 
 ### Implementation Readiness Criteria
 
-| Clarity Score | Recommended Action |
-|:---|:---|
-| 80% or above | Ready for implementation |
-| 60-79% | Recommended to resolve Partial items |
-| Below 60% | Further clarification required before implementation |
+| Clarity Score | Recommended Action                                   |
+|:--------------|:-----------------------------------------------------|
+| 80% or above  | Ready for implementation                             |
+| 60-79%        | Recommended to resolve Partial items                 |
+| Below 60%     | Further clarification required before implementation |
 
 ## Notes
 

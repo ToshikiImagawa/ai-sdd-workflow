@@ -5,12 +5,13 @@ version: 3.0.0
 license: MIT
 user-invocable: true
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Glob, Grep, Skill
+allowed-tools: Read, Write, Edit, Glob, Grep, Skill, Bash
 ---
 
 # Constitution - Project Principles Management
 
-Define the project's non-negotiable principles (Constitution) and verify that all specifications and design documents comply with them.
+Define the project's non-negotiable principles (Constitution)
+and verify that all specifications and design documents comply with them.
 
 ## Prerequisites
 
@@ -31,33 +32,33 @@ A Project Constitution defines **non-negotiable principles that form the foundat
 
 ### Constitution Characteristics
 
-| Characteristic    | Description                                                      |
-|:------------------|:-----------------------------------------------------------------|
+| Characteristic     | Description                                                     |
+|:-------------------|:----------------------------------------------------------------|
 | **Non-negotiable** | Not open to debate. Changes require careful consideration       |
-| **Persistent**    | Consistently applied across the entire project                   |
-| **Hierarchical**  | Higher principles take precedence over lower ones                |
-| **Verifiable**    | Can automatically verify spec/design compliance with principles  |
+| **Persistent**     | Consistently applied across the entire project                  |
+| **Hierarchical**   | Higher principles take precedence over lower ones               |
+| **Verifiable**     | Can automatically verify spec/design compliance with principles |
 
 ### Constitution Examples
 
-| Principle Category  | Example Principles                                     |
-|:-------------------|:-------------------------------------------------------|
-| **Architecture**   | Library-First, Clean Architecture                      |
-| **Development**    | Test-First, Specification-Driven                       |
-| **Quality**        | Test Coverage > 80%, Zero Runtime Errors               |
-| **Technical**      | TypeScript Only, No Any Types                          |
-| **Business**       | Privacy by Design, Accessibility First                 |
+| Principle Category | Example Principles                       |
+|:-------------------|:-----------------------------------------|
+| **Architecture**   | Library-First, Clean Architecture        |
+| **Development**    | Test-First, Specification-Driven         |
+| **Quality**        | Test Coverage > 80%, Zero Runtime Errors |
+| **Technical**      | TypeScript Only, No Any Types            |
+| **Business**       | Privacy by Design, Accessibility First   |
 
 ## Input
 
 $ARGUMENTS
 
-| Subcommand | Description | Additional Arguments |
-|:--|:--|:--|
-| `init` | Initialize constitution file | - |
-| `validate` | Validate constitution compliance | - |
-| `add` | Add new principle | `"principle-name"` |
-| `bump-version` | Version bump | `major\|minor\|patch` |
+| Subcommand     | Description                      | Additional Arguments  |
+|:---------------|:---------------------------------|:----------------------|
+| `init`         | Initialize constitution file     | -                     |
+| `validate`     | Validate constitution compliance | -                     |
+| `add`          | Add new principle                | `"principle-name"`    |
+| `bump-version` | Version bump                     | `major\|minor\|patch` |
 
 ### Input Examples
 
@@ -72,28 +73,28 @@ $ARGUMENTS
 
 ### 1. Initialize (init)
 
-Create constitution file in project:
+Create a constitution file in the project:
 
 ```bash
 /constitution init
 ```
 
-**Generated File**: `.sdd/CONSTITUTION.md`
+**Generated File**: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md`
 
 **Processing Flow**:
 
-1. Check if `.sdd/CONSTITUTION.md` already exists
-2. If exists: Skip (respect existing constitution)
+1. Check if `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md` already exists
+2. If exists: Skip (respecting an existing constitution)
 3. If not exist:
-   - Read `templates/${SDD_LANG:-en}/constitution_template.md`
-   - Analyze project context (language, framework, domain)
-   - Generate customized constitution based on context
+    - Read `templates/${SDD_LANG:-en}/constitution_template.md`
+    - Analyze project context (language, framework, domain)
+    - Generate a customized constitution based on context
 
 **Content**: Template customized for the project
 
 ### 2. Add Principle (add)
 
-Add new principle to constitution:
+Add a new principle to a constitution:
 
 ```bash
 /constitution add "Library-First"
@@ -101,8 +102,8 @@ Add new principle to constitution:
 
 **Process**:
 
-1. Confirm principle details with user
-2. Add to appropriate category
+1. Confirm principle details with the user
+2. Add to the appropriate category
 3. Bump minor version (e.g., 1.0.0 -> 1.1.0)
 4. Record in change history
 
@@ -157,8 +158,8 @@ Constitution updated
 
 **Version Bump Rules**:
 
-| Change Type        | Version Impact | Example       |
-|:-------------------|:---------------|:--------------|
+| Change Type        | Version Impact | Example        |
+|:-------------------|:---------------|:---------------|
 | Add principle      | MAJOR (X.y.z)  | 1.0.0 -> 2.0.0 |
 | Modify principle   | MAJOR (X.y.z)  | 1.0.0 -> 2.0.0 |
 | Remove principle   | MAJOR (X.y.z)  | 1.0.0 -> 2.0.0 |
@@ -174,128 +175,47 @@ Verify all specifications and design documents comply with constitution:
 /constitution validate
 ```
 
+**Optimized Execution Flow**:
+
+**Phase 1: Shell Script** - Execute `validate-files.sh` to scan file structure:
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/skills/constitution/scripts/validate-files.sh"
+```
+
+This script:
+
+1. Scans all requirement files (`${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/**/*.md`)
+2. Scans all specification files (`*_spec.md`)
+3. Scans all design files (`*_design.md`)
+4. Generates file lists and summary JSON
+5. Exports environment variables to `$CLAUDE_ENV_FILE`:
+    - `CONSTITUTION_REQUIREMENT_FILES` - List of requirement files
+    - `CONSTITUTION_SPEC_FILES` - List of spec files
+    - `CONSTITUTION_DESIGN_FILES` - List of design files
+    - `CONSTITUTION_SUMMARY` - JSON summary with file counts
+
+**Phase 2: Claude** - Read files from pre-scanned lists and validate content
+
 **Validation Targets**:
 
-- `.sdd/requirement/**/*.md`
-- `.sdd/specification/**/*_spec.md`
-- `.sdd/specification/**/*_design.md`
-- `.sdd/PRD_TEMPLATE.md`
-- `.sdd/SPECIFICATION_TEMPLATE.md`
-- `.sdd/DESIGN_DOC_TEMPLATE.md`
+- `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/**/*.md`
+- `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/**/*_spec.md`
+- `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/**/*_design.md`
+- `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/PRD_TEMPLATE.md`
+- `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/SPECIFICATION_TEMPLATE.md`
+- `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`
 
 **Validation Items**:
 
-| Validation Item        | Check Content                                    |
-|:-----------------------|:-------------------------------------------------|
-| **Principle Mention**  | Are principles mentioned in specs/designs?       |
-| **Principle Compliance** | Do implementation decisions follow principles? |
+| Validation Item             | Check Content                                  |
+|:----------------------------|:-----------------------------------------------|
+| **Principle Mention**       | Are principles mentioned in specs/designs?     |
+| **Principle Compliance**    | Do implementation decisions follow principles? |
 | **Contradiction Detection** | Are there descriptions contrary to principles? |
-| **Template Sync**      | Do templates reflect latest constitution?        |
+| **Template Sync**           | Do templates reflect latest constitution?      |
 
-**Validation Check**:
-
-````markdown
-# Constitution Compliance Report
-
-**Constitution Version**: 2.0.0
-**Validation Date**: YYYY-MM-DD
-**Project**: {Project Name}
-
-## Compliance Summary
-
-| Principle | Status | Score |
-|:---|:---|:---|
-| P1: Specification-First | Compliant | 95% |
-| P2: Test-First | Partial | 78% |
-| P3: Library-First | Compliant | 100% |
-| P4: API Versioning | Non-Compliant | 45% |
-
-## Detailed Analysis
-
-### P1: Specification-First Development
-
-**Status**: Compliant (95%)
-
-**Verification**:
-
-- [x] All features have specifications
-- [x] Specs exist before implementation
-- [ ] 2 legacy features missing specs (user-profile, settings)
-
-**Recommendations**:
-
-- Create specs for legacy features: user-profile, settings
-- Run `/generate-spec` for these features
-
----
-
-### P2: Test-First Implementation
-
-**Status**: Partial Compliance (78%)
-
-**Verification**:
-
-- [x] Test coverage >=80% (Current: 78.3%)
-- [ ] Not all features follow TDD commit pattern
-- [x] Code review includes test verification
-
-**Recommendations**:
-
-- Increase coverage by 1.7% to meet threshold
-- Enforce commit message convention for new code
-- Focus on user-profile module (current coverage: 65%)
-
----
-
-### P4: API Versioning
-
-**Status**: Non-Compliant (45%)
-
-**Verification**:
-
-- [ ] Only 45% of APIs include version numbers
-- [ ] No versioning strategy documented
-- [x] Breaking changes are documented
-
-**Recommendations**:
-
-- Document API versioning strategy in constitution
-- Add version prefix to all API endpoints
-- Create migration guide for breaking changes
-
----
-
-## Action Items
-
-### Critical (Block Deployment)
-
-1. **P4 Compliance**: Implement API versioning
-    - Add `/api/v1/` prefix to all endpoints
-    - Document versioning strategy
-    - Update client code
-
-### High Priority
-
-2. **P2 Compliance**: Increase test coverage to 80%+
-    - Focus on user-profile module
-    - Add edge case tests
-
-3. **P1 Compliance**: Create missing specifications
-    - user-profile feature
-    - settings feature
-
-### Medium Priority
-
-4. Enforce commit message convention
-5. Update code review checklist
-
-## Next Steps
-
-1. Address critical action items
-2. Re-run validation after fixes
-3. Update constitution if patterns emerge
-
-````
+**Validation Output Format**: See `examples/validation_report.md` for the complete report template.
 
 ### 6. Sync Principles (sync)
 
@@ -332,11 +252,11 @@ Verify all specifications and design documents comply with constitution:
 
 ## Documents Updated
 
-- [x] `.sdd/SPECIFICATION_TEMPLATE.md`
+- [x] `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/SPECIFICATION_TEMPLATE.md`
     - Added P1 reference to API section
     - Updated constraints to include P3
 
-- [x] `.sdd/DESIGN_DOC_TEMPLATE.md`
+- [x] `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`
     - Added "Principle Compliance" section
     - Updated decision framework to match constitution
 
@@ -364,19 +284,20 @@ Update constitution version:
 
 **Semantic Versioning**:
 
-| Version Type | Use Case                                      | Example       |
-|:-------------|:----------------------------------------------|:--------------|
+| Version Type | Use Case                                                  | Example        |
+|:-------------|:----------------------------------------------------------|:---------------|
 | Major        | Remove/significantly change existing principle (breaking) | 1.0.0 -> 2.0.0 |
-| Minor        | Add new principle                             | 1.0.0 -> 1.1.0 |
-| Patch        | Fix expression of principle, typo fix         | 1.0.0 -> 1.0.1 |
+| Minor        | Add new principle                                         | 1.0.0 -> 1.1.0 |
+| Patch        | Fix expression of principle, typo fix                     | 1.0.0 -> 1.0.1 |
 
 ## Constitution File Structure
 
-For a complete constitution file example with all categories (Business, Architecture, Development Methodology, Technical Constraints), principle hierarchy, verification items, and change history, see:
+For a complete constitution file example with all categories (Business, Architecture, Development Methodology, Technical
+Constraints), principle hierarchy, verification items, and change history, see:
 
 **Reference**: `examples/constitution_file_structure.md`
 
-**Save Location**: `.sdd/CONSTITUTION.md`
+**Save Location**: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md`
 
 ## Output
 
@@ -386,12 +307,12 @@ Depending on sub command, use the `templates/${SDD_LANG:-en}/constitution_output
 
 ### Documents to Synchronize
 
-| Document                         | Sync Content                          |
-|:---------------------------------|:--------------------------------------|
-| `.sdd/SPECIFICATION_TEMPLATE.md` | Add principle reference sections      |
-| `.sdd/DESIGN_DOC_TEMPLATE.md`    | Add principle compliance checklist    |
-| `*_spec.md`                      | Design based on principles            |
-| `*_design.md`                    | Explicitly state principle compliance |
+| Document                                                      | Sync Content                          |
+|:--------------------------------------------------------------|:--------------------------------------|
+| `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/SPECIFICATION_TEMPLATE.md` | Add principle reference sections      |
+| `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`    | Add principle compliance checklist    |
+| `*_spec.md`                                                   | Design based on principles            |
+| `*_design.md`                                                 | Explicitly state principle compliance |
 
 ### Sync Verification
 
@@ -403,13 +324,13 @@ Running `/constitution validate` automatically verifies:
 
 ## Use Cases
 
-| Scenario                 | Command                            | Purpose                           |
-|:-------------------------|:-----------------------------------|:----------------------------------|
-| **Project Start**        | `/constitution init`               | Create constitution file          |
-| **Add New Principle**    | `/constitution add`                | Add principle and bump version    |
-| **Before Creating Spec** | `/constitution validate`           | Check latest constitution         |
-| **Before Review**        | `/constitution validate`           | Verify constitution compliance    |
-| **Major Policy Change**  | `/constitution bump-version major` | Major version bump                |
+| Scenario                 | Command                            | Purpose                        |
+|:-------------------------|:-----------------------------------|:-------------------------------|
+| **Project Start**        | `/constitution init`               | Create constitution file       |
+| **Add New Principle**    | `/constitution add`                | Add principle and bump version |
+| **Before Creating Spec** | `/constitution validate`           | Check latest constitution      |
+| **Before Review**        | `/constitution validate`           | Verify constitution compliance |
+| **Major Policy Change**  | `/constitution bump-version major` | Major version bump             |
 
 ## Constitution Change Rules
 
@@ -440,41 +361,12 @@ Major version bump required for any of the following:
 
 ## Best Practices
 
-### When to Create Constitution
+See `references/best_practices.md` for detailed guidance on:
 
-| Project Stage       | Recommended Action                                   |
-|:--------------------|:-----------------------------------------------------|
-| **New Project**     | Create constitution in setup phase                   |
-| **Existing Project** | Create constitution to formalize practices          |
-| **Team Scaling**    | Create constitution to ensure consistency            |
-| **Quality Issues**  | Create constitution to raise standards               |
-
-### Principle Design Guidelines
-
-**Good Principles Are**:
-
-- Clear and unambiguous
-- Enforceable (can be checked)
-- Justified (has clear rationale)
-- Practical (can be followed)
-- Specific (not vague)
-
-**Bad Principles Are**:
-
-- Vague ("Write good code")
-- Unenforceable ("Be creative")
-- Unjustified ("Because I said so")
-- Impractical ("100% coverage on everything")
-- Contradictory (conflicts with other principles)
-
-### Constitution vs. Style Guide
-
-| Document         | Purpose                   | Examples                            |
-|:-----------------|:--------------------------|:------------------------------------|
-| **Constitution** | Non-negotiable principles | TDD, Spec-first, Security standards |
-| **Style Guide**  | Coding conventions        | Naming, formatting, comment style   |
-
-Both are important, but constitution takes precedence.
+- When to create a constitution
+- Principle design guidelines (good vs. bad principles)
+- Constitution vs. style guide comparison
+- Advanced features (principle templates, constitution as code)
 
 ## AI-SDD Workflow Integration
 
@@ -492,42 +384,9 @@ Implementation (Code)
 
 Constitution principles are checked at each level.
 
-## Advanced Features
-
-### Principle Templates
-
-Common principle templates you can adapt:
-
-**Reference**: `examples/principle_template.md`
-
-### Constitution as Code
-
-Export constitution to machine-readable format:
-
-```
-/constitution export --format json
-```
-
-Output: `.sdd/constitution.json`
-
-For an example JSON format, see: `examples/constitution_as_code.json`
-
-Use in CI/CD pipelines for automated validation.
-
 ## Notes
 
-- Constitution file should be placed directly under `.sdd/` (`.sdd/CONSTITUTION.md`)
-- Constitution is a living document, updated as team learns
-- Version all changes to track evolution
-- Major version changes may require code migration
+- Constitution file location: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md`
 - Keep principles few (3-7) and high-impact
-- Too many principles = ignored principles
-- Review constitution quarterly for relevance
-- Constitution applies to AI-generated code too
-- Use `/constitution validate` in PR checks
-- Constitution violations should block merge (with explicit override process)
-- Constitution changes should be made with team-wide consensus
-- Always consider impact on existing specs/designs
-- Explicitly state "why this principle is necessary"
-- Define principles in verifiable form
 - Constitution versioning follows semantic versioning
+- See `references/best_practices.md` for additional recommendations

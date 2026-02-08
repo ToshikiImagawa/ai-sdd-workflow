@@ -75,10 +75,10 @@ graph TB
         Func3[Function 3]
     end
 
-    Actor1 --> Func1
-    Actor1 --> Func2
-    Actor2 --> Func3
-    Func1 -. depends .-> Func3
+    Actor1 --- Func1
+    Actor1 --- Func2
+    Actor2 --- Func3
+    Func1 -.->|"&lt;&lt;include&gt;&gt;"| Func3
 ```
 
 ## 2.2. Use Case Diagram (Detailed) `<OPTIONAL>`
@@ -98,10 +98,10 @@ graph TB
         end
     end
 
-    Actor --> UseCase1
-    Actor --> UseCase2
-    UseCase1 -. extends .-> Detail1
-    UseCase1 -. extends .-> Detail2
+    Actor --- UseCase1
+    Actor --- UseCase2
+    Detail1 -.->|"&lt;&lt;extend&gt;&gt;"| UseCase1
+    Detail2 -.->|"&lt;&lt;extend&gt;&gt;"| UseCase1
 ```
 
 ## 2.3. Function List (Text Format) `<MUST>`

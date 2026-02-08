@@ -4,7 +4,7 @@ description: "Check consistency between implementation code and design documents
 version: 3.0.0
 license: MIT
 user-invocable: true
-allowed-tools: Read, Glob, Grep, AskUserQuestion
+allowed-tools: Read, Glob, Grep, AskUserQuestion, Bash
 ---
 
 # Check Spec - Design & Implementation Consistency Check
@@ -71,6 +71,25 @@ Replace placeholders with actual file names and counts.
 
 ## Processing Flow
 
+**Optimized Execution Flow**:
+
+**Phase 1: Shell Script** - Execute `find-design-docs.sh` to scan design documents:
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/skills/check-spec/scripts/find-design-docs.sh" [feature-name]
+```
+
+This script:
+1. Finds all design documents (`*_design.md`) in flat or hierarchical structure
+2. Finds corresponding spec files (`*_spec.md`)
+3. Generates file mapping JSON (design → spec → implementation)
+4. Exports environment variables to `$CLAUDE_ENV_FILE`:
+   - `CHECK_SPEC_DESIGN_FILES` - List of design files
+   - `CHECK_SPEC_SPEC_FILES` - List of spec files
+   - `CHECK_SPEC_MAPPING` - JSON mapping file
+
+**Phase 2: Claude** - Read design docs from pre-scanned lists and perform consistency check
+
 ### 1. Identify Target Documents
 
 Target design documents (`*_design.md`). Both flat and hierarchical structures are supported.
@@ -79,19 +98,19 @@ Target design documents (`*_design.md`). Both flat and hierarchical structures a
 
 ```
 With argument -> Target the following file:
-  - .sdd/specification/{argument}_design.md
-Without argument -> Target all *_design.md files under .sdd/specification/ (recursively)
+  - ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{argument}_design.md
+Without argument -> Target all *_design.md files under ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/ (recursively)
 ```
 
 **For hierarchical structure** (when argument contains `/`, or when specifying hierarchical path):
 
 ```
 Argument in "{parent-feature}/{feature-name}" format -> Target the following file:
-  - .sdd/specification/{parent-feature}/{feature-name}_design.md
+  - ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md
 
 Argument is "{parent-feature}" only -> Target the following files:
-  - .sdd/specification/{parent-feature}/index_design.md (parent feature design)
-  - .sdd/specification/{parent-feature}/*_design.md (child feature designs)
+  - ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md (parent feature design)
+  - ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/*_design.md (child feature designs)
 ```
 
 **Naming convention**:

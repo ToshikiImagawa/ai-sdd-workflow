@@ -4,15 +4,15 @@ description: "Generate Abstract Specification and Technical Design Document from
 version: 3.0.0
 license: MIT
 user-invocable: true
-allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash
 ---
 
 # Specification & Design Doc Generator
 
 Generates the following documents from input content according to the AI-SDD workflow:
 
-1. `.sdd/specification/{feature-name}_spec.md` - Abstract Specification (Specify Phase)
-2. `.sdd/specification/{feature-name}_design.md` - Technical Design Document (Plan Phase)
+1. `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md` - Abstract Specification (Specify Phase)
+2. `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md` - Technical Design Document (Plan Phase)
 
 ## Prerequisites
 
@@ -22,10 +22,24 @@ Generates the following documents from input content according to the AI-SDD wor
 - `references/prerequisites_principles.md` - Read AI-SDD principles document
 - `references/prerequisites_directory_paths.md` - Resolve directory paths using `SDD_*` environment variables
 
-### Template Preparation Flow
+### Template Preparation Flow (Optimized)
 
-1. Use `.sdd/SPECIFICATION_TEMPLATE.md`, `.sdd/DESIGN_DOC_TEMPLATE.md` (project templates) if they exist
-2. If not, read templates from this skill's `templates/${SDD_LANG:-en}/` directory and use them as the base templates
+**Phase 1: Shell Script** - Execute `prepare-spec.sh` to pre-load templates and references:
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/skills/generate-spec/scripts/prepare-spec.sh"
+```
+
+This script:
+1. Checks `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/SPECIFICATION_TEMPLATE.md` and `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md` (project templates) first
+2. If not found, copies from `templates/${SDD_LANG}/` to cache
+3. Copies all reference files to cache
+4. Exports environment variables to `$CLAUDE_ENV_FILE`:
+   - `GENERATE_SPEC_SPEC_TEMPLATE` - Path to cached spec template
+   - `GENERATE_SPEC_DESIGN_TEMPLATE` - Path to cached design template
+   - `GENERATE_SPEC_REFERENCES` - Path to cached references
+
+**Phase 2: Claude** - Read from cache using environment variables instead of searching files
 
 ### Language Configuration
 
@@ -36,17 +50,17 @@ The `SDD_LANG` environment variable determines the language (default: `en`).
 
 Before generation, verify the following:
 
-1. Does the `.sdd/` directory exist in the project?
+1. Does the `${SDD_ROOT}/` directory exist in the project?
 2. If template files exist, use them
 
 ## Input
 
 $ARGUMENTS
 
-| Argument | Required | Description |
-|:--|:--|:--|
-| `requirements-description` | Yes | Feature description text. Feature name is extracted from description |
-| `--ci` | - | CI/non-interactive mode. Skips Vibe Coding check, auto-approves overwrites, skips spec-reviewer, always generates Design Doc |
+| Argument                   | Required | Description                                                                                                                  |
+|:---------------------------|:---------|:-----------------------------------------------------------------------------------------------------------------------------|
+| `requirements-description` | Yes      | Feature description text. Feature name is extracted from description                                                         |
+| `--ci`                     | -        | CI/non-interactive mode. Skips Vibe Coding check, auto-approves overwrites, skips spec-reviewer, always generates Design Doc |
 
 ## Input Examples
 
@@ -118,20 +132,20 @@ Check the following before generation. Both flat and hierarchical structures are
 **For flat structure**:
 
 ```
-Does .sdd/requirement/{feature-name}.md exist? (PRD)
-Does .sdd/specification/{feature-name}_spec.md already exist?
-Does .sdd/specification/{feature-name}_design.md already exist?
+Does ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md exist? (PRD)
+Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md already exist?
+Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md already exist?
 ```
 
 **For hierarchical structure** (when placing under parent feature):
 
 ```
-Does .sdd/requirement/{parent-feature}/index.md exist? (parent feature PRD)
-Does .sdd/requirement/{parent-feature}/{feature-name}.md exist? (child feature PRD)
-Does .sdd/specification/{parent-feature}/index_spec.md already exist? (parent feature spec)
-Does .sdd/specification/{parent-feature}/{feature-name}_spec.md already exist? (child feature spec)
-Does .sdd/specification/{parent-feature}/index_design.md already exist? (parent feature design)
-Does .sdd/specification/{parent-feature}/{feature-name}_design.md already exist? (child feature design)
+Does ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md exist? (parent feature PRD)
+Does ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/{feature-name}.md exist? (child feature PRD)
+Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md already exist? (parent feature spec)
+Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md already exist? (child feature spec)
+Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md already exist? (parent feature design)
+Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md already exist? (child feature design)
 ```
 
 **Note the difference in naming conventions**:
@@ -152,6 +166,7 @@ Does .sdd/specification/{parent-feature}/{feature-name}_design.md already exist?
 - Reference PRD requirement IDs in spec's "Functional Requirements" section
 
 **If spec/design exists**:
+
 - **CI Mode (`--ci`)**: Overwrite without confirmation.
 - **Interactive**: Confirm with user whether to overwrite.
 
@@ -163,9 +178,10 @@ Does .sdd/specification/{parent-feature}/{feature-name}_design.md already exist?
 
 Follow these steps to prepare the template:
 
-1. Check if `.sdd/SPECIFICATION_TEMPLATE.md` exists
+1. Check if `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/SPECIFICATION_TEMPLATE.md` exists
 2. **If exists**: Use that template
-3. **If not exists**: Read `templates/${SDD_LANG:-en}/spec_template.md` from this skill directory and use it as the base template to generate `.sdd/SPECIFICATION_TEMPLATE.md`
+3. **If not exists**: Read `templates/${SDD_LANG:-en}/spec_template.md` from this skill directory and use it as the base
+   template to generate `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/SPECIFICATION_TEMPLATE.md`
 
 #### Template Application Notes
 
@@ -175,9 +191,9 @@ Follow these steps to prepare the template:
 
 **Save Location**:
 
-- Flat structure: `.sdd/specification/{feature-name}_spec.md`
-- Hierarchical structure (parent feature): `.sdd/specification/{parent-feature}/index_spec.md`
-- Hierarchical structure (child feature): `.sdd/specification/{parent-feature}/{feature-name}_spec.md`
+- Flat structure: `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md`
+- Hierarchical structure (parent feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md`
+- Hierarchical structure (child feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md`
 
 ### Phase 2: Technical Design Document (Plan Phase)
 
@@ -187,9 +203,10 @@ After abstract specification generation is complete, generate the technical desi
 
 Follow these steps to prepare the template:
 
-1. Check if `.sdd/DESIGN_DOC_TEMPLATE.md` exists
+1. Check if `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md` exists
 2. **If exists**: Use that template
-3. **If not exists**: Read `templates/${SDD_LANG:-en}/design_template.md` from this skill directory and use it as the base template to generate `.sdd/DESIGN_DOC_TEMPLATE.md`
+3. **If not exists**: Read `templates/${SDD_LANG:-en}/design_template.md` from this skill directory and use it as the
+   base template to generate `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`
 
 #### Template Application Notes
 
@@ -199,9 +216,9 @@ Follow these steps to prepare the template:
 
 **Save Location**:
 
-- Flat structure: `.sdd/specification/{feature-name}_design.md`
-- Hierarchical structure (parent feature): `.sdd/specification/{parent-feature}/index_design.md`
-- Hierarchical structure (child feature): `.sdd/specification/{parent-feature}/{feature-name}_design.md`
+- Flat structure: `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md`
+- Hierarchical structure (parent feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md`
+- Hierarchical structure (child feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md`
 
 ### Skip Design Doc Generation
 
@@ -220,7 +237,7 @@ Skip Design Doc generation and confirm with user in the following cases:
    |
 2. Load project principles (Required)
    |- If CONSTITUTION.md exists:
-   |   |- Read .sdd/CONSTITUTION.md using Read tool
+   |   |- Read ${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md using Read tool
    |   |- Understand principle categories (B-xxx, A-xxx, D-xxx, T-xxx)
    |- If not exists: Skip (note this in output)
    |
@@ -279,16 +296,16 @@ Add the following to spec's end (if PRD exists):
 
 **Reference**: `examples/prd_reference_section.md`
 
-For hierarchical structure, parent feature PRD is `.sdd/requirement/{parent-feature}/index.md`
+For hierarchical structure, parent feature PRD is `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md`
 
 ## Post-Generation Actions
 
 1. **Save Files**:
-    - Flat structure: `.sdd/specification/{feature-name}_spec.md`, `.sdd/specification/{feature-name}_design.md`
-    - Hierarchical structure (parent feature): `.sdd/specification/{parent-feature}/index_spec.md`,
-      `.sdd/specification/{parent-feature}/index_design.md`
-    - Hierarchical structure (child feature): `.sdd/specification/{parent-feature}/{feature-name}_spec.md`,
-      `.sdd/specification/{parent-feature}/{feature-name}_design.md`
+    - Flat structure: `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md`, `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md`
+    - Hierarchical structure (parent feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md`,
+      `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md`
+    - Hierarchical structure (child feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md`,
+      `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md`
 
 2. **Consistency Check**:
     - If PRD exists: Verify and reflect PRD <-> spec consistency
@@ -307,7 +324,6 @@ The following verifications are automatically performed during generation:
 - [x] **Principle Compliance Check via spec-reviewer**: Verify compliance with CONSTITUTION.md
 - [x] **PRD Consistency Check**: Confirm requirement ID references and functional requirement coverage
 - [x] **Template Compliance Check**: Verify presence of required sections
-
 
 ### Verification Commands
 
@@ -368,10 +384,10 @@ If existing code reference is needed, recommend manual verification to user.
 
 ## Loading CONSTITUTION.md (Required)
 
-Before spec/design generation, **you must read `.sdd/CONSTITUTION.md` using the Read tool**.
+Before spec/design generation, **you must read `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md` using the Read tool**.
 
 ```
-Read: .sdd/CONSTITUTION.md
+Read: ${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md
 ```
 
 ### Post-Load Verification
@@ -380,19 +396,19 @@ After loading CONSTITUTION.md, understand the following principles and ensure sp
 
 **For Abstract Specification (*_spec.md)**:
 
-| Principle Category          | Impact on Spec                                           |
-|:----------------------------|:---------------------------------------------------------|
+| Principle Category              | Impact on Spec                                            |
+|:--------------------------------|:----------------------------------------------------------|
 | Architecture Principles (A-xxx) | Architecture patterns, layer separation, interface design |
-| Development Principles (D-xxx)  | Testability, modularity, requirement traceability        |
-| Business Principles (B-xxx)     | Business logic reflection, domain model                  |
+| Development Principles (D-xxx)  | Testability, modularity, requirement traceability         |
+| Business Principles (B-xxx)     | Business logic reflection, domain model                   |
 
 **For Technical Design Document (*_design.md)**:
 
-| Principle Category          | Impact on Design                                         |
-|:----------------------------|:---------------------------------------------------------|
-| Technical Constraints (T-xxx)   | Technology selection, version constraints, platform      |
-| Architecture Principles (A-xxx) | Architecture implementation, design patterns             |
-| Development Principles (D-xxx)  | Test strategy, CI/CD considerations                      |
+| Principle Category              | Impact on Design                                    |
+|:--------------------------------|:----------------------------------------------------|
+| Technical Constraints (T-xxx)   | Technology selection, version constraints, platform |
+| Architecture Principles (A-xxx) | Architecture implementation, design patterns        |
+| Development Principles (D-xxx)  | Test strategy, CI/CD considerations                 |
 
 ### If CONSTITUTION.md Does Not Exist
 

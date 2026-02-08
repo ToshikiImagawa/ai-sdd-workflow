@@ -4,6 +4,7 @@ description: "Automatically executed during document updates or before implement
 version: 3.0.0
 license: MIT
 user-invocable: false
+allowed-tools: Read, Glob, Grep
 ---
 
 # Doc Consistency Checker - Document Consistency Check
@@ -20,13 +21,24 @@ When reading templates, use the path: `templates/${SDD_LANG:-en}/`
 
 **Before execution, read the AI-SDD principles document.**
 
-AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
+AI-SDD principles document path: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/AI-SDD-PRINCIPLES.md`
 
 **Note**: This file is automatically updated at the start of each session.
 
 Understand AI-SDD principles, document structure, persistence rules, and Vibe Coding prevention details.
 
 See `references/prerequisites_directory_paths.md` for directory path resolution using `SDD_*` environment variables.
+
+## Input
+
+This skill is triggered automatically via hooks during document updates or before implementation. It scans documents based on feature context.
+
+| Input Source       | Description                                                    |
+|:-------------------|:---------------------------------------------------------------|
+| Feature context    | Current feature being worked on (from task or document update) |
+| Document paths     | Automatically resolved from `${SDD_*}` environment variables   |
+
+**Note**: This skill is `user-invocable: false` and cannot be called directly. Use `/check-spec` for manual consistency checks.
 
 ## Document Dependencies
 
@@ -39,7 +51,7 @@ Both flat and hierarchical structures are supported.
 **Flat Structure**:
 
 ```
-.sdd/
+${SDD_ROOT}/
 ├── CONSTITUTION.md                        # Project constitution (top-level)
 ├── requirement/{feature-name}.md
 └── specification/
@@ -50,7 +62,7 @@ Both flat and hierarchical structures are supported.
 **Hierarchical Structure**:
 
 ```
-.sdd/
+${SDD_ROOT}/
 ├── CONSTITUTION.md                        # Project constitution (top-level)
 ├── requirement/
 │   ├── {feature-name}.md                  # Top-level feature

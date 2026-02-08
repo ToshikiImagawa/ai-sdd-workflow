@@ -7,6 +7,45 @@
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-02-06
+
+### 追加
+
+#### スキル
+
+- **`sdd-init`** - `.sdd-config.json` の `lang` フィールド自動管理機能を追加
+    - 設定ファイルが存在しない場合: デフォルト設定（`lang: "en"` 含む）で新規作成
+    - 設定ファイルに `lang` フィールドがない場合（v3.0.0マイグレーション）: `lang: "en"` を追加
+    - 実行フローにステップ1.5「Manage Configuration File」を追加
+
+#### ドキュメント
+
+- **Mermaid記法ガイドに注意事項を追加**
+    - `<` と `>` を含むラベル（`<<include>>` など）はHTMLエンティティでエスケープが必要
+    - 例: `&lt;&lt;include&gt;&gt;` と記述して `<<include>>` を表示
+
+### 変更
+
+#### 共有リファレンス
+
+- **`usecase_diagram_guide.md`** - ユースケース図の関係表記をUML標準に修正
+    - アソシエーション（関連）: `-->` → `---`（実線、双方向）
+    - Include（包含）: `-. include .->` → `-.->|"<<include>>"|`（点線矢印＋ステレオタイプラベル）
+    - Extend（拡張）: `-. extend .->` → `-.->|"<<extend>>"|`（点線矢印＋ステレオタイプラベル）
+    - Common Mistakesテーブルを更新
+    - すべてのMermaidコード例を新記法に更新
+
+- **`mermaid_notation_rules.md`** - ユースケース図記法を更新
+    - アソシエーション表記を `---` に修正
+    - Include/Extendラベル形式を更新
+    - Common Mistakesセクションを更新
+
+#### スキル
+
+- **`generate-prd`** - PRDテンプレートのユースケース図記法を修正
+    - `templates/en/prd_template.md`: アソシエーション、Include、Extend表記を更新
+    - `templates/ja/prd_template.md`: 同様の修正（日本語ラベル `<<包含>>`, `<<拡張>>` を維持）
+
 ## [3.0.0] - 2026-02-06
 
 ### 追加
