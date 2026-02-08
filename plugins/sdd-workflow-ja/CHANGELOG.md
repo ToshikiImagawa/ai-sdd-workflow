@@ -7,6 +7,15 @@
 
 ## [Unreleased]
 
+## [3.0.2] - 2026-02-09
+
+### 修正
+
+- **`sdd-init`** - `.sdd-config.json` からの言語設定継承を修正
+    - `update-claude-md.sh` が環境変数ではなく `.sdd-config.json` から直接 `SDD_LANG` を読み取るように変更
+    - 以前は `.sdd-config.json` で `lang: "ja"` を設定していても、`CLAUDE.md` の `## AI-SDD Instructions` セクションが英語で生成されていた
+    - 原因: `init-structure.sh` から `CLAUDE_ENV_FILE` への書き込みが、同一シェルセッション内で `update-claude-md.sh` 実行時に反映されていなかった
+
 ## [3.0.1] - 2026-02-09
 
 ### 追加

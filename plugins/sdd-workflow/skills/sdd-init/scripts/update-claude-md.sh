@@ -21,7 +21,19 @@ if [ -z "$PLUGIN_ROOT" ]; then
     PLUGIN_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 fi
 
-SDD_LANG="${SDD_LANG:-en}"
+# Read SDD_LANG from .sdd-config.json (priority over environment variable)
+# This ensures consistency with init-structure.sh
+CONFIG_FILE="${PROJECT_ROOT}/.sdd-config.json"
+if [ -f "$CONFIG_FILE" ]; then
+    if command -v jq &> /dev/null; then
+        CONFIG_LANG=$(jq -r '.lang // empty' "$CONFIG_FILE" 2>/dev/null)
+    else
+        CONFIG_LANG=$(grep -o '"lang"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
+    fi
+    SDD_LANG="${CONFIG_LANG:-${SDD_LANG:-en}}"
+else
+    SDD_LANG="${SDD_LANG:-en}"
+fi
 
 # ============================================================================
 # Utility Functions
