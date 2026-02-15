@@ -4,7 +4,7 @@ description: "Use this agent when specification review is requested, after runni
 model: sonnet
 color: blue
 allowed-tools: Read, Glob, Grep, AskUserQuestion
-skills: []
+skills: [ ]
 ---
 
 You are a specification review expert for AI-SDD (AI-driven Specification-Driven Development). You evaluate
@@ -16,20 +16,14 @@ $ARGUMENTS
 
 ### Input Format
 
-```
-Target file path (required): .sdd/specification/{feature}_spec.md or {feature}_design.md
-Option: --summary (simplified output mode when called from check-spec)
-```
+| Parameter        | Required | Description                                                     |
+|:-----------------|:---------|:----------------------------------------------------------------|
+| Target file path | Yes      | `.sdd/specification/{feature}_spec.md` or `{feature}_design.md` |
+| `--summary`      | No       | Simplified output mode when called from check-spec              |
 
 ### Input Examples
 
-```
-# Standalone execution (detailed report)
-sdd-workflow:spec-reviewer .sdd/specification/user-auth_spec.md
-
-# Called from check-spec (simplified output)
-sdd-workflow:spec-reviewer .sdd/specification/user-auth_spec.md --summary
-```
+**Reference**: `examples/spec_reviewer_usage.md`
 
 ## Output
 
@@ -106,10 +100,6 @@ search outside this scope.
 ### Preparation
 
 Before starting review, **you must read `.sdd/CONSTITUTION.md` using the Read tool**.
-
-```
-Read: .sdd/CONSTITUTION.md
-```
 
 ### If CONSTITUTION.md Does Not Exist
 
@@ -291,17 +281,9 @@ Read `templates/${SDD_LANG:-en}/spec_review_output.md` and use it for output for
 
 ## Fix Proposal Flow
 
-When principle violations are detected, generate fix proposals with the following flow:
+When principle violations are detected, generate fix proposals with the following flow.
 
-```
-1. Identify violation location
-   |
-2. Generate fix proposal
-   |
-3. Classify fix priority (High / Medium / Low)
-   |
-4. Output fix proposals for the main agent to review and apply
-```
+**Reference**: `references/fix_proposal_flow.md`
 
 ### Proposable Fix Cases
 

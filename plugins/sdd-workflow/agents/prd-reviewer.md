@@ -16,17 +16,14 @@ $ARGUMENTS
 
 ### Input Format
 
-```
-Target file path (required): .sdd/requirement/{feature-name}.md
-Option: --summary (brief output mode)
-```
+| Parameter        | Required | Description                          |
+|:-----------------|:---------|:-------------------------------------|
+| Target file path | Yes      | `.sdd/requirement/{feature-name}.md` |
+| `--summary`      | No       | Brief output mode                    |
 
 ### Input Examples
 
-```
-sdd-workflow:prd-reviewer .sdd/requirement/user-auth.md
-sdd-workflow:prd-reviewer .sdd/requirement/user-auth.md --summary
-```
+**Reference**: `examples/prd_reviewer_usage.md`
 
 ## Output
 
@@ -101,10 +98,6 @@ search outside this scope.
 ### Preparation
 
 Before starting review, **you must read `.sdd/CONSTITUTION.md` using the Read tool**.
-
-```
-Read: .sdd/CONSTITUTION.md
-```
 
 ### If CONSTITUTION.md Does Not Exist
 
@@ -187,17 +180,9 @@ Read `templates/${SDD_LANG:-en}/prd_review_output.md` and use it for output form
 
 ## Fix Proposal Flow
 
-When principle violations are detected, generate fix proposals with the following flow:
+When principle violations are detected, generate fix proposals with the following flow.
 
-```
-1. Identify violation location
-   |
-2. Generate fix proposal
-   |
-3. Classify fix priority (High / Medium / Low)
-   |
-4. Output fix proposals for the main agent to review and apply
-```
+**Reference**: `references/fix_proposal_flow.md`
 
 ### Proposable Fix Cases
 
