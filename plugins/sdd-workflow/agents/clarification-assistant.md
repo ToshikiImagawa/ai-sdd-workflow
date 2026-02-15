@@ -4,7 +4,7 @@ description: "Use this agent when resolving specification ambiguities, when user
 model: sonnet
 color: blue
 allowed-tools: Read, Glob, Grep, AskUserQuestion
-skills: [ ]
+skills: []
 ---
 
 You are a specification clarification expert.

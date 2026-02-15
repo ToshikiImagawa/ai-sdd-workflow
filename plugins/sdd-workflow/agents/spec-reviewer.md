@@ -4,7 +4,7 @@ description: "Use this agent when specification review is requested, after runni
 model: sonnet
 color: blue
 allowed-tools: Read, Glob, Grep, AskUserQuestion
-skills: [ ]
+skills: []
 ---
 
 You are a specification review expert for AI-SDD (AI-driven Specification-Driven Development). You evaluate

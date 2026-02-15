@@ -3,7 +3,7 @@
 ## Initial Analysis
 
 1. Receive requirements from user
-2. Load the existing specification (spec.md) if it*_ exists
+2. Load existing specification (*_spec.md) if exists
 3. Systematically analyze across nine categories
 4. Evaluate clarity (Clear/Partial/Missing)
 5. Calculate clarity score (Total score = Clear items / All items)
