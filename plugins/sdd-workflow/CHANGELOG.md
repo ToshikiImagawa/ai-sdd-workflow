@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-02-15
+
+### Added
+
+- **plan-refactor skill** - New skill to support refactoring planning for existing features
+  - Analyzes current implementation and creates/updates design documents with refactoring plan
+  - Supports two scenarios: Case A (existing documents) and Case B (no documents)
+  - Provides templates, samples, and reference documents in both Japanese and English
+  - Includes refactoring pattern references (Extract Interface, Dependency Injection, etc.)
+  - Implementation file search script (`find-implementation-files.sh`)
+  - Existing document scan script (`scan-existing-docs.sh`)
+- **Agent samples and reference documents** - Improved usability
+  - `clarification-assistant`: Added usage examples and clarification workflow references
+  - `prd-reviewer`: Added usage examples
+  - `requirement-analyzer`: Added usage examples
+  - `spec-reviewer`: Added usage examples
+  - Added stop report format templates (en/ja) for all agents
+  - Added directory structure references and fix proposal flow references
+- **SKILL.md argument-hint** - Added `argument-hint` field to all skills to clarify argument specifications
+
+### Changed
+
+- **/constitution init** - Added context argument for non-interactive mode initialization
+  - Specify `[context]` argument to generate principles based on project context without interaction
+  - Without argument, runs in interactive mode as before
+- **Agent configuration files** - Improved Markdown format to enhance code block extraction accuracy
+  - clarification-assistant: Reduced verbose descriptions for more concise structure (103 lines reduced)
+  - prd-reviewer: Organized workflow descriptions
+  - requirement-analyzer: Improved analysis flow descriptions
+  - spec-reviewer: Organized review process descriptions
+
+### Fixed
+
+- **plan-refactor template language neutralization** - Removed dependency on specific technologies
+  - `reverse-design-template.md`: Removed specific examples like TypeScript, React, PostgreSQL
+  - `reverse-design-template.md`: Removed language-specific code blocks (typescript, sql)
+  - API endpoints section: Simplified by removing sample rows, keeping only table headers
+  - Database schema section: Completely removed as it cannot be reverse-engineered from implementation
+  - Function signatures section: Completely removed due to TypeScript-specific nature
+  - Changed placeholders to descriptive guidance format (e.g., `{e.g., TypeScript}` → `{Programming language used in the project}`)
+
 ## [3.0.2] - 2026-02-09
 
 ### Fixed

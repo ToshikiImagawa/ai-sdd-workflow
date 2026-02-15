@@ -7,6 +7,47 @@
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-02-15
+
+### 追加
+
+- **plan-refactorスキル** - 既存機能のリファクタリング計画を支援する新スキルを追加
+  - 既存実装を解析し、設計ドキュメントとリファクタリング計画を作成
+  - Case A（既存ドキュメントあり）とCase B（ドキュメントなし）の2つのシナリオをサポート
+  - 日本語・英語の両方でテンプレート、サンプル、参照ドキュメントを提供
+  - リファクタリングパターンの参照資料（Extract Interface, Dependency Injectionなど）
+  - 実装ファイル検索スクリプト（`find-implementation-files.sh`）
+  - 既存ドキュメントスキャンスクリプト（`scan-existing-docs.sh`）
+- **各エージェントのサンプルと参照ドキュメント** - 使いやすさを向上
+  - `clarification-assistant`: 使用例と明確化ワークフロー参照資料を追加
+  - `prd-reviewer`: 使用例を追加
+  - `requirement-analyzer`: 使用例を追加
+  - `spec-reviewer`: 使用例を追加
+  - すべてのエージェントに停止レポート形式テンプレート（日英）を追加
+  - ディレクトリ構造参照資料と修正提案フロー参照資料を追加
+- **SKILL.mdのargument-hint** - すべてのスキルに `argument-hint` フィールドを追加し、引数仕様を明確化
+
+### 変更
+
+- **/constitution init** - コンテキスト引数を追加し、非対話モードでの初期化を可能に
+  - `[context]` 引数を指定することで、対話なしでプロジェクトコンテキストに基づく原則を生成
+  - 引数なしの場合は従来通り対話モードで実行
+- **エージェント設定ファイル** - 各エージェントのMarkdown形式を改善し、コードブロック抽出の精度を向上
+  - clarification-assistant: 冗長な説明を削減し、簡潔な構成に変更（103行削減）
+  - prd-reviewer: ワークフロー説明を整理
+  - requirement-analyzer: 分析フロー説明を改善
+  - spec-reviewer: レビュープロセス説明を整理
+
+### 修正
+
+- **plan-refactorテンプレートの言語中立化** - 特定技術への依存を排除
+  - `reverse-design-template.md`: TypeScript, React, PostgreSQL等の具体例を削除
+  - `reverse-design-template.md`: 言語固有のコードブロック（typescript, sql）を削除
+  - APIエンドポイントセクション: サンプル行を削除し、テーブルヘッダーのみに簡素化
+  - データベーススキーマセクション: 実装から逆生成できないため完全に削除
+  - 関数シグネチャセクション: TypeScript固定のため完全に削除
+  - プレースホルダーを説明的ガイダンス形式に変更（例: `{例: TypeScript}` → `{プロジェクトで使用されているプログラミング言語}`）
+
 ## [3.0.2] - 2026-02-09
 
 ### 修正
