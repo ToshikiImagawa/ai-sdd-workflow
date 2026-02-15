@@ -1,6 +1,7 @@
 ---
 name: generate-prd
 description: "Generates PRD by orchestrating sub-skills for use case diagrams, requirements analysis, and SysML diagrams. Use when user mentions PRD, product requirements, feature definition, requirement specification, or starting AI-SDD workflow."
+argument-hint: "<requirements-description>"
 version: 3.0.1
 license: MIT
 user-invocable: true

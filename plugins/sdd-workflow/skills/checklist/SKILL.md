@@ -1,6 +1,7 @@
 ---
 name: checklist
 description: "Generate quality assurance checklists from specifications and plans with structured IDs and categories"
+argument-hint: "<feature-name> [ticket-number]"
 version: 3.0.0
 license: MIT
 user-invocable: true

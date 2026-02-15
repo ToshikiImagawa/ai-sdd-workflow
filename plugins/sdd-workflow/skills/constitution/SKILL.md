@@ -1,6 +1,7 @@
 ---
 name: constitution
 description: "Define and manage non-negotiable project principles (Constitution) and verify synchronization with other documents"
+argument-hint: "<subcommand> [arguments]"
 version: 3.0.0
 license: MIT
 user-invocable: true

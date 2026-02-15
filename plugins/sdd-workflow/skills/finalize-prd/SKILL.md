@@ -1,6 +1,7 @@
 ---
 name: finalize-prd
 description: "Finalize and integrate PRD from all artifacts. Use when combining use case diagrams, requirements analysis, and requirements diagrams into a complete PRD, or when called by generate-prd."
+argument-hint: "<feature-name> [--ci]"
 version: 3.0.1
 license: MIT
 user-invocable: true
