@@ -54,17 +54,18 @@ A Project Constitution defines **non-negotiable principles that form the foundat
 
 $ARGUMENTS
 
-| Subcommand     | Description                      | Additional Arguments  |
-|:---------------|:---------------------------------|:----------------------|
-| `init`         | Initialize constitution file     | -                     |
-| `validate`     | Validate constitution compliance | -                     |
-| `add`          | Add new principle                | `"principle-name"`    |
-| `bump-version` | Version bump                     | `major\|minor\|patch` |
+| Subcommand     | Description                      | Additional Arguments   |
+|:---------------|:---------------------------------|:-----------------------|
+| `init`         | Initialize constitution file     | `[context]` (optional) |
+| `validate`     | Validate constitution compliance | -                      |
+| `add`          | Add new principle                | `"principle-name"`     |
+| `bump-version` | Version bump                     | `major\|minor\|patch`  |
 
 ### Input Examples
 
 ```
-/constitution init                      # Initialize constitution file
+/constitution init                      # Initialize constitution file (interactive)
+/constitution init "TypeScript/React Web application"  # Initialize with context (non-interactive)
 /constitution validate                  # Validate constitution compliance
 /constitution add "Library-First"       # Add new principle
 /constitution bump-version major        # Major version bump
@@ -88,7 +89,8 @@ Create a constitution file in the project:
 2. If exists: Skip (respecting an existing constitution)
 3. If not exist:
     - Read `templates/${SDD_LANG:-en}/constitution_template.md`
-    - Analyze project context (language, framework, domain)
+    - **If context argument is provided**: Use it as the project context
+    - **If no context argument**: Interactively ask the user about the project context (language, framework, domain)
     - Generate a customized constitution based on context
 
 **Content**: Template customized for the project

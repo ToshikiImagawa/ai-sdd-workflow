@@ -113,7 +113,7 @@ bash "${SCRIPT}" gen-skills "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-ja-c
 ```
 
 内部で以下のスキルをサブセッションで実行し、生成ファイルと言語を検証する:
-- `/constitution init` - CONSTITUTION.md の生成と言語検証
+- `/constitution init <コンテキスト>` - CONSTITUTION.md の生成と言語検証（コンテキスト引数で非対話モード実行）
 - `/generate-prd --ci <ダミー要件>` - PRD ファイルの生成と言語検証（`--ci` フラグで非対話モード実行）
 - `/generate-spec --ci <ダミー要件>` - 仕様書ファイルの生成と言語検証（`--ci` フラグで非対話モード実行）
 

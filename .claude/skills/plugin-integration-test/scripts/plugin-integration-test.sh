@@ -255,7 +255,7 @@ run_gen_skills_test() {
     cd "$test_dir"
     local start_time
     start_time=$(date +%s)
-    echo "/constitution init" | claude --plugin-dir "$plugin_dir" --print > "$log_dir/constitution-init.log" 2>&1 || true
+    echo '/constitution init A sample CLI tool project using TypeScript.' | claude --plugin-dir "$plugin_dir" --print > "$log_dir/constitution-init.log" 2>&1 || true
     local end_time
     end_time=$(date +%s)
     local elapsed=$((end_time - start_time))
