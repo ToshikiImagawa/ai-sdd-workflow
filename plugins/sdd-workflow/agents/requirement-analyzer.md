@@ -16,23 +16,17 @@ $ARGUMENTS
 
 ### Input Format
 
-```
-Target requirement file path (required): .sdd/requirement/{feature-name}.md
-Subcommand (optional):
-  --analyze        : Requirement analysis (gap analysis, risk assessment)
-  --trace          : Traceability verification (correspondence with implementation)
-  --impact <req_id>: Impact analysis (scope of changes to target requirement)
-  --add-requirement: Add new requirement (interactive)
-```
+| Parameter                    | Required | Description                                                    |
+|:-----------------------------|:---------|:---------------------------------------------------------------|
+| Target requirement file path | Yes      | `.sdd/requirement/{feature-name}.md`                           |
+| `--analyze`                  | No       | Requirement analysis (gap analysis, risk assessment)           |
+| `--trace`                    | No       | Traceability verification (correspondence with implementation) |
+| `--impact <req_id>`          | No       | Impact analysis (scope of changes to target requirement)       |
+| `--add-requirement`          | No       | Add new requirement (interactive)                              |
 
 ### Input Examples
 
-```
-sdd-workflow:requirement-analyzer .sdd/requirement/user-auth.md --analyze
-sdd-workflow:requirement-analyzer .sdd/requirement/user-auth.md --trace
-sdd-workflow:requirement-analyzer .sdd/requirement/user-auth.md --impact FR_001
-sdd-workflow:requirement-analyzer .sdd/requirement/user-auth.md --add-requirement
-```
+**Reference**: `examples/requirement_analyzer_usage.md`
 
 ## Output
 
@@ -98,7 +92,8 @@ Read `references/sysml_requirements_theory.md` for the theoretical background of
 
 ## Requirements Diagram Components
 
-Read `references/requirements_diagram_components.md` for requirement types, attributes, relationships, and SysML standard
+Read `references/requirements_diagram_components.md` for requirement types, attributes, relationships, and SysML
+standard
 relationships.
 
 ## Your Responsibilities
@@ -238,24 +233,7 @@ For configuration file details, refer to the AI-SDD principles document (`.sdd/A
 
 Requirement diagrams support both flat and hierarchical structures:
 
-**Flat Structure**:
-
-```
-{root}/{requirement}/
-└── {feature-name}.md
-```
-
-**Hierarchical Structure**:
-
-```
-{root}/{requirement}/
-├── {feature-name}.md           # Top-level feature
-└── {parent-feature}/           # Parent feature directory
-    ├── index.md                # Parent feature overview & requirements list
-    └── {child-feature}.md      # Child feature requirements
-```
-
-* `{root}` and `{requirement}` use `.sdd-config.json` configuration values, or default values (`.sdd` / `requirement`)
+**Reference**: `references/directory_structure.md`
 
 Reference appropriate documents according to the analyzed project. For hierarchical structure, `index.md` contains
 overall requirements overview and references to child requirements for the parent feature.
