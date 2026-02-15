@@ -1,6 +1,7 @@
 ---
 name: implement
 description: "Execute TDD-based implementation and progressively complete checklist in tasks.md"
+argument-hint: "<feature-name> [ticket-number]"
 version: 3.0.0
 license: MIT
 user-invocable: true

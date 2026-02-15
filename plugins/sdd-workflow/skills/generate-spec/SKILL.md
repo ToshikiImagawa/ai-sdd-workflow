@@ -1,6 +1,7 @@
 ---
 name: generate-spec
 description: "Generate Abstract Specification and Technical Design Document from input content"
+argument-hint: "<requirements-description>"
 version: 3.0.0
 license: MIT
 user-invocable: true

@@ -1,6 +1,7 @@
 ---
 name: generate-requirements-diagram
 description: "Generate SysML requirements diagram from requirements analysis. Use when visualizing requirement relationships, creating traceability diagrams, or when called by generate-prd."
+argument-hint: "<requirements-text> [--ci]"
 version: 3.0.1
 license: MIT
 user-invocable: true

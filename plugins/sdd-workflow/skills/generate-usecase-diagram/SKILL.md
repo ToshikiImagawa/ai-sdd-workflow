@@ -1,6 +1,7 @@
 ---
 name: generate-usecase-diagram
 description: "Generate use case diagram in Mermaid format from business requirements. Use when user needs to visualize actors, use cases, and system boundaries for a feature or when PRD diagrams are requested."
+argument-hint: "<requirements-description> [--ci]"
 version: 3.0.1
 license: MIT
 user-invocable: true
