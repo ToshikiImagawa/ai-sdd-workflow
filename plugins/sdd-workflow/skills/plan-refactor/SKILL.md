@@ -22,9 +22,9 @@ This skill supports two scenarios:
 
 **Read the following prerequisite references before execution:**
 
-- `${CLAUDE_PLUGIN_ROOT}/shared/references/prerequisites_plugin_update.md` - Check for plugin updates
-- `${CLAUDE_PLUGIN_ROOT}/shared/references/prerequisites_principles.md` - Read AI-SDD principles document
-- `${CLAUDE_PLUGIN_ROOT}/shared/references/prerequisites_directory_paths.md` - Resolve directory paths using `SDD_*` environment variables
+- `references/prerequisites_plugin_update.md` - Check for plugin updates
+- `references/prerequisites_principles.md` - Read AI-SDD principles document
+- `references/prerequisites_directory_paths.md` - Resolve directory paths using `SDD_*` environment variables
 
 ### Language Configuration
 
@@ -116,9 +116,9 @@ Parse the user's refactoring goal and extract:
 | `"無限スクロール化してパフォーマンス改善"`             | Goal: 無限スクロール化<br>Motivation: パフォーマンス改善        |
 | `"依存性注入を導入してテスト容易性を向上"`             | Goal: 依存性注入導入<br>Motivation: テスト容易性向上          |
 | `"Strangler Figパターンで段階的にマイクロサービス化"` | Goal: マイクロサービス化<br>Approach: Strangler Figパターン |
-| `"テスト容易性を上げるため密結合を解消"`             | Goal: 密結合解消<br>Motivation: テスト容易性向上          |
-| `"モジュール境界を明確化してメンテナンス性向上"`        | Goal: モジュール境界明確化<br>Motivation: メンテナンス性向上     |
-| `"react-windowを使って仮想スクロール化"`         | Goal: 仮想スクロール化<br>Approach: react-window使用     |
+| `"テスト容易性を上げるため密結合を解消"`              | Goal: 密結合解消<br>Motivation: テスト容易性向上            |
+| `"モジュール境界を明確化してメンテナンス性向上"`          | Goal: モジュール境界明確化<br>Motivation: メンテナンス性向上      |
+| `"react-windowを使って仮想スクロール化"`        | Goal: 仮想スクロール化<br>Approach: react-window使用     |
 
 **Use extracted information in Phase 3:**
 
@@ -450,8 +450,10 @@ If context contains technically unrealistic goals (e.g., "make it 100x faster", 
 3. Explain trade-offs and constraints in "Trade-offs" section
 
 Example:
+
 - User context: "make it 100x faster"
-- Plan approach: "Target 5-10x performance improvement through caching and query optimization. 100x improvement would require architectural changes beyond refactoring scope."
+- Plan approach: "Target 5-10x performance improvement through caching and query optimization. 100x improvement would
+  require architectural changes beyond refactoring scope."
 
 **Conflicting Requirements:**
 
