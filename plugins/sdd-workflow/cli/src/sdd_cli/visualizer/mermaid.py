@@ -162,7 +162,12 @@ class MermaidGenerator:
             Style definition string
         """
         node_id = self._sanitize_node_id(node["id"])
-        file_type = node.get("file_type", "")
-        color = self.FILE_TYPE_COLORS.get(file_type, "#ddd")
+
+        # Special handling for CONSTITUTION node
+        if node["id"] == "CONSTITUTION.md":
+            color = "#f9f"  # Pink for CONSTITUTION
+        else:
+            file_type = node.get("file_type", "")
+            color = self.FILE_TYPE_COLORS.get(file_type, "#ddd")
 
         return f"style {node_id} fill:{color},stroke:#333"
