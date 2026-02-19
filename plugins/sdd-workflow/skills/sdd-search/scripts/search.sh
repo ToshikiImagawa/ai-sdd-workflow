@@ -15,8 +15,19 @@ if ! command -v sdd-cli &> /dev/null; then
     exit 1
 fi
 
+# Calculate cache directory path using Python (GitHub Copilot-style naming)
+CACHE_DIR=$(python3 -c "
+import hashlib
+from pathlib import Path
+project_root = Path('${PROJECT_ROOT}').resolve()
+project_name = project_root.name
+project_hash = hashlib.sha256(project_root.as_posix().encode()).hexdigest()[:8]
+cache_dir = Path.home() / '.cache' / 'sdd-cli' / f'{project_name}.{project_hash}'
+print(cache_dir)
+")
+
 # Check index existence
-INDEX_DB="${PROJECT_ROOT}/${SDD_ROOT}/.cache/index/index.db"
+INDEX_DB="${CACHE_DIR}/index.db"
 if [ ! -f "$INDEX_DB" ]; then
     echo "Error: Index not found at $INDEX_DB" >&2
     echo "Please run /sdd-index to build the index first." >&2
@@ -24,7 +35,7 @@ if [ ! -f "$INDEX_DB" ]; then
 fi
 
 # Output file path
-OUTPUT_FILE="${PROJECT_ROOT}/${SDD_ROOT}/.cache/index/search-results.json"
+OUTPUT_FILE="${CACHE_DIR}/search-results.json"
 
 # Execute CLI (pass all arguments)
 sdd-cli search "$@" \

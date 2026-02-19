@@ -1,6 +1,7 @@
 """Index command implementation."""
 
 from pathlib import Path
+from sdd_cli import get_cache_dir
 from sdd_cli.indexer.scanner import DocumentScanner
 from sdd_cli.indexer.parser import DocumentParser
 from sdd_cli.indexer.db import IndexDB
@@ -28,9 +29,10 @@ def build_index(root: Path, quiet: bool = False):
     if not quiet:
         print(f"Found {len(documents)} documents to index...")
 
-    # Initialize database
-    cache_dir = root / ".cache" / "index"
-    cache_dir.mkdir(parents=True, exist_ok=True)
+    # Initialize database using XDG cache directory
+    # Project root is used to generate unique hash for multi-project support
+    project_root = root.parent if root.name == ".sdd" else root
+    cache_dir = get_cache_dir(project_root)
     db_path = cache_dir / "index.db"
 
     with IndexDB(db_path) as db:

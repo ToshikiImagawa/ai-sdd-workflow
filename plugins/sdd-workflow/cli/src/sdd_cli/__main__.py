@@ -3,6 +3,7 @@
 import click
 import os
 from pathlib import Path
+from sdd_cli import get_cache_dir
 
 
 @click.group()
@@ -40,7 +41,9 @@ def index(ctx, root, quiet):
     try:
         build_index(root, quiet)
         if not quiet:
-            click.echo(f"✓ Index built successfully at {root}/.cache/index/index.db")
+            project_root = root.parent if root.name == ".sdd" else root
+            cache_dir = get_cache_dir(project_root)
+            click.echo(f"✓ Index built successfully at {cache_dir / 'index.db'}")
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
         ctx.exit(1)
@@ -133,7 +136,7 @@ def search(ctx, query, root, feature_id, tag, directory, output_format, output, 
 @click.option(
     "--output",
     type=click.Path(path_type=Path),
-    help="Output file path (default: {root}/.cache/index/dependency-graph.mmd)",
+    help="Output file path (default: ~/.cache/sdd-cli/{project-hash}/dependency-graph.mmd)",
 )
 @click.option(
     "--filter-dir",
@@ -160,7 +163,9 @@ def visualize(ctx, root, output, filter_dir, feature_id):
 
     try:
         if not output:
-            output = root / ".cache" / "index" / "dependency-graph.mmd"
+            project_root = root.parent if root.name == ".sdd" else root
+            cache_dir = get_cache_dir(project_root)
+            output = cache_dir / "dependency-graph.mmd"
 
         generate_visualization(
             root=root,
@@ -170,6 +175,98 @@ def visualize(ctx, root, output, filter_dir, feature_id):
         )
 
         click.echo(f"✓ Dependency graph generated at {output}")
+
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+        ctx.exit(1)
+
+
+@cli.group()
+def cache():
+    """Manage cache directories.
+
+    Commands for listing and cleaning cached project indexes.
+    """
+    pass
+
+
+@cache.command("list")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json"]),
+    default="text",
+    help="Output format (default: text)",
+)
+def cache_list(output_format):
+    """List all cached projects.
+
+    Shows project name, size, last modified time, and document count.
+
+    Examples:
+        sdd-cli cache list
+        sdd-cli cache list --format json
+    """
+    from sdd_cli.commands.cache import list_cache_projects, format_cache_list
+    import json
+
+    try:
+        projects = list_cache_projects()
+
+        if output_format == "json":
+            click.echo(json.dumps(projects, indent=2, ensure_ascii=False))
+        else:
+            click.echo(format_cache_list(projects))
+
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+        raise SystemExit(1)
+
+
+@cache.command("clean")
+@click.option(
+    "--project",
+    help="Project name pattern to delete (supports wildcards like 'my-project*')",
+)
+@click.option(
+    "--all",
+    "all_projects",
+    is_flag=True,
+    help="Delete all cached projects",
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Show what would be deleted without actually deleting",
+)
+@click.pass_context
+def cache_clean(ctx, project, all_projects, dry_run):
+    """Clean cache directories.
+
+    Delete cached project indexes to free up disk space.
+
+    Examples:
+        # List what would be deleted
+        sdd-cli cache clean --all --dry-run
+
+        # Delete specific project
+        sdd-cli cache clean --project slide-presentation-app
+
+        # Delete all projects matching pattern
+        sdd-cli cache clean --project 'test-*'
+
+        # Delete all cached projects
+        sdd-cli cache clean --all
+    """
+    from sdd_cli.commands.cache import clean_cache
+
+    try:
+        result = clean_cache(
+            project_pattern=project,
+            all_projects=all_projects,
+            dry_run=dry_run
+        )
+        click.echo(result)
 
     except Exception as e:
         click.echo(f"Error: {e}", err=True)

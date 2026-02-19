@@ -259,12 +259,25 @@ if [ -d "$CLI_PATH" ]; then
             export PATH="${CLI_VENV}/bin:$PATH"
 
             # Auto-initialize index if not exists
-            INDEX_DB="${SDD_DIR}/.cache/index/index.db"
-            if [ ! -f "$INDEX_DB" ] && [ -d "$SDD_DIR" ]; then
-                echo "[AI-SDD] Initializing document index..." >&2
-                "${CLI_VENV}/bin/sdd-cli" index --root "$DOCS_ROOT" --quiet 2>&1 || {
-                    echo "[AI-SDD] Warning: Failed to initialize index." >&2
-                }
+            # Calculate cache directory path (XDG Base Directory: ~/.cache/sdd-cli/{project-name}.{hash}/)
+            CACHE_DIR=$(python3 -c "
+import hashlib
+from pathlib import Path
+project_root = Path('${CLAUDE_PROJECT_DIR:-$(pwd)}').resolve()
+project_name = project_root.name
+project_hash = hashlib.sha256(project_root.as_posix().encode()).hexdigest()[:8]
+cache_dir = Path.home() / '.cache' / 'sdd-cli' / f'{project_name}.{project_hash}'
+print(cache_dir)
+" 2>/dev/null || echo "")
+
+            if [ -n "$CACHE_DIR" ]; then
+                INDEX_DB="${CACHE_DIR}/index.db"
+                if [ ! -f "$INDEX_DB" ] && [ -d "$SDD_DIR" ]; then
+                    echo "[AI-SDD] Initializing document index..." >&2
+                    "${CLI_VENV}/bin/sdd-cli" index --root "$DOCS_ROOT" --quiet 2>&1 || {
+                        echo "[AI-SDD] Warning: Failed to initialize index." >&2
+                    }
+                fi
             fi
         fi
     else

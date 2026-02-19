@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from typing import Optional
+from sdd_cli import get_cache_dir
 from sdd_cli.indexer.db import IndexDB
 from sdd_cli.visualizer.analyzer import DependencyAnalyzer
 from sdd_cli.visualizer.mermaid import MermaidGenerator
@@ -24,11 +25,13 @@ def generate_visualization(
     Raises:
         Exception: If visualization generation fails
     """
-    # Check if index exists
-    db_path = root / ".cache" / "index" / "index.db"
+    # Check if index exists in XDG cache directory
+    project_root = root.parent if root.name == ".sdd" else root
+    cache_dir = get_cache_dir(project_root)
+    db_path = cache_dir / "index.db"
     if not db_path.exists():
         raise ValueError(
-            "Index not found. Please run 'sdd-cli index' first."
+            f"Index not found at {db_path}. Please run 'sdd-cli index' first."
         )
 
     # Get all documents from index

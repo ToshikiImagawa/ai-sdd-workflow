@@ -28,10 +28,21 @@ sdd-cli index --root "${SDD_ROOT}"
 
 # Export environment variables
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
-    METADATA_FILE="${PROJECT_ROOT}/${SDD_ROOT}/.cache/index/metadata.json"
+    # Calculate cache directory path using Python (GitHub Copilot-style naming)
+    CACHE_DIR=$(python3 -c "
+import hashlib
+from pathlib import Path
+project_root = Path('${PROJECT_ROOT}').resolve()
+project_name = project_root.name
+project_hash = hashlib.sha256(project_root.as_posix().encode()).hexdigest()[:8]
+cache_dir = Path.home() / '.cache' / 'sdd-cli' / f'{project_name}.{project_hash}'
+print(cache_dir)
+")
+    METADATA_FILE="${CACHE_DIR}/metadata.json"
     if [ -f "$METADATA_FILE" ]; then
         echo "export SDD_INDEX_METADATA=\"$METADATA_FILE\"" >> "$CLAUDE_ENV_FILE"
     fi
+    echo "export SDD_CACHE_DIR=\"$CACHE_DIR\"" >> "$CLAUDE_ENV_FILE"
 fi
 
 echo "✓ Index rebuild completed" >&2

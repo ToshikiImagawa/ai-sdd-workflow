@@ -88,7 +88,7 @@ sdd-cli visualize [options]
 
 **Options**:
 - `--root <path>`: SDD root directory
-- `--output <file>`: Output file path (default: `{root}/.cache/index/dependency-graph.mmd`)
+- `--output <file>`: Output file path (default: `~/.cache/sdd-cli/{project-name}.{hash}/dependency-graph.mmd`)
 - `--filter-dir <type>`: Filter by directory type (requirement/specification/task)
 - `--feature-id <id>`: Filter by feature ID
 
@@ -128,16 +128,77 @@ sdd-cli search --tag auth
 sdd-cli search "authentication"
 ```
 
-## Index File Structure
+## Cache Directory Structure
+
+Index and visualization files are stored in **XDG Base Directory** compliant cache:
 
 ```
-.sdd/
-└── .cache/
-    └── index/
-        ├── index.db              # SQLite FTS5 index
-        ├── metadata.json         # Index metadata
-        └── dependency-graph.mmd  # Mermaid dependency graph
+~/.cache/sdd-cli/
+├── my-project.a1b2c3d4/
+│   ├── index.db                  # SQLite FTS5 index
+│   ├── metadata.json             # Index metadata
+│   ├── dependency-graph.mmd      # Mermaid dependency graph
+│   └── search-results.json       # Search results (from skills)
+└── another-project.e5f6g7h8/
+    └── ...
 ```
+
+**Naming Convention** (GitHub Copilot-style):
+- Format: `{project-name}.{8-char-hash}`
+- `project-name`: Project directory name (human-readable)
+- `8-char-hash`: Short hash to avoid path collisions
+
+**Benefits**:
+- Easy to identify projects at a glance
+- Simple cleanup: `rm -rf ~/.cache/sdd-cli/old-project.*`
+- Claude Code independent - works with any editor or CI/CD
+- Persistent across sessions (survives system restart)
+
+## Cache Management
+
+### List Cached Projects
+
+```bash
+# List all cached projects
+sdd-cli cache list
+
+# Output:
+# Found 2 cached project(s)
+# Total cache size: 2.5 MB
+#
+# 1. my-project.a1b2c3d4
+#    Size: 1.5 MB
+#    Documents: 50
+#    Last modified: 2026-02-19T14:30:00
+#    Project root: /path/to/my-project
+
+# JSON format
+sdd-cli cache list --format json
+```
+
+### Clean Up Cache
+
+```bash
+# Dry-run: show what would be deleted
+sdd-cli cache clean --project 'old-*' --dry-run
+
+# Delete specific project
+sdd-cli cache clean --project slide-presentation-app
+
+# Delete projects matching pattern (supports wildcards)
+sdd-cli cache clean --project 'test-*'
+
+# Delete all cached projects
+sdd-cli cache clean --all
+
+# Dry-run for all projects
+sdd-cli cache clean --all --dry-run
+```
+
+**When to Clean Cache**:
+- Project deleted from disk → remove corresponding cache
+- Running low on disk space → clean old/unused project caches
+- Index corrupted → delete cache and rebuild with `sdd-cli index`
 
 ## Troubleshooting
 
