@@ -95,6 +95,15 @@ class DocumentParser:
         # Infer from filename (remove _spec or _design suffix)
         name = file_path.stem
         name = re.sub(r"_(spec|design)$", "", name)
+
+        # If filename is "index", use parent directory name as feature-id
+        # This handles cases like: requirement/{feature-name}/index.md
+        if name == "index":
+            parent_name = file_path.parent.name
+            # Avoid using directory names like "requirement", "specification", "task"
+            if parent_name not in ["requirement", "specification", "task"]:
+                return parent_name
+
         return name
 
     @staticmethod

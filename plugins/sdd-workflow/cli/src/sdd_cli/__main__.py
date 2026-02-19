@@ -147,8 +147,18 @@ def search(ctx, query, root, feature_id, tag, directory, output_format, output, 
     "--feature-id",
     help="Only visualize documents related to specific feature",
 )
+@click.option(
+    "--html",
+    is_flag=True,
+    help="Generate interactive HTML visualization and start local server",
+)
+@click.option(
+    "--split-by-prd",
+    is_flag=True,
+    help="Split graphs by PRD existence (PRD-based vs direct from CONSTITUTION)",
+)
 @click.pass_context
-def visualize(ctx, root, output, filter_dir, feature_id):
+def visualize(ctx, root, output, filter_dir, feature_id, html, split_by_prd):
     """Generate dependency graph visualization.
 
     Analyzes document dependencies and generates a Mermaid diagram showing
@@ -158,6 +168,7 @@ def visualize(ctx, root, output, filter_dir, feature_id):
         sdd-cli visualize
         sdd-cli visualize --filter-dir specification
         sdd-cli visualize --feature-id user-login
+        sdd-cli visualize --html  # Interactive HTML with server
     """
     from sdd_cli.commands.visualize import generate_visualization
 
@@ -165,16 +176,29 @@ def visualize(ctx, root, output, filter_dir, feature_id):
         if not output:
             project_root = root.parent if root.name == ".sdd" else root
             cache_dir = get_cache_dir(project_root)
-            output = cache_dir / "dependency-graph.mmd"
+
+            # Generate file name based on filter conditions
+            if feature_id:
+                filename = f"{feature_id}-graph.mmd"
+            elif filter_dir:
+                filename = f"{filter_dir}-graph.mmd"
+            else:
+                filename = "dependency-graph.mmd"
+
+            output = cache_dir / filename
 
         generate_visualization(
             root=root,
             output=output,
             filter_dir=filter_dir,
             feature_id=feature_id,
+            html=html,
+            serve=html,  # Auto-start server when --html is used
+            split_by_prd=split_by_prd,
         )
 
-        click.echo(f"✓ Dependency graph generated at {output}")
+        if not html:
+            click.echo(f"✓ Dependency graph generated at {output}")
 
     except Exception as e:
         click.echo(f"Error: {e}", err=True)

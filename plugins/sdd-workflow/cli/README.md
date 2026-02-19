@@ -69,7 +69,7 @@ sdd-cli search "ログイン" --format json --output results.json
 ### 依存関係可視化
 
 ```bash
-# 全体の依存関係図を生成
+# 全体の依存関係図を生成（Mermaid形式）
 sdd-cli visualize
 
 # 特定ディレクトリのみ
@@ -77,6 +77,10 @@ sdd-cli visualize --filter-dir specification
 
 # 特定機能のみ
 sdd-cli visualize --feature-id user-login
+
+# インタラクティブHTMLビューアで表示
+sdd-cli visualize --html
+# → ブラウザが自動的に開き、ズーム/パン/フィルタリング/詳細表示が可能
 ```
 
 ### キャッシュ管理

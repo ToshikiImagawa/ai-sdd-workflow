@@ -91,10 +91,11 @@ sdd-cli visualize [options]
 - `--output <file>`: Output file path (default: `~/.cache/sdd-cli/{project-name}.{hash}/dependency-graph.mmd`)
 - `--filter-dir <type>`: Filter by directory type (requirement/specification/task)
 - `--feature-id <id>`: Filter by feature ID
+- `--html`: Generate interactive HTML visualization and start local server
 
 **Examples**:
 ```bash
-# Visualize all dependencies
+# Visualize all dependencies (Mermaid format)
 sdd-cli visualize
 
 # Visualize requirement only
@@ -102,6 +103,11 @@ sdd-cli visualize --filter-dir requirement
 
 # Visualize specific feature
 sdd-cli visualize --feature-id user-login --output user-login-deps.mmd
+
+# Interactive HTML viewer (opens browser automatically)
+sdd-cli visualize --html
+# Features: zoom/pan, node details, SVG/PNG export
+# Server runs on http://localhost:8000 (press Ctrl+C to stop)
 ```
 
 ## Search Limitations

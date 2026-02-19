@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDD Dependency Graph</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 15px 30px;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .controls button {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .controls button:hover {
+            background: #f0f0f0;
+            border-color: #999;
+        }
+
+        .controls button:active {
+            transform: scale(0.95);
+        }
+
+        .controls select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .zoom-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .zoom-level {
+            font-size: 14px;
+            color: #666;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .info {
+            margin-left: auto;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .diagram-container {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            background: white;
+        }
+
+        .diagram-container.split {
+            flex: none;
+            height: 50vh;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .diagram-section-title {
+            padding: 10px 20px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .mermaid-diagram {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            cursor: grab;
+        }
+
+        .mermaid-diagram:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-diagram svg {
+            transition: transform 0.1s ease;
+        }
+
+        .node-detail {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            padding: 24px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .node-detail.active {
+            display: block;
+        }
+
+        .node-detail h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .node-detail .detail-item {
+            margin-bottom: 12px;
+        }
+
+        .node-detail .detail-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .node-detail .detail-value {
+            color: #333;
+            font-size: 14px;
+        }
+
+        .node-detail .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .node-detail .close-btn:hover {
+            color: #333;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        .error-message {
+            padding: 20px;
+            text-align: center;
+            color: #d32f2f;
+            font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .info {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 id="graph-title">SDD Dependency Graph</h1>
+        <p id="graph-subtitle">Loading...</p>
+    </div>
+
+    <div class="controls">
+        <div class="zoom-controls">
+            <button onclick="zoomIn()">🔍 Zoom In</button>
+            <button onclick="zoomOut()">🔎 Zoom Out</button>
+            <button onclick="resetZoom()">↺ Reset</button>
+            <span class="zoom-level" id="zoom-level">100%</span>
+        </div>
+
+        <button onclick="downloadSVG()">⬇️ SVG</button>
+        <button onclick="downloadPNG()">📸 PNG</button>
+
+        <div class="info">
+            <span id="node-count">Loading...</span>
+        </div>
+    </div>
+
+    <div id="diagram-containers">
+        <!-- Single diagram mode -->
+        <div id="single-container" class="diagram-container" style="display: none;">
+            <div id="mermaid-diagram" class="mermaid-diagram mermaid">
+                Loading diagram...
+            </div>
+        </div>
+
+        <!-- Split diagram mode -->
+        <div id="split-container-1" class="diagram-container split" style="display: none;">
+            <div class="diagram-section-title" id="title-1">PRD-Based Documents</div>
+            <div id="mermaid-diagram-1" class="mermaid-diagram mermaid">
+                Loading diagram...
+            </div>
+        </div>
+
+        <div id="split-container-2" class="diagram-container split" style="display: none;">
+            <div class="diagram-section-title" id="title-2">Direct Documents (from CONSTITUTION)</div>
+            <div id="mermaid-diagram-2" class="mermaid-diagram mermaid">
+                Loading diagram...
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="closeNodeDetail()"></div>
+    <div class="node-detail" id="node-detail">
+        <button class="close-btn" onclick="closeNodeDetail()">&times;</button>
+        <div id="detail-content"></div>
+    </div>
+
+    <script>
+        // URLパラメータから読み込むファイル名を取得
+        const urlParams = new URLSearchParams(window.location.search);
+        const dataFile = urlParams.get('data') || 'dependency-graph';
+        const isSplitMode = dataFile === 'split';
+
+        // グローバル変数
+        let nodeMetadata = {};
+        let nodeMetadata1 = {};
+        let nodeMetadata2 = {};
+        let currentZoom = 1.0;
+        let currentZoom1 = 1.0;
+        let currentZoom2 = 1.0;
+        const zoomStep = 0.2;
+        const minZoom = 0.3;
+        const maxZoom = 4.0;
+
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            themeVariables: {
+                fontSize: '16px',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+            },
+            flowchart: {
+                nodeSpacing: 80,
+                rankSpacing: 100,
+                padding: 20
+            }
+        });
+
+        // データ読み込み
+        async function loadData() {
+            if (isSplitMode) {
+                await loadSplitData();
+            } else {
+                await loadSingleData();
+            }
+        }
+
+        // 単一グラフモード
+        async function loadSingleData() {
+            try {
+                // コンテナを表示
+                document.getElementById('single-container').style.display = 'flex';
+
+                // メタデータを読み込み
+                const metadataResponse = await fetch(`${dataFile}-metadata.json`);
+                if (!metadataResponse.ok) {
+                    throw new Error(`Failed to load metadata: ${metadataResponse.status}`);
+                }
+                const metadata = await metadataResponse.json();
+
+                // タイトルを設定
+                document.getElementById('graph-title').textContent = metadata.title || 'SDD Dependency Graph';
+                document.getElementById('graph-subtitle').textContent = metadata.subtitle || 'Interactive dependency graph visualization';
+
+                // ノードメタデータを保存
+                nodeMetadata = metadata.nodes || {};
+
+                // Mermaid図を読み込み
+                const mermaidResponse = await fetch(`${dataFile}.mmd`);
+                if (!mermaidResponse.ok) {
+                    throw new Error(`Failed to load diagram: ${mermaidResponse.status}`);
+                }
+                const mermaidCode = await mermaidResponse.text();
+
+                // Mermaid図をレンダリング
+                const diagramElement = document.getElementById('mermaid-diagram');
+                diagramElement.textContent = mermaidCode;
+                diagramElement.removeAttribute('data-processed');
+
+                // Mermaid v10の新しいAPI
+                const { svg } = await mermaid.render('graphDiv', mermaidCode);
+                diagramElement.innerHTML = svg;
+
+                // 初期化完了後の処理
+                initializeAfterLoad('mermaid-diagram', nodeMetadata);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('mermaid-diagram').innerHTML =
+                    `<div class="error-message">Error loading diagram: ${error.message}</div>`;
+                document.getElementById('graph-subtitle').textContent = 'Error loading data';
+            }
+        }
+
+        // 分割グラフモード
+        async function loadSplitData() {
+            try {
+                // コンテナを表示
+                document.getElementById('split-container-1').style.display = 'block';
+                document.getElementById('split-container-2').style.display = 'block';
+
+                // タイトルを設定
+                document.getElementById('graph-title').textContent = 'SDD Dependency Graph (Split View)';
+                document.getElementById('graph-subtitle').textContent = 'PRD-based and Direct documents';
+
+                // グラフ1: PRDベース
+                await loadGraph('prd-based-graph', 'mermaid-diagram-1', 1);
+
+                // グラフ2: ダイレクト
+                await loadGraph('direct-graph', 'mermaid-diagram-2', 2);
+
+                // ノードカウントを更新
+                updateNodeCount();
+            } catch (error) {
+                console.error('Error loading split data:', error);
+                document.getElementById('graph-subtitle').textContent = 'Error loading data';
+            }
+        }
+
+        // 個別グラフ読み込み
+        async function loadGraph(dataName, elementId, graphIndex) {
+            // メタデータを読み込み
+            const metadataResponse = await fetch(`${dataName}-metadata.json`);
+            const metadata = await metadataResponse.json();
+
+            // ノードメタデータを保存
+            if (graphIndex === 1) {
+                nodeMetadata1 = metadata.nodes || {};
+            } else {
+                nodeMetadata2 = metadata.nodes || {};
+            }
+
+            // Mermaid図を読み込み
+            const mermaidResponse = await fetch(`${dataName}.mmd`);
+            const mermaidCode = await mermaidResponse.text();
+
+            // Mermaid図をレンダリング
+            const diagramElement = document.getElementById(elementId);
+            diagramElement.textContent = mermaidCode;
+            diagramElement.removeAttribute('data-processed');
+
+            const { svg } = await mermaid.render(`graphDiv${graphIndex}`, mermaidCode);
+            diagramElement.innerHTML = svg;
+
+            // 初期化完了後の処理
+            const nodeMetadataForGraph = graphIndex === 1 ? nodeMetadata1 : nodeMetadata2;
+            initializeAfterLoad(elementId, nodeMetadataForGraph, graphIndex);
+        }
+
+        function updateNodeCount() {
+            const nodes1 = document.querySelectorAll('#mermaid-diagram-1 .node').length;
+            const edges1 = document.querySelectorAll('#mermaid-diagram-1 .flowchart-link, #mermaid-diagram-1 path.edge').length;
+            const nodes2 = document.querySelectorAll('#mermaid-diagram-2 .node').length;
+            const edges2 = document.querySelectorAll('#mermaid-diagram-2 .flowchart-link, #mermaid-diagram-2 path.edge').length;
+
+            document.getElementById('node-count').textContent =
+                `PRD: ${nodes1} nodes, ${edges1} edges | Direct: ${nodes2} nodes, ${edges2} edges`;
+        }
+
+        function initializeAfterLoad(elementId, metadata, graphIndex) {
+            setTimeout(() => {
+                if (!isSplitMode) {
+                    updateZoom();
+                } else {
+                    if (graphIndex === 1) {
+                        updateZoom(1);
+                    } else {
+                        updateZoom(2);
+                    }
+                }
+
+                const nodes = document.querySelectorAll(`#${elementId} .node`);
+
+                if (!isSplitMode) {
+                    // Single mode: update node count
+                    const edges = document.querySelectorAll(`#${elementId} .flowchart-link, #${elementId} .edge-pattern, #${elementId} path.edge`);
+                    const edgeCount = edges.length > 0 ? edges.length : document.querySelectorAll(`#${elementId} marker`).length / 2;
+                    document.getElementById('node-count').textContent =
+                        `${nodes.length} nodes, ${Math.floor(edgeCount)} edges`;
+                }
+
+                // Add click handlers to nodes
+                nodes.forEach((node) => {
+                    node.style.cursor = 'pointer';
+                    node.addEventListener('click', () => {
+                        // Extract Mermaid node ID from DOM element ID
+                        let nodeId = node.id || 'unknown';
+
+                        // Remove "flowchart-" prefix and trailing number
+                        if (nodeId.startsWith('flowchart-')) {
+                            nodeId = nodeId.substring('flowchart-'.length);
+                            nodeId = nodeId.replace(/-\d+$/, '');
+                        }
+
+                        console.log('Node clicked:', nodeId, 'Available metadata keys:', Object.keys(metadata));
+
+                        const nodeData = metadata[nodeId] || {
+                            title: node.textContent,
+                            path: 'N/A',
+                            directory: 'N/A',
+                            featureId: 'N/A'
+                        };
+                        showNodeDetail(nodeId, nodeData);
+                    });
+                });
+            }, 1000);
+        }
+
+        // Zoom functionality
+        function updateZoom(graphIndex) {
+            if (!isSplitMode) {
+                const svg = document.querySelector('#mermaid-diagram svg');
+                if (svg) {
+                    svg.style.transform = `scale(${currentZoom})`;
+                    svg.style.transformOrigin = 'top left';
+                }
+                document.getElementById('zoom-level').textContent = Math.round(currentZoom * 100) + '%';
+            } else {
+                // Split mode: update both graphs
+                const svg1 = document.querySelector('#mermaid-diagram-1 svg');
+                const svg2 = document.querySelector('#mermaid-diagram-2 svg');
+                if (svg1) {
+                    svg1.style.transform = `scale(${currentZoom1})`;
+                    svg1.style.transformOrigin = 'top left';
+                }
+                if (svg2) {
+                    svg2.style.transform = `scale(${currentZoom2})`;
+                    svg2.style.transformOrigin = 'top left';
+                }
+                document.getElementById('zoom-level').textContent =
+                    `PRD: ${Math.round(currentZoom1 * 100)}% | Direct: ${Math.round(currentZoom2 * 100)}%`;
+            }
+        }
+
+        function zoomIn() {
+            if (!isSplitMode) {
+                if (currentZoom < maxZoom) {
+                    currentZoom += zoomStep;
+                    updateZoom();
+                }
+            } else {
+                if (currentZoom1 < maxZoom) currentZoom1 += zoomStep;
+                if (currentZoom2 < maxZoom) currentZoom2 += zoomStep;
+                updateZoom();
+            }
+        }
+
+        function zoomOut() {
+            if (!isSplitMode) {
+                if (currentZoom > minZoom) {
+                    currentZoom -= zoomStep;
+                    updateZoom();
+                }
+            } else {
+                if (currentZoom1 > minZoom) currentZoom1 -= zoomStep;
+                if (currentZoom2 > minZoom) currentZoom2 -= zoomStep;
+                updateZoom();
+            }
+        }
+
+        function resetZoom() {
+            if (!isSplitMode) {
+                currentZoom = 1.0;
+            } else {
+                currentZoom1 = 1.0;
+                currentZoom2 = 1.0;
+            }
+            updateZoom();
+        }
+
+        // Pan functionality
+        function setupPanZoom(containerId) {
+            let isPanning = false;
+            let startX, startY;
+            let scrollLeft, scrollTop;
+
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            container.addEventListener('mousedown', (e) => {
+                isPanning = true;
+                startX = e.pageX - container.offsetLeft;
+                startY = e.pageY - container.offsetTop;
+                scrollLeft = container.scrollLeft;
+                scrollTop = container.scrollTop;
+            });
+
+            container.addEventListener('mouseleave', () => {
+                isPanning = false;
+            });
+
+            container.addEventListener('mouseup', () => {
+                isPanning = false;
+            });
+
+            container.addEventListener('mousemove', (e) => {
+                if (!isPanning) return;
+                e.preventDefault();
+                const x = e.pageX - container.offsetLeft;
+                const y = e.pageY - container.offsetTop;
+                const walkX = (x - startX) * 1.5;
+                const walkY = (y - startY) * 1.5;
+                container.scrollLeft = scrollLeft - walkX;
+                container.scrollTop = scrollTop - walkY;
+            });
+
+            // Mouse wheel zoom
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                if (e.deltaY < 0) {
+                    zoomIn();
+                } else {
+                    zoomOut();
+                }
+            });
+        }
+
+        // Setup pan/zoom for containers after page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (!isSplitMode) {
+                    setupPanZoom('mermaid-diagram');
+                } else {
+                    setupPanZoom('mermaid-diagram-1');
+                    setupPanZoom('mermaid-diagram-2');
+                }
+            }, 1500);
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '+' || e.key === '=') {
+                e.preventDefault();
+                zoomIn();
+            } else if (e.key === '-') {
+                e.preventDefault();
+                zoomOut();
+            } else if (e.key === '0') {
+                e.preventDefault();
+                resetZoom();
+            } else if (e.key === 'Escape') {
+                closeNodeDetail();
+            }
+        });
+
+        // Download functionality
+        function downloadSVG() {
+            const svgElement = document.querySelector('#mermaid-diagram svg');
+            if (!svgElement) {
+                alert('Diagram not loaded yet');
+                return;
+            }
+
+            const svgData = new XMLSerializer().serializeToString(svgElement);
+            const blob = new Blob([svgData], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${dataFile}.svg`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadPNG() {
+            const svgElement = document.querySelector('#mermaid-diagram svg');
+            if (!svgElement) {
+                alert('Diagram not loaded yet');
+                return;
+            }
+
+            const canvas = document.createElement('canvas');
+            const bbox = svgElement.getBBox();
+            canvas.width = bbox.width * 2;
+            canvas.height = bbox.height * 2;
+
+            const ctx = canvas.getContext('2d');
+            ctx.scale(2, 2);
+
+            const svgData = new XMLSerializer().serializeToString(svgElement);
+            const img = new Image();
+            const blob = new Blob([svgData], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+
+            img.onload = () => {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+
+                canvas.toBlob((blob) => {
+                    const pngUrl = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = pngUrl;
+                    link.download = `${dataFile}.png`;
+                    link.click();
+                    URL.revokeObjectURL(pngUrl);
+                    URL.revokeObjectURL(url);
+                });
+            };
+
+            img.src = url;
+        }
+
+        // Node detail functionality
+        function showNodeDetail(nodeId, nodeData) {
+            const detailContent = document.getElementById('detail-content');
+            detailContent.innerHTML = `
+                <h2>${nodeData.title || nodeId}</h2>
+                <div class="detail-item">
+                    <div class="detail-label">File Path</div>
+                    <div class="detail-value">${nodeData.path || 'N/A'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Directory</div>
+                    <div class="detail-value">${nodeData.directory || 'N/A'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Feature ID</div>
+                    <div class="detail-value">${nodeData.featureId || 'N/A'}</div>
+                </div>
+            `;
+            document.getElementById('overlay').classList.add('active');
+            document.getElementById('node-detail').classList.add('active');
+        }
+
+        function closeNodeDetail() {
+            document.getElementById('overlay').classList.remove('active');
+            document.getElementById('node-detail').classList.remove('active');
+        }
+
+        // ページ読み込み時にデータを読み込み
+        window.addEventListener('load', loadData);
+    </script>
+</body>
+</html>
