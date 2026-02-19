@@ -32,6 +32,7 @@ class IndexDB:
                 file_path,
                 file_name,
                 directory,
+                file_type,
                 title,
                 feature_id,
                 tags,
@@ -44,7 +45,9 @@ class IndexDB:
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS documents_meta (
                 file_path TEXT PRIMARY KEY,
+                file_type TEXT,
                 feature_id TEXT,
+                parent_feature_id TEXT,
                 tags TEXT,
                 depends_on TEXT,
                 links TEXT,
@@ -72,7 +75,7 @@ class IndexDB:
 
         Args:
             doc_info: Document info from scanner (file_path, file_name, directory)
-            parsed_data: Parsed metadata from parser (title, feature_id, tags, etc.)
+            parsed_data: Parsed metadata from parser (title, feature_id, tags, file_type, parent_feature_id, etc.)
         """
         cursor = self.conn.cursor()
 
@@ -82,13 +85,14 @@ class IndexDB:
         # Insert into FTS5 table
         cursor.execute("""
             INSERT INTO documents_fts (
-                file_path, file_name, directory, title,
+                file_path, file_name, directory, file_type, title,
                 feature_id, tags, content
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             doc_info["file_path"],
             doc_info["file_name"],
             doc_info["directory"],
+            parsed_data["file_type"],
             parsed_data["title"],
             parsed_data["feature_id"],
             tags_text,
@@ -98,11 +102,13 @@ class IndexDB:
         # Insert into metadata table
         cursor.execute("""
             INSERT OR REPLACE INTO documents_meta (
-                file_path, feature_id, tags, depends_on, links
-            ) VALUES (?, ?, ?, ?, ?)
+                file_path, file_type, feature_id, parent_feature_id, tags, depends_on, links
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (
             doc_info["file_path"],
+            parsed_data["file_type"],
             parsed_data["feature_id"],
+            parsed_data.get("parent_feature_id"),
             json.dumps(parsed_data["tags"]),
             json.dumps(parsed_data["depends_on"]),
             json.dumps(parsed_data["links"]),
@@ -143,10 +149,12 @@ class IndexDB:
                     fts.file_path,
                     fts.file_name,
                     fts.directory,
+                    fts.file_type,
                     fts.title,
                     fts.feature_id,
+                    meta.parent_feature_id,
                     meta.tags,
-                    snippet(documents_fts, 6, '...', '...', '', 50) as snippet,
+                    snippet(documents_fts, 7, '...', '...', '', 50) as snippet,
                     rank
                 FROM documents_fts fts
                 LEFT JOIN documents_meta meta ON fts.file_path = meta.file_path
@@ -160,8 +168,10 @@ class IndexDB:
                     fts.file_path,
                     fts.file_name,
                     fts.directory,
+                    fts.file_type,
                     fts.title,
                     fts.feature_id,
+                    meta.parent_feature_id,
                     meta.tags,
                     substr(fts.content, 1, 150) as snippet
                 FROM documents_fts fts
@@ -220,8 +230,10 @@ class IndexDB:
                 fts.file_path,
                 fts.file_name,
                 fts.directory,
+                fts.file_type,
                 fts.title,
                 fts.feature_id,
+                meta.parent_feature_id,
                 meta.tags,
                 meta.depends_on,
                 meta.links

@@ -20,6 +20,8 @@ class DocumentParser:
             Dictionary with keys:
                 - title: str (from frontmatter or first heading)
                 - feature_id: str (from frontmatter or inferred from filename)
+                - file_type: str (requirement/spec/design/task)
+                - parent_feature_id: str or None (inferred from directory nesting)
                 - tags: List[str] (from frontmatter)
                 - depends_on: List[str] (from frontmatter)
                 - content: str (Markdown body without code blocks)
@@ -38,6 +40,12 @@ class DocumentParser:
             # Extract or infer feature ID
             feature_id = DocumentParser._extract_feature_id(metadata, file_path)
 
+            # Infer file type
+            file_type = DocumentParser._infer_file_type(file_path)
+
+            # Infer parent feature ID from directory nesting
+            parent_feature_id = DocumentParser._infer_parent_feature_id(file_path)
+
             # Extract tags
             tags = DocumentParser._extract_tags(metadata)
 
@@ -53,6 +61,8 @@ class DocumentParser:
             return {
                 "title": title,
                 "feature_id": feature_id,
+                "file_type": file_type,
+                "parent_feature_id": parent_feature_id,
                 "tags": tags,
                 "depends_on": depends_on,
                 "content": clean_content,
@@ -64,6 +74,8 @@ class DocumentParser:
             return {
                 "title": file_path.stem,
                 "feature_id": file_path.stem,
+                "file_type": "unknown",
+                "parent_feature_id": None,
                 "tags": [],
                 "depends_on": [],
                 "content": "",
@@ -149,3 +161,109 @@ class DocumentParser:
             if link.endswith(".md") and not link.startswith("http"):
                 links.append(link)
         return links
+
+    @staticmethod
+    def _infer_file_type(file_path: Path) -> str:
+        """Infer file type from file path and name.
+
+        Args:
+            file_path: Path to the file
+
+        Returns:
+            File type: 'requirement', 'spec', 'design', or 'task'
+        """
+        path_str = str(file_path)
+        file_name = file_path.name
+
+        # Check if file is in task directory
+        if "/task/" in path_str or path_str.startswith("task/"):
+            return "task"
+
+        # Check if file ends with _design.md or is index_design.md
+        if file_name.endswith("_design.md") or file_name == "index_design.md":
+            return "design"
+
+        # Check if file ends with _spec.md or is index_spec.md
+        if file_name.endswith("_spec.md") or file_name == "index_spec.md":
+            return "spec"
+
+        # Check if file is in requirement directory
+        if "/requirement/" in path_str or path_str.startswith("requirement/"):
+            return "requirement"
+
+        # Default fallback
+        return "unknown"
+
+    @staticmethod
+    def _infer_parent_feature_id(file_path: Path) -> Optional[str]:
+        """Infer parent feature ID from directory nesting.
+
+        Args:
+            file_path: Path to the file
+
+        Returns:
+            Parent feature ID or None if no parent exists
+
+        Examples:
+            requirement/auth/login/index.md → 'auth'
+            requirement/user-login.md → None
+            specification/auth/login/index_spec.md → 'auth'
+            task/TICKET-123/index.md → None (task uses ticket ID, not feature hierarchy)
+        """
+        parts = file_path.parts
+
+        # Find the base directory (requirement, specification, task)
+        base_dir_index = None
+        for i, part in enumerate(parts):
+            if part in ["requirement", "specification", "task"]:
+                base_dir_index = i
+                break
+
+        if base_dir_index is None:
+            return None
+
+        # For task directories, we don't infer parent from path
+        # (ticket ID is not feature hierarchy)
+        if parts[base_dir_index] == "task":
+            return None
+
+        # Calculate depth from base directory
+        # Example cases:
+        #   requirement/user-login.md
+        #     parts = ['requirement', 'user-login.md']
+        #     depth = 1 → No parent (flat structure)
+        #
+        #   requirement/context-display/index.md
+        #     parts = ['requirement', 'context-display', 'index.md']
+        #     depth = 2, is_index = True → No parent (index.md defines the feature itself)
+        #
+        #   requirement/context-display/context-behavior.md
+        #     parts = ['requirement', 'context-display', 'context-behavior.md']
+        #     depth = 2, is_index = False → parent = 'context-display'
+        #
+        #   requirement/auth/login/index.md
+        #     parts = ['requirement', 'auth', 'login', 'index.md']
+        #     depth = 3, is_index = True → parent = 'auth' (parent of the feature directory)
+        depth_from_base = len(parts) - base_dir_index - 1
+        is_index = file_path.name in ["index.md", "index_spec.md", "index_design.md"]
+
+        # If depth >= 2, there's at least one directory between base and file
+        if depth_from_base >= 2:
+            if is_index:
+                # index.md defines the feature itself, so parent is one level up
+                # Example: requirement/auth/login/index.md → parent = 'auth'
+                if depth_from_base >= 3:
+                    # Multi-level nesting: parent is two directories up
+                    parent_dir = parts[base_dir_index + depth_from_base - 2]
+                    return parent_dir
+                else:
+                    # Single-level nesting: no parent (index.md defines top-level feature)
+                    return None
+            else:
+                # Non-index file: parent is the immediate parent directory
+                # Example: requirement/context-display/context-behavior.md → parent = 'context-display'
+                parent_dir = parts[base_dir_index + depth_from_base - 1]
+                return parent_dir
+
+        # Flat structure (file directly under base directory)
+        return None

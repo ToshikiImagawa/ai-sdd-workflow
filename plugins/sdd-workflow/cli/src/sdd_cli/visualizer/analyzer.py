@@ -69,7 +69,10 @@ class DependencyAnalyzer:
         return None
 
     def _infer_implicit_dependencies(self, doc: Dict[str, Any]) -> List[str]:
-        """Infer implicit dependencies based on naming conventions.
+        """Infer implicit dependencies based on file type and feature ID.
+
+        Dependency flow:
+            CONSTITUTION → requirement → spec → design → task
 
         Args:
             doc: Document metadata
@@ -78,39 +81,32 @@ class DependencyAnalyzer:
             List of inferred dependency paths
         """
         deps = []
-        file_path = doc["file_path"]
+        file_type = doc.get("file_type", "")
         feature_id = doc.get("feature_id", "")
+        parent_feature_id = doc.get("parent_feature_id")
 
-        # Pattern 1: requirement → *_spec
-        if file_path.startswith("requirement/"):
-            # Try flat file structure first
-            spec_path = f"specification/{feature_id}_spec.md"
-            if self._document_exists(spec_path):
-                deps.append(spec_path)
-            else:
-                # Try hierarchical structure: specification/{feature_id}/index_spec.md
-                spec_path_hierarchical = f"specification/{feature_id}/index_spec.md"
-                if self._document_exists(spec_path_hierarchical):
-                    deps.append(spec_path_hierarchical)
+        # Add parent-child dependency (directory nesting)
+        if parent_feature_id:
+            parent_doc = self._find_document_by_feature_id(parent_feature_id, file_type)
+            if parent_doc:
+                deps.append(parent_doc["file_path"])
 
-        # Pattern 2: *_spec → *_design
-        elif file_path.endswith("_spec.md"):
-            # Try flat file structure first
-            design_path = file_path.replace("_spec.md", "_design.md")
-            if self._document_exists(design_path):
-                deps.append(design_path)
-            else:
-                # Try hierarchical structure: index_spec.md → index_design.md (same directory)
-                if file_path.endswith("/index_spec.md"):
-                    design_path_hierarchical = file_path.replace("/index_spec.md", "/index_design.md")
-                    if self._document_exists(design_path_hierarchical):
-                        deps.append(design_path_hierarchical)
+        # Pattern 1: requirement → spec (if spec exists)
+        if file_type == "requirement":
+            spec_doc = self._find_document_by_feature_id(feature_id, "spec")
+            if spec_doc:
+                deps.append(spec_doc["file_path"])
 
-        # Pattern 3: *_design → task/
-        elif file_path.endswith("_design.md"):
-            task_prefix = f"task/{feature_id}"
+        # Pattern 2: spec → design (if design exists)
+        elif file_type == "spec":
+            design_doc = self._find_document_by_feature_id(feature_id, "design")
+            if design_doc:
+                deps.append(design_doc["file_path"])
+
+        # Pattern 3: design → task (if task exists with same feature_id)
+        elif file_type == "design":
             for task_doc in self.documents:
-                if task_doc["file_path"].startswith(task_prefix):
+                if task_doc.get("file_type") == "task" and task_doc.get("feature_id") == feature_id:
                     deps.append(task_doc["file_path"])
 
         return deps
@@ -152,6 +148,21 @@ class DependencyAnalyzer:
                 return True
         return False
 
+    def _find_document_by_feature_id(self, feature_id: str, file_type: str) -> Dict[str, Any]:
+        """Find document by feature ID and file type.
+
+        Args:
+            feature_id: Feature ID to search
+            file_type: File type to match (requirement/spec/design/task)
+
+        Returns:
+            Document metadata or None if not found
+        """
+        for doc in self.documents:
+            if doc.get("feature_id") == feature_id and doc.get("file_type") == file_type:
+                return doc
+        return None
+
     def get_dependency_graph(
         self,
         filter_dir: str = None,
@@ -190,6 +201,7 @@ class DependencyAnalyzer:
                 "id": doc["file_path"],
                 "title": doc.get("title", doc["file_name"]),
                 "directory": doc["directory"],
+                "file_type": doc.get("file_type", ""),
                 "feature_id": doc.get("feature_id", ""),
             })
 
@@ -233,25 +245,24 @@ class DependencyAnalyzer:
         spec_classification = {}  # feature_id -> "prd" or "direct"
 
         for doc in filtered_docs:
-            file_path = doc["file_path"]
+            file_type = doc.get("file_type", "")
             feature_id = doc.get("feature_id", "")
 
-            if doc["directory"] == "requirement":
+            if file_type == "requirement":
                 # All requirements go to PRD-based graph
                 prd_based_docs.append(doc)
-            elif doc["directory"] == "specification":
+            elif file_type == "spec":
                 # Spec docs: check if corresponding requirement exists
-                if file_path.endswith("_spec.md") or file_path.endswith("/index_spec.md"):
-                    has_requirement = self._has_requirement(feature_id)
-                    if has_requirement:
-                        # Has requirement → PRD-based graph
-                        prd_based_docs.append(doc)
-                        spec_classification[feature_id] = "prd"
-                    else:
-                        # No requirement → Direct graph (from CONSTITUTION)
-                        direct_docs.append(doc)
-                        spec_classification[feature_id] = "direct"
-            elif doc["directory"] == "task":
+                has_requirement = self._has_requirement(feature_id)
+                if has_requirement:
+                    # Has requirement → PRD-based graph
+                    prd_based_docs.append(doc)
+                    spec_classification[feature_id] = "prd"
+                else:
+                    # No requirement → Direct graph (from CONSTITUTION)
+                    direct_docs.append(doc)
+                    spec_classification[feature_id] = "direct"
+            elif file_type == "task":
                 # Task docs: check if corresponding requirement exists
                 has_requirement = self._has_requirement(feature_id)
                 if has_requirement:
@@ -261,34 +272,33 @@ class DependencyAnalyzer:
 
         # Second pass: classify design docs based on their spec's classification
         for doc in filtered_docs:
-            file_path = doc["file_path"]
+            file_type = doc.get("file_type", "")
             feature_id = doc.get("feature_id", "")
 
-            if doc["directory"] == "specification":
+            if file_type == "design":
                 # Design docs: follow their spec's classification
-                if file_path.endswith("_design.md") or file_path.endswith("/index_design.md"):
-                    # Check if we classified the corresponding spec
-                    if feature_id in spec_classification:
-                        if spec_classification[feature_id] == "prd":
-                            prd_based_docs.append(doc)
-                        else:
-                            direct_docs.append(doc)
+                # Check if we classified the corresponding spec
+                if feature_id in spec_classification:
+                    if spec_classification[feature_id] == "prd":
+                        prd_based_docs.append(doc)
                     else:
-                        # No spec found, check if spec exists at all
-                        has_spec = self._has_spec(feature_id)
-                        if has_spec:
-                            # Spec exists but wasn't classified (shouldn't happen)
-                            prd_based_docs.append(doc)
-                        else:
-                            # No spec → Direct graph (from CONSTITUTION)
-                            direct_docs.append(doc)
+                        direct_docs.append(doc)
+                else:
+                    # No spec found, check if spec exists at all
+                    has_spec = self._has_spec(feature_id)
+                    if has_spec:
+                        # Spec exists but wasn't classified (shouldn't happen)
+                        prd_based_docs.append(doc)
+                    else:
+                        # No spec → Direct graph (from CONSTITUTION)
+                        direct_docs.append(doc)
 
         # Build PRD-based graph
         prd_graph = self._build_graph_from_docs(prd_based_docs, include_constitution=True)
 
         # Add CONSTITUTION dependencies for PRD-based graph
         for doc in prd_based_docs:
-            if doc["directory"] == "requirement":
+            if doc.get("file_type") == "requirement":
                 # Add CONSTITUTION → requirement dependency
                 prd_graph["edges"].append({
                     "source": "CONSTITUTION.md",
@@ -301,15 +311,14 @@ class DependencyAnalyzer:
 
         # Add CONSTITUTION dependencies for direct graph
         for doc in direct_docs:
-            file_path = doc["file_path"]
-            if doc["directory"] == "specification":
-                # Only add CONSTITUTION → spec dependency (not design)
-                if file_path.endswith("_spec.md") or file_path.endswith("/index_spec.md"):
-                    direct_graph["edges"].append({
-                        "source": "CONSTITUTION.md",
-                        "target": file_path,
-                        "type": "implicit",
-                    })
+            file_type = doc.get("file_type", "")
+            # Only add CONSTITUTION → spec dependency (not design)
+            if file_type == "spec":
+                direct_graph["edges"].append({
+                    "source": "CONSTITUTION.md",
+                    "target": doc["file_path"],
+                    "type": "implicit",
+                })
 
         return prd_graph, direct_graph
 
@@ -323,7 +332,7 @@ class DependencyAnalyzer:
             True if requirement exists
         """
         for doc in self.documents:
-            if doc["directory"] == "requirement" and doc.get("feature_id") == feature_id:
+            if doc.get("file_type") == "requirement" and doc.get("feature_id") == feature_id:
                 return True
         return False
 
@@ -337,10 +346,7 @@ class DependencyAnalyzer:
             True if spec exists
         """
         for doc in self.documents:
-            file_path = doc["file_path"]
-            if (doc["directory"] == "specification" and
-                doc.get("feature_id") == feature_id and
-                (file_path.endswith("_spec.md") or file_path.endswith("/index_spec.md"))):
+            if doc.get("file_type") == "spec" and doc.get("feature_id") == feature_id:
                 return True
         return False
 
@@ -382,6 +388,7 @@ class DependencyAnalyzer:
                 "id": doc["file_path"],
                 "title": doc.get("title", doc["file_name"]),
                 "directory": doc["directory"],
+                "file_type": doc.get("file_type", ""),
                 "feature_id": doc.get("feature_id", ""),
             })
 
@@ -391,6 +398,7 @@ class DependencyAnalyzer:
                 "id": "CONSTITUTION.md",
                 "title": "CONSTITUTION.md",
                 "directory": "",
+                "file_type": "",
                 "feature_id": "",
             })
 

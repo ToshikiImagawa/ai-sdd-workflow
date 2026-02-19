@@ -7,10 +7,11 @@ import re
 class MermaidGenerator:
     """Generates Mermaid diagrams from dependency graphs."""
 
-    # Directory color mapping
-    DIR_COLORS = {
+    # File type color mapping
+    FILE_TYPE_COLORS = {
         "requirement": "#bbf",  # Light blue
-        "specification": "#bfb",  # Light green
+        "spec": "#bfb",  # Light green
+        "design": "#bff",  # Light cyan
         "task": "#ffb",  # Light yellow
     }
 
@@ -68,7 +69,7 @@ class MermaidGenerator:
         if not has_constitution and len(self.graph["nodes"]) > 0:
             requirement_nodes = [
                 node for node in self.graph["nodes"]
-                if node["directory"] == "requirement"
+                if node.get("file_type") == "requirement"
             ]
             for node in requirement_nodes:
                 node_id = self._sanitize_node_id(node["id"])
@@ -119,19 +120,19 @@ class MermaidGenerator:
         """
         node_id = self._sanitize_node_id(node["id"])
         title = node.get("title", node["id"])
+        file_type = node.get("file_type", "")
 
         # Escape special characters in title
         title = title.replace('"', '\\"')
 
-        # Use different shapes based on directory
-        if node["directory"] == "requirement":
+        # Use different shapes based on file type
+        if file_type == "requirement":
             return f'{node_id}["{title}"]'
-        elif node["directory"] == "specification":
-            if node["id"].endswith("_spec.md"):
-                return f'{node_id}["{title}"]'
-            else:  # _design.md
-                return f'{node_id}["{title}"]'
-        elif node["directory"] == "task":
+        elif file_type == "spec":
+            return f'{node_id}["{title}"]'
+        elif file_type == "design":
+            return f'{node_id}["{title}"]'
+        elif file_type == "task":
             return f'{node_id}["{title}"]'
         else:
             return f'{node_id}["{title}"]'
@@ -161,7 +162,7 @@ class MermaidGenerator:
             Style definition string
         """
         node_id = self._sanitize_node_id(node["id"])
-        directory = node["directory"]
-        color = self.DIR_COLORS.get(directory, "#ddd")
+        file_type = node.get("file_type", "")
+        color = self.FILE_TYPE_COLORS.get(file_type, "#ddd")
 
         return f"style {node_id} fill:{color},stroke:#333"
