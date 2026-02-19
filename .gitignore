@@ -13,3 +13,6 @@ Thumbs.db
 
 # direnv
 .envrc
+
+# ghq worktree symlinks
+.ghq-worktree-symlinks
