@@ -7,6 +7,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-02-19
+
+### Added
+
+- **CLI Tool Integration** - Python CLI tool for advanced document management
+  - `sdd-cli index`: Build full-text search index using SQLite FTS5 with trigram tokenizer
+  - `sdd-cli search`: Fast keyword, feature ID, tag, and directory-based search
+  - `sdd-cli visualize`: Generate Mermaid dependency graphs from document relationships
+  - Auto-installation on session start via `session-start.sh` hook
+  - Supports environment variable configuration (`$SDD_ROOT`, `$SDD_LANG`, etc.)
+- **New Skills for CLI Integration**
+  - `/sdd-index`: Build or rebuild document index
+  - `/sdd-search`: Search SDD documents with multiple filter options
+  - `/sdd-visualize`: Visualize document dependencies as Mermaid diagrams
+- **Dependency Analysis** - Automatic dependency detection and visualization
+  - Explicit dependencies from frontmatter `depends-on` field
+  - Implicit dependencies based on naming conventions (requirement → *_spec → *_design → task)
+  - Markdown link-based dependencies
+  - Color-coded Mermaid diagrams by directory type (requirement: blue, specification: green, task: yellow)
+- **Reference Documentation**
+  - `cli_tool_usage.md`: Comprehensive CLI tool usage guide with examples and troubleshooting
+
+### Changed
+
+- **session-start.sh Hook** - Enhanced with CLI tool auto-installation and index initialization
+  - Creates virtual environment and installs CLI tool if not present
+  - Auto-initializes document index on first run
+  - Adds CLI bin directory to PATH for session
+  - Graceful fallback with warnings if `uv` is not installed
+
+### Technical Details
+
+- **CLI Implementation**
+  - Built with Click framework for command-line interface
+  - Uses python-frontmatter for YAML frontmatter parsing
+  - SQLite FTS5 with trigram tokenizer for multi-language support (optimized for 3+ character keywords)
+  - Mermaid diagram generation with automatic node styling and edge types
+- **Package Management**
+  - Managed by `uv` (fast Python package manager)
+  - Editable install (`-e`) for development workflow
+  - Isolated virtual environment in `cli/.venv/`
+- **Index Structure**
+  - Located at `.sdd/.cache/index/`
+  - `index.db`: SQLite FTS5 database
+  - `metadata.json`: Index metadata (timestamp, document count)
+  - `dependency-graph.mmd`: Generated Mermaid diagrams
+
+### Known Limitations
+
+- **Search Keyword Length**: Trigram tokenizer requires 3+ characters for optimal full-text search. For 2-character keywords, use `--feature-id` or `--tag` filters instead.
+- **Platform Requirements**: Requires Python 3.9+ and `uv` package manager
+
 ## [3.1.0] - 2026-02-15
 
 ### Added

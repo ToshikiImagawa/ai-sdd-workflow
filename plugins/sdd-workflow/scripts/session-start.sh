@@ -228,6 +228,55 @@ compare_major_minor() {
     return 0
 }
 
+# ============================================================
+# CLI Tool Auto-Installation (Phase 5)
+# ============================================================
+
+CLI_PATH="${CLAUDE_PLUGIN_ROOT}/cli"
+CLI_VENV="${CLI_PATH}/.venv"
+
+if [ -d "$CLI_PATH" ]; then
+    # Check if uv is available
+    if command -v uv &> /dev/null; then
+        # Check if CLI is already installed
+        if [ ! -f "${CLI_VENV}/bin/sdd-cli" ]; then
+            echo "[AI-SDD] Installing CLI tool..." >&2
+
+            # Create virtual environment if not exists
+            if [ ! -d "$CLI_VENV" ]; then
+                (cd "$CLI_PATH" && uv venv --python python3 --quiet 2>&1) || true
+            fi
+
+            # Install CLI in editable mode
+            (cd "$CLI_PATH" && uv pip install -e . --python .venv/bin/python --quiet 2>&1) || {
+                echo "[AI-SDD] Warning: Failed to install CLI tool." >&2
+            }
+        fi
+
+        # Add CLI to PATH if successfully installed
+        if [ -f "${CLI_VENV}/bin/sdd-cli" ]; then
+            # Export PATH for this session
+            export PATH="${CLI_VENV}/bin:$PATH"
+
+            # Auto-initialize index if not exists
+            INDEX_DB="${SDD_DIR}/.cache/index/index.db"
+            if [ ! -f "$INDEX_DB" ] && [ -d "$SDD_DIR" ]; then
+                echo "[AI-SDD] Initializing document index..." >&2
+                "${CLI_VENV}/bin/sdd-cli" index --root "$DOCS_ROOT" --quiet 2>&1 || {
+                    echo "[AI-SDD] Warning: Failed to initialize index." >&2
+                }
+            fi
+        fi
+    else
+        echo "[AI-SDD] Warning: 'uv' not found. CLI features will be unavailable." >&2
+        echo "[AI-SDD] Install uv: https://github.com/astral-sh/uv" >&2
+    fi
+fi
+
+# ============================================================
+# End of CLI Tool Auto-Installation
+# ============================================================
+
 # CLAUDE.md version check (AI-SDD-PRINCIPLES.md is now auto-updated)
 # Note: PLUGIN_VERSION is already obtained above
 CLAUDE_MD="${PROJECT_ROOT}/CLAUDE.md"

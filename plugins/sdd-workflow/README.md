@@ -518,12 +518,115 @@ Place a `.sdd-config.json` file in your project root to customize directory name
 - If the configuration file doesn't exist, default values are used
 - Partial configuration is supported (unspecified items use defaults)
 
+## CLI Tool: Advanced Document Management
+
+**v3.1.0 以降で利用可能**
+
+`sdd-cli` は Python CLI ツールとして提供され、大規模プロジェクトにおけるドキュメント管理を強化します。
+
+### Features
+
+1. **高速検索**: SQLite FTS5 による全文検索インデックス
+2. **依存関係可視化**: Mermaid 図によるドキュメント間の依存関係表示
+3. **タグ・メタデータ検索**: feature ID、タグ、ディレクトリによるフィルタリング
+
+### Auto-Installation
+
+セッション開始時に自動的にインストールされます。手動でインストールする場合：
+
+```bash
+cd ${CLAUDE_PLUGIN_ROOT}/cli
+uv pip install -e .
+```
+
+### Available Skills
+
+#### `/sdd-index` - インデックス構築
+
+`.sdd/` 配下のすべてのドキュメントをスキャンし、検索インデックスを構築します。
+
+```
+/sdd-index
+```
+
+#### `/sdd-search` - ドキュメント検索
+
+キーワード、feature ID、タグ、ディレクトリでドキュメントを検索します。
+
+```
+# キーワード検索
+/sdd-search "ログイン機能"
+
+# Feature ID で検索
+/sdd-search --feature-id user-login
+
+# タグで検索
+/sdd-search --tag authentication
+
+# ディレクトリで絞り込み
+/sdd-search "セキュリティ" --dir specification
+```
+
+**制限事項**: 全文検索は3文字以上のキーワードで最適に動作します。2文字以下のキーワードは Feature ID やタグでの完全一致検索を推奨します。
+
+#### `/sdd-visualize` - 依存関係可視化
+
+ドキュメント間の依存関係を Mermaid 図として生成します。
+
+```
+# 全体の依存関係を可視化
+/sdd-visualize
+
+# requirement のみ
+/sdd-visualize --filter-dir requirement
+
+# 特定機能のみ
+/sdd-visualize --feature-id user-login
+```
+
+### CLI Command Reference
+
+詳細な CLI コマンドリファレンスは `cli/README.md` を参照してください。
+
+**直接 CLI を使用する場合**:
+
+```bash
+# インデックス構築
+sdd-cli index --root .sdd
+
+# 検索
+sdd-cli search "ログイン" --format json --output results.json
+
+# 可視化
+sdd-cli visualize --output dependency-graph.mmd
+```
+
+### Index Structure
+
+```
+.sdd/
+└── .cache/
+    └── index/
+        ├── index.db              # SQLite FTS5 インデックス
+        ├── metadata.json         # インデックスメタデータ
+        └── dependency-graph.mmd  # Mermaid 依存関係図
+```
+
 ## Plugin Structure
 
 ```
 sdd-workflow/
 ├── .claude-plugin/
 │   └── plugin.json                # Plugin manifest
+├── cli/                           # Python CLI tool (v3.1.0+)
+│   ├── pyproject.toml             # Package definition
+│   ├── README.md                  # CLI documentation
+│   ├── src/sdd_cli/               # CLI source code
+│   │   ├── __main__.py            # Entry point
+│   │   ├── commands/              # CLI commands (index, search, visualize)
+│   │   ├── indexer/               # Document indexing (scanner, parser, db)
+│   │   └── visualizer/            # Dependency analysis (analyzer, mermaid)
+│   └── tests/                     # Unit tests
 ├── agents/
 │   ├── prd-reviewer.md            # PRD review and CONSTITUTION compliance agent
 │   ├── spec-reviewer.md           # Specification review agent
@@ -538,9 +641,13 @@ sdd-workflow/
 │       ├── usecase_diagram_guide.md           # Use case diagram guide
 │       ├── requirements_diagram_components.md # SysML requirements diagram
 │       ├── document_dependencies.md           # Document dependency chain
+│       ├── cli_tool_usage.md                  # CLI tool usage guide (v3.1.0+)
 │       └── prerequisites_*.md                 # Prerequisite references
 ├── skills/
 │   ├── sdd-init/                  # AI-SDD workflow initialization
+│   ├── sdd-index/                 # Document index builder (v3.1.0+)
+│   ├── sdd-search/                # Document search (v3.1.0+)
+│   ├── sdd-visualize/             # Dependency visualization (v3.1.0+)
 │   ├── constitution/              # Project constitution management
 │   ├── generate-spec/             # Specification/design document generation
 │   ├── generate-prd/              # PRD generation
@@ -556,13 +663,14 @@ sdd-workflow/
 │   └── doc-consistency-checker/   # Document consistency checker
 │   # Each skill contains:
 │   # ├── SKILL.md                 # Skill definition
-│   # ├── templates/{en,ja}/       # Language-specific templates
-│   # ├── references/              # Symlinks to shared references
+│   # ├── templates/{en,ja}/       # Language-specific templates (optional)
+│   # ├── references/              # Symlinks to shared references (optional)
+│   # ├── scripts/                 # Shell scripts (optional, for CLI integration)
 │   # └── examples/                # Usage examples (optional)
 ├── hooks/
 │   └── hooks.json                 # Hooks configuration
 ├── scripts/
-│   └── session-start.sh           # Session start initialization script
+│   └── session-start.sh           # Session start initialization script (includes CLI auto-install)
 ├── AI-SDD-PRINCIPLES.source.md
 ├── LICENSE
 ├── README.md
