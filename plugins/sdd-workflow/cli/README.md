@@ -51,8 +51,7 @@ uvx --from git+https://github.com/ToshikiImagawa/ai-sdd-workflow.git#subdirector
 通常はプラグインのセッション開始時に自動的にインストールされます。手動でインストールする場合：
 
 ```bash
-cd plugins/sdd-workflow/cli
-uv tool install .
+uv tool install git+https://github.com/ToshikiImagawa/ai-sdd-workflow.git#subdirectory=plugins/sdd-workflow/cli
 ```
 
 ## 使用方法
