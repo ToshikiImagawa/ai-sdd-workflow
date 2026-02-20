@@ -51,6 +51,59 @@ body {
     color: white;
     padding: 20px 30px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-content {
+    flex: 1;
+}
+
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.theme-toggle input {
+    display: none;
+}
+
+.theme-toggle-icon {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.theme-toggle-slider {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 12px;
+    transition: background 0.3s;
+}
+
+.theme-toggle-slider::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+.theme-toggle input:checked ~ .theme-toggle-slider {
+    background: rgba(0,0,0,0.3);
+}
+
+.theme-toggle input:checked ~ .theme-toggle-slider::after {
+    transform: translateX(20px);
 }
 
 .header h1 {

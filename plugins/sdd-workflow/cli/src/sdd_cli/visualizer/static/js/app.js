@@ -47,7 +47,7 @@ function getNodeColors() {
 
 const EDGE_STYLES = {
     "explicit": "-->",
-    "implicit": "-.->",
+    "implicit": "--o",
     "link": "-->"
 };
 
@@ -57,7 +57,7 @@ function sanitizeNodeId(path) {
 
 function generateMermaidCode(graphData) {
     const lines = [];
-    lines.push("graph TD");
+    lines.push("graph BT");
     lines.push("");
 
     const nodes = graphData.nodes || [];
@@ -94,7 +94,10 @@ function generateMermaidCode(graphData) {
         const sourceId = sanitizeNodeId(edge.source);
         const targetId = sanitizeNodeId(edge.target);
         const edgeStyle = EDGE_STYLES[edge.type] || "-->";
-        const edgeDef = `${sourceId} ${edgeStyle} ${targetId}`;
+        // implicit edges: reverse direction (child --o parent)
+        const edgeDef = edge.type === "implicit"
+            ? `${targetId} ${edgeStyle} ${sourceId}`
+            : `${sourceId} ${edgeStyle} ${targetId}`;
         if (!edgesAdded.has(edgeDef)) {
             lines.push(`    ${edgeDef}`);
             edgesAdded.add(edgeDef);
@@ -109,26 +112,26 @@ function generateMermaidCode(graphData) {
             nodesWithIncomingEdge.add(edge.target);
         }
 
-        // CONSTITUTION → top-level requirements (not nested under another requirement)
+        // top-level requirements --o CONSTITUTION (not nested under another requirement)
         const requirementNodes = nodes.filter(node => node.file_type === "requirement");
         for (const node of requirementNodes) {
             if (nodesWithIncomingEdge.has(node.id)) continue;
             const nodeId = sanitizeNodeId(node.id);
-            const edgeDef = `CONSTITUTION -.-> ${nodeId}`;
+            const edgeDef = `${nodeId} --o CONSTITUTION`;
             if (!edgesAdded.has(edgeDef)) {
                 lines.push(`    ${edgeDef}`);
                 edgesAdded.add(edgeDef);
             }
         }
 
-        // CONSTITUTION → spec (for specs without a corresponding requirement)
+        // spec --o CONSTITUTION (for specs without a corresponding requirement)
         const requirementFeatureIds = new Set(requirementNodes.map(n => n.feature_id).filter(Boolean));
         const specNodes = nodes.filter(node => node.file_type === "spec");
         for (const node of specNodes) {
             if (nodesWithIncomingEdge.has(node.id)) continue;
             if (!requirementFeatureIds.has(node.feature_id)) {
                 const nodeId = sanitizeNodeId(node.id);
-                const edgeDef = `CONSTITUTION -.-> ${nodeId}`;
+                const edgeDef = `${nodeId} --o CONSTITUTION`;
                 if (!edgesAdded.has(edgeDef)) {
                     lines.push(`    ${edgeDef}`);
                     edgesAdded.add(edgeDef);
@@ -174,9 +177,9 @@ function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('sdd-theme', theme);
 
-    const btn = document.getElementById('theme-toggle');
-    if (btn) {
-        btn.textContent = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
+    const checkbox = document.getElementById('theme-checkbox');
+    if (checkbox) {
+        checkbox.checked = theme === 'dark';
     }
 }
 
@@ -210,8 +213,8 @@ async function rerenderAllDiagrams() {
 }
 
 function toggleTheme() {
-    const current = document.documentElement.getAttribute('data-theme');
-    const next = current === 'dark' ? 'light' : 'dark';
+    const checkbox = document.getElementById('theme-checkbox');
+    const next = checkbox.checked ? 'dark' : 'light';
     applyTheme(next);
     rerenderAllDiagrams();
 }

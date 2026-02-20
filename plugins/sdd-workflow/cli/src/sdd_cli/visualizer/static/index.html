@@ -9,8 +9,16 @@
 </head>
 <body>
     <div class="header">
-        <h1 id="graph-title">SDD Dependency Graph</h1>
-        <p id="graph-subtitle">Loading...</p>
+        <div class="header-content">
+            <h1 id="graph-title">SDD Dependency Graph</h1>
+            <p id="graph-subtitle">Loading...</p>
+        </div>
+        <label class="theme-toggle" id="theme-toggle">
+            <span class="theme-toggle-icon">☀️</span>
+            <input type="checkbox" id="theme-checkbox" onchange="toggleTheme()">
+            <span class="theme-toggle-slider"></span>
+            <span class="theme-toggle-icon">🌙</span>
+        </label>
     </div>
 
     <div class="tabs">
@@ -27,7 +35,6 @@
         </div>
 
         <button onclick="downloadSVG()">⬇️ SVG</button>
-        <button onclick="toggleTheme()" id="theme-toggle">🌙 Dark</button>
 
         <div class="info">
             <span id="node-count">Loading...</span>
