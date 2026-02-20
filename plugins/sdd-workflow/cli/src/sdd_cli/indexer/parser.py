@@ -108,9 +108,9 @@ class DocumentParser:
         name = file_path.stem
         name = re.sub(r"_(spec|design)$", "", name)
 
-        # If filename is "index", use parent directory name as feature-id
-        # This handles cases like: requirement/{feature-name}/index.md
-        if name == "index":
+        # If filename is "index" or "tasks", use parent directory name as feature-id
+        # This handles cases like: requirement/{feature-name}/index.md, task/{ticket-id}/tasks.md
+        if name in ("index", "tasks"):
             parent_name = file_path.parent.name
             # Avoid using directory names like "requirement", "specification", "task"
             if parent_name not in ["requirement", "specification", "task"]:
@@ -152,14 +152,28 @@ class DocumentParser:
 
     @staticmethod
     def _extract_links(content: str) -> List[str]:
-        """Extract relative Markdown links."""
+        """Extract relative Markdown links and backtick-quoted paths."""
         links = []
+        seen = set()
+
         # Match [text](path) format
         for match in re.finditer(r"\[([^\]]+)\]\(([^)]+)\)", content):
             link = match.group(2)
-            # Only keep relative links to .md files
             if link.endswith(".md") and not link.startswith("http"):
-                links.append(link)
+                if link not in seen:
+                    links.append(link)
+                    seen.add(link)
+
+        # Match `path/to/file.md` format (backtick-quoted paths)
+        for match in re.finditer(r"`([^`]*\.md)`", content):
+            link = match.group(1)
+            if not link.startswith("http"):
+                # Strip leading .sdd/ prefix if present
+                link = re.sub(r"^\.sdd/", "", link)
+                if link not in seen:
+                    links.append(link)
+                    seen.add(link)
+
         return links
 
     @staticmethod

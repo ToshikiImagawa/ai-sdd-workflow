@@ -54,8 +54,10 @@ class DependencyAnalyzer:
                 if parent_doc:
                     self.dependencies.append((parent_doc["file_path"], file_path, "implicit"))
 
-            # 4. Dependencies from markdown links
-            if doc.get("links"):
+            # 4. Dependencies from markdown links (task files only)
+            # Task files use links to reference their parent spec/requirement docs.
+            # Other file types already have implicit edges from the SDD hierarchy.
+            if doc.get("file_type") == "task" and doc.get("links"):
                 for link in doc["links"]:
                     target = self._resolve_relative_link(file_path, link)
                     if target:
@@ -123,8 +125,9 @@ class DependencyAnalyzer:
         Returns:
             Resolved document path or None
         """
+        # 1. Try file-relative resolution (for ../../path/to/file.md)
         try:
-            source_dir = Path(source_path).parent
+            source_dir = self.root / Path(source_path).parent
             target_path = (source_dir / link).resolve()
             rel_path = target_path.relative_to(self.root)
             rel_path_str = str(rel_path)
@@ -133,6 +136,10 @@ class DependencyAnalyzer:
                 return rel_path_str
         except:
             pass
+
+        # 2. Try root-relative resolution (for backtick paths like specification/xxx.md)
+        if self._document_exists(link):
+            return link
 
         return None
 
@@ -184,7 +191,9 @@ class DependencyAnalyzer:
             filtered_docs = [d for d in filtered_docs if d["directory"] == filter_dir]
         if feature_id:
             filtered_docs = [d for d in filtered_docs if d.get("feature_id") == feature_id]
-        return self._build_graph_from_docs(filtered_docs)
+        graph = self._build_graph_from_docs(filtered_docs, include_constitution=True)
+        self._add_constitution_edges(graph, filtered_docs, {"requirement", "spec"})
+        return graph
 
     def get_split_dependency_graphs(
         self,
@@ -284,7 +293,11 @@ class DependencyAnalyzer:
             docs: Documents to check
             file_types: Set of file_type values eligible for CONSTITUTION edges
         """
-        nodes_with_incoming = {edge["target"] for edge in graph["edges"]}
+        # Only count implicit/explicit edges as hierarchy incoming (not task link edges)
+        nodes_with_incoming = {
+            edge["target"] for edge in graph["edges"]
+            if edge["type"] in ("implicit", "explicit")
+        }
         for doc in docs:
             if doc.get("file_type") in file_types and doc["file_path"] not in nodes_with_incoming:
                 graph["edges"].append({

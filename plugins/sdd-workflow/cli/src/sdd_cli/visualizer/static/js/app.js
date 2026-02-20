@@ -533,19 +533,46 @@ function downloadSVG() {
 // Resolve parent node from SDD hierarchy (file_type + path structure)
 function buildParentMap(graphData, metadata) {
     const nodes = graphData.nodes || [];
+    const edges = graphData.edges || [];
     const requirementFeatureIds = new Set(
         nodes.filter(n => n.file_type === "requirement").map(n => n.feature_id).filter(Boolean)
     );
+    // Build node lookup by id
+    const nodeById = {};
+    for (const n of nodes) nodeById[n.id] = n;
 
     for (const node of nodes) {
         const nodeId = sanitizeNodeId(node.id);
         if (!metadata[nodeId]) continue;
 
-        const parent = findParentNode(node, nodes, requirementFeatureIds);
-        if (parent) {
-            metadata[nodeId].parent = parent.title || parent.id;
+        if (node.file_type === "task") {
+            // Task: resolve parents from link edges (can be multiple)
+            const parents = findTaskParents(node, edges, nodeById);
+            if (parents.length > 0) {
+                metadata[nodeId].parent = parents.map(p => p.title || p.id).join(', ');
+            }
+        } else {
+            const parent = findParentNode(node, nodes, requirementFeatureIds);
+            if (parent) {
+                metadata[nodeId].parent = parent.title || parent.id;
+            }
         }
     }
+}
+
+function findTaskParents(node, edges, nodeById) {
+    const parents = [];
+    const seen = new Set();
+    for (const edge of edges) {
+        if (edge.source === node.id && edge.type === "link") {
+            const target = nodeById[edge.target];
+            if (target && !seen.has(target.id)) {
+                parents.push(target);
+                seen.add(target.id);
+            }
+        }
+    }
+    return parents;
 }
 
 function findParentNode(node, allNodes, requirementFeatureIds) {
@@ -581,21 +608,13 @@ function findParentNode(node, allNodes, requirementFeatureIds) {
         return spec || null;
     }
 
-    if (node.file_type === "task") {
-        // Parent is design with same feature_id
-        const design = allNodes.find(n =>
-            n.file_type === "design" && n.feature_id === node.feature_id
-        );
-        return design || null;
-    }
-
     return null;
 }
 
 // Node detail functionality
 function showNodeDetail(nodeId, nodeData) {
     const parentHtml = nodeData.parent
-        ? `<span class="parent-tag">${nodeData.parent}</span>`
+        ? nodeData.parent.split(', ').map(p => `<span class="parent-tag">${p}</span>`).join(' ')
         : 'N/A';
 
     const detailContent = document.getElementById('detail-content');
