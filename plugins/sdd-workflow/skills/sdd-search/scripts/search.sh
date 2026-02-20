@@ -10,8 +10,8 @@ PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 # Check CLI existence
 if ! command -v sdd-cli &> /dev/null; then
     echo "Error: sdd-cli not found." >&2
-    echo "Please install the CLI tool from the plugin directory:" >&2
-    echo "  cd \${CLAUDE_PLUGIN_ROOT}/cli && uv pip install -e ." >&2
+    echo "Please install the CLI tool:" >&2
+    echo "  pip install sdd-cli" >&2
     exit 1
 fi
 

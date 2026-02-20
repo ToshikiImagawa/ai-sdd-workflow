@@ -520,23 +520,22 @@ Place a `.sdd-config.json` file in your project root to customize directory name
 
 ## CLI Tool: Advanced Document Management
 
-**v3.1.0 以降で利用可能**
+`sdd-cli` は独立した Python CLI パッケージとして [PyPI](https://pypi.org/project/sdd-cli/) で公開されています。
 
-`sdd-cli` は Python CLI ツールとして提供され、大規模プロジェクトにおけるドキュメント管理を強化します。
+- **リポジトリ**: [ToshikiImagawa/ai-sdd-workflow-cli](https://github.com/ToshikiImagawa/ai-sdd-workflow-cli)
 
 ### Features
 
 1. **高速検索**: SQLite FTS5 による全文検索インデックス
-2. **依存関係可視化**: Mermaid 図によるドキュメント間の依存関係表示
+2. **依存関係可視化**: インタラクティブ HTML ビューアによるドキュメント間の依存関係表示
 3. **タグ・メタデータ検索**: feature ID、タグ、ディレクトリによるフィルタリング
 
 ### Auto-Installation
 
-セッション開始時に自動的にインストールされます。手動でインストールする場合：
+セッション開始時に PyPI から自動的にインストールされます。手動でインストールする場合：
 
 ```bash
-cd ${CLAUDE_PLUGIN_ROOT}/cli
-uv pip install -e .
+pip install sdd-cli
 ```
 
 ### Available Skills
@@ -586,7 +585,7 @@ uv pip install -e .
 
 ### CLI Command Reference
 
-詳細な CLI コマンドリファレンスは `cli/README.md` を参照してください。
+詳細な CLI コマンドリファレンスは [ai-sdd-workflow-cli](https://github.com/ToshikiImagawa/ai-sdd-workflow-cli) を参照してください。
 
 **直接 CLI を使用する場合**:
 
@@ -618,15 +617,6 @@ sdd-cli visualize --output dependency-graph.mmd
 sdd-workflow/
 ├── .claude-plugin/
 │   └── plugin.json                # Plugin manifest
-├── cli/                           # Python CLI tool (v3.1.0+)
-│   ├── pyproject.toml             # Package definition
-│   ├── README.md                  # CLI documentation
-│   ├── src/sdd_cli/               # CLI source code
-│   │   ├── __main__.py            # Entry point
-│   │   ├── commands/              # CLI commands (index, search, visualize)
-│   │   ├── indexer/               # Document indexing (scanner, parser, db)
-│   │   └── visualizer/            # Dependency analysis (analyzer, mermaid)
-│   └── tests/                     # Unit tests
 ├── agents/
 │   ├── prd-reviewer.md            # PRD review and CONSTITUTION compliance agent
 │   ├── spec-reviewer.md           # Specification review agent
@@ -670,7 +660,7 @@ sdd-workflow/
 ├── hooks/
 │   └── hooks.json                 # Hooks configuration
 ├── scripts/
-│   └── session-start.sh           # Session start initialization script (includes CLI auto-install)
+│   └── session-start.sh           # Session start initialization script (includes sdd-cli PyPI auto-install)
 ├── AI-SDD-PRINCIPLES.source.md
 ├── LICENSE
 ├── README.md

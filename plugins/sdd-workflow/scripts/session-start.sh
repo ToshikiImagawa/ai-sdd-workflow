@@ -229,38 +229,33 @@ compare_major_minor() {
 }
 
 # ============================================================
-# CLI Tool Auto-Installation (Phase 5)
+# CLI Tool Auto-Installation (PyPI: sdd-cli)
 # ============================================================
 
-CLI_PATH="${CLAUDE_PLUGIN_ROOT}/cli"
-CLI_VENV="${CLI_PATH}/.venv"
-
-if [ -d "$CLI_PATH" ]; then
-    # Check if uv is available
+if ! command -v sdd-cli &> /dev/null; then
+    echo "[AI-SDD] Installing sdd-cli from PyPI..." >&2
     if command -v uv &> /dev/null; then
-        # Check if CLI is already installed
-        if [ ! -f "${CLI_VENV}/bin/sdd-cli" ]; then
-            echo "[AI-SDD] Installing CLI tool..." >&2
-
-            # Create virtual environment if not exists
-            if [ ! -d "$CLI_VENV" ]; then
-                (cd "$CLI_PATH" && uv venv --python python3 --quiet 2>&1) || true
-            fi
-
-            # Install CLI in editable mode
-            (cd "$CLI_PATH" && uv pip install -e . --python .venv/bin/python --quiet 2>&1) || {
-                echo "[AI-SDD] Warning: Failed to install CLI tool." >&2
+        uv tool install sdd-cli --quiet 2>&1 || {
+            echo "[AI-SDD] Warning: 'uv tool install sdd-cli' failed. Trying pip..." >&2
+            pip install sdd-cli --quiet 2>&1 || {
+                echo "[AI-SDD] Warning: Failed to install sdd-cli. CLI features will be unavailable." >&2
+                echo "[AI-SDD] Install manually: pip install sdd-cli" >&2
             }
-        fi
+        }
+    elif command -v pip &> /dev/null; then
+        pip install sdd-cli --quiet 2>&1 || {
+            echo "[AI-SDD] Warning: Failed to install sdd-cli. CLI features will be unavailable." >&2
+            echo "[AI-SDD] Install manually: pip install sdd-cli" >&2
+        }
+    else
+        echo "[AI-SDD] Warning: Neither 'uv' nor 'pip' found. CLI features will be unavailable." >&2
+        echo "[AI-SDD] Install: pip install sdd-cli" >&2
+    fi
+fi
 
-        # Add CLI to PATH if successfully installed
-        if [ -f "${CLI_VENV}/bin/sdd-cli" ]; then
-            # Export PATH for this session
-            export PATH="${CLI_VENV}/bin:$PATH"
-
-            # Auto-initialize index if not exists
-            # Calculate cache directory path (XDG Base Directory: ~/.cache/sdd-cli/{project-name}.{hash}/)
-            CACHE_DIR=$(python3 -c "
+# Auto-initialize index if sdd-cli is available
+if command -v sdd-cli &> /dev/null && [ -d "$SDD_DIR" ]; then
+    CACHE_DIR=$(python3 -c "
 import hashlib
 from pathlib import Path
 project_root = Path('${CLAUDE_PROJECT_DIR:-$(pwd)}').resolve()
@@ -270,19 +265,14 @@ cache_dir = Path.home() / '.cache' / 'sdd-cli' / f'{project_name}.{project_hash}
 print(cache_dir)
 " 2>/dev/null || echo "")
 
-            if [ -n "$CACHE_DIR" ]; then
-                INDEX_DB="${CACHE_DIR}/index.db"
-                if [ ! -f "$INDEX_DB" ] && [ -d "$SDD_DIR" ]; then
-                    echo "[AI-SDD] Initializing document index..." >&2
-                    "${CLI_VENV}/bin/sdd-cli" index --root "$DOCS_ROOT" --quiet 2>&1 || {
-                        echo "[AI-SDD] Warning: Failed to initialize index." >&2
-                    }
-                fi
-            fi
+    if [ -n "$CACHE_DIR" ]; then
+        INDEX_DB="${CACHE_DIR}/index.db"
+        if [ ! -f "$INDEX_DB" ]; then
+            echo "[AI-SDD] Initializing document index..." >&2
+            sdd-cli index --root "$DOCS_ROOT" --quiet 2>&1 || {
+                echo "[AI-SDD] Warning: Failed to initialize index." >&2
+            }
         fi
-    else
-        echo "[AI-SDD] Warning: 'uv' not found. CLI features will be unavailable." >&2
-        echo "[AI-SDD] Install uv: https://github.com/astral-sh/uv" >&2
     fi
 fi
 

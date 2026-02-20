@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-02-21
+
+### Changed
+
+- **CLI Tool Separated to Independent Repository** - `sdd-cli` is now distributed via PyPI as an independent package
+  - Repository: [ToshikiImagawa/ai-sdd-workflow-cli](https://github.com/ToshikiImagawa/ai-sdd-workflow-cli)
+  - Install: `pip install sdd-cli` or `uv tool install sdd-cli`
+  - `plugins/sdd-workflow/cli/` directory removed from this repository
+- **session-start.sh** - CLI auto-installation now uses PyPI instead of local editable install
+  - Falls back from `uv tool install sdd-cli` to `pip install sdd-cli`
+  - Removed `CLAUDE_PLUGIN_ROOT/cli` dependency and `.venv` PATH management
+- **Skill scripts** - Updated error messages to reference PyPI installation
+  - `sdd-index/scripts/rebuild-index.sh`
+  - `sdd-search/scripts/search.sh`
+  - `sdd-visualize/scripts/visualize.sh`
+- **plugin.json** - Updated to v3.3.0, description reflects external CLI dependency
+
 ## [3.2.0] - 2026-02-19
 
 ### Added

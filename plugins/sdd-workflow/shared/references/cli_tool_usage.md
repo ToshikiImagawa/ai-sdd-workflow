@@ -10,11 +10,16 @@
 
 ## Installation
 
-The CLI tool is automatically installed when a session starts. To install manually:
+The CLI tool is automatically installed from PyPI when a session starts. To install manually:
 
 ```bash
-cd ${CLAUDE_PLUGIN_ROOT}/cli
-uv pip install -e .
+pip install sdd-cli
+```
+
+Or using uv:
+
+```bash
+uv tool install sdd-cli
 ```
 
 ## Command Reference
@@ -213,8 +218,7 @@ Error: sdd-cli not found.
 
 **Solution**:
 ```bash
-cd ${CLAUDE_PLUGIN_ROOT}/cli
-uv pip install -e .
+pip install sdd-cli
 ```
 
 ### Index not found

@@ -1,1 +1,0 @@
-"""Document indexing package."""
