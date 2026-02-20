@@ -31,6 +31,9 @@ class DocumentScanner:
         """
         documents = []
 
+        # Task directory: only index.md and tasks.md are managed
+        _TASK_MANAGED_FILES = {"index.md", "tasks.md"}
+
         # Scan each directory type
         for dir_name, dir_path in [
             ("requirement", self.requirement_dir),
@@ -44,6 +47,10 @@ class DocumentScanner:
             for md_file in dir_path.rglob("*.md"):
                 if md_file.name.startswith("."):
                     continue  # Skip hidden files
+
+                # Task directory: only managed files (index.md, tasks.md)
+                if dir_name == "task" and md_file.name not in _TASK_MANAGED_FILES:
+                    continue
 
                 rel_path = md_file.relative_to(self.root)
                 file_name = md_file.stem
@@ -79,6 +86,10 @@ class DocumentScanner:
         documents = []
         for md_file in dir_path.rglob("*.md"):
             if md_file.name.startswith("."):
+                continue
+
+            # Task directory: only managed files (index.md, tasks.md)
+            if directory == "task" and md_file.name not in {"index.md", "tasks.md"}:
                 continue
 
             rel_path = md_file.relative_to(self.root)
