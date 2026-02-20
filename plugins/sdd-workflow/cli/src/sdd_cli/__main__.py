@@ -136,7 +136,7 @@ def search(ctx, query, root, feature_id, tag, directory, output_format, output, 
 @click.option(
     "--output",
     type=click.Path(path_type=Path),
-    help="Output file path (default: ~/.cache/sdd-cli/{project-hash}/dependency-graph.mmd)",
+    help="Output file path (default: ~/.cache/sdd-cli/{project-hash}/dependency-graph.json)",
 )
 @click.option(
     "--filter-dir",
@@ -179,11 +179,11 @@ def visualize(ctx, root, output, filter_dir, feature_id, html, split_by_prd):
 
             # Generate file name based on filter conditions
             if feature_id:
-                filename = f"{feature_id}-graph.mmd"
+                filename = f"{feature_id}-graph"
             elif filter_dir:
-                filename = f"{filter_dir}-graph.mmd"
+                filename = f"{filter_dir}-graph"
             else:
-                filename = "dependency-graph.mmd"
+                filename = "dependency-graph"
 
             output = cache_dir / filename
 

@@ -96,16 +96,19 @@
 
         .diagram-container {
             flex: 1;
-            height: 100vh;
             overflow: hidden;
             position: relative;
             background: white;
+            display: flex;
+            flex-direction: column;
         }
 
         .diagram-container.split {
             flex: none;
             height: 50vh;
             border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
         }
 
         .diagram-section-title {
@@ -119,9 +122,10 @@
 
         .mermaid-diagram {
             width: 100%;
-            height: 100%;
+            flex: 1;
             overflow: auto;
             cursor: grab;
+            min-height: 0;
         }
 
         .mermaid-diagram:active {
@@ -292,6 +296,96 @@
         const minZoom = 0.3;
         const maxZoom = 4.0;
 
+        // Mermaid generation functions
+        const FILE_TYPE_COLORS = {
+            "requirement": "#bbf",
+            "spec": "#bfb",
+            "design": "#bff",
+            "task": "#ffb"
+        };
+
+        const EDGE_STYLES = {
+            "explicit": "-->",
+            "implicit": "-.->",
+            "link": "-->"
+        };
+
+        function sanitizeNodeId(path) {
+            return path.replace(/[^a-zA-Z0-9_]/g, "_");
+        }
+
+        function generateMermaidCode(graphData) {
+            const lines = [];
+            lines.push("graph TD");
+            lines.push("");
+
+            const nodes = graphData.nodes || [];
+            const edges = graphData.edges || [];
+
+            // Check if CONSTITUTION exists
+            const hasConstitution = nodes.some(node => node.id === "CONSTITUTION.md");
+            if (!hasConstitution && nodes.length > 0) {
+                lines.push("    CONSTITUTION[CONSTITUTION.md]");
+                lines.push("");
+            }
+
+            // Generate node definitions
+            for (const node of nodes) {
+                const nodeId = sanitizeNodeId(node.id);
+                const title = (node.title || node.id).replace(/"/g, '\\"');
+                lines.push(`    ${nodeId}["${title}"]`);
+            }
+
+            lines.push("");
+
+            // Generate edges
+            const edgesAdded = new Set();
+            for (const edge of edges) {
+                const sourceId = sanitizeNodeId(edge.source);
+                const targetId = sanitizeNodeId(edge.target);
+                const edgeStyle = EDGE_STYLES[edge.type] || "-->";
+                const edgeDef = `${sourceId} ${edgeStyle} ${targetId}`;
+                if (!edgesAdded.has(edgeDef)) {
+                    lines.push(`    ${edgeDef}`);
+                    edgesAdded.add(edgeDef);
+                }
+            }
+
+            // Add implicit edges from CONSTITUTION if not filtered
+            if (!hasConstitution && nodes.length > 0) {
+                const requirementNodes = nodes.filter(node => node.file_type === "requirement");
+                for (const node of requirementNodes) {
+                    const nodeId = sanitizeNodeId(node.id);
+                    const edgeDef = `CONSTITUTION -.-> ${nodeId}`;
+                    if (!edgesAdded.has(edgeDef)) {
+                        lines.push(`    ${edgeDef}`);
+                        edgesAdded.add(edgeDef);
+                    }
+                }
+            }
+
+            lines.push("");
+
+            // Generate styles
+            for (const node of nodes) {
+                const nodeId = sanitizeNodeId(node.id);
+                let color;
+                if (node.id === "CONSTITUTION.md") {
+                    color = "#f9f";
+                } else {
+                    color = FILE_TYPE_COLORS[node.file_type] || "#ddd";
+                }
+                lines.push(`    style ${nodeId} fill:${color},stroke:#333`);
+            }
+
+            // Add CONSTITUTION style
+            if (!hasConstitution && nodes.length > 0) {
+                lines.push("    style CONSTITUTION fill:#f9f,stroke:#333");
+            }
+
+            return lines.join("\n");
+        }
+
         // Initialize Mermaid
         mermaid.initialize({
             startOnLoad: true,
@@ -320,28 +414,33 @@
         async function loadSingleData() {
             try {
                 // コンテナを表示
-                document.getElementById('single-container').style.display = 'flex';
+                document.getElementById('single-container').style.display = 'block';
 
-                // メタデータを読み込み
-                const metadataResponse = await fetch(`${dataFile}-metadata.json`);
-                if (!metadataResponse.ok) {
-                    throw new Error(`Failed to load metadata: ${metadataResponse.status}`);
+                // グラフJSONを読み込み
+                const graphResponse = await fetch(`${dataFile}.json`);
+                if (!graphResponse.ok) {
+                    throw new Error(`Failed to load graph: ${graphResponse.status}`);
                 }
-                const metadata = await metadataResponse.json();
+                const graphData = await graphResponse.json();
 
                 // タイトルを設定
-                document.getElementById('graph-title').textContent = metadata.title || 'SDD Dependency Graph';
-                document.getElementById('graph-subtitle').textContent = metadata.subtitle || 'Interactive dependency graph visualization';
+                document.getElementById('graph-title').textContent = graphData.title || 'SDD Dependency Graph';
+                document.getElementById('graph-subtitle').textContent = graphData.subtitle || 'Interactive dependency graph visualization';
 
-                // ノードメタデータを保存
-                nodeMetadata = metadata.nodes || {};
-
-                // Mermaid図を読み込み
-                const mermaidResponse = await fetch(`${dataFile}.mmd`);
-                if (!mermaidResponse.ok) {
-                    throw new Error(`Failed to load diagram: ${mermaidResponse.status}`);
+                // ノードメタデータを構築
+                nodeMetadata = {};
+                for (const node of graphData.nodes) {
+                    const nodeId = sanitizeNodeId(node.id);
+                    nodeMetadata[nodeId] = {
+                        title: node.title,
+                        path: node.id,
+                        directory: node.directory,
+                        featureId: node.feature_id || 'N/A'
+                    };
                 }
-                const mermaidCode = await mermaidResponse.text();
+
+                // Mermaidコードを生成
+                const mermaidCode = generateMermaidCode(graphData);
 
                 // Mermaid図をレンダリング
                 const diagramElement = document.getElementById('mermaid-diagram');
@@ -366,8 +465,8 @@
         async function loadSplitData() {
             try {
                 // コンテナを表示
-                document.getElementById('split-container-1').style.display = 'block';
-                document.getElementById('split-container-2').style.display = 'block';
+                document.getElementById('split-container-1').style.display = 'flex';
+                document.getElementById('split-container-2').style.display = 'flex';
 
                 // タイトルを設定
                 document.getElementById('graph-title').textContent = 'SDD Dependency Graph (Split View)';
@@ -389,20 +488,31 @@
 
         // 個別グラフ読み込み
         async function loadGraph(dataName, elementId, graphIndex) {
-            // メタデータを読み込み
-            const metadataResponse = await fetch(`${dataName}-metadata.json`);
-            const metadata = await metadataResponse.json();
+            // グラフJSONを読み込み
+            const graphResponse = await fetch(`${dataName}.json`);
+            const graphData = await graphResponse.json();
+
+            // ノードメタデータを構築
+            const metadata = {};
+            for (const node of graphData.nodes) {
+                const nodeId = sanitizeNodeId(node.id);
+                metadata[nodeId] = {
+                    title: node.title,
+                    path: node.id,
+                    directory: node.directory,
+                    featureId: node.feature_id || 'N/A'
+                };
+            }
 
             // ノードメタデータを保存
             if (graphIndex === 1) {
-                nodeMetadata1 = metadata.nodes || {};
+                nodeMetadata1 = metadata;
             } else {
-                nodeMetadata2 = metadata.nodes || {};
+                nodeMetadata2 = metadata;
             }
 
-            // Mermaid図を読み込み
-            const mermaidResponse = await fetch(`${dataName}.mmd`);
-            const mermaidCode = await mermaidResponse.text();
+            // Mermaidコードを生成
+            const mermaidCode = generateMermaidCode(graphData);
 
             // Mermaid図をレンダリング
             const diagramElement = document.getElementById(elementId);

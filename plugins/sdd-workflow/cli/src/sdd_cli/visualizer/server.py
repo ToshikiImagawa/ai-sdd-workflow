@@ -5,10 +5,41 @@ import socketserver
 import webbrowser
 import threading
 import time
-import os
-import shutil
 from pathlib import Path
 from importlib import resources
+
+
+class DualDirectoryHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
+    """HTTP handler that serves from both template and cache directories."""
+
+    def __init__(self, *args, template_dir=None, cache_dir=None, **kwargs):
+        self.template_dir = template_dir
+        self.cache_dir = cache_dir
+        super().__init__(*args, **kwargs)
+
+    def translate_path(self, path):
+        """Translate URL path to file system path.
+
+        Serves .html files from template directory, other files from cache directory.
+        """
+        # Get the path without query parameters
+        path = path.split('?', 1)[0]
+        path = path.split('#', 1)[0]
+
+        # Remove leading slash
+        if path.startswith('/'):
+            path = path[1:]
+
+        # If requesting .html file, serve from template directory
+        if path.endswith('.html') or path == '':
+            if path == '':
+                path = 'graph.html'
+            file_path = self.template_dir / path
+        else:
+            # Otherwise serve from cache directory (JSON files, etc.)
+            file_path = self.cache_dir / path
+
+        return str(file_path)
 
 
 def start_server(cache_dir: Path, data_file: str, port: int = 8000) -> None:
@@ -19,43 +50,40 @@ def start_server(cache_dir: Path, data_file: str, port: int = 8000) -> None:
         data_file: Data file stem (e.g., "dependency-graph" or "presenter-view-graph")
         port: Port number (default: 8000, auto-increment if busy)
     """
-    # Copy HTML template from package to cache directory
-    # Always copy to ensure latest template is used
-    template_html = cache_dir / "graph.html"
-    # Read template from package
+    # Get template directory from package
     try:
         # Python 3.9+
-        template_content = (
-            resources.files("sdd_cli.visualizer.templates")
-            .joinpath("graph.html")
-            .read_text(encoding="utf-8")
-        )
-    except AttributeError:
-        # Python 3.8 fallback
+        template_files = resources.files("sdd_cli.visualizer.templates")
+        # Convert to Path - handle MultiplexedPath by getting the actual file path
+        if hasattr(template_files, '__fspath__'):
+            template_dir = Path(template_files.__fspath__())
+        else:
+            # Fallback: get path from a known file
+            template_dir = Path(str(template_files._paths[0]) if hasattr(template_files, '_paths') else str(template_files))
+    except (AttributeError, Exception):
+        # Python 3.8 fallback or any error
         import pkg_resources
-        template_content = pkg_resources.resource_string(
-            "sdd_cli.visualizer.templates", "graph.html"
-        ).decode("utf-8")
-
-    template_html.write_text(template_content, encoding="utf-8")
-
-    # Save current directory
-    original_dir = os.getcwd()
+        template_dir = Path(pkg_resources.resource_filename("sdd_cli.visualizer.templates", ""))
 
     # Find available port
     max_attempts = 10
     for attempt in range(max_attempts):
         try:
-            # Change to the cache directory
-            os.chdir(cache_dir)
+            # Create handler with both directories
+            def handler_factory(*args, **kwargs):
+                return DualDirectoryHTTPRequestHandler(
+                    *args,
+                    template_dir=template_dir,
+                    cache_dir=cache_dir,
+                    **kwargs
+                )
 
-            handler = http.server.SimpleHTTPRequestHandler
-
-            with socketserver.TCPServer(("", port), handler) as httpd:
+            with socketserver.TCPServer(("", port), handler_factory) as httpd:
                 url = f"http://localhost:{port}/graph.html?data={data_file}"
 
                 print(f"✓ Server started at {url}")
-                print(f"  Serving from: {cache_dir}")
+                print(f"  Template from: {template_dir}")
+                print(f"  Data from: {cache_dir}")
                 print(f"  Press Ctrl+C to stop the server\n")
 
                 # Open browser after a short delay
@@ -72,22 +100,16 @@ def start_server(cache_dir: Path, data_file: str, port: int = 8000) -> None:
                     httpd.serve_forever()
                 except KeyboardInterrupt:
                     print("\n\n✓ Server stopped")
-                finally:
-                    # Restore original directory
-                    os.chdir(original_dir)
                 break
 
         except OSError as e:
             if "Address already in use" in str(e):
                 port += 1
                 if attempt < max_attempts - 1:
-                    os.chdir(original_dir)
                     continue
                 else:
-                    os.chdir(original_dir)
                     raise RuntimeError(
                         f"Could not find available port after {max_attempts} attempts"
                     )
             else:
-                os.chdir(original_dir)
                 raise

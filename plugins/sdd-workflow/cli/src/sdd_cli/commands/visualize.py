@@ -63,7 +63,7 @@ def generate_visualization(
         # Generate PRD-based graph
         _generate_graph_file(
             root, cache_dir, prd_graph,
-            cache_dir / "prd-based-graph.mmd",
+            cache_dir / "prd-based-graph",
             "PRD-Based Dependency Graph",
             "Documents with requirements (PRD)",
             serve
@@ -72,7 +72,7 @@ def generate_visualization(
         # Generate direct graph
         _generate_graph_file(
             root, cache_dir, direct_graph,
-            cache_dir / "direct-graph.mmd",
+            cache_dir / "direct-graph",
             "Direct Dependency Graph",
             "Documents without requirements (direct from CONSTITUTION)",
             serve
@@ -112,7 +112,7 @@ def _generate_graph_file(
     subtitle: str,
     is_split: bool,
 ):
-    """Generate Mermaid and metadata files for a graph.
+    """Generate graph JSON file.
 
     Args:
         root: SDD root directory
@@ -123,42 +123,15 @@ def _generate_graph_file(
         subtitle: Graph subtitle
         is_split: Whether this is part of a split graph
     """
-    # Generate Mermaid diagram
-    generator = MermaidGenerator(graph)
-    mermaid_diagram = generator.generate()
-
-    # Build node metadata from graph
-    node_metadata = {}
-    for node in graph["nodes"]:
-        # Convert file path to Mermaid node ID (same sanitization as MermaidGenerator)
-        node_id = re.sub(r"[^a-zA-Z0-9_]", "_", node["id"])
-
-        # Special handling for CONSTITUTION node
-        if node["id"] == "CONSTITUTION.md":
-            node_metadata[node_id] = {
-                "title": "CONSTITUTION.md",
-                "path": str(root / "CONSTITUTION.md"),
-                "directory": "root",
-                "featureId": "constitution",
-            }
-        else:
-            node_metadata[node_id] = {
-                "title": node["title"],
-                "path": str(root / node["id"]),
-                "directory": node["directory"],
-                "featureId": node.get("feature_id", "N/A"),
-            }
-
-    metadata = {
+    # Build complete graph data with metadata
+    graph_data = {
         "title": title,
         "subtitle": subtitle,
-        "nodes": node_metadata,
+        "nodes": graph["nodes"],
+        "edges": graph["edges"],
     }
 
-    # Write Mermaid file
+    # Write graph JSON (browser will generate Mermaid code from this)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(mermaid_diagram, encoding="utf-8")
-
-    # Write metadata JSON
-    metadata_path = output.parent / f"{output.stem}-metadata.json"
-    metadata_path.write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
+    json_output = output.parent / f"{output.stem}.json"
+    json_output.write_text(json.dumps(graph_data, indent=2, ensure_ascii=False), encoding="utf-8")
