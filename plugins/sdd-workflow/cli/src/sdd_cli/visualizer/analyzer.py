@@ -56,14 +56,47 @@ class DependencyAnalyzer:
 
             # 4. Dependencies from markdown links (task files only)
             # Task files use links to reference their parent spec/requirement docs.
-            # Other file types already have implicit edges from the SDD hierarchy.
+            # Only keep edges to the deepest nodes in the dependency chain.
             if doc.get("file_type") == "task" and doc.get("links"):
+                targets = []
                 for link in doc["links"]:
                     target = self._resolve_relative_link(file_path, link)
                     if target:
-                        self.dependencies.append((file_path, target, "link"))
+                        targets.append(target)
+                # Filter to leaf targets only
+                leaf_targets = self._filter_to_leaf_targets(targets)
+                for target in leaf_targets:
+                    self.dependencies.append((file_path, target, "link"))
 
         return self.dependencies
+
+    def _filter_to_leaf_targets(self, targets: List[str]) -> List[str]:
+        """Filter targets to keep only leaf nodes (deepest in dependency chain).
+
+        If A → B → C are all in targets, only C is kept.
+        """
+        if len(targets) <= 1:
+            return list(set(targets))
+
+        target_set = set(targets)
+        ancestors = set()
+
+        for target in target_set:
+            # BFS from this target through existing implicit/explicit dependencies
+            visited = set()
+            queue = [target]
+            while queue:
+                current = queue.pop(0)
+                if current in visited:
+                    continue
+                visited.add(current)
+                for src, tgt, link_type in self.dependencies:
+                    if src == current and link_type in ("implicit", "explicit"):
+                        if tgt in target_set and tgt != target:
+                            ancestors.add(target)
+                        queue.append(tgt)
+
+        return [t for t in set(targets) if t not in ancestors]
 
     def _resolve_feature_id_to_path(self, feature_id: str) -> str:
         """Resolve feature ID to document path.

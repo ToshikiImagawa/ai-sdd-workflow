@@ -561,18 +561,41 @@ function buildParentMap(graphData, metadata) {
 }
 
 function findTaskParents(node, edges, nodeById) {
-    const parents = [];
+    const candidates = [];
     const seen = new Set();
     for (const edge of edges) {
         if (edge.source === node.id && edge.type === "link") {
             const target = nodeById[edge.target];
             if (target && !seen.has(target.id)) {
-                parents.push(target);
+                candidates.push(target);
                 seen.add(target.id);
             }
         }
     }
-    return parents;
+    if (candidates.length <= 1) return candidates;
+
+    // Remove ancestors: if A --→ ... --→ B exists among candidates, A is an ancestor of B → remove A
+    const candidateIds = new Set(candidates.map(c => c.id));
+    const ancestors = new Set();
+    for (const candidate of candidates) {
+        // BFS: follow non-link edges from this candidate, check if we reach another candidate
+        const visited = new Set();
+        const queue = [candidate.id];
+        while (queue.length > 0) {
+            const current = queue.shift();
+            if (visited.has(current)) continue;
+            visited.add(current);
+            for (const edge of edges) {
+                if (edge.source === current && edge.type !== "link") {
+                    if (candidateIds.has(edge.target) && edge.target !== candidate.id) {
+                        ancestors.add(candidate.id);
+                    }
+                    queue.push(edge.target);
+                }
+            }
+        }
+    }
+    return candidates.filter(c => !ancestors.has(c.id));
 }
 
 function findParentNode(node, allNodes, requirementFeatureIds) {
