@@ -52,14 +52,19 @@ def start_server(cache_dir: Path, data_file: str, port: int = 8000) -> None:
     """
     # Get template directory from package
     try:
-        # Python 3.9+
-        template_files = resources.files("sdd_cli.visualizer.templates")
-        # Convert to Path - handle MultiplexedPath by getting the actual file path
-        if hasattr(template_files, '__fspath__'):
-            template_dir = Path(template_files.__fspath__())
+        # First try to use __path__ attribute (works with editable installs)
+        import sdd_cli.visualizer.templates as templates_module
+        if hasattr(templates_module, '__path__'):
+            template_dir = Path(list(templates_module.__path__)[0])
         else:
-            # Fallback: get path from a known file
-            template_dir = Path(str(template_files._paths[0]) if hasattr(template_files, '_paths') else str(template_files))
+            # Python 3.9+
+            template_files = resources.files("sdd_cli.visualizer.templates")
+            # Convert to Path - handle MultiplexedPath by getting the actual file path
+            if hasattr(template_files, '__fspath__'):
+                template_dir = Path(template_files.__fspath__())
+            else:
+                # Fallback: get path from a known file
+                template_dir = Path(str(template_files._paths[0]) if hasattr(template_files, '_paths') else str(template_files))
     except (AttributeError, Exception):
         # Python 3.8 fallback or any error
         import pkg_resources
