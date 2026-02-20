@@ -20,24 +20,24 @@ def start_server(cache_dir: Path, data_file: str, port: int = 8000) -> None:
         port: Port number (default: 8000, auto-increment if busy)
     """
     # Copy HTML template from package to cache directory
+    # Always copy to ensure latest template is used
     template_html = cache_dir / "graph.html"
-    if not template_html.exists():
-        # Read template from package
-        try:
-            # Python 3.9+
-            template_content = (
-                resources.files("sdd_cli.visualizer.templates")
-                .joinpath("graph.html")
-                .read_text(encoding="utf-8")
-            )
-        except AttributeError:
-            # Python 3.8 fallback
-            import pkg_resources
-            template_content = pkg_resources.resource_string(
-                "sdd_cli.visualizer.templates", "graph.html"
-            ).decode("utf-8")
+    # Read template from package
+    try:
+        # Python 3.9+
+        template_content = (
+            resources.files("sdd_cli.visualizer.templates")
+            .joinpath("graph.html")
+            .read_text(encoding="utf-8")
+        )
+    except AttributeError:
+        # Python 3.8 fallback
+        import pkg_resources
+        template_content = pkg_resources.resource_string(
+            "sdd_cli.visualizer.templates", "graph.html"
+        ).decode("utf-8")
 
-        template_html.write_text(template_content, encoding="utf-8")
+    template_html.write_text(template_content, encoding="utf-8")
 
     # Save current directory
     original_dir = os.getcwd()

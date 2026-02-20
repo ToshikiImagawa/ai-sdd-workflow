@@ -9,6 +9,7 @@ from sdd_cli.indexer.db import IndexDB
 from sdd_cli.visualizer.analyzer import DependencyAnalyzer
 from sdd_cli.visualizer.mermaid import MermaidGenerator
 from sdd_cli.visualizer.server import start_server
+from sdd_cli.commands.index import build_index
 
 
 def generate_visualization(
@@ -39,9 +40,10 @@ def generate_visualization(
     cache_dir = get_cache_dir(project_root)
     db_path = cache_dir / "index.db"
     if not db_path.exists():
-        raise ValueError(
-            f"Index not found at {db_path}. Please run 'sdd-cli index' first."
-        )
+        # Auto-generate index if it doesn't exist
+        print(f"Index not found. Generating index...")
+        build_index(root, quiet=False)
+        print()
 
     # Get all documents from index
     with IndexDB(db_path) as db:
