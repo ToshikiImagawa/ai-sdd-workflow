@@ -43,7 +43,7 @@ AI-SDD Workflow のドキュメント管理 CLI ツール
 インストールせずに `uvx` で直接実行できます：
 
 ```bash
-uvx --from "sdd-cli @ git+https://github.com/ToshikiImagawa/ai-sdd-workflow.git#subdirectory=plugins/sdd-workflow/cli" sdd-cli --help
+uvx --from git+https://github.com/ToshikiImagawa/ai-sdd-workflow.git#subdirectory=plugins/sdd-workflow/cli sdd-cli --help
 ```
 
 ## インストール
