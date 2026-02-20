@@ -97,7 +97,7 @@
         #diagram-containers {
             flex: 1;
             display: grid;
-            grid-template-rows: 1fr 1fr;
+            grid-template-rows: 1fr 1fr; /* デフォルトはスプリットモード用、JavaScriptで動的に変更 */
             overflow: hidden;
         }
 
@@ -325,6 +325,13 @@
             const nodes = graphData.nodes || [];
             const edges = graphData.edges || [];
 
+            // Handle empty graph
+            if (nodes.length === 0) {
+                lines.push("    EMPTY[No documents found]");
+                lines.push("    style EMPTY fill:#f0f0f0,stroke:#999,stroke-dasharray: 5 5");
+                return lines.join("\n");
+            }
+
             // Check if CONSTITUTION exists
             const hasConstitution = nodes.some(node => node.id === "CONSTITUTION.md");
             if (!hasConstitution && nodes.length > 0) {
@@ -416,6 +423,9 @@
         // 単一グラフモード
         async function loadSingleData() {
             try {
+                // シングルモード用にグリッドレイアウトを調整（画面いっぱいに表示）
+                document.getElementById('diagram-containers').style.gridTemplateRows = '1fr';
+
                 // コンテナを表示
                 document.getElementById('single-container').style.display = 'flex';
 
@@ -468,6 +478,9 @@
         // 分割グラフモード
         async function loadSplitData() {
             try {
+                // スプリットモード用にグリッドレイアウトを調整（画面を2分割）
+                document.getElementById('diagram-containers').style.gridTemplateRows = '1fr 1fr';
+
                 // コンテナを表示
                 document.getElementById('split-container-1').style.display = 'flex';
                 document.getElementById('split-container-2').style.display = 'flex';
