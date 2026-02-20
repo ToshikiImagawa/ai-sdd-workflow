@@ -42,3 +42,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# uv
+.python-version
+uv.lock
