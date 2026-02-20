@@ -1,3 +1,37 @@
+:root {
+    --bg-primary: #f5f5f5;
+    --bg-secondary: white;
+    --bg-tertiary: #f5f5f5;
+    --text-primary: #333;
+    --text-secondary: #666;
+    --border-color: #e0e0e0;
+    --button-bg: white;
+    --button-border: #ddd;
+    --button-hover-bg: #f0f0f0;
+    --overlay-bg: rgba(0,0,0,0.5);
+    --modal-bg: white;
+    --parent-tag-bg: #e8eaf6;
+    --parent-tag-color: #3949ab;
+    --error-color: #d32f2f;
+}
+
+[data-theme="dark"] {
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-tertiary: #0f3460;
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --border-color: #2a2a4a;
+    --button-bg: #16213e;
+    --button-border: #3a3a5a;
+    --button-hover-bg: #1a1a3e;
+    --overlay-bg: rgba(0,0,0,0.7);
+    --modal-bg: #16213e;
+    --parent-tag-bg: #1a237e;
+    --parent-tag-color: #90caf9;
+    --error-color: #ef5350;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -6,7 +40,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: #f5f5f5;
+    background: var(--bg-primary);
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -34,15 +68,15 @@ body {
     display: flex;
     gap: 10px;
     padding: 10px 20px;
-    background: white;
-    border-bottom: 1px solid #e0e0e0;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .tab-button {
     padding: 10px 20px;
     border: none;
-    background: #f5f5f5;
-    color: #666;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -51,7 +85,7 @@ body {
 }
 
 .tab-button:hover {
-    background: #e8e8e8;
+    background: var(--button-hover-bg);
 }
 
 .tab-button.active {
@@ -61,8 +95,8 @@ body {
 
 .controls {
     padding: 15px 30px;
-    background: white;
-    border-bottom: 1px solid #e0e0e0;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     gap: 15px;
     flex-wrap: wrap;
@@ -71,8 +105,9 @@ body {
 
 .controls button {
     padding: 8px 16px;
-    border: 1px solid #ddd;
-    background: white;
+    border: 1px solid var(--button-border);
+    background: var(--button-bg);
+    color: var(--text-primary);
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
@@ -80,7 +115,7 @@ body {
 }
 
 .controls button:hover {
-    background: #f0f0f0;
+    background: var(--button-hover-bg);
     border-color: #999;
 }
 
@@ -90,7 +125,9 @@ body {
 
 .controls select {
     padding: 8px 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--button-border);
+    background: var(--button-bg);
+    color: var(--text-primary);
     border-radius: 4px;
     font-size: 14px;
     cursor: pointer;
@@ -104,7 +141,7 @@ body {
 
 .zoom-level {
     font-size: 14px;
-    color: #666;
+    color: var(--text-secondary);
     min-width: 50px;
     text-align: center;
 }
@@ -112,7 +149,7 @@ body {
 .info {
     margin-left: auto;
     font-size: 14px;
-    color: #666;
+    color: var(--text-secondary);
 }
 
 .tab-content {
@@ -143,23 +180,23 @@ body {
     flex: 1;
     overflow: hidden;
     position: relative;
-    background: white;
+    background: var(--bg-secondary);
     display: flex;
     flex-direction: column;
     min-height: 0;
 }
 
 .diagram-container.split:first-of-type {
-    border-bottom: 2px solid #e0e0e0;
+    border-bottom: 2px solid var(--border-color);
 }
 
 .diagram-section-title {
     padding: 10px 20px;
-    background: #f5f5f5;
-    border-bottom: 1px solid #e0e0e0;
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-color);
     font-weight: 600;
     font-size: 16px;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .mermaid-diagram {
@@ -184,7 +221,7 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: white;
+    background: var(--modal-bg);
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     padding: 24px;
@@ -201,7 +238,7 @@ body {
 .node-detail h2 {
     font-size: 20px;
     margin-bottom: 16px;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .node-detail .detail-item {
@@ -210,13 +247,13 @@ body {
 
 .node-detail .detail-label {
     font-weight: 600;
-    color: #666;
+    color: var(--text-secondary);
     font-size: 14px;
     margin-bottom: 4px;
 }
 
 .node-detail .detail-value {
-    color: #333;
+    color: var(--text-primary);
     font-size: 14px;
 }
 
@@ -232,17 +269,17 @@ body {
 }
 
 .node-detail .close-btn:hover {
-    color: #333;
+    color: var(--text-primary);
 }
 
 .parent-tag {
     display: inline-block;
     padding: 2px 8px;
     margin: 2px;
-    background: #e8eaf6;
+    background: var(--parent-tag-bg);
     border-radius: 4px;
     font-size: 13px;
-    color: #3949ab;
+    color: var(--parent-tag-color);
 }
 
 .overlay {
@@ -252,7 +289,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
+    background: var(--overlay-bg);
     z-index: 999;
 }
 
@@ -263,7 +300,7 @@ body {
 .error-message {
     padding: 20px;
     text-align: center;
-    color: #d32f2f;
+    color: var(--error-color);
     font-size: 16px;
 }
 

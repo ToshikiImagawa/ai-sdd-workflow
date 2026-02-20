@@ -14,11 +14,36 @@ let singleDataLoaded = false;
 
 // Mermaid generation functions
 const FILE_TYPE_COLORS = {
-    "requirement": "#bbf",
-    "spec": "#bfb",
-    "design": "#bff",
-    "task": "#ffb"
+    light: {
+        "requirement": "#bbf",
+        "spec": "#bfb",
+        "design": "#bff",
+        "task": "#ffb",
+        "constitution": "#f9f",
+        "default": "#ddd",
+        "empty": "#f0f0f0",
+        "stroke": "#333",
+        "emptyStroke": "#999",
+        "textColor": "#333"
+    },
+    dark: {
+        "requirement": "#283593",
+        "spec": "#2e7d32",
+        "design": "#00695c",
+        "task": "#f57f17",
+        "constitution": "#6a1b6a",
+        "default": "#37474f",
+        "empty": "#263238",
+        "stroke": "#90a4ae",
+        "emptyStroke": "#607d8b",
+        "textColor": "#fff"
+    }
 };
+
+function getNodeColors() {
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    return FILE_TYPE_COLORS[theme];
+}
 
 const EDGE_STYLES = {
     "explicit": "-->",
@@ -38,10 +63,12 @@ function generateMermaidCode(graphData) {
     const nodes = graphData.nodes || [];
     const edges = graphData.edges || [];
 
+    const colors = getNodeColors();
+
     // Handle empty graph
     if (nodes.length === 0) {
         lines.push("    EMPTY[No documents found]");
-        lines.push("    style EMPTY fill:#f0f0f0,stroke:#999,stroke-dasharray: 5 5");
+        lines.push(`    style EMPTY fill:${colors.empty},stroke:${colors.emptyStroke},stroke-dasharray: 5 5`);
         return lines.join("\n");
     }
 
@@ -117,35 +144,83 @@ function generateMermaidCode(graphData) {
         const nodeId = sanitizeNodeId(node.id);
         let color;
         if (node.id === "CONSTITUTION.md") {
-            color = "#f9f";
+            color = colors.constitution;
         } else {
-            color = FILE_TYPE_COLORS[node.file_type] || "#ddd";
+            color = colors[node.file_type] || colors.default;
         }
-        lines.push(`    style ${nodeId} fill:${color},stroke:#333`);
+        lines.push(`    style ${nodeId} fill:${color},stroke:${colors.stroke},color:${colors.textColor}`);
     }
 
     // Add CONSTITUTION style
     if (!hasConstitution && nodes.length > 0) {
-        lines.push("    style CONSTITUTION fill:#f9f,stroke:#333");
+        lines.push(`    style CONSTITUTION fill:${colors.constitution},stroke:${colors.stroke},color:${colors.textColor}`);
     }
 
     return lines.join("\n");
 }
 
-// Initialize Mermaid
-mermaid.initialize({
-    startOnLoad: false,
-    theme: 'default',
-    themeVariables: {
-        fontSize: '16px',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-    },
-    flowchart: {
-        nodeSpacing: 80,
-        rankSpacing: 100,
-        padding: 20
+// Theme management
+function getInitialTheme() {
+    const saved = localStorage.getItem('sdd-theme');
+    if (saved) return saved;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function getMermaidTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('sdd-theme', theme);
+
+    const btn = document.getElementById('theme-toggle');
+    if (btn) {
+        btn.textContent = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
     }
-});
+}
+
+function initializeMermaid() {
+    mermaid.initialize({
+        startOnLoad: false,
+        theme: getMermaidTheme(),
+        themeVariables: {
+            fontSize: '16px',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+        },
+        flowchart: {
+            nodeSpacing: 80,
+            rankSpacing: 100,
+            padding: 20
+        }
+    });
+}
+
+async function rerenderAllDiagrams() {
+    initializeMermaid();
+
+    if (singleDataLoaded) {
+        singleDataLoaded = false;
+        await loadSingleData();
+    }
+    if (splitDataLoaded) {
+        splitDataLoaded = false;
+        await loadSplitData();
+    }
+}
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    rerenderAllDiagrams();
+}
+
+// Apply initial theme
+applyTheme(getInitialTheme());
+
+// Initialize Mermaid
+initializeMermaid();
 
 // Tab switching
 function switchTab(tabName) {
