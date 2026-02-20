@@ -7,7 +7,6 @@ from typing import Optional
 from sdd_cli import get_cache_dir
 from sdd_cli.indexer.db import IndexDB
 from sdd_cli.visualizer.analyzer import DependencyAnalyzer
-from sdd_cli.visualizer.mermaid import MermaidGenerator
 from sdd_cli.visualizer.server import start_server
 from sdd_cli.commands.index import build_index
 
@@ -17,18 +16,14 @@ def generate_visualization(
     output: Path,
     filter_dir: Optional[str] = None,
     feature_id: Optional[str] = None,
-    html: bool = False,
-    serve: bool = False,
 ):
-    """Generate dependency graph visualization.
+    """Generate dependency graph visualization and start HTML viewer.
 
     Args:
         root: SDD root directory
         output: Output file path
         filter_dir: Filter by directory type
         feature_id: Filter by feature ID
-        html: Generate HTML instead of .mmd
-        serve: Start local server and open browser (requires html=True)
 
     Raises:
         Exception: If visualization generation fails
@@ -89,9 +84,8 @@ def generate_visualization(
         False
     )
 
-    # Start server if requested
-    if serve:
-        start_server(cache_dir, output.stem)
+    # Start HTML viewer
+    start_server(cache_dir, output.stem)
 
 
 def _generate_graph_file(

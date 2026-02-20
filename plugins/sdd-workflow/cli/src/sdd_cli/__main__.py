@@ -147,23 +147,17 @@ def search(ctx, query, root, feature_id, tag, directory, output_format, output, 
     "--feature-id",
     help="Only visualize documents related to specific feature",
 )
-@click.option(
-    "--html",
-    is_flag=True,
-    help="Generate interactive HTML visualization and start local server",
-)
 @click.pass_context
-def visualize(ctx, root, output, filter_dir, feature_id, html):
-    """Generate dependency graph visualization.
+def visualize(ctx, root, output, filter_dir, feature_id):
+    """Generate dependency graph visualization and start HTML viewer.
 
-    Analyzes document dependencies and generates a Mermaid diagram showing
-    relationships between requirements, specifications, and designs.
+    Analyzes document dependencies and starts an interactive HTML viewer
+    showing relationships between requirements, specifications, and designs.
 
     Examples:
         sdd-cli visualize
         sdd-cli visualize --filter-dir specification
         sdd-cli visualize --feature-id user-login
-        sdd-cli visualize --html  # Interactive HTML with server
     """
     from sdd_cli.commands.visualize import generate_visualization
 
@@ -187,12 +181,7 @@ def visualize(ctx, root, output, filter_dir, feature_id, html):
             output=output,
             filter_dir=filter_dir,
             feature_id=feature_id,
-            html=html,
-            serve=html,  # Auto-start server when --html is used
         )
-
-        if not html:
-            click.echo(f"✓ Dependency graph generated at {output}")
 
     except Exception as e:
         click.echo(f"Error: {e}", err=True)

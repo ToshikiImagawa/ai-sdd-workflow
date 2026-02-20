@@ -6,7 +6,7 @@ AI-SDD Workflow のドキュメント管理 CLI ツール
 
 - **インデックス構築**: `.sdd/` 配下のドキュメントを SQLite FTS5 でインデックス化
 - **全文検索**: キーワード、feature ID、タグによる高速検索
-- **依存関係可視化**: ドキュメント間の依存関係を Mermaid 図として生成
+- **依存関係可視化**: ドキュメント間の依存関係をインタラクティブ HTML ビューアで表示
 
 ## キャッシュディレクトリ
 
@@ -17,7 +17,7 @@ AI-SDD Workflow のドキュメント管理 CLI ツール
 ├── my-project.a1b2c3d4/          # プロジェクト別キャッシュ
 │   ├── index.db                  # SQLite FTS5 インデックス
 │   ├── metadata.json             # インデックスメタデータ
-│   ├── dependency-graph.mmd      # Mermaid 依存関係図
+│   ├── dependency-graph.json      # 依存関係グラフデータ
 │   └── search-results.json       # 検索結果（スキル実行時）
 └── another-project.e5f6g7h8/
     └── ...
@@ -85,18 +85,15 @@ sdd-cli search "ログイン" --format json --output results.json
 ### 依存関係可視化
 
 ```bash
-# 全体の依存関係図を生成（Mermaid形式）
+# 依存関係をHTMLビューアで表示（ブラウザが自動的に開きます）
 sdd-cli visualize
+# → ズーム/パン/フィルタリング/詳細表示が可能
 
 # 特定ディレクトリのみ
 sdd-cli visualize --filter-dir specification
 
 # 特定機能のみ
 sdd-cli visualize --feature-id user-login
-
-# インタラクティブHTMLビューアで表示
-sdd-cli visualize --html
-# → ブラウザが自動的に開き、ズーム/パン/フィルタリング/詳細表示が可能
 ```
 
 ### キャッシュ管理

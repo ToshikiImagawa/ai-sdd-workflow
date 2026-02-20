@@ -6,7 +6,7 @@
 
 1. **Indexing**: Build SQLite FTS5 full-text search index for documents under `.sdd/`
 2. **Full-text Search**: Fast keyword, feature ID, and tag-based search
-3. **Dependency Visualization**: Generate Mermaid diagrams showing document dependencies
+3. **Dependency Visualization**: Interactive HTML viewer showing document dependencies
 
 ## Installation
 
@@ -79,7 +79,7 @@ sdd-cli search "login" --format json --output results.json
 
 ### sdd-cli visualize
 
-Generate dependency graph visualization.
+Generate dependency graph visualization and start interactive HTML viewer.
 
 **Syntax**:
 ```bash
@@ -88,26 +88,22 @@ sdd-cli visualize [options]
 
 **Options**:
 - `--root <path>`: SDD root directory
-- `--output <file>`: Output file path (default: `~/.cache/sdd-cli/{project-name}.{hash}/dependency-graph.mmd`)
+- `--output <file>`: Output file path (default: `~/.cache/sdd-cli/{project-name}.{hash}/dependency-graph.json`)
 - `--filter-dir <type>`: Filter by directory type (requirement/specification/task)
 - `--feature-id <id>`: Filter by feature ID
-- `--html`: Generate interactive HTML visualization and start local server
 
 **Examples**:
 ```bash
-# Visualize all dependencies (Mermaid format)
+# Visualize all dependencies (opens browser automatically)
 sdd-cli visualize
+# Features: zoom/pan, node details, SVG/PNG export
+# Server runs on http://localhost:8000 (press Ctrl+C to stop)
 
 # Visualize requirement only
 sdd-cli visualize --filter-dir requirement
 
 # Visualize specific feature
-sdd-cli visualize --feature-id user-login --output user-login-deps.mmd
-
-# Interactive HTML viewer (opens browser automatically)
-sdd-cli visualize --html
-# Features: zoom/pan, node details, SVG/PNG export
-# Server runs on http://localhost:8000 (press Ctrl+C to stop)
+sdd-cli visualize --feature-id user-login
 ```
 
 ## Search Limitations
@@ -143,7 +139,7 @@ Index and visualization files are stored in **XDG Base Directory** compliant cac
 ├── my-project.a1b2c3d4/
 │   ├── index.db                  # SQLite FTS5 index
 │   ├── metadata.json             # Index metadata
-│   ├── dependency-graph.mmd      # Mermaid dependency graph
+│   ├── dependency-graph.json      # Dependency graph data
 │   └── search-results.json       # Search results (from skills)
 └── another-project.e5f6g7h8/
     └── ...
