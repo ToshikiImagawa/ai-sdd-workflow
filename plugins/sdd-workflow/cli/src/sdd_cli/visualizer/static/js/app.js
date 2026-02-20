@@ -2,9 +2,7 @@
 let nodeMetadata = {};
 let nodeMetadata1 = {};
 let nodeMetadata2 = {};
-let currentZoom = 1.0;
-let currentZoom1 = 1.0;
-let currentZoom2 = 1.0;
+const zoomState = { single: 1.0, split1: 1.0, split2: 1.0 };
 const zoomStep = 0.2;
 const minZoom = 0.3;
 const maxZoom = 4.0;
@@ -193,49 +191,47 @@ document.querySelectorAll('.tab-button').forEach(button => {
     });
 });
 
+// Common graph loading: fetch → metadata → parent map → Mermaid render
+async function loadGraphData(dataUrl, elementId, renderDivId, metadata) {
+    const response = await fetch(dataUrl);
+    if (!response.ok) throw new Error(`Failed to load: ${response.status}`);
+    const graphData = await response.json();
+
+    // Build node metadata
+    for (const node of graphData.nodes) {
+        const nodeId = sanitizeNodeId(node.id);
+        metadata[nodeId] = {
+            title: node.title,
+            path: node.id,
+            directory: node.directory,
+            featureId: node.feature_id || 'N/A'
+        };
+    }
+    buildParentMap(graphData, metadata);
+
+    // Mermaid render
+    const mermaidCode = generateMermaidCode(graphData);
+    const diagramElement = document.getElementById(elementId);
+    diagramElement.textContent = mermaidCode;
+    diagramElement.removeAttribute('data-processed');
+    const { svg } = await mermaid.render(renderDivId, mermaidCode);
+    diagramElement.innerHTML = svg;
+
+    return graphData;
+}
+
 // Single graph mode
 async function loadSingleData() {
     try {
-        const graphResponse = await fetch('/dependency-graph.json');
-        if (!graphResponse.ok) {
-            throw new Error(`Failed to load graph: ${graphResponse.status}`);
-        }
-        const graphData = await graphResponse.json();
+        nodeMetadata = {};
+        const graphData = await loadGraphData('/dependency-graph.json', 'mermaid-diagram', 'graphDiv', nodeMetadata);
 
         // Set title
         document.getElementById('graph-title').textContent = graphData.title || 'SDD Dependency Graph';
         document.getElementById('graph-subtitle').textContent = graphData.subtitle || 'Interactive dependency graph visualization';
         document.getElementById('single-title').textContent = graphData.title || 'SDD Dependency Graph';
 
-        // Build node metadata
-        nodeMetadata = {};
-        for (const node of graphData.nodes) {
-            const nodeId = sanitizeNodeId(node.id);
-            nodeMetadata[nodeId] = {
-                title: node.title,
-                path: node.id,
-                directory: node.directory,
-                featureId: node.feature_id || 'N/A'
-            };
-        }
-
-        // Build parent relationships from SDD hierarchy
-        buildParentMap(graphData, nodeMetadata);
-
-        // Generate Mermaid code
-        const mermaidCode = generateMermaidCode(graphData);
-
-        // Render Mermaid diagram
-        const diagramElement = document.getElementById('mermaid-diagram');
-        diagramElement.textContent = mermaidCode;
-        diagramElement.removeAttribute('data-processed');
-
-        const { svg } = await mermaid.render('graphDiv', mermaidCode);
-        diagramElement.innerHTML = svg;
-
         singleDataLoaded = true;
-
-        // Post-load initialization
         initializeAfterLoad('mermaid-diagram', nodeMetadata);
     } catch (error) {
         console.error('Error loading data:', error);
@@ -248,67 +244,25 @@ async function loadSingleData() {
 // Split graph mode
 async function loadSplitData() {
     try {
-        // Set title
         document.getElementById('graph-title').textContent = 'SDD Dependency Graph (Split View)';
         document.getElementById('graph-subtitle').textContent = 'PRD-based and Direct documents';
 
         // Graph 1: PRD-based
-        await loadGraph('prd-based-graph', 'mermaid-diagram-1', 1);
+        nodeMetadata1 = {};
+        await loadGraphData('/prd-based-graph.json', 'mermaid-diagram-1', 'graphDiv1', nodeMetadata1);
+        initializeAfterLoad('mermaid-diagram-1', nodeMetadata1, 1);
 
         // Graph 2: Direct
-        await loadGraph('direct-graph', 'mermaid-diagram-2', 2);
+        nodeMetadata2 = {};
+        await loadGraphData('/direct-graph.json', 'mermaid-diagram-2', 'graphDiv2', nodeMetadata2);
+        initializeAfterLoad('mermaid-diagram-2', nodeMetadata2, 2);
 
         splitDataLoaded = true;
-
-        // Update node count
         updateSplitNodeCount();
     } catch (error) {
         console.error('Error loading split data:', error);
         document.getElementById('graph-subtitle').textContent = 'Error loading data';
     }
-}
-
-// Load individual graph
-async function loadGraph(dataName, elementId, graphIndex) {
-    const graphResponse = await fetch(`/${dataName}.json`);
-    const graphData = await graphResponse.json();
-
-    // Build node metadata
-    const metadata = {};
-    for (const node of graphData.nodes) {
-        const nodeId = sanitizeNodeId(node.id);
-        metadata[nodeId] = {
-            title: node.title,
-            path: node.id,
-            directory: node.directory,
-            featureId: node.feature_id || 'N/A'
-        };
-    }
-
-    // Build parent relationships from SDD hierarchy
-    buildParentMap(graphData, metadata);
-
-    // Save node metadata
-    if (graphIndex === 1) {
-        nodeMetadata1 = metadata;
-    } else {
-        nodeMetadata2 = metadata;
-    }
-
-    // Generate Mermaid code
-    const mermaidCode = generateMermaidCode(graphData);
-
-    // Render Mermaid diagram
-    const diagramElement = document.getElementById(elementId);
-    diagramElement.textContent = mermaidCode;
-    diagramElement.removeAttribute('data-processed');
-
-    const { svg } = await mermaid.render(`graphDiv${graphIndex}`, mermaidCode);
-    diagramElement.innerHTML = svg;
-
-    // Post-load initialization
-    const nodeMetadataForGraph = graphIndex === 1 ? nodeMetadata1 : nodeMetadata2;
-    initializeAfterLoad(elementId, nodeMetadataForGraph, graphIndex);
 }
 
 function updateSplitNodeCount() {
@@ -323,7 +277,7 @@ function updateSplitNodeCount() {
 
 function initializeAfterLoad(elementId, metadata, graphIndex) {
     setTimeout(() => {
-        updateZoom(graphIndex);
+        updateZoom();
 
         const nodes = document.querySelectorAll(`#${elementId} .node`);
 
@@ -361,62 +315,47 @@ function initializeAfterLoad(elementId, metadata, graphIndex) {
 }
 
 // Zoom functionality
-function updateZoom(graphIndex) {
+function getActiveZoomKeys() {
+    return activeTab === 'single' ? ['single'] : ['split1', 'split2'];
+}
+
+function applyZoomToSvg(selector, zoomValue) {
+    const svg = document.querySelector(selector);
+    if (svg) {
+        svg.style.transform = `scale(${zoomValue})`;
+        svg.style.transformOrigin = 'top left';
+    }
+}
+
+function updateZoom() {
     if (activeTab === 'single') {
-        const svg = document.querySelector('#mermaid-diagram svg');
-        if (svg) {
-            svg.style.transform = `scale(${currentZoom})`;
-            svg.style.transformOrigin = 'top left';
-        }
-        document.getElementById('zoom-level').textContent = Math.round(currentZoom * 100) + '%';
+        applyZoomToSvg('#mermaid-diagram svg', zoomState.single);
+        document.getElementById('zoom-level').textContent = Math.round(zoomState.single * 100) + '%';
     } else {
-        const svg1 = document.querySelector('#mermaid-diagram-1 svg');
-        const svg2 = document.querySelector('#mermaid-diagram-2 svg');
-        if (svg1) {
-            svg1.style.transform = `scale(${currentZoom1})`;
-            svg1.style.transformOrigin = 'top left';
-        }
-        if (svg2) {
-            svg2.style.transform = `scale(${currentZoom2})`;
-            svg2.style.transformOrigin = 'top left';
-        }
+        applyZoomToSvg('#mermaid-diagram-1 svg', zoomState.split1);
+        applyZoomToSvg('#mermaid-diagram-2 svg', zoomState.split2);
         document.getElementById('zoom-level').textContent =
-            `PRD: ${Math.round(currentZoom1 * 100)}% | Direct: ${Math.round(currentZoom2 * 100)}%`;
+            `PRD: ${Math.round(zoomState.split1 * 100)}% | Direct: ${Math.round(zoomState.split2 * 100)}%`;
     }
 }
 
 function zoomIn() {
-    if (activeTab === 'single') {
-        if (currentZoom < maxZoom) {
-            currentZoom += zoomStep;
-            updateZoom();
-        }
-    } else {
-        if (currentZoom1 < maxZoom) currentZoom1 += zoomStep;
-        if (currentZoom2 < maxZoom) currentZoom2 += zoomStep;
-        updateZoom();
+    for (const key of getActiveZoomKeys()) {
+        if (zoomState[key] < maxZoom) zoomState[key] += zoomStep;
     }
+    updateZoom();
 }
 
 function zoomOut() {
-    if (activeTab === 'single') {
-        if (currentZoom > minZoom) {
-            currentZoom -= zoomStep;
-            updateZoom();
-        }
-    } else {
-        if (currentZoom1 > minZoom) currentZoom1 -= zoomStep;
-        if (currentZoom2 > minZoom) currentZoom2 -= zoomStep;
-        updateZoom();
+    for (const key of getActiveZoomKeys()) {
+        if (zoomState[key] > minZoom) zoomState[key] -= zoomStep;
     }
+    updateZoom();
 }
 
 function resetZoom() {
-    if (activeTab === 'single') {
-        currentZoom = 1.0;
-    } else {
-        currentZoom1 = 1.0;
-        currentZoom2 = 1.0;
+    for (const key of getActiveZoomKeys()) {
+        zoomState[key] = 1.0;
     }
     updateZoom();
 }

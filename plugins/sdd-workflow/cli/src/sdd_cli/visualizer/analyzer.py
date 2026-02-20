@@ -179,46 +179,12 @@ class DependencyAnalyzer:
         Returns:
             Dictionary with nodes and edges
         """
-        # Filter documents
         filtered_docs = self.documents
         if filter_dir:
             filtered_docs = [d for d in filtered_docs if d["directory"] == filter_dir]
         if feature_id:
             filtered_docs = [d for d in filtered_docs if d.get("feature_id") == feature_id]
-
-        # Extract filtered paths
-        filtered_paths = {doc["file_path"] for doc in filtered_docs}
-
-        # Filter dependencies
-        filtered_deps = [
-            (src, tgt, link_type)
-            for src, tgt, link_type in self.dependencies
-            if src in filtered_paths and tgt in filtered_paths
-        ]
-
-        # Build graph
-        nodes = []
-        for doc in filtered_docs:
-            nodes.append({
-                "id": doc["file_path"],
-                "title": doc.get("title", doc["file_name"]),
-                "directory": doc["directory"],
-                "file_type": doc.get("file_type", ""),
-                "feature_id": doc.get("feature_id", ""),
-            })
-
-        edges = []
-        for src, tgt, link_type in filtered_deps:
-            edges.append({
-                "source": src,
-                "target": tgt,
-                "type": link_type,
-            })
-
-        return {
-            "nodes": nodes,
-            "edges": edges,
-        }
+        return self._build_graph_from_docs(filtered_docs)
 
     def get_split_dependency_graphs(
         self,
@@ -297,33 +263,35 @@ class DependencyAnalyzer:
 
         # Build PRD-based graph
         prd_graph = self._build_graph_from_docs(prd_based_docs, include_constitution=True)
-
-        # Add CONSTITUTION dependencies only for top-level requirements
-        # (nodes that don't already have an incoming edge)
-        nodes_with_incoming = {edge["target"] for edge in prd_graph["edges"]}
-        for doc in prd_based_docs:
-            if doc.get("file_type") == "requirement" and doc["file_path"] not in nodes_with_incoming:
-                prd_graph["edges"].append({
-                    "source": "CONSTITUTION.md",
-                    "target": doc["file_path"],
-                    "type": "implicit",
-                })
+        self._add_constitution_edges(prd_graph, prd_based_docs, {"requirement"})
 
         # Build direct graph (CONSTITUTION → specs without PRD)
         direct_graph = self._build_graph_from_docs(direct_docs, include_constitution=True)
+        self._add_constitution_edges(direct_graph, direct_docs, {"spec"})
 
-        # Add CONSTITUTION dependencies only for top-level specs
-        nodes_with_incoming_direct = {edge["target"] for edge in direct_graph["edges"]}
-        for doc in direct_docs:
-            file_type = doc.get("file_type", "")
-            if file_type == "spec" and doc["file_path"] not in nodes_with_incoming_direct:
-                direct_graph["edges"].append({
+        return prd_graph, direct_graph
+
+    def _add_constitution_edges(
+        self,
+        graph: Dict[str, Any],
+        docs: List[Dict[str, Any]],
+        file_types: Set[str],
+    ) -> None:
+        """Add implicit CONSTITUTION edges for top-level nodes without incoming edges.
+
+        Args:
+            graph: Graph dict to modify in-place
+            docs: Documents to check
+            file_types: Set of file_type values eligible for CONSTITUTION edges
+        """
+        nodes_with_incoming = {edge["target"] for edge in graph["edges"]}
+        for doc in docs:
+            if doc.get("file_type") in file_types and doc["file_path"] not in nodes_with_incoming:
+                graph["edges"].append({
                     "source": "CONSTITUTION.md",
                     "target": doc["file_path"],
                     "type": "implicit",
                 })
-
-        return prd_graph, direct_graph
 
     def _has_requirement(self, feature_id: str) -> bool:
         """Check if a feature has a corresponding requirement document.
