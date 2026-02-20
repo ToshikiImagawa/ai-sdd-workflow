@@ -96,7 +96,7 @@ sdd-cli visualize [options]
 ```bash
 # Visualize all dependencies (opens browser automatically)
 sdd-cli visualize
-# Features: zoom/pan, node details, SVG/PNG export
+# Features: zoom/pan, node details, SVG export
 # Server runs on http://localhost:8000 (press Ctrl+C to stop)
 
 # Visualize requirement only

@@ -452,47 +452,6 @@ function downloadSVG() {
     URL.revokeObjectURL(url);
 }
 
-function downloadPNG() {
-    const svgElement = activeTab === 'single'
-        ? document.querySelector('#mermaid-diagram svg')
-        : document.querySelector('#mermaid-diagram-1 svg');
-    if (!svgElement) {
-        alert('Diagram not loaded yet');
-        return;
-    }
-
-    const canvas = document.createElement('canvas');
-    const bbox = svgElement.getBBox();
-    canvas.width = bbox.width * 2;
-    canvas.height = bbox.height * 2;
-
-    const ctx = canvas.getContext('2d');
-    ctx.scale(2, 2);
-
-    const svgData = new XMLSerializer().serializeToString(svgElement);
-    const img = new Image();
-    const blob = new Blob([svgData], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-
-    img.onload = () => {
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0);
-
-        canvas.toBlob((pngBlob) => {
-            const pngUrl = URL.createObjectURL(pngBlob);
-            const link = document.createElement('a');
-            link.href = pngUrl;
-            link.download = 'dependency-graph.png';
-            link.click();
-            URL.revokeObjectURL(pngUrl);
-            URL.revokeObjectURL(url);
-        });
-    };
-
-    img.src = url;
-}
-
 // Resolve parent node from SDD hierarchy (file_type + path structure)
 function buildParentMap(graphData, metadata) {
     const nodes = graphData.nodes || [];
