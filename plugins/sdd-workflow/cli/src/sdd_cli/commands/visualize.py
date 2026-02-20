@@ -19,7 +19,6 @@ def generate_visualization(
     feature_id: Optional[str] = None,
     html: bool = False,
     serve: bool = False,
-    split_by_prd: bool = False,
 ):
     """Generate dependency graph visualization.
 
@@ -30,7 +29,6 @@ def generate_visualization(
         feature_id: Filter by feature ID
         html: Generate HTML instead of .mmd
         serve: Start local server and open browser (requires html=True)
-        split_by_prd: Split graphs by PRD existence (PRD-based vs direct from CONSTITUTION)
 
     Raises:
         Exception: If visualization generation fails
@@ -56,51 +54,44 @@ def generate_visualization(
     analyzer = DependencyAnalyzer(documents, root)
     analyzer.analyze()
 
-    if split_by_prd:
-        # Generate two separate graphs: PRD-based and direct
-        prd_graph, direct_graph = analyzer.get_split_dependency_graphs(filter_dir=filter_dir)
+    # Get filtered dependency graph (single view)
+    graph = analyzer.get_dependency_graph(
+        filter_dir=filter_dir,
+        feature_id=feature_id,
+    )
 
-        # Generate PRD-based graph
-        _generate_graph_file(
-            root, cache_dir, prd_graph,
-            cache_dir / "prd-based-graph",
-            "PRD-Based Dependency Graph",
-            "Documents with requirements (PRD)",
-            serve
-        )
+    # Generate single graph
+    title = "SDD Dependency Graph"
+    subtitle = "Interactive dependency graph visualization"
+    if filter_dir:
+        subtitle += f" (filtered by directory: {filter_dir})"
+    if feature_id:
+        subtitle += f" (filtered by feature: {feature_id})"
 
-        # Generate direct graph
-        _generate_graph_file(
-            root, cache_dir, direct_graph,
-            cache_dir / "direct-graph",
-            "Direct Dependency Graph",
-            "Documents without requirements (direct from CONSTITUTION)",
-            serve
-        )
+    _generate_graph_file(root, cache_dir, graph, output, title, subtitle, False)
 
-        # If serve is requested, start server with split view
-        if serve:
-            start_server(cache_dir, "split")
-    else:
-        # Get filtered dependency graph
-        graph = analyzer.get_dependency_graph(
-            filter_dir=filter_dir,
-            feature_id=feature_id,
-        )
+    # Always generate split graphs (PRD-based and direct)
+    prd_graph, direct_graph = analyzer.get_split_dependency_graphs(filter_dir=filter_dir)
 
-        # Generate single graph
-        title = "SDD Dependency Graph"
-        subtitle = "Interactive dependency graph visualization"
-        if filter_dir:
-            subtitle += f" (filtered by directory: {filter_dir})"
-        if feature_id:
-            subtitle += f" (filtered by feature: {feature_id})"
+    _generate_graph_file(
+        root, cache_dir, prd_graph,
+        cache_dir / "prd-based-graph",
+        "PRD-Based Dependency Graph",
+        "Documents with requirements (PRD)",
+        False
+    )
 
-        _generate_graph_file(root, cache_dir, graph, output, title, subtitle, False)
+    _generate_graph_file(
+        root, cache_dir, direct_graph,
+        cache_dir / "direct-graph",
+        "Direct Dependency Graph",
+        "Documents without requirements (direct from CONSTITUTION)",
+        False
+    )
 
-        # Start server if requested
-        if serve:
-            start_server(cache_dir, output.stem)
+    # Start server if requested
+    if serve:
+        start_server(cache_dir, output.stem)
 
 
 def _generate_graph_file(

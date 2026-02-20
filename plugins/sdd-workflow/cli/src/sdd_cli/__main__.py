@@ -152,13 +152,8 @@ def search(ctx, query, root, feature_id, tag, directory, output_format, output, 
     is_flag=True,
     help="Generate interactive HTML visualization and start local server",
 )
-@click.option(
-    "--split-by-prd",
-    is_flag=True,
-    help="Split graphs by PRD existence (PRD-based vs direct from CONSTITUTION)",
-)
 @click.pass_context
-def visualize(ctx, root, output, filter_dir, feature_id, html, split_by_prd):
+def visualize(ctx, root, output, filter_dir, feature_id, html):
     """Generate dependency graph visualization.
 
     Analyzes document dependencies and generates a Mermaid diagram showing
@@ -194,7 +189,6 @@ def visualize(ctx, root, output, filter_dir, feature_id, html, split_by_prd):
             feature_id=feature_id,
             html=html,
             serve=html,  # Auto-start server when --html is used
-            split_by_prd=split_by_prd,
         )
 
         if not html:

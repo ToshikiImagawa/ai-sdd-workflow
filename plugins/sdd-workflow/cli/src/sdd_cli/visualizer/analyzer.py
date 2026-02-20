@@ -45,7 +45,16 @@ class DependencyAnalyzer:
             for target in implicit_deps:
                 self.dependencies.append((file_path, target, "implicit"))
 
-            # 3. Dependencies from markdown links
+            # 3. Parent-child nesting (parent → child direction)
+            parent_feature_id = doc.get("parent_feature_id")
+            if parent_feature_id:
+                parent_doc = self._find_document_by_feature_id(
+                    parent_feature_id, doc.get("file_type", "")
+                )
+                if parent_doc:
+                    self.dependencies.append((parent_doc["file_path"], file_path, "implicit"))
+
+            # 4. Dependencies from markdown links
             if doc.get("links"):
                 for link in doc["links"]:
                     target = self._resolve_relative_link(file_path, link)
@@ -83,13 +92,6 @@ class DependencyAnalyzer:
         deps = []
         file_type = doc.get("file_type", "")
         feature_id = doc.get("feature_id", "")
-        parent_feature_id = doc.get("parent_feature_id")
-
-        # Add parent-child dependency (directory nesting)
-        if parent_feature_id:
-            parent_doc = self._find_document_by_feature_id(parent_feature_id, file_type)
-            if parent_doc:
-                deps.append(parent_doc["file_path"])
 
         # Pattern 1: requirement → spec (if spec exists)
         if file_type == "requirement":
@@ -296,10 +298,11 @@ class DependencyAnalyzer:
         # Build PRD-based graph
         prd_graph = self._build_graph_from_docs(prd_based_docs, include_constitution=True)
 
-        # Add CONSTITUTION dependencies for PRD-based graph
+        # Add CONSTITUTION dependencies only for top-level requirements
+        # (nodes that don't already have an incoming edge)
+        nodes_with_incoming = {edge["target"] for edge in prd_graph["edges"]}
         for doc in prd_based_docs:
-            if doc.get("file_type") == "requirement":
-                # Add CONSTITUTION → requirement dependency
+            if doc.get("file_type") == "requirement" and doc["file_path"] not in nodes_with_incoming:
                 prd_graph["edges"].append({
                     "source": "CONSTITUTION.md",
                     "target": doc["file_path"],
@@ -309,11 +312,11 @@ class DependencyAnalyzer:
         # Build direct graph (CONSTITUTION → specs without PRD)
         direct_graph = self._build_graph_from_docs(direct_docs, include_constitution=True)
 
-        # Add CONSTITUTION dependencies for direct graph
+        # Add CONSTITUTION dependencies only for top-level specs
+        nodes_with_incoming_direct = {edge["target"] for edge in direct_graph["edges"]}
         for doc in direct_docs:
             file_type = doc.get("file_type", "")
-            # Only add CONSTITUTION → spec dependency (not design)
-            if file_type == "spec":
+            if file_type == "spec" and doc["file_path"] not in nodes_with_incoming_direct:
                 direct_graph["edges"].append({
                     "source": "CONSTITUTION.md",
                     "target": doc["file_path"],

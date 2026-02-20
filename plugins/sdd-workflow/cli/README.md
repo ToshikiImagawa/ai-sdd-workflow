@@ -33,10 +33,26 @@ AI-SDD Workflow のドキュメント管理 CLI ツール
 - 不要なキャッシュの削除が容易
 - Claude Code 非依存で、他のエディタやCI/CDでも利用可能
 
-## インストール
+## 動作要件
+
+- Python 3.9 以上
+- [uv](https://docs.astral.sh/uv/)
+
+## CLIで操作
+
+インストールせずに `uvx` で直接実行できます：
 
 ```bash
-uv pip install -e .
+uvx --from "sdd-cli @ git+https://github.com/ToshikiImagawa/ai-sdd-workflow.git#subdirectory=plugins/sdd-workflow/cli" sdd-cli --help
+```
+
+## インストール
+
+通常はプラグインのセッション開始時に自動的にインストールされます。手動でインストールする場合：
+
+```bash
+cd plugins/sdd-workflow/cli
+uv tool install .
 ```
 
 ## 使用方法

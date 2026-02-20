@@ -1,0 +1,279 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #f5f5f5;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.header p {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    padding: 10px 20px;
+    background: white;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    border: none;
+    background: #f5f5f5;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 4px 4px 0 0;
+    transition: all 0.2s;
+}
+
+.tab-button:hover {
+    background: #e8e8e8;
+}
+
+.tab-button.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.controls {
+    padding: 15px 30px;
+    background: white;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.controls button {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.controls button:hover {
+    background: #f0f0f0;
+    border-color: #999;
+}
+
+.controls button:active {
+    transform: scale(0.95);
+}
+
+.controls select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.zoom-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.zoom-level {
+    font-size: 14px;
+    color: #666;
+    min-width: 50px;
+    text-align: center;
+}
+
+.info {
+    margin-left: auto;
+    font-size: 14px;
+    color: #666;
+}
+
+.tab-content {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.tab-content.active {
+    display: flex;
+}
+
+#diagram-containers-single,
+#diagram-containers-split {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#diagram-containers-split {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+}
+
+.diagram-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.diagram-container.split:first-of-type {
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.diagram-section-title {
+    padding: 10px 20px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+    font-weight: 600;
+    font-size: 16px;
+    color: #333;
+}
+
+.mermaid-diagram {
+    width: 100%;
+    flex: 1;
+    overflow: auto;
+    cursor: grab;
+    min-height: 0;
+}
+
+.mermaid-diagram:active {
+    cursor: grabbing;
+}
+
+.mermaid-diagram svg {
+    transition: transform 0.1s ease;
+}
+
+.node-detail {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    padding: 24px;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.node-detail.active {
+    display: block;
+}
+
+.node-detail h2 {
+    font-size: 20px;
+    margin-bottom: 16px;
+    color: #333;
+}
+
+.node-detail .detail-item {
+    margin-bottom: 12px;
+}
+
+.node-detail .detail-label {
+    font-weight: 600;
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.node-detail .detail-value {
+    color: #333;
+    font-size: 14px;
+}
+
+.node-detail .close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+}
+
+.node-detail .close-btn:hover {
+    color: #333;
+}
+
+.parent-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    margin: 2px;
+    background: #e8eaf6;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #3949ab;
+}
+
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+}
+
+.overlay.active {
+    display: block;
+}
+
+.error-message {
+    padding: 20px;
+    text-align: center;
+    color: #d32f2f;
+    font-size: 16px;
+}
+
+@media (max-width: 768px) {
+    .controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .info {
+        margin-left: 0;
+    }
+}
