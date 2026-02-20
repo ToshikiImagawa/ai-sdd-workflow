@@ -240,9 +240,10 @@ class DependencyAnalyzer:
                     direct_docs.append(doc)
                     spec_classification[feature_id] = "direct"
             elif file_type == "task":
-                # Task docs: check if corresponding requirement exists
-                has_requirement = self._has_requirement(feature_id)
-                if has_requirement:
+                # Task docs: classify based on link targets
+                # If any link resolves to a requirement or PRD-classified spec, it's PRD-based
+                task_is_prd = self._task_has_prd_link(doc, spec_classification)
+                if task_is_prd:
                     prd_based_docs.append(doc)
                 else:
                     direct_docs.append(doc)
@@ -318,6 +319,30 @@ class DependencyAnalyzer:
         for doc in self.documents:
             if doc.get("file_type") == "requirement" and doc.get("feature_id") == feature_id:
                 return True
+        return False
+
+    def _task_has_prd_link(self, doc: Dict[str, Any], spec_classification: Dict[str, str]) -> bool:
+        """Check if a task document links to any requirement or PRD-classified document.
+
+        Args:
+            doc: Task document metadata
+            spec_classification: Classification map of feature_id -> "prd"/"direct"
+
+        Returns:
+            True if any link target is a requirement or PRD-classified spec
+        """
+        for link in doc.get("links", []):
+            resolved = self._resolve_relative_link(doc["file_path"], link)
+            if not resolved:
+                continue
+            target_doc = next((d for d in self.documents if d["file_path"] == resolved), None)
+            if not target_doc:
+                continue
+            if target_doc.get("file_type") == "requirement":
+                return True
+            if target_doc.get("feature_id") in spec_classification:
+                if spec_classification[target_doc["feature_id"]] == "prd":
+                    return True
         return False
 
     def _has_spec(self, feature_id: str) -> bool:
