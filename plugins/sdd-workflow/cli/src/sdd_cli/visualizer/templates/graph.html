@@ -94,8 +94,14 @@
             color: #666;
         }
 
-        .diagram-container {
+        #diagram-containers {
             flex: 1;
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            overflow: hidden;
+        }
+
+        .diagram-container {
             overflow: hidden;
             position: relative;
             background: white;
@@ -103,12 +109,8 @@
             flex-direction: column;
         }
 
-        .diagram-container.split {
-            flex: none;
-            height: 50vh;
+        .diagram-container.split:first-of-type {
             border-bottom: 2px solid #e0e0e0;
-            display: flex;
-            flex-direction: column;
         }
 
         .diagram-section-title {
@@ -252,6 +254,7 @@
     <div id="diagram-containers">
         <!-- Single diagram mode -->
         <div id="single-container" class="diagram-container" style="display: none;">
+            <div class="diagram-section-title" id="single-title">SDD Dependency Graph</div>
             <div id="mermaid-diagram" class="mermaid-diagram mermaid">
                 Loading diagram...
             </div>
@@ -414,7 +417,7 @@
         async function loadSingleData() {
             try {
                 // コンテナを表示
-                document.getElementById('single-container').style.display = 'block';
+                document.getElementById('single-container').style.display = 'flex';
 
                 // グラフJSONを読み込み
                 const graphResponse = await fetch(`${dataFile}.json`);
@@ -426,6 +429,7 @@
                 // タイトルを設定
                 document.getElementById('graph-title').textContent = graphData.title || 'SDD Dependency Graph';
                 document.getElementById('graph-subtitle').textContent = graphData.subtitle || 'Interactive dependency graph visualization';
+                document.getElementById('single-title').textContent = graphData.title || 'SDD Dependency Graph';
 
                 // ノードメタデータを構築
                 nodeMetadata = {};
