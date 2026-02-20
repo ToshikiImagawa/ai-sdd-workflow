@@ -1,7 +1,7 @@
 {
   "name": "sdd-workflow",
-  "description": "A unified plugin supporting AI-driven Specification-Driven Development (AI-SDD) workflow. Prevents Vibe Coding problems and achieves high-quality implementations using specifications as the source of truth. Supports multiple languages via SDD_LANG configuration.",
-  "version": "3.1.0",
+  "description": "A unified plugin supporting AI-driven Specification-Driven Development (AI-SDD) workflow. Prevents Vibe Coding problems and achieves high-quality implementations using specifications as the source of truth. Supports multiple languages via SDD_LANG configuration. Includes CLI tool for advanced document management (v3.2.0+).",
+  "version": "3.2.0",
   "author": {
     "name": "toshiki.imagawa",
     "url": "https://github.com/ToshikiImagawa"
