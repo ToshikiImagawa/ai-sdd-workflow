@@ -3,6 +3,12 @@
 # SessionStart hook script
 # Loads .sdd-config.json at session start (generates if not exists) and initializes environment variables
 
+# Guard: CLAUDE_PLUGIN_ROOT must be set
+if [ -z "$CLAUDE_PLUGIN_ROOT" ]; then
+    echo "[AI-SDD] Error: CLAUDE_PLUGIN_ROOT is not set. Aborting session-start." >&2
+    exit 1
+fi
+
 # Get project root
 if [ -n "$CLAUDE_PROJECT_DIR" ]; then
     PROJECT_ROOT="$CLAUDE_PROJECT_DIR"
@@ -63,17 +69,17 @@ if [ ! -f "$CONFIG_FILE" ]; then
   }
 }
 EOF
-        echo "[AI-SDD Migration] Legacy directory structure detected." >&2
-        echo "" >&2
-        echo "Detected legacy structure:" >&2
-        [ -n "$LEGACY_DOCS_ROOT" ] && echo "  - Root directory: .docs" >&2
-        [ -n "$LEGACY_REQUIREMENT" ] && echo "  - Requirement: requirement-diagram" >&2
-        [ -n "$LEGACY_TASK" ] && echo "  - Task log: review" >&2
-        echo "" >&2
-        echo ".sdd-config.json auto-generated based on legacy structure." >&2
-        echo "To migrate to new structure, run:" >&2
-        echo "  /sdd-migrate - Migrate to new structure" >&2
-        echo "" >&2
+        echo "[AI-SDD Migration] Legacy directory structure detected."
+        echo ""
+        echo "Detected legacy structure:"
+        [ -n "$LEGACY_DOCS_ROOT" ] && echo "  - Root directory: .docs"
+        [ -n "$LEGACY_REQUIREMENT" ] && echo "  - Requirement: requirement-diagram"
+        [ -n "$LEGACY_TASK" ] && echo "  - Task log: review"
+        echo ""
+        echo ".sdd-config.json auto-generated based on legacy structure."
+        echo "To migrate to new structure, run:"
+        echo "  /sdd-migrate - Migrate to new structure"
+        echo ""
     else
         # No legacy structure detected and no .sdd-config.json exists, auto-generate default config
         cat > "$CONFIG_FILE" << 'EOF'
@@ -87,13 +93,13 @@ EOF
   }
 }
 EOF
-        echo "[AI-SDD] .sdd-config.json auto-generated." >&2
+        echo "[AI-SDD] .sdd-config.json auto-generated."
     fi
 fi
 
 # Load configuration if file exists
 if [ -f "$CONFIG_FILE" ]; then
-    if command -v jq &> /dev/null; then
+    if command -v jq >/dev/null 2>&1; then
         # jq is available
         CONFIGURED_DOCS_ROOT=$(jq -r '.root // empty' "$CONFIG_FILE" 2>/dev/null)
         CONFIGURED_REQUIREMENT=$(jq -r '.directories.requirement // empty' "$CONFIG_FILE" 2>/dev/null)
@@ -133,17 +139,17 @@ TARGET_PRINCIPLES="${SDD_DIR}/AI-SDD-PRINCIPLES.md"
 # Create .sdd/ directory if it doesn't exist
 if [ ! -d "$SDD_DIR" ]; then
     mkdir -p "$SDD_DIR"
-    echo "[AI-SDD] ${DOCS_ROOT}/ directory created." >&2
+    echo "[AI-SDD] ${DOCS_ROOT}/ directory created."
 fi
 
 # Copy AI-SDD-PRINCIPLES.source.md to .sdd/AI-SDD-PRINCIPLES.md (always overwrite)
-if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
+if [ -f "$SOURCE_PRINCIPLES" ]; then
     # Get plugin version from plugin.json
     PLUGIN_JSON="${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json"
     PLUGIN_VERSION=""
 
     if [ -f "$PLUGIN_JSON" ]; then
-        if command -v jq &> /dev/null; then
+        if command -v jq >/dev/null 2>&1; then
             PLUGIN_VERSION=$(jq -r '.version // empty' "$PLUGIN_JSON" 2>/dev/null)
         else
             PLUGIN_VERSION=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLUGIN_JSON" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
@@ -155,7 +161,7 @@ if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
     if [ -n "$PLUGIN_VERSION" ]; then
         if sed "s|^version:.*$|version: \"${PLUGIN_VERSION}\"|" "$SOURCE_PRINCIPLES" > "$TEMP_FILE" 2>/dev/null && [ -f "$TEMP_FILE" ]; then
             mv "$TEMP_FILE" "$TARGET_PRINCIPLES"
-            echo "[AI-SDD] AI-SDD-PRINCIPLES.md updated to v${PLUGIN_VERSION}." >&2
+            echo "[AI-SDD] AI-SDD-PRINCIPLES.md updated to v${PLUGIN_VERSION}."
         else
             # Fallback if sed fails
             rm -f "$TEMP_FILE"
@@ -164,15 +170,10 @@ if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
         fi
     else
         cp "$SOURCE_PRINCIPLES" "$TARGET_PRINCIPLES"
-        echo "[AI-SDD] AI-SDD-PRINCIPLES.md copied (version unknown)." >&2
+        echo "[AI-SDD] AI-SDD-PRINCIPLES.md copied (version unknown)."
     fi
 else
-    # Log the reason for skipping
-    if [ -z "$CLAUDE_PLUGIN_ROOT" ]; then
-        echo "[AI-SDD] CLAUDE_PLUGIN_ROOT not set. Skipping AI-SDD-PRINCIPLES.md auto-sync." >&2
-    elif [ ! -f "$SOURCE_PRINCIPLES" ]; then
-        echo "[AI-SDD] Source file not found: $SOURCE_PRINCIPLES. Skipping auto-sync." >&2
-    fi
+    echo "[AI-SDD] Source file not found: $SOURCE_PRINCIPLES. Skipping auto-sync." >&2
 fi
 
 # Environment variable output

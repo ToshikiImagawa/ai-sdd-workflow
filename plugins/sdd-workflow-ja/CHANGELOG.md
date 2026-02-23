@@ -7,6 +7,27 @@
 
 ## [Unreleased]
 
+## [3.1.1] - 2026-02-23
+
+### 変更
+
+#### フック
+
+- **`session-start.sh`** - POSIX 互換性とロバストネスを向上
+  - スクリプト冒頭に `CLAUDE_PLUGIN_ROOT` ガードチェックを追加
+  - `&> /dev/null` を POSIX 互換の `>/dev/null 2>&1` に置換
+  - echo 文から不要な `>&2` リダイレクションを削除
+  - principles コピー時の `CLAUDE_PLUGIN_ROOT` 存在チェックを簡素化
+
+#### スキル
+
+- **`plan-refactor`** - テンプレート/リファレンスファイルパスの参照を snake_case に修正
+  - `refactor-plan-section.md` → `refactor_plan_section.md`
+  - `reverse-design-template.md` → `reverse_design_template.md`
+  - `reverse-spec-template.md` → `reverse_spec_template.md`
+  - `design-doc-integration.md` → `design_doc_integration.md`
+  - `templates/` と `references/` の実ファイル名も合わせてリネーム
+
 ## [3.1.0] - 2026-02-15
 
 ### 追加

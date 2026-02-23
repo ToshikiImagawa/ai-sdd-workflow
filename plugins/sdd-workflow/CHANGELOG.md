@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.1] - 2026-02-23
+
+### Changed
+
+#### Hooks
+
+- **`session-start.sh`** - Improved POSIX compatibility and robustness
+  - Added `CLAUDE_PLUGIN_ROOT` guard check at script entry
+  - Replaced `&> /dev/null` with POSIX-compatible `>/dev/null 2>&1`
+  - Removed unnecessary `>&2` redirections from echo statements
+  - Simplified `CLAUDE_PLUGIN_ROOT` existence check for principles copy
+
+#### Skills
+
+- **`plan-refactor`** - Fixed template/reference file path references to use snake_case
+  - `refactor-plan-section.md` → `refactor_plan_section.md`
+  - `reverse-design-template.md` → `reverse_design_template.md`
+  - `reverse-spec-template.md` → `reverse_spec_template.md`
+  - `design-doc-integration.md` → `design_doc_integration.md`
+  - Renamed actual files in `templates/` and `references/` to match
+
 ## [3.1.0] - 2026-02-15
 
 ### Added

@@ -226,7 +226,7 @@ Based on analysis, identify:
 Use template:
 
 ```bash
-Read ${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/templates/${SDD_LANG}/refactor-plan-section.md
+Read ${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/templates/${SDD_LANG}/refactor_plan_section.md
 ```
 
 Fill in the template with:
@@ -256,7 +256,7 @@ Edit {design_path}
 
 Append the "## Refactoring Plan" section at the end of the document.
 
-See `references/design-doc-integration.md` for guidelines on integration.
+See `references/design_doc_integration.md` for guidelines on integration.
 
 ---
 
@@ -275,7 +275,7 @@ Analyze implementation files and extract:
 Use template:
 
 ```bash
-Read ${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/templates/${SDD_LANG}/reverse-spec-template.md
+Read ${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/templates/${SDD_LANG}/reverse_spec_template.md
 ```
 
 **Step 3B.2: Write Specification Document**
@@ -309,7 +309,7 @@ Analyze implementation files and extract:
 Use template:
 
 ```bash
-Read ${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/templates/${SDD_LANG}/reverse-design-template.md
+Read ${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/templates/${SDD_LANG}/reverse_design_template.md
 ```
 
 **Step 3B.4: Write Design Document**
@@ -474,11 +474,11 @@ If context includes conflicting goals (e.g., "maximize performance and minimize 
 
 - Refactoring plans are integrated into existing design documents, not separate files
 - This maintains traceability and keeps all design information in one place
-- See `references/design-doc-integration.md` for detailed integration guidelines
+- See `references/design_doc_integration.md` for detailed integration guidelines
 
 ### Refactoring Patterns
 
-- See `references/refactor-patterns.md` for common refactoring patterns
+- See `references/refactor_patterns.md` for common refactoring patterns
 - Includes: Extract Interface, Extract Class, Dependency Injection, Strategy Pattern, Strangler Fig Pattern, etc.
 
 ### File Naming Conventions
@@ -535,8 +535,8 @@ Both flat and hierarchical structures are supported:
 
 ### Examples
 
-- See `examples/case-a-existing-docs.md` for Case A example
-- See `examples/case-b-no-docs.md` for Case B example
+- See `examples/case_a_existing_docs.md` for Case A example
+- See `examples/case_b_no_docs.md` for Case B example
 
 ### Multi-Feature Refactoring
 
@@ -546,7 +546,7 @@ When refactoring affects multiple features:
 2. Add cross-references between affected features
 3. Or create a parent feature to centralize the plan
 
-See `references/design-doc-integration.md` for guidance.
+See `references/design_doc_integration.md` for guidance.
 
 ### Post-Refactoring Cleanup
 

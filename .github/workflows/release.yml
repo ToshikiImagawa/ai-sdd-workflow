@@ -1,0 +1,111 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    needs: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Check version consistency
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          ERRORS=()
+
+          # 1. marketplace.json metadata.version
+          MARKET_VER=$(jq -r '.metadata.version' .claude-plugin/marketplace.json)
+          if [ "$MARKET_VER" != "$VERSION" ]; then
+            ERRORS+=("marketplace.json metadata.version: expected $VERSION, got $MARKET_VER")
+          fi
+
+          # 2. marketplace.json plugins[].version (all entries)
+          PLUGIN_VERS=$(jq -r '.plugins[].version' .claude-plugin/marketplace.json)
+          INDEX=0
+          while IFS= read -r ver; do
+            if [ "$ver" != "$VERSION" ]; then
+              ERRORS+=("marketplace.json plugins[$INDEX].version: expected $VERSION, got $ver")
+            fi
+            INDEX=$((INDEX + 1))
+          done <<< "$PLUGIN_VERS"
+
+          # 3. sdd-workflow plugin.json
+          SDD_VER=$(jq -r '.version' plugins/sdd-workflow/.claude-plugin/plugin.json)
+          if [ "$SDD_VER" != "$VERSION" ]; then
+            ERRORS+=("sdd-workflow plugin.json version: expected $VERSION, got $SDD_VER")
+          fi
+
+          # 4. sdd-workflow-ja plugin.json
+          JA_VER=$(jq -r '.version' plugins/sdd-workflow-ja/.claude-plugin/plugin.json)
+          if [ "$JA_VER" != "$VERSION" ]; then
+            ERRORS+=("sdd-workflow-ja plugin.json version: expected $VERSION, got $JA_VER")
+          fi
+
+          if [ ${#ERRORS[@]} -gt 0 ]; then
+            echo "::error::Version mismatch detected between tag v$VERSION and manifest files:"
+            for err in "${ERRORS[@]}"; do
+              echo "  - $err"
+            done
+            exit 1
+          fi
+
+          echo "All version checks passed: $VERSION"
+
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          CHANGELOG="plugins/sdd-workflow/CHANGELOG.md"
+
+          NOTES=$(awk -v ver="$VERSION" '
+            /^## \[/ {
+              if (found) exit
+              if ($0 ~ "\\[" ver "\\]") found=1
+              next
+            }
+            found { print }
+          ' "$CHANGELOG")
+
+          if [ -z "$NOTES" ]; then
+            echo "::error::No CHANGELOG entry found for version $VERSION in $CHANGELOG"
+            exit 1
+          fi
+
+          {
+            echo "notes<<RELEASE_NOTES_EOF"
+            echo "$NOTES"
+            echo "RELEASE_NOTES_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Determine prerelease
+        id: prerelease
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if [[ "$VERSION" == *-* ]]; then
+            echo "flag=--prerelease" >> "$GITHUB_OUTPUT"
+          else
+            echo "flag=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes "${{ steps.notes.outputs.notes }}" \
+            ${{ steps.prerelease.outputs.flag }}

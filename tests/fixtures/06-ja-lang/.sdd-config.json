@@ -1,0 +1,9 @@
+{
+  "root": ".sdd",
+  "lang": "ja",
+  "directories": {
+    "requirement": "requirement",
+    "specification": "specification",
+    "task": "task"
+  }
+}
