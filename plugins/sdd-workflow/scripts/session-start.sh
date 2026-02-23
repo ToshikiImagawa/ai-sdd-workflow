@@ -143,7 +143,7 @@ if [ ! -d "$SDD_DIR" ]; then
 fi
 
 # Copy AI-SDD-PRINCIPLES.source.md to .sdd/AI-SDD-PRINCIPLES.md (always overwrite)
-if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
+if [ -f "$SOURCE_PRINCIPLES" ]; then
     # Get plugin version from plugin.json
     PLUGIN_JSON="${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json"
     PLUGIN_VERSION=""
@@ -173,12 +173,7 @@ if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
         echo "[AI-SDD] AI-SDD-PRINCIPLES.md copied (version unknown)."
     fi
 else
-    # Log the reason for skipping
-    if [ -z "$CLAUDE_PLUGIN_ROOT" ]; then
-        echo "[AI-SDD] CLAUDE_PLUGIN_ROOT not set. Skipping AI-SDD-PRINCIPLES.md auto-sync." >&2
-    elif [ ! -f "$SOURCE_PRINCIPLES" ]; then
-        echo "[AI-SDD] Source file not found: $SOURCE_PRINCIPLES. Skipping auto-sync." >&2
-    fi
+    echo "[AI-SDD] Source file not found: $SOURCE_PRINCIPLES. Skipping auto-sync." >&2
 fi
 
 # Environment variable output
