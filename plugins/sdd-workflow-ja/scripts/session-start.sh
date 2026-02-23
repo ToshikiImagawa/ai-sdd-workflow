@@ -3,6 +3,12 @@
 # SessionStart hook script
 # Loads .sdd-config.json at session start (generates if not exists) and initializes environment variables
 
+# Guard: CLAUDE_PLUGIN_ROOT must be set
+if [ -z "$CLAUDE_PLUGIN_ROOT" ]; then
+    echo "[AI-SDD] Error: CLAUDE_PLUGIN_ROOT is not set. Aborting session-start." >&2
+    exit 1
+fi
+
 # Get project root
 if [ -n "$CLAUDE_PROJECT_DIR" ]; then
     PROJECT_ROOT="$CLAUDE_PROJECT_DIR"
@@ -63,17 +69,17 @@ if [ ! -f "$CONFIG_FILE" ]; then
   }
 }
 EOF
-        echo "[AI-SDD マイグレーション] レガシーディレクトリ構造を検出しました。" >&2
-        echo "" >&2
-        echo "検出されたレガシー構造:" >&2
-        [ -n "$LEGACY_DOCS_ROOT" ] && echo "  - ルートディレクトリ: .docs" >&2
-        [ -n "$LEGACY_REQUIREMENT" ] && echo "  - 要件定義: requirement-diagram" >&2
-        [ -n "$LEGACY_TASK" ] && echo "  - タスクログ: review" >&2
-        echo "" >&2
-        echo "レガシー構造に基づいて .sdd-config.json を自動生成しました。" >&2
-        echo "新しい構造にマイグレーションするには、以下を実行してください:" >&2
-        echo "  /sdd-migrate - 新しい構造へマイグレーション" >&2
-        echo "" >&2
+        echo "[AI-SDD マイグレーション] レガシーディレクトリ構造を検出しました。"
+        echo ""
+        echo "検出されたレガシー構造:"
+        [ -n "$LEGACY_DOCS_ROOT" ] && echo "  - ルートディレクトリ: .docs"
+        [ -n "$LEGACY_REQUIREMENT" ] && echo "  - 要件定義: requirement-diagram"
+        [ -n "$LEGACY_TASK" ] && echo "  - タスクログ: review"
+        echo ""
+        echo "レガシー構造に基づいて .sdd-config.json を自動生成しました。"
+        echo "新しい構造にマイグレーションするには、以下を実行してください:"
+        echo "  /sdd-migrate - 新しい構造へマイグレーション"
+        echo ""
     else
         # No legacy structure detected and no .sdd-config.json exists, auto-generate default config
         cat > "$CONFIG_FILE" << 'EOF'
@@ -87,13 +93,13 @@ EOF
   }
 }
 EOF
-        echo "[AI-SDD] .sdd-config.json を自動生成しました。" >&2
+        echo "[AI-SDD] .sdd-config.json を自動生成しました。"
     fi
 fi
 
 # Load configuration if file exists
 if [ -f "$CONFIG_FILE" ]; then
-    if command -v jq &> /dev/null; then
+    if command -v jq >/dev/null 2>&1; then
         # jq is available
         CONFIGURED_DOCS_ROOT=$(jq -r '.root // empty' "$CONFIG_FILE" 2>/dev/null)
         CONFIGURED_REQUIREMENT=$(jq -r '.directories.requirement // empty' "$CONFIG_FILE" 2>/dev/null)
@@ -133,7 +139,7 @@ TARGET_PRINCIPLES="${SDD_DIR}/AI-SDD-PRINCIPLES.md"
 # Create .sdd/ directory if it doesn't exist
 if [ ! -d "$SDD_DIR" ]; then
     mkdir -p "$SDD_DIR"
-    echo "[AI-SDD] ${DOCS_ROOT}/ directory created." >&2
+    echo "[AI-SDD] ${DOCS_ROOT}/ directory created."
 fi
 
 # Copy AI-SDD-PRINCIPLES.source.md to .sdd/AI-SDD-PRINCIPLES.md (always overwrite)
@@ -143,7 +149,7 @@ if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
     PLUGIN_VERSION=""
 
     if [ -f "$PLUGIN_JSON" ]; then
-        if command -v jq &> /dev/null; then
+        if command -v jq >/dev/null 2>&1; then
             PLUGIN_VERSION=$(jq -r '.version // empty' "$PLUGIN_JSON" 2>/dev/null)
         else
             PLUGIN_VERSION=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLUGIN_JSON" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
@@ -155,7 +161,7 @@ if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
     if [ -n "$PLUGIN_VERSION" ]; then
         if sed "s|^version:.*$|version: \"${PLUGIN_VERSION}\"|" "$SOURCE_PRINCIPLES" > "$TEMP_FILE" 2>/dev/null && [ -f "$TEMP_FILE" ]; then
             mv "$TEMP_FILE" "$TARGET_PRINCIPLES"
-            echo "[AI-SDD] AI-SDD-PRINCIPLES.md updated to v${PLUGIN_VERSION}." >&2
+            echo "[AI-SDD] AI-SDD-PRINCIPLES.md updated to v${PLUGIN_VERSION}."
         else
             # Fallback if sed fails
             rm -f "$TEMP_FILE"
@@ -164,7 +170,7 @@ if [ -n "$CLAUDE_PLUGIN_ROOT" ] && [ -f "$SOURCE_PRINCIPLES" ]; then
         fi
     else
         cp "$SOURCE_PRINCIPLES" "$TARGET_PRINCIPLES"
-        echo "[AI-SDD] AI-SDD-PRINCIPLES.md copied (version unknown)." >&2
+        echo "[AI-SDD] AI-SDD-PRINCIPLES.md copied (version unknown)."
     fi
 else
     # Log the reason for skipping
