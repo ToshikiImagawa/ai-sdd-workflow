@@ -75,7 +75,7 @@ run_fixture() {
         cp "${REPO_ROOT}/plugins/sdd-workflow/.claude-plugin/plugin.json" "${mock_plugin}/.claude-plugin/plugin.json"
     fi
     # Create minimal AI-SDD-PRINCIPLES.source.md
-    printf -- "---\nversion: \"0.0.0\"\n---\n# Test\n" > "${mock_plugin}/AI-SDD-PRINCIPLES.source.md"
+    printf '%s\n' "---" "version: \"0.0.0\"" "---" "# Test" > "${mock_plugin}/AI-SDD-PRINCIPLES.source.md"
 
     # Create CLAUDE.md to suppress version warning
     printf '%s\n' "## AI-SDD Instructions (v99.99.99)" > "${mock_project}/CLAUDE.md"
