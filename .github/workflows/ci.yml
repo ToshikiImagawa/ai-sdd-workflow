@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate marketplace & plugin structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run validate-marketplace.sh
+        run: bash scripts/validate-marketplace.sh
+
+  shellcheck:
+    name: ShellCheck (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ShellCheck (macOS)
+        if: runner.os == 'macOS'
+        run: brew install shellcheck
+      - name: Run ShellCheck on all .sh files
+        run: |
+          find . -name "*.sh" -type f -print0 | xargs -0 shellcheck -S warning -e SC1091
+
+  plugin-lint:
+    name: Plugin lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run plugin-lint.sh
+        run: bash scripts/plugin-lint.sh
+
+  test:
+    name: Test session-start.sh (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run session-start regression tests
+        run: bash scripts/test-session-start.sh

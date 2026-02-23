@@ -1,0 +1,8 @@
+export SDD_LANG="ja"
+export SDD_REQUIREMENT_DIR="requirement"
+export SDD_REQUIREMENT_PATH=".sdd/requirement"
+export SDD_ROOT=".sdd"
+export SDD_SPECIFICATION_DIR="specification"
+export SDD_SPECIFICATION_PATH=".sdd/specification"
+export SDD_TASK_DIR="task"
+export SDD_TASK_PATH=".sdd/task"
