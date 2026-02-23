@@ -66,30 +66,23 @@ jobs:
           echo "All version checks passed: $VERSION"
 
       - name: Extract release notes from CHANGELOG
-        id: notes
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           CHANGELOG="plugins/sdd-workflow/CHANGELOG.md"
 
-          NOTES=$(awk -v ver="$VERSION" '
+          awk -v ver="$VERSION" '
             /^## \[/ {
               if (found) exit
               if ($0 ~ "\\[" ver "\\]") found=1
               next
             }
             found { print }
-          ' "$CHANGELOG")
+          ' "$CHANGELOG" > /tmp/release-notes.md
 
-          if [ -z "$NOTES" ]; then
+          if [ ! -s /tmp/release-notes.md ]; then
             echo "::error::No CHANGELOG entry found for version $VERSION in $CHANGELOG"
             exit 1
           fi
-
-          {
-            echo "notes<<RELEASE_NOTES_EOF"
-            echo "$NOTES"
-            echo "RELEASE_NOTES_EOF"
-          } >> "$GITHUB_OUTPUT"
 
       - name: Determine prerelease
         id: prerelease
@@ -107,5 +100,5 @@ jobs:
         run: |
           gh release create "$GITHUB_REF_NAME" \
             --title "$GITHUB_REF_NAME" \
-            --notes "${{ steps.notes.outputs.notes }}" \
+            --notes-file /tmp/release-notes.md \
             ${{ steps.prerelease.outputs.flag }}
