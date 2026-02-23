@@ -38,20 +38,22 @@ else
     NC=''
 fi
 
+# Note: Counter updates via temp files are not atomic, but safe because
+# callers (pipe subshells) run sequentially within each pipeline.
 log_warn() {
-    printf "${YELLOW}WARN${NC} %s\n" "$1"
+    printf '%sWARN%s %s\n' "$YELLOW" "$NC" "$1"
     count=$(cat "$WARN_FILE")
     printf '%d' "$((count + 1))" > "$WARN_FILE"
 }
 
 log_error() {
-    printf "${RED}ERROR${NC} %s\n" "$1"
+    printf '%sERROR%s %s\n' "$RED" "$NC" "$1"
     count=$(cat "$ERROR_FILE")
     printf '%d' "$((count + 1))" > "$ERROR_FILE"
 }
 
 log_ok() {
-    printf "${GREEN}OK${NC} %s\n" "$1"
+    printf '%sOK%s %s\n' "$GREEN" "$NC" "$1"
 }
 
 # ============================================================

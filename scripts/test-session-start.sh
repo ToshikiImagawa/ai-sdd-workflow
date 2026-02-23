@@ -29,12 +29,22 @@ else
 fi
 
 log_pass() {
-    printf "${GREEN}PASS${NC} %s\n" "$1"
+    printf '%sPASS%s %s\n' "$GREEN" "$NC" "$1"
 }
 
 log_fail() {
-    printf "${RED}FAIL${NC} %s\n" "$1"
+    printf '%sFAIL%s %s\n' "$RED" "$NC" "$1"
 }
+
+# Track last temp dir for trap cleanup on unexpected exit
+LAST_TMP_DIR=""
+# shellcheck disable=SC2329
+cleanup_on_exit() {
+    if [ -n "$LAST_TMP_DIR" ] && [ -d "$LAST_TMP_DIR" ]; then
+        rm -rf "$LAST_TMP_DIR"
+    fi
+}
+trap cleanup_on_exit EXIT
 
 # Run a single test fixture
 run_fixture() {
@@ -49,8 +59,9 @@ run_fixture() {
         return
     fi
 
-    # Create isolated temp directory
+    # Create isolated temp directory (tracked for trap cleanup)
     tmp_dir="$(mktemp -d)"
+    LAST_TMP_DIR="$tmp_dir"
 
     # Create mock PROJECT_ROOT
     mock_project="${tmp_dir}/project"
@@ -84,10 +95,15 @@ run_fixture() {
     touch "$env_file"
 
     # Run session-start.sh in subprocess with mocked environment
+    exit_code=0
     CLAUDE_PLUGIN_ROOT="$mock_plugin" \
         CLAUDE_PROJECT_DIR="$mock_project" \
         CLAUDE_ENV_FILE="$env_file" \
-        bash "$SESSION_START" > /dev/null 2>&1 || true
+        bash "$SESSION_START" > /dev/null 2>&1 || exit_code=$?
+
+    if [ "$exit_code" -ne 0 ]; then
+        printf "  session-start.sh exited with code %d\n" "$exit_code" >&2
+    fi
 
     # Extract and sort SDD_* export lines from env file
     actual_file="${tmp_dir}/actual_env.txt"
@@ -114,6 +130,7 @@ run_fixture() {
 
     # Cleanup
     rm -rf "$tmp_dir"
+    LAST_TMP_DIR=""
 }
 
 # Main
