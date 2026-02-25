@@ -1,13 +1,19 @@
+---
+id: "task-{feature-name}"
+title: "{Feature Name}"
+type: "task"
+status: "pending"
+sdd-phase: "tasks"
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+depends-on: []
+ticket: ""
+tags: []
+category: ""
+priority: "medium"
+---
+
 # {Feature Name} Task Breakdown
-
-## Metadata
-
-| Item          | Content                                  |
-|:--------------|:-----------------------------------------|
-| Feature Name  | {Feature Name}                           |
-| Ticket Number | {Ticket Number} (if specified)           |
-| Design Doc    | `.sdd/specification/{feature}_design.md` |
-| Created Date  | YYYY-MM-DD                               |
 
 ## Task List
 

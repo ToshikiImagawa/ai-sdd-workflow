@@ -53,6 +53,38 @@ $ARGUMENTS
 /plan-refactor payment-service "Strangler Figパターンで段階的にマイクロサービス化" --scope=src/services
 ```
 
+## Front Matter Generation Rules
+
+When generating reverse-engineered spec/design documents (Case B), include YAML front matter.
+When updating existing design documents (Case A), preserve existing front matter and update relevant fields.
+
+See `references/front_matter_spec_design.md` for full schema definition, dependency direction rules, and validation checklist.
+
+### Case B: Reverse-Engineered Spec Rules
+
+| Field | Rule |
+|:------|:-----|
+| `status` | `"review"` (reverse-engineered documents require review) |
+| `depends-on` | PRD ID if PRD exists (e.g., `["prd-auth"]`). Empty if no PRD |
+| `tags` | Always include `"reverse-engineered"`, plus keywords from code analysis |
+
+### Case B: Reverse-Engineered Design Doc Rules
+
+| Field | Rule |
+|:------|:-----|
+| `status` | `"review"` (reverse-engineered documents require review) |
+| `impl-status` | `"implemented"` (already implemented since reverse-engineered) |
+| `depends-on` | Spec ID (e.g., `["spec-auth"]`) |
+| `tags` | Always include `"reverse-engineered"`, plus keywords from code analysis |
+
+### Case A: Updating Existing Front Matter
+
+When adding a refactoring plan to an existing design doc:
+
+1. Preserve all existing front matter fields
+2. Update `updated` to current date
+3. Add `"refactoring-planned"` to `tags` if not present
+
 ## Processing Flow
 
 ### Phase 1: Pre-flight Checks

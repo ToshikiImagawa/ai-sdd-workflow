@@ -1,3 +1,18 @@
+---
+id: "spec-{feature-name}"
+title: "{機能名}"
+type: "spec"
+status: "draft"
+sdd-phase: "specify"
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+depends-on: []
+tags: []
+category: ""
+priority: "medium"
+risk: "medium"
+---
+
 # 抽象仕様書テンプレート
 
 このドキュメントは `.sdd/specification/` 配下の抽象仕様書を作成する際のテンプレートです。
@@ -18,9 +33,6 @@
 
 # {機能名} `<MUST>`
 
-**ドキュメント種別:** 抽象仕様書 (Spec)
-**SDDフェーズ:** Specify (仕様化)
-**最終更新日:** YYYY-MM-DD
 **関連 Design Doc:** [xxx_design.md へのリンク]
 **関連 PRD:** [requirement/{機能名}.md へのリンク]
 

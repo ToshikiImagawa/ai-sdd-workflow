@@ -91,7 +91,28 @@ Create a constitution file in the project:
     - Read `templates/${SDD_LANG:-en}/constitution_template.md`
     - **If context argument is provided**: Use it as the project context
     - **If no context argument**: Interactively ask the user about the project context (language, framework, domain)
-    - Generate a customized constitution based on context
+    - Use the loaded template as the base document and customize it by replacing placeholders based on the project
+      context
+
+#### Template Application Notes
+
+- Replace placeholders (`{Principle Name}`, `{Description of the principle}`, `{Applicable scope}`, `{Validation item}`,
+  `YYYY-MM-DD`, etc.) with project-specific content
+- Pre-filled principle examples (A-001: Library-First, A-002: Clean Architecture, D-001: Test-First, D-002:
+  Specification-Driven) should be kept, adjusted, or replaced based on project context
+- Placeholder-only sections (B-001, B-002, T-001, T-003) must be filled with project-specific principles or removed if
+  not applicable
+- Maintain the template's overall structure (headings, tables, sections)
+
+#### Language Consistency
+
+> **CRITICAL**: The output language MUST match the template language.
+> Do NOT mix languages regardless of the user's global language settings.
+
+- `SDD_LANG=en` (or unset) → All content in English (use `templates/en/`)
+- `SDD_LANG=ja` → All content in Japanese (use `templates/ja/`)
+- The template language is the authoritative source for the output language — never override it with user preferences or
+  global CLAUDE.md settings
 
 **Content**: Template customized for the project
 
@@ -305,6 +326,13 @@ Constraints), principle hierarchy, verification items, and change history, see:
 ## Output
 
 Depending on sub command, use the `templates/${SDD_LANG:-en}/constitution_output.md` template for output formatting.
+
+## Quality Checks
+
+- [ ] Language consistent (matches template language, not user's global settings)
+- [ ] Template structure maintained (headings, tables, sections preserved)
+- [ ] All placeholders replaced with project-specific content
+- [ ] Dates replaced (`YYYY-MM-DD` → actual date)
 
 ## Constitution and Other Documents
 

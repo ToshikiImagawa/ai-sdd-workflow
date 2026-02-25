@@ -1,17 +1,19 @@
+---
+id: "impl-{feature-name}"
+title: "{機能名}"
+type: "implementation-log"
+status: "in-progress"
+sdd-phase: "implement"
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+completed: ""
+depends-on: []
+ticket: ""
+implementer: ""
+tags: []
+---
+
 # 実装ログ: {機能名}
-
-## メタ情報
-
-| 項目     | 内容                                             |
-|:-------|:-----------------------------------------------|
-| 機能名    | {機能名}                                          |
-| チケット番号 | {チケット番号}                                       |
-| 対象設計書  | `.sdd/specification/[{path}/]{name}_design.md` |
-| 実装開始日  | YYYY-MM-DD                                     |
-| 実装完了日  | YYYY-MM-DD                                     |
-| 実装者    | {実装者名}                                         |
-
-※ 階層構造の場合、親機能は `index_design.md`
 
 ## 概要
 

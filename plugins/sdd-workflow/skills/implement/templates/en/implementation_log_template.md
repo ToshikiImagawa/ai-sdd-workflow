@@ -1,17 +1,19 @@
+---
+id: "impl-{feature-name}"
+title: "{Feature Name}"
+type: "implementation-log"
+status: "in-progress"
+sdd-phase: "implement"
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+completed: ""
+depends-on: []
+ticket: ""
+implementer: ""
+tags: []
+---
+
 # Implementation Log: {Feature Name}
-
-## Metadata
-
-| Item                    | Content                                        |
-|:------------------------|:-----------------------------------------------|
-| Feature Name            | {Feature Name}                                 |
-| Ticket Number           | {Ticket Number}                                |
-| Target Design Document  | `.sdd/specification/[{path}/]{name}_design.md` |
-| Implementation Started  | YYYY-MM-DD                                     |
-| Implementation Completed| YYYY-MM-DD                                     |
-| Implementer             | {Implementer Name}                             |
-
-※ For hierarchical structure, parent features use `index_design.md`
 
 ## Overview
 

@@ -13,7 +13,8 @@
 1. **設定確認**: `.sdd-config.json` でディレクトリパスと言語設定を確認
 2. **原則作成**: `/constitution init` を実行してカスタマイズされた CONSTITUTION.md を生成
 3. **テンプレートのカスタマイズ**: `.sdd/` 内のテンプレートを確認し、必要に応じてカスタマイズ
-4. **開発開始**:
+4. **Front Matter追加**: `/recommend-front-matter` を実行して既存ドキュメントにYAMLフロントマターを追加（構造化検索、依存関係追跡、相互参照検証が可能に）
+5. **開発開始**:
    - `/generate-prd` で最初のPRDを作成
    - `/generate-spec` でPRDから仕様書を作成
    - `/constitution validate` で原則準拠を検証

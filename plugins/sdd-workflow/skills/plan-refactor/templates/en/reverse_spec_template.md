@@ -1,3 +1,18 @@
+---
+id: "spec-{feature-name}"
+title: "{FEATURE_NAME}"
+type: "spec"
+status: "review"
+sdd-phase: "specify"
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+depends-on: []
+tags: ["reverse-engineered"]
+category: ""
+priority: "medium"
+risk: "medium"
+---
+
 # {FEATURE_NAME} - Specification (Reverse Engineered)
 
 > **⚠️ Note**: This specification was reverse-engineered from existing implementation on {DATE}.

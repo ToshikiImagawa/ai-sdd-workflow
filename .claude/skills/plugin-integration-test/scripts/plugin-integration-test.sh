@@ -115,6 +115,7 @@ run_test() {
     # echo による環境変数確認はサンドボックス制限で動作しない。
     # 代わりに、フックが生成するファイル（.sdd-config.json, .sdd/ ディレクトリ）を直接検証する。
     cd "$test_dir"
+    unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
     echo "session-start フックが実行されました。このメッセージが表示されれば正常です。" | claude --plugin-dir "$plugin_dir" --print > "$log_dir/session-start.log" 2>&1 || true
 
     echo "ログ保存: $log_dir/session-start.log"
@@ -205,6 +206,7 @@ run_sdd_init_test() {
 
     echo "--- /sdd-init --ci 実行 ---"
     cd "$test_dir"
+    unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
     echo "/sdd-init --ci" | claude --plugin-dir "$plugin_dir" --print > "$log_dir/sdd-init.log" 2>&1 || true
 
     echo "ログ保存: $log_dir/sdd-init.log"
@@ -253,6 +255,7 @@ run_gen_skills_test() {
     # /constitution init テスト
     echo "--- /constitution init テスト ---"
     cd "$test_dir"
+    unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
     local start_time
     start_time=$(date +%s)
     echo '/constitution init A sample CLI tool project using TypeScript.' | claude --plugin-dir "$plugin_dir" --print > "$log_dir/constitution-init.log" 2>&1 || true

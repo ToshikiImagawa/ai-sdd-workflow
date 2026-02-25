@@ -48,6 +48,24 @@ $ARGUMENTS
 /task-breakdown task-management TICKET-123
 ```
 
+## Front Matter Generation Rules
+
+Generated task breakdown files must include YAML front matter at the top of the file.
+
+See `references/front_matter_task.md` for full schema definition, dependency direction rules, and validation checklist.
+
+### Task-Specific Field Rules
+
+| Field | Rule |
+|:------|:-----|
+| `id` | `"task-{feature-name}"`. For hierarchical: `"task-{parent}-{feature-name}"` |
+| `status` | `"pending"` for new task breakdowns |
+| `depends-on` | Design doc ID (e.g., `["design-user-auth"]`) |
+| `ticket` | Ticket number from input argument (if provided) |
+| `tags` | Inherit from design doc |
+| `category` | Inherit from design doc |
+| `priority` | Inherit from design doc |
+
 ## Processing Flow
 
 ### 1. Load Related Documents

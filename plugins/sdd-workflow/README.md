@@ -111,20 +111,20 @@ This command automatically:
 
 ### Skills (User-Invocable)
 
-| Skill             | Description                                                                                                  |
-|:------------------|:-------------------------------------------------------------------------------------------------------------|
-| `/sdd-init`       | AI-SDD workflow initialization. CLAUDE.md setup and template generation                                      |
-| `/sdd-migrate`    | Migration from legacy version (v1.x/v2.x). Migrate to new structure or generate compatibility config         |
-| `/generate-spec`  | Generates an abstract specification and technical design document from input                                 |
-| `/generate-prd`   | Generates a PRD (Requirements Specification) in SysML requirements diagram format from business requirements |
-| `/check-spec`     | Checks consistency between implementation code and specifications, detecting discrepancies                   |
-| `/task-cleanup`   | Cleans up the task/ directory after implementation, integrating design decisions                             |
-| `/task-breakdown` | Breaks down tasks from the technical design document into a list of small tasks                              |
-| `/clarify`        | Scans specs across 9 categories, generates questions to clarify ambiguity                                    |
-| `/implement`      | TDD-based 5-phase implementation. Tracks progress with TaskList and auto-marks in tasks.md                   |
-| `/checklist`      | Auto-generates 9-category quality checklists from specs and design docs                                      |
-| `/run-checklist`  | Automatically verifies checklist items by running tests, linters, and security scans                         |
-| `/constitution`   | Defines and manages non-negotiable project principles (constitution)                                         |
+| Skill                     | Description                                                                                                  |
+|:--------------------------|:-------------------------------------------------------------------------------------------------------------|
+| `/sdd-init`               | AI-SDD workflow initialization. CLAUDE.md setup and template generation                                      |
+| `/generate-spec`          | Generates an abstract specification and technical design document from input                                 |
+| `/generate-prd`           | Generates a PRD (Requirements Specification) in SysML requirements diagram format from business requirements |
+| `/check-spec`             | Checks consistency between implementation code and specifications, detecting discrepancies                   |
+| `/task-cleanup`           | Cleans up the task/ directory after implementation, integrating design decisions                             |
+| `/task-breakdown`         | Breaks down tasks from the technical design document into a list of small tasks                              |
+| `/clarify`                | Scans specs across 9 categories, generates questions to clarify ambiguity                                    |
+| `/implement`              | TDD-based 5-phase implementation. Tracks progress with TaskList and auto-marks in tasks.md                   |
+| `/checklist`              | Auto-generates 9-category quality checklists from specs and design docs                                      |
+| `/run-checklist`          | Automatically verifies checklist items by running tests, linters, and security scans                         |
+| `/constitution`           | Defines and manages non-negotiable project principles (constitution)                                         |
+| `/recommend-front-matter` | Scans existing AI-SDD documents and recommends adding YAML front matter for structured metadata              |
 
 ### Skills (Automatic)
 

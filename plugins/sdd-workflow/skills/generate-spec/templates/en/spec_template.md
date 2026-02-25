@@ -1,3 +1,18 @@
+---
+id: "spec-{feature-name}"
+title: "{Feature Name}"
+type: "spec"
+status: "draft"
+sdd-phase: "specify"
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+depends-on: []
+tags: []
+category: ""
+priority: "medium"
+risk: "medium"
+---
+
 # Abstract Specification Template
 
 This document is a template for creating abstract specifications under `.sdd/specification/`.
@@ -18,9 +33,6 @@ The filename should be `{feature-name}_spec.md`.
 
 # {Feature Name} `<MUST>`
 
-**Document Type:** Abstract Specification (Spec)
-**SDD Phase:** Specify
-**Last Updated:** YYYY-MM-DD
 **Related Design Doc:** [link to xxx_design.md]
 **Related PRD:** [link to requirement/{feature-name}.md]
 

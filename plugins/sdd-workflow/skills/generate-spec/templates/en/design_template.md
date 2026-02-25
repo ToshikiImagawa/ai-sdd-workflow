@@ -1,3 +1,19 @@
+---
+id: "design-{feature-name}"
+title: "{Feature Name}"
+type: "design"
+status: "draft"
+sdd-phase: "plan"
+impl-status: "not-implemented"
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+depends-on: []
+tags: []
+category: ""
+priority: "medium"
+risk: "medium"
+---
+
 # Technical Design Document Template (Design Doc)
 
 This document is a template for creating Technical Design Documents under `.sdd/specification/`.
@@ -18,9 +34,6 @@ The filename should be `{feature-name}_design.md`.
 
 # {Feature Name} `<MUST>`
 
-**Document Type:** Technical Design Document (Design Doc)
-**SDD Phase:** Plan (Design)
-**Last Updated:** YYYY-MM-DD
 **Related Spec:** [link to xxx_spec.md]
 **Related PRD:** [link to requirement/{feature-name}.md]
 

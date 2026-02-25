@@ -1,3 +1,18 @@
+---
+id: "spec-{feature-name}"
+title: "{FEATURE_NAME}"
+type: "spec"
+status: "review"
+sdd-phase: "specify"
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+depends-on: []
+tags: ["reverse-engineered"]
+category: ""
+priority: "medium"
+risk: "medium"
+---
+
 # {FEATURE_NAME} - 仕様書（既存実装からの逆生成）
 
 > **⚠️ 注意**: この仕様書は{DATE}時点の既存実装から逆生成されたものです。

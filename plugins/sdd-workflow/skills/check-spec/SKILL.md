@@ -151,6 +151,13 @@ Search for code corresponding to specification contents:
 (PRD <-> spec, spec <-> design) and **quality review** (CONSTITUTION.md compliance, completeness, clarity) are handled by
 the `spec-reviewer` agent when using the `--full` option.
 
+#### Front Matter Consistency
+
+If documents contain YAML front matter, call the `front-matter-reviewer` agent to validate.
+Pass all target document paths (design docs and corresponding specs).
+
+After results are returned, integrate `impl-status` findings into the design ↔ implementation consistency results.
+
 #### design <-> Implementation Consistency
 
 | Check Target                | Verification Content                               | Importance |
