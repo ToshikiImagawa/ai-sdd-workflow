@@ -1,11 +1,11 @@
 ---
 name: generate-prd
-description: "Generates PRD by orchestrating sub-skills for use case diagrams, requirements analysis, and SysML diagrams. Use when user mentions PRD, product requirements, feature definition, requirement specification, or starting AI-SDD workflow."
-argument-hint: "<requirements-description>"
-version: 3.0.1
+description: "Generates complete PRD document from business requirements. Creates use case diagrams, requirements analysis (UR/FR/NFR), SysML diagrams, and complete PRD file. Use when user mentions PRD, product requirements, feature definition, requirement specification, or starting AI-SDD workflow."
+argument-hint: "<requirements-description> [--ci]"
+version: 3.1.0
 license: MIT
 user-invocable: true
-allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash, Skill
+allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash
 ---
 
 # Generate PRD
@@ -53,90 +53,193 @@ Copy to track progress:
 
 ```
 PRD Generation:
-- [ ] 1. Analyze input, extract feature-name
-- [ ] 2. Check existing documents
-- [ ] 3. Execute /generate-usecase-diagram → save as usecase_output
-- [ ] 4. Execute /analyze-requirements with usecase_output → save as analysis_output
-- [ ] 5. Execute /generate-requirements-diagram with analysis_output → save as diagram_output
-- [ ] 6. Execute /finalize-prd with all outputs → save as complete_prd_text
-- [ ] 7. Validate (Quality Checks)
-- [ ] 8. Save complete_prd_text to file using Write tool
-- [ ] 9. prd-reviewer (Interactive only)
-- [ ] 10. front-matter-reviewer (Interactive only)
+- [ ] 1. Read prerequisites and templates
+- [ ] 2. Analyze input, extract feature-name
+- [ ] 3. Check existing PRD documents (confirm overwrite if needed)
+- [ ] 4. Generate Use Case Diagram (Mermaid flowchart)
+- [ ] 5. Analyze Requirements (extract UR/FR/NFR tables)
+- [ ] 6. Generate Requirements Diagram (SysML diagram)
+- [ ] 7. Integrate all sections into complete PRD
+- [ ] 8. Add YAML front matter
+- [ ] 9. Validate (Quality Checks)
+- [ ] 10. Save PRD file using Write tool
+- [ ] 11. prd-reviewer (Interactive only)
+- [ ] 12. front-matter-reviewer (Interactive only)
 ```
 
 ## Generation Flow
 
-### Common Steps
+**You MUST execute all of the following steps in order to generate a complete PRD file:**
 
-**You MUST execute all of the following steps in order:**
+### Step 1: Prerequisites
 
-1. **Analyze input** → Extract feature-name from requirements
-2. **Check existing documents** → Confirm overwriting if PRD exists at `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md`
-3. **Execute sub-skills sequentially** (do NOT stop after the first sub-skill):
+Read the following files before starting:
 
-    - **3a: `/generate-usecase-diagram`** → Input: requirements → Output: usecase_output (Use case diagram)
-    - **3b: `/analyze-requirements`** → Input: usecase_output → Output: analysis_output (UR/FR/NFR tables)
-    - **3c: `/generate-requirements-diagram`** → Input: analysis_output → Output: diagram_output (SysML diagram)
-    - **3d: `/finalize-prd`** → Input: all outputs (usecase_output, analysis_output, diagram_output) → Output: complete_prd_text (Complete PRD document)
+| File                                          | Purpose                                  |
+|:----------------------------------------------|:-----------------------------------------|
+| `references/prerequisites_directory_paths.md` | Resolve `${SDD_*}` environment variables |
+| `references/prerequisites_principles.md`      | Load AI-SDD principles                   |
+| `references/prerequisites_plugin_update.md`   | Check plugin version compatibility       |
+| `references/usecase_diagram_guide.md`         | Use case diagram notation                |
+| `references/mermaid_notation_rules.md`        | Mermaid syntax rules                     |
+| `references/requirements_diagram_components.md` | SysML requirements diagram components |
+| `references/front_matter_prd.md`              | PRD front matter schema                  |
 
-4. **Validate** → Run Quality Checks on complete_prd_text
-5. **Save PRD file** → **REQUIRED**: Use the `Write` tool to save complete_prd_text to `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md`
+**Load PRD template** (in order):
 
-**CRITICAL**: Steps 3a-3d-5 are mandatory. The PRD file MUST be saved to disk using the Write tool.
+1. `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/PRD_TEMPLATE.md` — Project-specific template
+2. `templates/${SDD_LANG:-en}/prd_template.md` — Fallback default
 
-### Mode Differences
+**Load if exists:**
 
-| Step             | Interactive       | CI (`--ci`)  |
-|:-----------------|:------------------|:-------------|
-| Vibe Coding risk | Confirm with user | Skip         |
-| Existing PRD     | Confirm overwrite | Auto-approve |
-| Sub-skill flags  | None              | `--ci`       |
-| **Save PRD**     | **Save**          | **Save**     |
-| prd-reviewer     | Run               | Skip         |
+- `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md` — For principle compliance check
 
-**Sub-skill execution:**
+### Step 2: Analyze Input
 
-Execute the following sub-skills **sequentially** in order. Each skill must complete before proceeding to the next:
+Extract the following from requirements description:
 
-1. **Step 3a: Generate Use Case Diagram**
-   - Interactive: Execute `Skill` tool with `/generate-usecase-diagram {requirements}`
-   - CI: Execute `Skill` tool with `/generate-usecase-diagram {requirements} --ci`
-   - Save the output as `usecase_output`
+- **Feature name**: Identifier used for filename (e.g., "task-management", "user-authentication")
+- **Actors**: Users, roles, or external systems interacting with the feature
+- **Use cases**: Main functions users want to perform
+- **Business context**: Why this feature is needed
 
-2. **Step 3b: Analyze Requirements**
-   - Interactive: Execute `Skill` tool with `/analyze-requirements {usecase_output}`
-   - CI: Execute `Skill` tool with `/analyze-requirements {usecase_output} --ci`
-   - Save the output as `analysis_output`
+> **CI Mode**: Skip Vibe Coding risk assessment. Make reasonable assumptions for ambiguous requirements.
+> **Interactive Mode**: If requirements are vague, ask clarifying questions using AskUserQuestion.
 
-3. **Step 3c: Generate Requirements Diagram**
-   - Interactive: Execute `Skill` tool with `/generate-requirements-diagram {analysis_output}`
-   - CI: Execute `Skill` tool with `/generate-requirements-diagram {analysis_output} --ci`
-   - Save the output as `diagram_output`
+### Step 3: Check Existing PRD
 
-4. **Step 3d: Finalize PRD**
-   - Interactive: Execute `Skill` tool with `/finalize-prd {usecase_output} {analysis_output} {diagram_output}`
-   - CI: Execute `Skill` tool with `/finalize-prd {usecase_output} {analysis_output} {diagram_output} --ci`
-   - Save the output as `complete_prd_text`
+Check if PRD already exists at `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md`
 
-5. **Save PRD File** (See Post-Generation Actions section below)
-   - Use the `Write` tool to save `complete_prd_text` to `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md`
+| Mode        | If PRD exists           | Action                       |
+|:------------|:------------------------|:-----------------------------|
+| Interactive | Ask user                | Confirm overwrite            |
+| CI (`--ci`) | Auto-approve            | Proceed with overwrite       |
 
-**IMPORTANT**: You MUST execute all 4 sub-skills (3a → 3b → 3c → 3d) and save the final PRD file. Do not stop after step 3a.
+### Step 4: Generate Use Case Diagram
 
-## Post-Generation Actions
+Generate a Mermaid flowchart representing actors, use cases, and system boundaries.
 
-### 1. Save PRD File (MANDATORY)
+**Requirements:**
+- Use `flowchart LR` format
+- Apply dark theme: `%%{init: {'theme': 'dark'}}%%`
+- Define actors with `((Actor))` notation
+- Define use cases within `subgraph` (system boundary)
+- Use consistent styling (see mermaid_notation_rules.md)
 
-**CRITICAL**: The `/finalize-prd` sub-skill returns text only. This skill **MUST** save the output to a file using the `Write` tool. Do NOT skip this step.
+**Output sections:**
+- Use Case Diagram (Mermaid code block)
+- Actors table
+- Use Cases table
 
-**Required action**: Use the `Write` tool to save `complete_prd_text` (output from `/finalize-prd`) to:
+### Step 5: Analyze Requirements
+
+Extract structured requirements from the use case diagram and business context.
+
+**Generate three requirement tables:**
+
+1. **User Requirements (UR)**: High-level goals from user perspective
+   - ID format: `UR-xxx`
+   - Include: ID, Requirement, Priority, Risk
+
+2. **Functional Requirements (FR)**: Specific functions to fulfill user requirements
+   - ID format: `FR-xxx`
+   - Include: ID, Requirement, Derived From (UR-xxx), Priority, Risk, Verification
+
+3. **Non-Functional Requirements (NFR)**: Quality attributes
+   - ID format: `NFR-xxx`
+   - Include: ID, Requirement, Category, Priority, Risk, Verification
+
+**Requirements Summary table:**
+- Count by category (UR/FR/NFR)
+- Count by priority (Must/Should/Could)
+
+### Step 6: Generate Requirements Diagram
+
+Generate a SysML requirements diagram in Mermaid `requirementDiagram` format.
+
+**Critical syntax rules:**
+- Use underscores in IDs, NOT hyphens (e.g., `UR_001`, not `UR-001`)
+- Quote all text values (e.g., `text: "User can create tasks"`)
+- Use lowercase for attributes (e.g., `risk: high`, not `risk: High`)
+- Use correct requirement types: `requirement`, `functionalRequirement`, `performanceRequirement`
+- Use correct relationships: `contains`, `derives`, `traces`
+
+### Step 7: Integrate Into Complete PRD
+
+Combine all generated sections following the PRD template structure:
+
+| Generated Section          | Template Section               |
+|:---------------------------|:-------------------------------|
+| Use Case Diagram           | 2.1-2.2 Use Case Diagram       |
+| Actors/Use Cases tables    | 2.3 Function List              |
+| UR table                   | 4.x Detailed Requirements      |
+| FR table                   | 4.1 Functional Requirements    |
+| NFR table                  | 4.2-4.4 Non-Functional         |
+| Requirements Diagram       | 3.1 Requirements Diagram       |
+
+**Language consistency:**
+- Match the PRD template language (English or Japanese)
+- Do NOT mix languages
+
+### Step 8: Add YAML Front Matter
+
+Generate YAML front matter following `references/front_matter_prd.md` schema:
+
+```yaml
+---
+id: "prd-{feature-name}"
+title: "{Feature Title}"
+type: "prd"
+status: "draft"
+created: "{YYYY-MM-DD}"
+updated: "{YYYY-MM-DD}"
+depends-on: []  # Parent PRD if hierarchical
+priority: "medium"  # or extract from requirements
+risk: "medium"  # or extract from requirements
+tags: ["{tag1}", "{tag2}"]
+category: "{category}"
+---
+```
+
+### Step 9: Validate
+
+Check Quality Checks items before saving.
+
+### Step 10: Save PRD File
+
+**MANDATORY**: Use the `Write` tool to save the complete PRD to:
 
 - **Flat structure**: `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md`
 - **Hierarchical (parent)**: `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent}/index.md`
 - **Hierarchical (child)**: `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent}/{feature-name}.md`
 
-**Verification**: After saving, confirm the file exists at the expected path.
+After saving, confirm the file exists at the expected path.
+
+### Mode Differences
+
+| Step                 | Interactive       | CI (`--ci`)  |
+|:---------------------|:------------------|:-------------|
+| Vibe Coding risk     | Confirm with user | Skip         |
+| Existing PRD         | Confirm overwrite | Auto-approve |
+| Clarifying questions | Ask if needed     | Skip         |
+| **Save PRD file**    | **Save**          | **Save**     |
+| prd-reviewer         | Run               | Skip         |
+| front-matter-reviewer| Run               | Skip         |
+
+## Post-Generation Actions
+
+### 1. Principle Compliance (Interactive Only)
+
+> **CI Mode**: Skip this section.
+
+After PRD generation:
+
+1. Call prd-reviewer agent to check compliance with CONSTITUTION.md
+2. Call front-matter-reviewer agent (pass PRD file path)
+3. Apply approved fixes from both reviews
+4. Include results in output
+
+If CONSTITUTION.md missing: Skip check, recommend `/sdd-init`.
 
 ### 2. Consistency Check
 
@@ -156,12 +259,20 @@ Use `templates/${SDD_LANG:-en}/prd_output.md` for output formatting.
 
 ## Quality Checks
 
-- [ ] Feature-name correctly extracted
+Before saving the PRD file, verify:
+
+- [ ] Feature-name correctly extracted from requirements
+- [ ] YAML front matter is valid and complete
 - [ ] PRD follows the template structure
 - [ ] All `<MUST>` sections have content
-- [ ] Requirement IDs unique (UR-xxx, FR-xxx, NFR-xxx)
-- [ ] Language consistent (matches template)
-- [ ] Diagrams properly formatted
+- [ ] Use case diagram is valid Mermaid flowchart
+- [ ] Requirements diagram is valid Mermaid requirementDiagram
+- [ ] Requirement IDs are unique (UR-xxx, FR-xxx, NFR-xxx)
+- [ ] All FRs trace to at least one UR
+- [ ] Priority and risk values are valid
+- [ ] Verification methods are specified for all requirements
+- [ ] Language is consistent throughout (matches template)
+- [ ] No `<MUST>`, `<RECOMMENDED>`, `<OPTIONAL>` markers in final output
 
 ## Principle Compliance (Interactive Only)
 
