@@ -101,29 +101,35 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示
 
 ### エージェント
 
-| エージェント                    | 説明                                             |
-|:--------------------------|:-----------------------------------------------|
-| `prd-reviewer`            | PRD の品質と CONSTITUTION.md 準拠をレビュー。違反に対する修正提案を生成 |
-| `spec-reviewer`           | 仕様書の品質と CONSTITUTION.md 準拠をレビュー。違反に対する修正提案を生成  |
-| `requirement-analyzer`    | SysML 要件図ベースの分析、要件のトレーサビリティと検証                 |
-| `clarification-assistant` | 仕様明確化支援。9つのカテゴリで要件を分析し、統合提案を出力                 |
+| エージェント                    | 説明                                                            |
+|:--------------------------|:--------------------------------------------------------------|
+| `prd-reviewer`            | PRD の品質と CONSTITUTION.md 準拠をレビュー。違反に対する修正提案を生成                |
+| `spec-reviewer`           | 仕様書の品質と CONSTITUTION.md 準拠をレビュー。違反に対する修正提案を生成                 |
+| `requirement-analyzer`    | SysML 要件図ベースの分析、要件のトレーサビリティと検証                                |
+| `clarification-assistant` | 仕様明確化支援。9つのカテゴリで要件を分析し、統合提案を出力                                |
+| `front-matter-reviewer`   | AI-SDD ドキュメントの YAML front matter を検証。フィールド形式、依存方向、ID 一意性をチェック |
 
 ### スキル（ユーザー起動可能）
 
-| スキル                       | 説明                                                           |
-|:--------------------------|:-------------------------------------------------------------|
-| `/sdd-init`               | AI-SDD ワークフロー初期化。CLAUDE.md セットアップとテンプレート生成                   |
-| `/generate-spec`          | 入力から抽象仕様書と技術設計書を生成                                           |
-| `/generate-prd`           | ビジネス要件から SysML 要件図形式の PRD（要求仕様書）を生成                          |
-| `/check-spec`             | 実装コードと仕様書の整合性をチェックし、不整合を検出                                   |
-| `/task-cleanup`           | 実装完了後の task/ ディレクトリをクリーンアップし、設計判断を統合                         |
-| `/task-breakdown`         | 技術設計書からタスクを小タスクのリストに分解                                       |
-| `/clarify`                | 仕様を9つのカテゴリでスキャンし、曖昧さを明確化するための質問を生成                           |
-| `/implement`              | TDD ベースの5フェーズ実装。TaskList で進捗を追跡し、tasks.md に自動マーク             |
-| `/checklist`              | 仕様書と設計書から9カテゴリの品質チェックリストを自動生成                                |
-| `/run-checklist`          | チェックリスト項目をテスト、リンター、セキュリティスキャンで自動検証                           |
-| `/constitution`           | プロジェクトの非交渉可能な原則（constitution）を定義・管理                          |
-| `/recommend-front-matter` | 既存の AI-SDD ドキュメントをスキャンし、構造化メタデータのための YAML front matter 追加を推奨 |
+| スキル                              | 説明                                                           |
+|:---------------------------------|:-------------------------------------------------------------|
+| `/sdd-init`                      | AI-SDD ワークフロー初期化。CLAUDE.md セットアップとテンプレート生成                   |
+| `/generate-spec`                 | 入力から抽象仕様書と技術設計書を生成                                           |
+| `/generate-prd`                  | ビジネス要件から SysML 要件図形式の PRD（要求仕様書）を生成                          |
+| `/check-spec`                    | 実装コードと仕様書の整合性をチェックし、不整合を検出                                   |
+| `/task-cleanup`                  | 実装完了後の task/ ディレクトリをクリーンアップし、設計判断を統合                         |
+| `/task-breakdown`                | 技術設計書からタスクを小タスクのリストに分解                                       |
+| `/clarify`                       | 仕様を9つのカテゴリでスキャンし、曖昧さを明確化するための質問を生成                           |
+| `/implement`                     | TDD ベースの5フェーズ実装。TaskList で進捗を追跡し、tasks.md に自動マーク             |
+| `/checklist`                     | 仕様書と設計書から9カテゴリの品質チェックリストを自動生成                                |
+| `/run-checklist`                 | チェックリスト項目をテスト、リンター、セキュリティスキャンで自動検証                           |
+| `/constitution`                  | プロジェクトの非交渉可能な原則（constitution）を定義・管理                          |
+| `/recommend-front-matter`        | 既存の AI-SDD ドキュメントをスキャンし、構造化メタデータのための YAML front matter 追加を推奨 |
+| `/plan-refactor`                 | 既存機能のリファクタリング計画。実装を分析し、設計ドキュメントを作成・更新                        |
+| `/generate-usecase-diagram`      | ビジネス要件から Mermaid 形式のユースケース図を生成                               |
+| `/analyze-requirements`          | ユースケース図やビジネス要件から UR/FR/NFR を抽出                               |
+| `/generate-requirements-diagram` | 要求分析から Mermaid 形式の SysML 要件図を生成                              |
+| `/finalize-prd`                  | ユースケース図、要求分析、要件図を統合して完全な PRD を作成                             |
 
 ### スキル（自動）
 

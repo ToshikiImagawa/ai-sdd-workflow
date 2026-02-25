@@ -108,23 +108,29 @@ This command automatically:
 | `spec-reviewer`           | Reviews specification quality and CONSTITUTION.md compliance. Generates fix proposals for violations             |
 | `requirement-analyzer`    | SysML requirements diagram-based analysis, requirement tracking and verification                                 |
 | `clarification-assistant` | Specification clarification support. Analyzes requirements across 9 categories and outputs integration proposals |
+| `front-matter-reviewer`   | Validates YAML front matter in AI-SDD documents. Checks field formats, dependency direction, and id uniqueness   |
 
 ### Skills (User-Invocable)
 
-| Skill                     | Description                                                                                                  |
-|:--------------------------|:-------------------------------------------------------------------------------------------------------------|
-| `/sdd-init`               | AI-SDD workflow initialization. CLAUDE.md setup and template generation                                      |
-| `/generate-spec`          | Generates an abstract specification and technical design document from input                                 |
-| `/generate-prd`           | Generates a PRD (Requirements Specification) in SysML requirements diagram format from business requirements |
-| `/check-spec`             | Checks consistency between implementation code and specifications, detecting discrepancies                   |
-| `/task-cleanup`           | Cleans up the task/ directory after implementation, integrating design decisions                             |
-| `/task-breakdown`         | Breaks down tasks from the technical design document into a list of small tasks                              |
-| `/clarify`                | Scans specs across 9 categories, generates questions to clarify ambiguity                                    |
-| `/implement`              | TDD-based 5-phase implementation. Tracks progress with TaskList and auto-marks in tasks.md                   |
-| `/checklist`              | Auto-generates 9-category quality checklists from specs and design docs                                      |
-| `/run-checklist`          | Automatically verifies checklist items by running tests, linters, and security scans                         |
-| `/constitution`           | Defines and manages non-negotiable project principles (constitution)                                         |
-| `/recommend-front-matter` | Scans existing AI-SDD documents and recommends adding YAML front matter for structured metadata              |
+| Skill                            | Description                                                                                                  |
+|:---------------------------------|:-------------------------------------------------------------------------------------------------------------|
+| `/sdd-init`                      | AI-SDD workflow initialization. CLAUDE.md setup and template generation                                      |
+| `/generate-spec`                 | Generates an abstract specification and technical design document from input                                 |
+| `/generate-prd`                  | Generates a PRD (Requirements Specification) in SysML requirements diagram format from business requirements |
+| `/check-spec`                    | Checks consistency between implementation code and specifications, detecting discrepancies                   |
+| `/task-cleanup`                  | Cleans up the task/ directory after implementation, integrating design decisions                             |
+| `/task-breakdown`                | Breaks down tasks from the technical design document into a list of small tasks                              |
+| `/clarify`                       | Scans specs across 9 categories, generates questions to clarify ambiguity                                    |
+| `/implement`                     | TDD-based 5-phase implementation. Tracks progress with TaskList and auto-marks in tasks.md                   |
+| `/checklist`                     | Auto-generates 9-category quality checklists from specs and design docs                                      |
+| `/run-checklist`                 | Automatically verifies checklist items by running tests, linters, and security scans                         |
+| `/constitution`                  | Defines and manages non-negotiable project principles (constitution)                                         |
+| `/recommend-front-matter`        | Scans existing AI-SDD documents and recommends adding YAML front matter for structured metadata              |
+| `/plan-refactor`                 | Plans refactoring for existing features. Analyzes implementation and creates/updates design documents        |
+| `/generate-usecase-diagram`      | Generates use case diagram in Mermaid format from business requirements                                      |
+| `/analyze-requirements`          | Extracts UR/FR/NFR from use case diagrams or business requirements                                           |
+| `/generate-requirements-diagram` | Generates SysML requirements diagram in Mermaid format from requirements analysis                            |
+| `/finalize-prd`                  | Integrates use case diagram, requirements analysis, and requirements diagram into a complete PRD             |
 
 ### Skills (Automatic)
 
@@ -529,6 +535,7 @@ sdd-workflow/
 │   ├── spec-reviewer.md           # Specification review agent
 │   ├── requirement-analyzer.md    # Requirement analysis agent
 │   ├── clarification-assistant.md # Specification clarification assistant
+│   ├── front-matter-reviewer.md   # YAML front matter validation agent
 │   ├── templates/{en,ja}/         # Agent output templates (language-specific)
 │   ├── references/                # Agent references (symlinks to shared)
 │   └── examples/                  # Agent usage examples
@@ -538,6 +545,7 @@ sdd-workflow/
 │       ├── usecase_diagram_guide.md           # Use case diagram guide
 │       ├── requirements_diagram_components.md # SysML requirements diagram
 │       ├── document_dependencies.md           # Document dependency chain
+│       ├── front_matter_*.md                  # YAML front matter references
 │       └── prerequisites_*.md                 # Prerequisite references
 ├── skills/
 │   ├── sdd-init/                  # AI-SDD workflow initialization
@@ -549,9 +557,14 @@ sdd-workflow/
 │   ├── implement/                 # TDD-based implementation execution
 │   ├── clarify/                   # Specification clarification
 │   ├── task-cleanup/              # Task cleanup
-│   ├── sdd-migrate/               # Migration from legacy version
 │   ├── checklist/                 # Quality checklist generation
 │   ├── run-checklist/             # Automated checklist verification
+│   ├── recommend-front-matter/    # YAML front matter recommendation
+│   ├── plan-refactor/             # Refactoring planning
+│   ├── generate-usecase-diagram/  # Use case diagram generation (sub-skill)
+│   ├── analyze-requirements/      # Requirements analysis (sub-skill)
+│   ├── generate-requirements-diagram/ # Requirements diagram generation (sub-skill)
+│   ├── finalize-prd/              # PRD finalization (sub-skill)
 │   ├── vibe-detector/             # Vibe Coding detection skill
 │   └── doc-consistency-checker/   # Document consistency checker
 │   # Each skill contains:

@@ -14,25 +14,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Skills
 
 - **`recommend-front-matter`** - New skill to recommend adding YAML front matter to existing documents
-  - Scans all AI-SDD documents (PRD, spec, design, task) for front matter presence
-  - Generates recommendations with inferred metadata (id, title, type, status, depends-on, tags, category)
-  - Supports automatic application with `--apply` option after user confirmation
-  - Provides bilingual report templates (en/ja)
-  - Includes document scanning script (`scan-documents.sh`)
+    - Scans all AI-SDD documents (PRD, spec, design, task) for front matter presence
+    - Generates recommendations with inferred metadata (id, title, type, status, depends-on, tags, category)
+    - Supports automatic application with `--apply` option after user confirmation
+    - Provides bilingual report templates (en/ja)
+    - Includes document scanning script (`scan-documents.sh`)
+
+#### Agents
+
+- **`front-matter-reviewer`** - New agent for validating YAML front matter in AI-SDD documents
+    - Checks field formats, dependency direction, status values, and type-specific fields
+    - Validates cross-reference integrity and id uniqueness
+    - Use after document generation or during consistency checks
+
+#### Shared References
+
+- **`shared/references/`** - Added YAML front matter reference documents
+    - `front_matter_reference.md` - Comprehensive front matter field reference
+    - `front_matter_prd.md` - PRD-specific front matter guide
+    - `front_matter_spec_design.md` - Spec/design-specific front matter guide
+    - `front_matter_task.md` - Task-specific front matter guide
+    - `front_matter_impl.md` - Implementation log-specific front matter guide
 
 ### Removed
 
 #### Skills
 
 - **`sdd-migrate`** - Legacy migration skill removed (v1.x → v2.0.0 directory structure migration)
-  - Migration functionality is no longer needed for current users
-  - Reduces maintenance overhead and code complexity
+    - Migration functionality is no longer needed for current users
+    - Reduces maintenance overhead and code complexity
 
 #### Hooks
 
 - **`session-start.sh`** - Removed legacy directory structure detection and auto-migration logic
-  - Simplified `.sdd-config.json` generation to default values only
-  - Removes lines 29-82 (legacy detection and migration warning)
+    - Simplified `.sdd-config.json` generation to default values only
+    - Removes lines 29-82 (legacy detection and migration warning)
 
 #### Documentation
 
@@ -43,8 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Version
 
 - Plugin version bumped from **3.1.1** to **3.2.0** (minor version increment)
-  - Breaking change: Removal of migration functionality
-  - New feature: Front matter recommendation skill
+    - Breaking change: Removal of migration functionality
+    - New feature: Front matter recommendation skill
 
 ## [3.1.1] - 2026-02-23
 
@@ -53,69 +69,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Hooks
 
 - **`session-start.sh`** - Improved POSIX compatibility and robustness
-  - Added `CLAUDE_PLUGIN_ROOT` guard check at script entry
-  - Replaced `&> /dev/null` with POSIX-compatible `>/dev/null 2>&1`
-  - Removed unnecessary `>&2` redirections from echo statements
-  - Simplified `CLAUDE_PLUGIN_ROOT` existence check for principles copy
+    - Added `CLAUDE_PLUGIN_ROOT` guard check at script entry
+    - Replaced `&> /dev/null` with POSIX-compatible `>/dev/null 2>&1`
+    - Removed unnecessary `>&2` redirections from echo statements
+    - Simplified `CLAUDE_PLUGIN_ROOT` existence check for principles copy
 
 #### Skills
 
 - **`plan-refactor`** - Fixed template/reference file path references to use snake_case
-  - `refactor-plan-section.md` → `refactor_plan_section.md`
-  - `reverse-design-template.md` → `reverse_design_template.md`
-  - `reverse-spec-template.md` → `reverse_spec_template.md`
-  - `design-doc-integration.md` → `design_doc_integration.md`
-  - Renamed actual files in `templates/` and `references/` to match
+    - `refactor-plan-section.md` → `refactor_plan_section.md`
+    - `reverse-design-template.md` → `reverse_design_template.md`
+    - `reverse-spec-template.md` → `reverse_spec_template.md`
+    - `design-doc-integration.md` → `design_doc_integration.md`
+    - Renamed actual files in `templates/` and `references/` to match
 
 ## [3.1.0] - 2026-02-15
 
 ### Added
 
 - **plan-refactor skill** - New skill to support refactoring planning for existing features
-  - Analyzes current implementation and creates/updates design documents with refactoring plan
-  - Supports two scenarios: Case A (existing documents) and Case B (no documents)
-  - Provides templates, samples, and reference documents in both Japanese and English
-  - Includes refactoring pattern references (Extract Interface, Dependency Injection, etc.)
-  - Implementation file search script (`find-implementation-files.sh`)
-  - Existing document scan script (`scan-existing-docs.sh`)
+    - Analyzes current implementation and creates/updates design documents with refactoring plan
+    - Supports two scenarios: Case A (existing documents) and Case B (no documents)
+    - Provides templates, samples, and reference documents in both Japanese and English
+    - Includes refactoring pattern references (Extract Interface, Dependency Injection, etc.)
+    - Implementation file search script (`find-implementation-files.sh`)
+    - Existing document scan script (`scan-existing-docs.sh`)
 - **Agent samples and reference documents** - Improved usability
-  - `clarification-assistant`: Added usage examples and clarification workflow references
-  - `prd-reviewer`: Added usage examples
-  - `requirement-analyzer`: Added usage examples
-  - `spec-reviewer`: Added usage examples
-  - Added stop report format templates (en/ja) for all agents
-  - Added directory structure references and fix proposal flow references
+    - `clarification-assistant`: Added usage examples and clarification workflow references
+    - `prd-reviewer`: Added usage examples
+    - `requirement-analyzer`: Added usage examples
+    - `spec-reviewer`: Added usage examples
+    - Added stop report format templates (en/ja) for all agents
+    - Added directory structure references and fix proposal flow references
 - **SKILL.md argument-hint** - Added `argument-hint` field to all skills to clarify argument specifications
 
 ### Changed
 
 - **/constitution init** - Added context argument for non-interactive mode initialization
-  - Specify `[context]` argument to generate principles based on project context without interaction
-  - Without argument, runs in interactive mode as before
+    - Specify `[context]` argument to generate principles based on project context without interaction
+    - Without argument, runs in interactive mode as before
 - **Agent configuration files** - Improved Markdown format to enhance code block extraction accuracy
-  - clarification-assistant: Reduced verbose descriptions for more concise structure (103 lines reduced)
-  - prd-reviewer: Organized workflow descriptions
-  - requirement-analyzer: Improved analysis flow descriptions
-  - spec-reviewer: Organized review process descriptions
+    - clarification-assistant: Reduced verbose descriptions for more concise structure (103 lines reduced)
+    - prd-reviewer: Organized workflow descriptions
+    - requirement-analyzer: Improved analysis flow descriptions
+    - spec-reviewer: Organized review process descriptions
 
 ### Fixed
 
 - **plan-refactor template language neutralization** - Removed dependency on specific technologies
-  - `reverse-design-template.md`: Removed specific examples like TypeScript, React, PostgreSQL
-  - `reverse-design-template.md`: Removed language-specific code blocks (typescript, sql)
-  - API endpoints section: Simplified by removing sample rows, keeping only table headers
-  - Database schema section: Completely removed as it cannot be reverse-engineered from implementation
-  - Function signatures section: Completely removed due to TypeScript-specific nature
-  - Changed placeholders to descriptive guidance format (e.g., `{e.g., TypeScript}` → `{Programming language used in the project}`)
+    - `reverse-design-template.md`: Removed specific examples like TypeScript, React, PostgreSQL
+    - `reverse-design-template.md`: Removed language-specific code blocks (typescript, sql)
+    - API endpoints section: Simplified by removing sample rows, keeping only table headers
+    - Database schema section: Completely removed as it cannot be reverse-engineered from implementation
+    - Function signatures section: Completely removed due to TypeScript-specific nature
+    - Changed placeholders to descriptive guidance format (e.g., `{e.g., TypeScript}` →
+      `{Programming language used in the project}`)
 
 ## [3.0.2] - 2026-02-09
 
 ### Fixed
 
 - **`sdd-init`** - Fixed language setting inheritance from `.sdd-config.json`
-    - `update-claude-md.sh` now reads `SDD_LANG` directly from `.sdd-config.json` instead of relying on environment variable
-    - Previously, when `lang: "ja"` was set in `.sdd-config.json`, the `## AI-SDD Instructions` section in `CLAUDE.md` was incorrectly generated in English
-    - Root cause: `CLAUDE_ENV_FILE` writes from `init-structure.sh` were not reflected in the same shell session when `update-claude-md.sh` ran
+    - `update-claude-md.sh` now reads `SDD_LANG` directly from `.sdd-config.json` instead of relying on environment
+      variable
+    - Previously, when `lang: "ja"` was set in `.sdd-config.json`, the `## AI-SDD Instructions` section in `CLAUDE.md`
+      was incorrectly generated in English
+    - Root cause: `CLAUDE_ENV_FILE` writes from `init-structure.sh` were not reflected in the same shell session when
+      `update-claude-md.sh` ran
 
 ## [3.0.1] - 2026-02-09
 
@@ -180,7 +200,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Skills Architecture
 
 - **`generate-prd`** - Refactored to orchestrator pattern
-    - Now orchestrates 4 sub-skills: `/generate-usecase-diagram`, `/analyze-requirements`, `/generate-requirements-diagram`, `/finalize-prd`
+    - Now orchestrates 4 sub-skills: `/generate-usecase-diagram`, `/analyze-requirements`,
+      `/generate-requirements-diagram`, `/finalize-prd`
     - Sub-skills run with `context: fork` for context isolation
     - Sub-skills return text only; `generate-prd` handles file writes
     - Reduced SKILL.md from 374 lines to 140 lines
@@ -258,12 +279,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Agent output templates** - Language-specific templates for all agents
     - `agents/templates/en/` - English output templates
     - `agents/templates/ja/` - Japanese output templates
-    - Templates: `clarification_analysis_output.md`, `clarification_question_template.md`, `prd_review_output.md`, `requirement_analysis_output.md`, `spec_review_output.md`
+    - Templates: `clarification_analysis_output.md`, `clarification_question_template.md`, `prd_review_output.md`,
+      `requirement_analysis_output.md`, `spec_review_output.md`
 - **Agent references** - Reusable reference documentation
     - `agents/references/ambiguity_patterns.md` - Ambiguous expression patterns
     - `agents/references/document_link_convention.md` - Markdown link conventions
     - `agents/references/sysml_requirements_theory.md` - SysML requirements theory
-    - Symlinks to shared references: `mermaid_notation_rules.md`, `requirements_diagram_components.md`, `usecase_diagram_guide.md`
+    - Symlinks to shared references: `mermaid_notation_rules.md`, `requirements_diagram_components.md`,
+      `usecase_diagram_guide.md`
 - **Agent examples** - Usage examples
     - `agents/examples/clarification_questions.md` - Example clarification questions
 
@@ -342,15 +365,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Command Name Changes (Underscore → Hyphen)
 
-| Old (v2.x)         | New (v3.0.0)       |
-|:--------------------|:-------------------|
-| `/sdd_init`         | `/sdd-init`        |
-| `/generate_spec`    | `/generate-spec`   |
-| `/generate_prd`     | `/generate-prd`    |
-| `/check_spec`       | `/check-spec`      |
-| `/task_breakdown`   | `/task-breakdown`  |
-| `/task_cleanup`     | `/task-cleanup`    |
-| `/sdd_migrate`      | `/sdd-migrate`     |
+| Old (v2.x)        | New (v3.0.0)      |
+|:------------------|:------------------|
+| `/sdd_init`       | `/sdd-init`       |
+| `/generate_spec`  | `/generate-spec`  |
+| `/generate_prd`   | `/generate-prd`   |
+| `/check_spec`     | `/check-spec`     |
+| `/task_breakdown` | `/task-breakdown` |
+| `/task_cleanup`   | `/task-cleanup`   |
+| `/sdd_migrate`    | `/sdd-migrate`    |
 
 ### Added
 
@@ -543,7 +566,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Removed "Recommended Manual Verification" sections (moved to output templates)
     - Changed "manually" expressions to Claude-directed instructions (e.g., "recommend manual verification to user")
     - Unified output format reference method (from file path to skill reference)
-    - Affected commands: `sdd_init`, `generate_prd`, `generate_spec`, `task_breakdown`, `task_cleanup`, `clarify`, `check_spec`, `sdd_migrate`, `constitution`
+    - Affected commands: `sdd_init`, `generate_prd`, `generate_spec`, `task_breakdown`, `task_cleanup`, `clarify`,
+      `check_spec`, `sdd_migrate`, `constitution`
 
 #### Agents
 
@@ -591,7 +615,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `/check_spec` - **Specialized for design ↔ implementation consistency check**
     - **[BREAKING]** Delegated document-to-document consistency checks (PRD↔spec, spec↔design) to `spec-reviewer`
-        - **Before (v2.2.0)**: Performed all consistency checks (CONSTITUTION↔docs, PRD↔spec, spec↔design, design↔implementation)
+        - **Before (v2.2.0)**: Performed all consistency checks (CONSTITUTION↔docs, PRD↔spec, spec↔design,
+          design↔implementation)
         - **After (v2.3.0)**: Performs only design↔implementation consistency check (improved performance)
         - **Migration**:
             - If document-to-document consistency checks are needed: Use `/check_spec --full`

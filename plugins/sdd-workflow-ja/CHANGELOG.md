@@ -20,6 +20,22 @@
   - 日英両言語のレポートテンプレートを提供
   - ドキュメントスキャンスクリプト（`scan-documents.sh`）を含む
 
+#### エージェント
+
+- **`front-matter-reviewer`** - AI-SDD ドキュメントの YAML front matter を検証する新エージェント
+  - フィールド形式、依存方向、ステータス値、型別フィールドをチェック
+  - 相互参照の整合性と ID の一意性を検証
+  - ドキュメント生成後や整合性チェック時に使用
+
+#### 共有リファレンス
+
+- **`shared/references/`** - YAML front matter リファレンスドキュメントを追加
+  - `front_matter_reference.md` - front matter フィールドの包括的リファレンス
+  - `front_matter_prd.md` - PRD 固有の front matter ガイド
+  - `front_matter_spec_design.md` - 仕様書/設計書固有の front matter ガイド
+  - `front_matter_task.md` - タスク固有の front matter ガイド
+  - `front_matter_impl.md` - 実装ログ固有の front matter ガイド
+
 ### 削除
 
 #### スキル
