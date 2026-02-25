@@ -274,7 +274,6 @@ run_gen_skills_test() {
     # /generate-prd テスト（ダミー要件）
     echo "--- /generate-prd テスト ---"
     cd "$test_dir"
-    unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
     start_time=$(date +%s)
     echo "/generate-prd --ci A sample task management feature. Users can create, edit, and delete tasks." | claude --plugin-dir "$plugin_dir" --print > "$log_dir/generate-prd.log" 2>&1 || true
     end_time=$(date +%s)
@@ -297,7 +296,6 @@ run_gen_skills_test() {
     # /generate-spec テスト（ダミー要件）
     echo "--- /generate-spec テスト ---"
     cd "$test_dir"
-    unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
     start_time=$(date +%s)
     echo "/generate-spec --ci User authentication feature. Supports login and logout with email and password." | claude --plugin-dir "$plugin_dir" --print > "$log_dir/generate-spec.log" 2>&1 || true
     end_time=$(date +%s)
