@@ -25,10 +25,10 @@ Generates the following documents from input content according to the AI-SDD wor
 
 ### Template Preparation Flow (Optimized)
 
-**Phase 1: Shell Script** - Execute `prepare-spec.sh` to pre-load templates and references:
+**Phase 1: Python Script** - Execute `prepare-spec.py` to pre-load templates and references:
 
 ```bash
-bash "${CLAUDE_PLUGIN_ROOT}/skills/generate-spec/scripts/prepare-spec.sh"
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/generate-spec/scripts/prepare-spec.py"
 ```
 
 This script:

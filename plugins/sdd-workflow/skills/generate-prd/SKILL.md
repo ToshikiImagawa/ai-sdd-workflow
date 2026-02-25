@@ -73,22 +73,36 @@ PRD Generation:
 
 ### Step 1: Prerequisites
 
-Read the following files before starting:
+**Phase 1: Python Script** - Execute `prepare-prd.py` to pre-load templates and references:
 
-| File                                          | Purpose                                  |
-|:----------------------------------------------|:-----------------------------------------|
-| `references/prerequisites_directory_paths.md` | Resolve `${SDD_*}` environment variables |
-| `references/prerequisites_principles.md`      | Load AI-SDD principles                   |
-| `references/prerequisites_plugin_update.md`   | Check plugin version compatibility       |
-| `references/usecase_diagram_guide.md`         | Use case diagram notation                |
-| `references/mermaid_notation_rules.md`        | Mermaid syntax rules                     |
-| `references/requirements_diagram_components.md` | SysML requirements diagram components |
-| `references/front_matter_prd.md`              | PRD front matter schema                  |
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/generate-prd/scripts/prepare-prd.py"
+```
 
-**Load PRD template** (in order):
+This script:
+1. Checks `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/PRD_TEMPLATE.md` (project template) first
+2. If not found, copies from `templates/${SDD_LANG}/` to cache
+3. Copies all reference files to cache
+4. Exports environment variables to `$CLAUDE_ENV_FILE`:
+   - `GENERATE_PRD_TEMPLATE` - Path to cached PRD template
+   - `GENERATE_PRD_REFERENCES` - Path to cached references
+   - `GENERATE_PRD_CACHE_DIR` - Path to cache directory
 
-1. `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/PRD_TEMPLATE.md` — Project-specific template
-2. `templates/${SDD_LANG:-en}/prd_template.md` — Fallback default
+**Phase 2: Read from Cache** - Use environment variables to access pre-loaded files:
+
+Read the following files from `$GENERATE_PRD_REFERENCES`:
+
+| File                                  | Purpose                                  |
+|:--------------------------------------|:-----------------------------------------|
+| `prerequisites_directory_paths.md`    | Resolve `${SDD_*}` environment variables |
+| `prerequisites_principles.md`         | Load AI-SDD principles                   |
+| `prerequisites_plugin_update.md`      | Check plugin version compatibility       |
+| `../../../shared/references/usecase_diagram_guide.md` | Use case diagram notation |
+| `../../../shared/references/mermaid_notation_rules.md` | Mermaid syntax rules |
+| `../../../shared/references/requirements_diagram_components.md` | SysML requirements diagram components |
+| `../../../shared/references/front_matter_prd.md` | PRD front matter schema |
+
+**Load PRD template** from `$GENERATE_PRD_TEMPLATE`
 
 **Load if exists:**
 
