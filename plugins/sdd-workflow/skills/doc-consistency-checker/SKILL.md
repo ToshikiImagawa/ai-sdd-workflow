@@ -90,6 +90,12 @@ Consistency checks also consider parent-child relationships for hierarchical str
 
 ## Check Items
 
+### 0. Front Matter Cross-Reference Consistency
+
+**Note**: Detailed front matter validation (common checks, type-specific checks, cross-reference checks) is handled by the `front-matter-reviewer` agent. The caller should invoke `front-matter-reviewer --cross-ref` separately when full front matter validation is needed.
+
+This skill focuses on document content consistency only.
+
 ### 1. PRD ↔ spec Consistency
 
 | Check Item                                | Description                                            |

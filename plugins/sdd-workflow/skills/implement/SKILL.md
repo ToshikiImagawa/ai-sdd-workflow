@@ -44,6 +44,29 @@ $ARGUMENTS
 
 Read `examples/input_format.md` for input format and usage examples.
 
+## Front Matter Generation Rules
+
+Generated implementation log files must include YAML front matter at the top of the file.
+
+See `references/front_matter_impl.md` for full schema definition, dependency direction rules, and validation checklist.
+
+### Implementation Log-Specific Field Rules
+
+| Field | Rule |
+|:------|:-----|
+| `id` | `"impl-{feature-name}"`. For hierarchical: `"impl-{parent}-{feature-name}"` |
+| `status` | `"in-progress"` when implementation starts |
+| `depends-on` | Design doc ID (e.g., `["design-user-auth"]`) |
+| `ticket` | Ticket number from input argument (if provided) |
+| `tags` | Inherit from task/design doc |
+| `completed` | Empty string when starting. Set to `"YYYY-MM-DD"` when implementation completes |
+| `implementer` | Name of the implementer (if known) |
+
+### Updating Front Matter
+
+When resuming implementation (continue mode), update the `updated` field to the current date.
+When implementation completes, set `status` to `"completed"` and `completed` to the completion date.
+
 ## TDD Implementation Flow
 
 ### 5 Phases

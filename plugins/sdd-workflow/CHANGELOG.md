@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-02-25
+
+### Added
+
+#### Skills
+
+- **`recommend-front-matter`** - New skill to recommend adding YAML front matter to existing documents
+  - Scans all AI-SDD documents (PRD, spec, design, task) for front matter presence
+  - Generates recommendations with inferred metadata (id, title, type, status, depends-on, tags, category)
+  - Supports automatic application with `--apply` option after user confirmation
+  - Provides bilingual report templates (en/ja)
+  - Includes document scanning script (`scan-documents.sh`)
+
+### Removed
+
+#### Skills
+
+- **`sdd-migrate`** - Legacy migration skill removed (v1.x → v2.0.0 directory structure migration)
+  - Migration functionality is no longer needed for current users
+  - Reduces maintenance overhead and code complexity
+
+#### Hooks
+
+- **`session-start.sh`** - Removed legacy directory structure detection and auto-migration logic
+  - Simplified `.sdd-config.json` generation to default values only
+  - Removes lines 29-82 (legacy detection and migration warning)
+
+#### Documentation
+
+- **`sdd-init/SKILL.md`** - Removed reference to v3.0.0 migration (`lang` field addition)
+
+### Changed
+
+#### Version
+
+- Plugin version bumped from **3.1.1** to **3.2.0** (minor version increment)
+  - Breaking change: Removal of migration functionality
+  - New feature: Front matter recommendation skill
+
 ## [3.1.1] - 2026-02-23
 
 ### Changed

@@ -143,6 +143,25 @@ Check Quality Checks items before returning output.
 
 - If issues found: Fix and repeat from step 2
 
+## Front Matter Generation Rules
+
+Generated PRDs must include YAML front matter at the top of the file.
+
+See `references/front_matter_prd.md` for full schema definition, dependency direction rules,
+and validation checklist.
+
+### PRD-Specific Field Rules
+
+| Field        | Rule                                                                           |
+|:-------------|:-------------------------------------------------------------------------------|
+| `id`         | `"prd-{feature-name}"`. For hierarchical: `"prd-{parent}-{feature-name}"`      |
+| `status`     | `"draft"` for new PRDs                                                         |
+| `depends-on` | Parent PRD ID if hierarchical (e.g., `["prd-auth"]`). Empty for top-level PRDs |
+| `priority`   | `"medium"` unless explicitly specified in input                                |
+| `risk`       | `"medium"` unless explicitly specified in input                                |
+| `tags`       | Extract relevant keywords from requirements                                    |
+| `category`   | Infer from requirements (e.g., `"authentication"`, `"payment"`)                |
+
 ## Output
 
 **IMPORTANT: This skill returns TEXT only. It does NOT write files.**

@@ -26,63 +26,10 @@ SPECIFICATION_DIR="specification"
 TASK_DIR="task"
 SDD_LANG="en"
 
-# Legacy structure detection and migration warning
-LEGACY_DETECTED=false
-LEGACY_DOCS_ROOT=""
-LEGACY_REQUIREMENT=""
-LEGACY_TASK=""
-
-# Check for legacy structure only if .sdd-config.json doesn't exist
+# Check for .sdd-config.json, generate if not exists
 if [ ! -f "$CONFIG_FILE" ]; then
-    # Detect legacy docs root (.docs)
-    if [ -d "${PROJECT_ROOT}/.docs" ] && [ ! -d "${PROJECT_ROOT}/.sdd" ]; then
-        LEGACY_DETECTED=true
-        LEGACY_DOCS_ROOT=".docs"
-        DOCS_ROOT=".docs"
-    fi
-
-    # Detect legacy requirement directory (requirement-diagram)
-    if [ -d "${PROJECT_ROOT}/${DOCS_ROOT}/requirement-diagram" ]; then
-        LEGACY_DETECTED=true
-        LEGACY_REQUIREMENT="requirement-diagram"
-        REQUIREMENT_DIR="requirement-diagram"
-    fi
-
-    # Detect legacy task directory (review)
-    if [ -d "${PROJECT_ROOT}/${DOCS_ROOT}/review" ] && [ ! -d "${PROJECT_ROOT}/${DOCS_ROOT}/task" ]; then
-        LEGACY_DETECTED=true
-        LEGACY_TASK="review"
-        TASK_DIR="review"
-    fi
-
-    # If legacy structure detected
-    if [ "$LEGACY_DETECTED" = true ]; then
-        # Auto-generate .sdd-config.json with legacy values
-        cat > "$CONFIG_FILE" << EOF
-{
-  "root": "${DOCS_ROOT}",
-  "lang": "en",
-  "directories": {
-    "requirement": "${REQUIREMENT_DIR}",
-    "specification": "${SPECIFICATION_DIR}",
-    "task": "${TASK_DIR}"
-  }
-}
-EOF
-        echo "[AI-SDD Migration] Legacy directory structure detected."
-        echo ""
-        echo "Detected legacy structure:"
-        [ -n "$LEGACY_DOCS_ROOT" ] && echo "  - Root directory: .docs"
-        [ -n "$LEGACY_REQUIREMENT" ] && echo "  - Requirement: requirement-diagram"
-        [ -n "$LEGACY_TASK" ] && echo "  - Task log: review"
-        echo ""
-        echo ".sdd-config.json auto-generated based on legacy structure."
-        echo "To migrate to new structure, run:"
-        echo "  /sdd-migrate - Migrate to new structure"
-        echo ""
-    else
-        # No legacy structure detected and no .sdd-config.json exists, auto-generate default config
-        cat > "$CONFIG_FILE" << 'EOF'
+    # No .sdd-config.json exists, auto-generate default config
+    cat > "$CONFIG_FILE" << 'EOF'
 {
   "root": ".sdd",
   "lang": "en",
@@ -93,8 +40,7 @@ EOF
   }
 }
 EOF
-        echo "[AI-SDD] .sdd-config.json auto-generated."
-    fi
+    echo "[AI-SDD] .sdd-config.json auto-generated."
 fi
 
 # Load configuration if file exists

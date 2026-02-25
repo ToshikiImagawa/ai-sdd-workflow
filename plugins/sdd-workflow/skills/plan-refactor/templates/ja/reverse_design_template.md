@@ -1,3 +1,19 @@
+---
+id: "design-{feature-name}"
+title: "{FEATURE_NAME}"
+type: "design"
+status: "review"
+sdd-phase: "plan"
+impl-status: "implemented"
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+depends-on: []
+tags: ["reverse-engineered"]
+category: ""
+priority: "medium"
+risk: "medium"
+---
+
 # {FEATURE_NAME} - 技術設計書（既存実装からの逆生成）
 
 > **⚠️ 注意**: この設計書は{DATE}時点の既存実装から逆生成されたものです。

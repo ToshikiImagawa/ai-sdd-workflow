@@ -1,3 +1,19 @@
+---
+id: "design-{feature-name}"
+title: "{機能名}"
+type: "design"
+status: "draft"
+sdd-phase: "plan"
+impl-status: "not-implemented"
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+depends-on: []
+tags: []
+category: ""
+priority: "medium"
+risk: "medium"
+---
+
 # 技術設計書テンプレート (Design Doc)
 
 このドキュメントは `.sdd/specification/` 配下の技術設計書（Design Doc）を作成する際のテンプレートです。
@@ -18,9 +34,6 @@
 
 # {機能名} `<MUST>`
 
-**ドキュメント種別:** 技術設計書 (Design Doc)
-**SDDフェーズ:** Plan (計画/設計)
-**最終更新日:** YYYY-MM-DD
 **関連 Spec:** [xxx_spec.md へのリンク]
 **関連 PRD:** [requirement/{機能名}.md へのリンク]
 

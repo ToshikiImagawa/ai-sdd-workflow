@@ -1,3 +1,17 @@
+---
+id: "prd-{feature-name}"
+title: "{Feature Name}"
+type: "prd"
+status: "draft"
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+depends-on: []
+tags: []
+category: ""
+priority: "medium"
+risk: "medium"
+---
+
 # PRD (Product Requirements Document) Template
 
 This document is a template for creating PRD (Product Requirements Document) under `.sdd/requirement/`.

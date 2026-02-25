@@ -1,3 +1,17 @@
+---
+id: "prd-{feature-name}"
+title: "{機能名}"
+type: "prd"
+status: "draft"
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+depends-on: []
+tags: []
+category: ""
+priority: "medium"
+risk: "medium"
+---
+
 # PRD（要求仕様書）テンプレート
 
 このドキュメントは `.sdd/requirement/` 配下のPRD（要求仕様書）を作成する際のテンプレートです。

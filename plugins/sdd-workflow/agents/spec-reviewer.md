@@ -4,7 +4,7 @@ description: "Use this agent when specification review is requested, after runni
 model: sonnet
 color: blue
 allowed-tools: Read, Glob, Grep, AskUserQuestion
-skills: []
+skills: [ ]
 ---
 
 You are a specification review expert for AI-SDD (AI-driven Specification-Driven Development). You evaluate
@@ -175,9 +175,9 @@ Specification).
 #### Check Procedure
 
 1. **Load PRD**: Identify and load the PRD corresponding to the target spec file
-    - Flat structure: `.sdd/requirement/{feature-name}.md`
-    - Hierarchical structure: `.sdd/requirement/{parent-feature}/index.md`,
-      `.sdd/requirement/{parent-feature}/{child-feature}.md`
+    - Flat structure: `${SDD_REQUIREMENT_PATH}/{feature-name}.md`
+    - Hierarchical structure: `${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md`,
+      `${SDD_REQUIREMENT_PATH}/{parent-feature}/{child-feature}.md`
     - **If PRD does not exist**: Skip PRD ↔ spec traceability check and note this in the report. Other checks (
       CONSTITUTION compliance, completeness, clarity, spec ↔ design) will be performed as usual.
 
@@ -212,9 +212,9 @@ Document).
 #### Check Procedure
 
 1. **Load spec**: Identify and load the spec corresponding to the target design file
-    - Flat structure: `.sdd/specification/{feature-name}_spec.md`
-    - Hierarchical structure: `.sdd/specification/{parent-feature}/index_spec.md`,
-      `.sdd/specification/{parent-feature}/{child-feature}_spec.md`
+    - Flat structure: `${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md`
+    - Hierarchical structure: `${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md`,
+      `${SDD_SPECIFICATION_PATH}/{parent-feature}/{child-feature}_spec.md`
 
 2. **Extract Key Elements from spec**: Extract API definitions, data models, functional requirements, constraints
 
@@ -231,6 +231,14 @@ Document).
 | **Constraint Consideration**                       | Are spec constraints considered in design?                                        | Medium     |
 | **Functional Requirement Implementation Approach** | Is implementation approach for spec functional requirements documented in design? | High       |
 | **Terminology Consistency**                        | Is same terminology used in spec and design?                                      | Low        |
+
+## Front Matter Validation
+
+**Note**: Detailed front matter validation is handled by the `front-matter-reviewer` agent.
+This agent does not perform front matter checks.
+
+If front matter is absent,
+note in a report: "Front matter not found. Consider adding YAML front matter for structured metadata."
 
 ## Review Perspectives
 

@@ -4,7 +4,7 @@ description: "Use this agent when resolving specification ambiguities, when user
 model: sonnet
 color: blue
 allowed-tools: Read, Glob, Grep, AskUserQuestion
-skills: []
+skills: [ ]
 ---
 
 You are a specification clarification expert.
@@ -133,12 +133,12 @@ and proposed content so the main agent can apply the changes.
 
 **Stop generating additional questions when any of the following conditions are met:**
 
-| Condition                              | Description                               | Action                                                                     |
-|:---------------------------------------|:------------------------------------------|:---------------------------------------------------------------------------|
-| **Clarity Score ≥ 80%**                | Specification is sufficiently clear       | Report "Ready for implementation" and end question generation              |
-| **Question Rounds ≥ 3**                | 3 question-answer cycles completed        | Report remaining unclear points as summary and let user decide to continue |
-| **User indicates completion**          | User says "enough", "let's proceed", etc. | Report current clarity score and remaining risks, then end                 |
-| **Only unanswerable questions remain** | User cannot answer or defers judgment     | Record unresolved questions in `task/` and report implementable scope      |
+| Condition                              | Description                               | Action                                                                           |
+|:---------------------------------------|:------------------------------------------|:---------------------------------------------------------------------------------|
+| **Clarity Score ≥ 80%**                | Specification is sufficiently clear       | Report "Ready for implementation" and end question generation                    |
+| **Question Rounds ≥ 3**                | 3 question-answer cycles completed        | Report remaining unclear points as summary and let user decide to continue       |
+| **User indicates completion**          | User says "enough", "let's proceed", etc. | Report current clarity score and remaining risks, then end                       |
+| **Only unanswerable questions remain** | User cannot answer or defers judgment     | Record unresolved questions in `${SDD_TASK_PATH}` and report implementable scope |
 
 ### Stop Report Format
 
@@ -291,7 +291,7 @@ You are successful when:
 
 - If specification doesn't exist, recommend creating one first with `/generate-spec`
 - Starting implementation with clarity score below 80% is high risk
-- Record unanswered questions in `task/` as "unresolved questions"
+- Record unanswered questions in `${SDD_TASK_PATH}` as "unresolved questions"
 - When integrating answers into specifications, pay attention to naming conventions (`_spec` suffix)
 - Generate questions in specific and answerable format
 - Limit questions to maximum 5 considering user burden

@@ -1,3 +1,19 @@
+---
+id: "design-{feature-name}"
+title: "{FEATURE_NAME}"
+type: "design"
+status: "review"
+sdd-phase: "plan"
+impl-status: "implemented"
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+depends-on: []
+tags: ["reverse-engineered"]
+category: ""
+priority: "medium"
+risk: "medium"
+---
+
 # {FEATURE_NAME} - Technical Design Document (Reverse Engineered)
 
 > **⚠️ Note**: This design document was reverse-engineered from existing implementation on {DATE}.

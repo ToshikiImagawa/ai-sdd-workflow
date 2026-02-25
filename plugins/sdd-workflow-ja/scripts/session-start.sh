@@ -26,63 +26,10 @@ SPECIFICATION_DIR="specification"
 TASK_DIR="task"
 SDD_LANG="ja"
 
-# Legacy structure detection and migration warning
-LEGACY_DETECTED=false
-LEGACY_DOCS_ROOT=""
-LEGACY_REQUIREMENT=""
-LEGACY_TASK=""
-
-# Check for legacy structure only if .sdd-config.json doesn't exist
+# Check for .sdd-config.json, generate if not exists
 if [ ! -f "$CONFIG_FILE" ]; then
-    # Detect legacy docs root (.docs)
-    if [ -d "${PROJECT_ROOT}/.docs" ] && [ ! -d "${PROJECT_ROOT}/.sdd" ]; then
-        LEGACY_DETECTED=true
-        LEGACY_DOCS_ROOT=".docs"
-        DOCS_ROOT=".docs"
-    fi
-
-    # Detect legacy requirement directory (requirement-diagram)
-    if [ -d "${PROJECT_ROOT}/${DOCS_ROOT}/requirement-diagram" ]; then
-        LEGACY_DETECTED=true
-        LEGACY_REQUIREMENT="requirement-diagram"
-        REQUIREMENT_DIR="requirement-diagram"
-    fi
-
-    # Detect legacy task directory (review)
-    if [ -d "${PROJECT_ROOT}/${DOCS_ROOT}/review" ] && [ ! -d "${PROJECT_ROOT}/${DOCS_ROOT}/task" ]; then
-        LEGACY_DETECTED=true
-        LEGACY_TASK="review"
-        TASK_DIR="review"
-    fi
-
-    # If legacy structure detected
-    if [ "$LEGACY_DETECTED" = true ]; then
-        # Auto-generate .sdd-config.json with legacy values
-        cat > "$CONFIG_FILE" << EOF
-{
-  "root": "${DOCS_ROOT}",
-  "lang": "ja",
-  "directories": {
-    "requirement": "${REQUIREMENT_DIR}",
-    "specification": "${SPECIFICATION_DIR}",
-    "task": "${TASK_DIR}"
-  }
-}
-EOF
-        echo "[AI-SDD マイグレーション] レガシーディレクトリ構造を検出しました。"
-        echo ""
-        echo "検出されたレガシー構造:"
-        [ -n "$LEGACY_DOCS_ROOT" ] && echo "  - ルートディレクトリ: .docs"
-        [ -n "$LEGACY_REQUIREMENT" ] && echo "  - 要件定義: requirement-diagram"
-        [ -n "$LEGACY_TASK" ] && echo "  - タスクログ: review"
-        echo ""
-        echo "レガシー構造に基づいて .sdd-config.json を自動生成しました。"
-        echo "新しい構造にマイグレーションするには、以下を実行してください:"
-        echo "  /sdd-migrate - 新しい構造へマイグレーション"
-        echo ""
-    else
-        # No legacy structure detected and no .sdd-config.json exists, auto-generate default config
-        cat > "$CONFIG_FILE" << 'EOF'
+    # No .sdd-config.json exists, auto-generate default config
+    cat > "$CONFIG_FILE" << 'EOF'
 {
   "root": ".sdd",
   "lang": "ja",
@@ -93,8 +40,7 @@ EOF
   }
 }
 EOF
-        echo "[AI-SDD] .sdd-config.json を自動生成しました。"
-    fi
+    echo "[AI-SDD] .sdd-config.json を自動生成しました。"
 fi
 
 # Load configuration if file exists

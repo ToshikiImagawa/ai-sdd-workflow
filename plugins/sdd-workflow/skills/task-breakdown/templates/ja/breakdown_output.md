@@ -1,13 +1,19 @@
+---
+id: "task-{feature-name}"
+title: "{機能名}"
+type: "task"
+status: "pending"
+sdd-phase: "tasks"
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+depends-on: []
+ticket: ""
+tags: []
+category: ""
+priority: "medium"
+---
+
 # {機能名} タスク分解
-
-## メタ情報
-
-| 項目     | 内容                                   |
-|:-------|:-------------------------------------|
-| 機能名    | {機能名}                                |
-| チケット番号 | {チケット番号}（指定がある場合）                    |
-| 設計書    | `.sdd/specification/{機能名}_design.md` |
-| 作成日    | YYYY-MM-DD                           |
 
 ## タスク一覧
 

@@ -89,6 +89,29 @@ Specify（仕様化） → Plan（計画） → Tasks（タスク分解） → I
 | **specification** | 抽象仕様書  | `{名前}_spec.md`（`_spec` サフィックス必須）     | `user-login_spec.md`, `index_spec.md`     |
 | **specification** | 技術設計書  | `{名前}_design.md`（`_design` サフィックス必須） | `user-login_design.md`, `index_design.md` |
 
+### YAML Front Matter
+
+各ドキュメントにはオプションでYAML front matterを追加できる。機械的な検索・フィルタリングに活用される。
+
+| ドキュメント種別 | `type`                 | `id` パターン         | 固有フィールド                                                        |
+|:---------|:-----------------------|:------------------|:---------------------------------------------------------------|
+| PRD      | `"prd"`                | `"prd-{name}"`    | `priority`, `risk`                                             |
+| Spec     | `"spec"`               | `"spec-{name}"`   | `sdd-phase: "specify"`                                         |
+| Design   | `"design"`             | `"design-{name}"` | `sdd-phase: "plan"`, `impl-status`                             |
+| Task     | `"task"`               | `"task-{name}"`   | `sdd-phase: "tasks"`, `ticket`                                 |
+| Impl Log | `"implementation-log"` | `"impl-{name}"`   | `sdd-phase: "implement"`, `ticket`, `completed`, `implementer` |
+
+共通フィールド: `id`, `title`, `type`, `status`, `created`, `updated`, `depends-on`, `tags`, `category`
+
+**依存方向**: `depends-on` は上流方向のみ。下位ドキュメントへの参照は持たない。
+
+```
+prd ← spec (depends-on: prd) ← design (depends-on: spec) ← task (depends-on: design)
+```
+
+- 階層構造の場合: `id` にパスを含める（例: `"spec-auth-user-login"`）
+- front matterなしの既存ドキュメントも引き続き有効（後方互換）
+
 ### ドキュメント永続性ルール
 
 **IMPORTANT: task/ ディレクトリは一時的なものです。実装完了後に削除してください。**
@@ -173,7 +196,8 @@ CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実
 
 ## プラグインエージェント設計ガイド
 
-AI-SDDワークフロープラグインのサブエージェント設計・実装に関する原則とベストプラクティスは、[AGENTS.md](./AGENTS.md) を参照してください。
+AI-SDDワークフロープラグインのサブエージェント設計・実装に関する原則とベストプラクティスは、
+[AGENTS.md](./AGENTS.md) を参照してください。
 
 このガイドでは以下の内容を定義しています：
 

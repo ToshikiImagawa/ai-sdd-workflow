@@ -123,7 +123,17 @@ When performing integration:
 - Do not document source file name (don't leave history)
 - Format to match technical design document format
 
-### 6. Delete Files/Directories
+### 6. Update Front Matter in Related Documents
+
+Before deleting task files, update front matter in related documents if they have YAML front matter. See `references/front_matter_task.md` and `references/front_matter_spec_design.md` for valid field values.
+
+| Action | Description |
+|:-------|:------------|
+| **Update design doc `impl-status`** | Set to `"implemented"` if all tasks completed successfully |
+| **Update design doc `updated`** | Set to current date |
+| **Update spec `status`** | Consider updating to `"approved"` if implementation validates the spec |
+
+### 7. Delete Files/Directories
 
 ```bash
 # Delete files

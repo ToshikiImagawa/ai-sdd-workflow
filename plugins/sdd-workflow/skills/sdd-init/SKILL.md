@@ -63,8 +63,7 @@ This command initializes the project following AI-SDD principles.
 **Note**: Configuration file management is handled by `init-structure.sh` (Phase 1). The script automatically:
 
 1. Checks if `.sdd-config.json` exists at project root
-2. If exists but missing `lang` field: Adds `"lang": "en"` (v3.0.0 migration)
-3. If not exists: Creates with the default configuration:
+2. If not exists: Creates with the default configuration:
    ```json
    {
      "root": ".sdd",
@@ -107,8 +106,7 @@ Execute `${CLAUDE_PLUGIN_ROOT}/skills/sdd-init/scripts/init-structure.sh` to per
 
 1. **Manage Configuration File**:
     - Check if `.sdd-config.json` exists
-    - If exists but no `lang`: Add `lang: "en"`
-    - If not exists: Create with default config
+    - If not exists: Error (configuration file must be created beforehand or by session-start hook)
 
 2. **Ensure Root Directory Exists**:
     - `mkdir -p "${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/"`
@@ -176,19 +174,20 @@ Read `templates/${SDD_LANG:-en}/claude_md_template.md` and add its content to `C
 2. **If CLAUDE.md exists but no AI-SDD section**: Append section to end
 3. **If CLAUDE.md doesn't exist**: Create new file with section
 
-### Migration Support (v2.2.0 -> v2.3.0+)
+### Migration Support
 
-Projects initialized with v2.2.0 or earlier don't have `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/AI-SDD-PRINCIPLES.md`.
-Re-running this command will perform the following:
+Re-running `/sdd-init` on an existing project automatically handles version upgrades:
 
-1. **Generate AI-SDD-PRINCIPLES.md**: Copy plugin's `AI-SDD-PRINCIPLES.md` to `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/`
-2. **Update CLAUDE.md**: Update section title version and replace content with latest version
+1. **Update CLAUDE.md**: If section title version is older than current plugin version, replace entire section with latest version
+2. **Generate AI-SDD-PRINCIPLES.md**: Copy plugin's `AI-SDD-PRINCIPLES.md` if not exists
+3. **Update Templates**: Copy latest templates (PRD, Spec, Design) if not exists (existing templates are never overwritten)
 
 **Detection Method**:
 
-- CLAUDE.md has `## AI-SDD Instructions` section
-- AND `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/AI-SDD-PRINCIPLES.md` doesn't exist
-- OR a section title version is older than the current plugin version
+- CLAUDE.md has `## AI-SDD Instructions` section with older version
+- OR `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/AI-SDD-PRINCIPLES.md` doesn't exist
+
+**Note**: After re-initialization, recommend `/recommend-front-matter` to add YAML front matter to existing documents that were created before v3.2.0.
 
 ## Project Constitution Generation
 
@@ -259,6 +258,7 @@ After Phase 1 and Phase 2 complete:
 1. **CLAUDE.md**: Verify update script output (created/appended/updated/skipped)
 2. **Templates**: Verify init-structure.sh output (created templates)
 3. **Configuration**: Verify `.sdd-config.json` exists
+4. **Front Matter Recommendation**: If existing documents without YAML front matter are found under `${SDD_ROOT}/`, recommend running `/recommend-front-matter` to add structured metadata
 
 **Note**: Both scripts output their results to stdout. Simply report what the scripts indicate.
 

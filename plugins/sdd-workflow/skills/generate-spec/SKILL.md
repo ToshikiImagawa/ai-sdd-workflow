@@ -231,6 +231,35 @@ Skip Design Doc generation and confirm with user in the following cases:
 - Unclear whether to follow existing design patterns
 - Technology selection requires investigation/consideration
 
+## Front Matter Generation Rules
+
+Generated specs and design docs must include YAML front matter at the top of the file.
+
+See `references/front_matter_spec_design.md` for full schema definition, dependency direction rules, and validation checklist.
+
+### Spec-Specific Field Rules
+
+| Field | Rule |
+|:------|:-----|
+| `id` | `"spec-{feature-name}"`. For hierarchical: `"spec-{parent}-{feature-name}"` |
+| `status` | `"draft"` for new specs |
+| `depends-on` | PRD ID (e.g., `["prd-user-auth"]`) |
+| `priority` | Inherit from PRD if exists, otherwise `"medium"` |
+| `risk` | Inherit from PRD if exists, otherwise `"medium"` |
+
+### Design Doc-Specific Field Rules
+
+| Field | Rule |
+|:------|:-----|
+| `id` | `"design-{feature-name}"`. For hierarchical: `"design-{parent}-{feature-name}"` |
+| `status` | `"draft"` for new design docs |
+| `impl-status` | `"not-implemented"` for new design docs |
+| `depends-on` | Spec ID (e.g., `["spec-user-auth"]`) |
+| `tags` | Inherit from spec |
+| `category` | Inherit from spec |
+| `priority` | Inherit from spec |
+| `risk` | Inherit from spec |
+
 ## Generation Flow
 
 ```
@@ -260,6 +289,11 @@ Skip Design Doc generation and confirm with user in the following cases:
    |- On violation detection: Review fix proposals and apply approved fixes (main agent)
    |- After fix, re-check
    |
+6a. Front matter validation with front-matter-reviewer (skip if --ci)
+   |- Call front-matter-reviewer agent
+   |- **Target**: {feature-name}_spec.md
+   |- On issue detection: Apply fixes (main agent)
+   |
 7. Confirm Design Doc generation (always generate if --ci)
    |- Technical info present: Generate and save (Plan)
    |- No technical info: Confirm whether to skip
@@ -270,6 +304,11 @@ Skip Design Doc generation and confirm with user in the following cases:
    |- Check CONSTITUTION.md compliance (Technical constraints/Architecture focus)
    |- On violation detection: Review fix proposals and apply approved fixes (main agent)
    |- After fix, re-check
+   |
+8a. Front matter validation with front-matter-reviewer (skip if --ci)
+   |- Call front-matter-reviewer agent
+   |- **Target**: {feature-name}_design.md
+   |- On issue detection: Apply fixes (main agent)
 ```
 
 ## PRD Consistency Review
@@ -436,9 +475,12 @@ After spec and design generation, **you must call the `spec-reviewer` agent to c
    |- Apply approved fixes using Edit tool (main agent)
    |- Report non-applicable fixes to user
    |
-4. After fix, re-check to verify
+4. Call front-matter-reviewer agent (pass spec/design file path)
+   |- On issue detection: Apply fixes (main agent)
    |
-5. Include check results in output
+5. After fix, re-check to verify
+   |
+6. Include check results in output
 ```
 
 ### Abstract Specification Check Result Output

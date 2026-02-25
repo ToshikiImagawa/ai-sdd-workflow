@@ -148,6 +148,12 @@ Not directly mentioned in PRD, but should be recognized as constraints.
 | **Constraint Documentation** | Are technical constraints properly documented in "Constraints"? |
 | **Feasibility**              | Are requirements feasible under technical constraints?          |
 
+## Front Matter Validation
+
+**Note**: Detailed front matter validation is handled by the `front-matter-reviewer` agent. This agent does not perform front matter checks.
+
+If front matter is absent, note in report: "Front matter not found. Consider adding YAML front matter for structured metadata."
+
 ## PRD Quality Check
 
 ### 1. Required Section Verification

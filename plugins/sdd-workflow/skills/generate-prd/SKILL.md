@@ -62,6 +62,7 @@ PRD Generation:
 - [ ] 7. Validate (Quality Checks)
 - [ ] 8. Save PRD file
 - [ ] 9. prd-reviewer (Interactive only)
+- [ ] 10. front-matter-reviewer (Interactive only)
 ```
 
 ## Generation Flow
@@ -80,7 +81,7 @@ PRD Generation:
     | 3d   | `/finalize-prd`                  | all outputs     | Complete PRD text |
 
 4. **Validate** → Quality Checks
-5. **Save** → `${SDD_REQUIREMENT_PATH}/{feature-name}.md`
+5. **Save PRD file** → Use the `Write` tool to save the complete PRD text from `/finalize-prd` output to `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md`
 
 ### Mode Differences
 
@@ -89,6 +90,7 @@ PRD Generation:
 | Vibe Coding risk | Confirm with user | Skip         |
 | Existing PRD     | Confirm overwrite | Auto-approve |
 | Sub-skill flags  | None              | `--ci`       |
+| **Save PRD**     | **Save**          | **Save**     |
 | prd-reviewer     | Run               | Skip         |
 
 **Sub-skill execution:**
@@ -96,14 +98,31 @@ PRD Generation:
 - Interactive: `Skill: /generate-usecase-diagram {requirements}`
 - CI: `Skill: /generate-usecase-diagram {requirements} --ci`
 
+## Post-Generation Actions
+
+### 1. Save PRD File (Required)
+
+**IMPORTANT: The `/finalize-prd` sub-skill returns text only. This skill MUST save the output to a file using the `Write` tool.**
+
+Use the `Write` tool to save the complete PRD text:
+
+- Flat: `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md`
+- Hierarchical (parent): `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent}/index.md`
+- Hierarchical (child): `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent}/{feature-name}.md`
+
+### 2. Consistency Check
+
+If existing spec/design exists:
+
+| Check                | Action                       |
+|:---------------------|:-----------------------------|
+| New requirements     | Verify reflected in spec     |
+| Changed requirements | Verify spec/design updated   |
+| ID changes           | Verify spec references match |
+
+If updates needed, recommend `/generate-spec`.
+
 ## Output
-
-**This skill writes files (sub-skills return text only).**
-
-Save location:
-
-- `${SDD_REQUIREMENT_PATH}/{feature-name}.md`
-- Hierarchical: `${SDD_REQUIREMENT_PATH}/{parent}/{feature-name}.md`
 
 Use `templates/${SDD_LANG:-en}/prd_output.md` for output formatting.
 
@@ -123,19 +142,9 @@ Use `templates/${SDD_LANG:-en}/prd_output.md` for output formatting.
 After PRD generation:
 
 1. Call prd-reviewer agent
-2. Apply approved fixes
-3. Include results in output
+2. Call front-matter-reviewer agent (pass PRD file path)
+3. Apply approved fixes from both reviews
+4. Include results in output
 
 If CONSTITUTION.md missing: Skip check, recommend `/sdd-init`.
 
-## Consistency Check
-
-If existing spec/design exists:
-
-| Check                | Action                       |
-|:---------------------|:-----------------------------|
-| New requirements     | Verify reflected in spec     |
-| Changed requirements | Verify spec/design updated   |
-| ID changes           | Verify spec references match |
-
-If updates needed, recommend `/generate-spec`.
