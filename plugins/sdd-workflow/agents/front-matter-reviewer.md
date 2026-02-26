@@ -193,9 +193,7 @@ Read `templates/${SDD_LANG:-en}/front_matter_validation_report.md` and use it fo
 
 ### Severity Levels
 
-- **error**: Must be fixed. Indicates structural issues that break tooling or traceability.
-- **warning**: Should be fixed. Indicates potential issues or non-standard values.
-- **info**: Informational. Suggestions for improvement.
+Read `references/validation_severity_levels.md` for severity level definitions and include them at the end of the report.
 
 ## Notes
 
