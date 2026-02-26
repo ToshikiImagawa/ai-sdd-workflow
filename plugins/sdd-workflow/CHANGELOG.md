@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.1] - 2026-02-26
+
+### Fixed
+
+#### Hooks
+
+- **`hooks.json`** - Workaround for Claude Code Issue [#24529](https://github.com/anthropics/claude-code/issues/24529)
+    - `CLAUDE_PLUGIN_ROOT` is not set as an environment variable during hook execution
+    - Explicitly set `CLAUDE_PLUGIN_ROOT` in the hook command to ensure availability in `session-start.sh`
+    - Before: `source ${CLAUDE_PLUGIN_ROOT}/scripts/session-start.sh`
+    - After: `CLAUDE_PLUGIN_ROOT=${CLAUDE_PLUGIN_ROOT} source ${CLAUDE_PLUGIN_ROOT}/scripts/session-start.sh`
+
 ## [3.2.0] - 2026-02-25
 
 ### Added
@@ -53,14 +65,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Documentation
 
 - **`sdd-init/SKILL.md`** - Removed reference to v3.0.0 migration (`lang` field addition)
-
-### Changed
-
-#### Version
-
-- Plugin version bumped from **3.1.1** to **3.2.0** (minor version increment)
-    - Breaking change: Removal of migration functionality
-    - New feature: Front matter recommendation skill
 
 ## [3.1.1] - 2026-02-23
 

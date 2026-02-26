@@ -7,6 +7,18 @@
 
 ## [Unreleased]
 
+## [3.2.1] - 2026-02-26
+
+### 修正
+
+#### フック
+
+- **`hooks.json`** - Claude Code Issue [#24529](https://github.com/anthropics/claude-code/issues/24529) の回避策を実装
+    - フック実行時に `CLAUDE_PLUGIN_ROOT` が環境変数として設定されない問題に対応
+    - フックコマンド内で `CLAUDE_PLUGIN_ROOT` を明示的に設定し、`session-start.sh` 内での利用を保証
+    - 変更前: `source ${CLAUDE_PLUGIN_ROOT}/scripts/session-start.sh`
+    - 変更後: `CLAUDE_PLUGIN_ROOT=${CLAUDE_PLUGIN_ROOT} source ${CLAUDE_PLUGIN_ROOT}/scripts/session-start.sh`
+
 ## [3.2.0] - 2026-02-25
 
 ### 追加
@@ -53,14 +65,6 @@
 #### ドキュメント
 
 - **`sdd-init/SKILL.md`** - v3.0.0 マイグレーション（`lang` フィールド追加）への言及を削除
-
-### 変更
-
-#### バージョン
-
-- プラグインバージョンを **3.1.1** から **3.2.0** に更新（マイナーバージョンインクリメント）
-  - Breaking Change: マイグレーション機能の削除
-  - 新機能: Front Matter レコメンドスキル
 
 ## [3.1.1] - 2026-02-23
 
