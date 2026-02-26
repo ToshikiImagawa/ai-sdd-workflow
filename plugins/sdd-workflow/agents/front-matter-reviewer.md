@@ -23,16 +23,7 @@ $ARGUMENTS
 
 ### Input Examples
 
-```
-# Single document validation
-.sdd/requirement/user-login.md
-
-# Multiple documents
-.sdd/specification/user-login_spec.md .sdd/specification/user-login_design.md
-
-# Project-wide cross-reference check
-.sdd/specification/user-login_design.md --cross-ref
-```
+**Reference**: `examples/front_matter_reviewer_usage.md`
 
 ## Output
 
@@ -198,43 +189,11 @@ When `--cross-ref` option is specified, perform project-wide checks:
 
 ## Output Format
 
-### Report Structure
-
-```markdown
-## Front Matter Validation Report
-
-### Summary
-
-- Documents checked: {count}
-- Errors: {error_count}
-- Warnings: {warning_count}
-- Info: {info_count}
-
-### Results
-
-#### {document_path}
-
-| # | Severity | Field | Issue | Recommendation |
-|:--|:---------|:------|:------|:---------------|
-| 1 | error    | id    | ...   | ...            |
-| 2 | warning  | ...   | ...   | ...            |
-
-#### {document_path_2}
-
-...
-
-### Cross-Reference Results (if --cross-ref)
-
-| # | Severity | Check | Issue | Recommendation |
-|:--|:---------|:------|:------|:---------------|
-| 1 | error    | ...   | ...   | ...            |
-```
+Read `templates/${SDD_LANG:-en}/front_matter_validation_report.md` and use it for output formatting.
 
 ### Severity Levels
 
-- **error**: Must be fixed. Indicates structural issues that break tooling or traceability.
-- **warning**: Should be fixed. Indicates potential issues or non-standard values.
-- **info**: Informational. Suggestions for improvement.
+Read `references/validation_severity_levels.md` for severity level definitions and include them at the end of the report.
 
 ## Notes
 
