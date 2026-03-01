@@ -155,10 +155,12 @@ def write_env_vars(cfg):
         f'export SDD_LANG="{cfg.lang}"',
     ]
 
-    with open(env_file, "w", encoding="utf-8") as f:
+    tmp_path = env_file + ".tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
         f.writelines(lines)
         for entry in env_entries:
             f.write(entry + "\n")
+    os.replace(tmp_path, env_file)
 
 
 def compare_major_minor(plugin_version, project_version):
