@@ -7,6 +7,25 @@
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-03-02
+
+### 変更
+
+#### フック
+
+- **`session-start`** - `session-start.sh`（Bash）を `session-start.py`（Python 3.7+）に移行
+    - Python 組み込みの `json` モジュールにより `jq` 依存を排除
+    - `--default-lang` 引数で `sdd-workflow` と `sdd-workflow-ja` のスクリプトを統一
+    - `sdd-workflow-ja/scripts/` を `sdd-workflow/scripts/` へのシンボリックリンクに変更（重複排除）
+    - 不正な `.sdd-config.json` に対するエラーハンドリングを追加（デフォルト値にフォールバック）
+    - Python 3.7+ が必要（`dataclasses` および `subprocess.run(capture_output=True)` を使用）
+
+#### ドキュメント
+
+- `sdd-workflow` プラグインに日本語 README（`README.ja.md`）を追加
+- `sdd-workflow-ja/README.md` を `sdd-workflow/README.ja.md` へのシンボリックリンクに変更
+- ルート `README.md` に CI バッジとライセンスバッジを追加
+
 ## [3.2.1] - 2026-02-26
 
 ### 修正

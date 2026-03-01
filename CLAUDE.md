@@ -46,7 +46,7 @@ ai-sdd-workflow/
 │       ├── hooks/
 │       │   └── hooks.json         # フック設定（JSON形式）
 │       ├── scripts/
-│       │   └── session-start.sh   # セッション開始時の初期化
+│       │   └── session-start.py   # セッション開始時の初期化
 │       ├── AI-SDD-PRINCIPLES.source.md
 │       ├── LICENSE
 │       ├── README.md

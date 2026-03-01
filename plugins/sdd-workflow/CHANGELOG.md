@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-03-02
+
+### Changed
+
+#### Hooks
+
+- **`session-start`** - Migrated `session-start.sh` (Bash) to `session-start.py` (Python 3.7+)
+    - Eliminated `jq` dependency by using Python's built-in `json` module
+    - Unified script across `sdd-workflow` and `sdd-workflow-ja` via `--default-lang` argument
+    - `sdd-workflow-ja/scripts/` is now a symlink to `sdd-workflow/scripts/` (deduplication)
+    - Added error handling for invalid `.sdd-config.json` (graceful fallback to defaults)
+    - Requires Python 3.7+ (for `dataclasses` and `subprocess.run(capture_output=True)`)
+
+#### Documentation
+
+- Added `README.ja.md` as the Japanese README for `sdd-workflow` plugin
+- Removed standalone `sdd-workflow-ja/README.md` (now symlinked to `sdd-workflow/README.ja.md`)
+- Added CI badge and license badge to root `README.md`
+
 ## [3.2.1] - 2026-02-26
 
 ### Fixed
