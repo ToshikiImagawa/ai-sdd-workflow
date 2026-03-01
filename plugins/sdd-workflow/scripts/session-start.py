@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
+from typing import Any, Dict
 
 
 @dataclass
@@ -24,7 +25,7 @@ class SddConfig:
     task_dir: str = "task"
 
 
-def get_plugin_root():
+def get_plugin_root() -> str:
     plugin_root = os.environ.get("CLAUDE_PLUGIN_ROOT", "")
     if not plugin_root:
         print("[AI-SDD] Error: CLAUDE_PLUGIN_ROOT is not set. Aborting session-start.", file=sys.stderr)
@@ -32,7 +33,7 @@ def get_plugin_root():
     return plugin_root
 
 
-def get_project_root():
+def get_project_root() -> str:
     project_dir = os.environ.get("CLAUDE_PROJECT_DIR", "")
     if project_dir:
         return project_dir
@@ -46,7 +47,7 @@ def get_project_root():
         return os.getcwd()
 
 
-def load_or_create_config(config_path, default_lang):
+def load_or_create_config(config_path: str, default_lang: str) -> Dict[str, Any]:
     if not os.path.isfile(config_path):
         parent = os.path.dirname(config_path)
         if parent:
@@ -74,7 +75,7 @@ def load_or_create_config(config_path, default_lang):
             return {}
 
 
-def build_sdd_config(raw, default_lang):
+def build_sdd_config(raw: Dict[str, Any], default_lang: str) -> SddConfig:
     cfg = SddConfig(lang=default_lang)
     if raw.get("root"):
         cfg.root = raw["root"]
@@ -90,13 +91,13 @@ def build_sdd_config(raw, default_lang):
     return cfg
 
 
-def ensure_sdd_directory(sdd_dir, docs_root):
+def ensure_sdd_directory(sdd_dir: str, docs_root: str) -> None:
     if not os.path.isdir(sdd_dir):
         os.makedirs(sdd_dir, exist_ok=True)
         print(f"[AI-SDD] {docs_root}/ directory created.")
 
 
-def get_plugin_version(plugin_root):
+def get_plugin_version(plugin_root: str) -> str:
     plugin_json_path = os.path.join(plugin_root, ".claude-plugin", "plugin.json")
     if not os.path.isfile(plugin_json_path):
         return ""
@@ -108,7 +109,7 @@ def get_plugin_version(plugin_root):
         return ""
 
 
-def sync_principles_file(plugin_root, sdd_dir, plugin_version):
+def sync_principles_file(plugin_root: str, sdd_dir: str, plugin_version: str) -> None:
     source = os.path.join(plugin_root, "AI-SDD-PRINCIPLES.source.md")
     target = os.path.join(sdd_dir, "AI-SDD-PRINCIPLES.md")
 
@@ -134,7 +135,7 @@ def sync_principles_file(plugin_root, sdd_dir, plugin_version):
         print("[AI-SDD] AI-SDD-PRINCIPLES.md copied (version unknown).")
 
 
-def write_env_vars(cfg):
+def write_env_vars(cfg: SddConfig) -> None:
     env_file = os.environ.get("CLAUDE_ENV_FILE", "")
     if not env_file:
         return
@@ -163,7 +164,7 @@ def write_env_vars(cfg):
     os.replace(tmp_path, env_file)
 
 
-def compare_major_minor(plugin_version, project_version):
+def compare_major_minor(plugin_version: str, project_version: str) -> bool:
     """Return True if project_version >= plugin_version (major.minor only)."""
     m_plugin = re.match(r"(\d+)\.(\d+)", plugin_version)
     m_project = re.match(r"(\d+)\.(\d+)", project_version)
@@ -174,7 +175,7 @@ def compare_major_minor(plugin_version, project_version):
     return project_tuple >= plugin_tuple
 
 
-def check_claude_md(project_root, sdd_dir, plugin_version):
+def check_claude_md(project_root: str, sdd_dir: str, plugin_version: str) -> None:
     if not os.path.isdir(sdd_dir):
         return
 
@@ -242,7 +243,7 @@ This file will be automatically deleted after running /sdd-init.
             os.remove(warning_file)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="AI-SDD session start script")
     parser.add_argument("--default-lang", default="en", help="Default language (en/ja)")
     args = parser.parse_args()
