@@ -67,21 +67,25 @@ def load_or_create_config(config_path, default_lang):
         return default_config
 
     with open(config_path, encoding="utf-8") as f:
-        return json.load(f)
+        try:
+            return json.load(f)
+        except json.JSONDecodeError as e:
+            print(f"[AI-SDD] Warning: .sdd-config.json is invalid JSON ({e}). Using default values.", file=sys.stderr)
+            return {}
 
 
 def build_sdd_config(raw, default_lang):
     cfg = SddConfig(lang=default_lang)
-    if raw.get("root") is not None:
+    if raw.get("root"):
         cfg.root = raw["root"]
-    if raw.get("lang") is not None:
+    if raw.get("lang"):
         cfg.lang = raw["lang"]
     dirs = raw.get("directories", {})
-    if dirs.get("requirement") is not None:
+    if dirs.get("requirement"):
         cfg.requirement_dir = dirs["requirement"]
-    if dirs.get("specification") is not None:
+    if dirs.get("specification"):
         cfg.specification_dir = dirs["specification"]
-    if dirs.get("task") is not None:
+    if dirs.get("task"):
         cfg.task_dir = dirs["task"]
     return cfg
 

@@ -15,11 +15,12 @@ as the source of truth. Supports multiple languages via `SDD_LANG` configuration
 
 ## Supported Environments
 
-| OS      | Support | Notes                                  |
-|:--------|:-------:|:---------------------------------------|
-| macOS   |    ✅    | Fully supported                        |
-| Linux   |    ✅    | Fully supported                        |
-| Windows |    ❌    | Not supported (see alternatives below) |
+| Requirement | Version | Notes                                  |
+|:------------|:-------:|:---------------------------------------|
+| macOS       |    ✅    | Fully supported                        |
+| Linux       |    ✅    | Fully supported                        |
+| Windows     |    ❌    | Not supported (see alternatives below) |
+| Python      |  3.7+   | Required for session-start hook        |
 
 ### Windows Limitations
 

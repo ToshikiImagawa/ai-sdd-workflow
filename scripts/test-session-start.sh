@@ -97,7 +97,7 @@ run_fixture() {
     # Determine --default-lang from fixture (defaults to "en")
     default_lang="en"
     if [ -f "${fixture_dir}/default-lang" ]; then
-        default_lang="$(cat "${fixture_dir}/default-lang" | tr -d '[:space:]')"
+        default_lang="$(tr -d '[:space:]' < "${fixture_dir}/default-lang")"
     fi
 
     # Run session-start.py in subprocess with mocked environment
