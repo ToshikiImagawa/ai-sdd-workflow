@@ -1,6 +1,6 @@
 #!/bin/sh
 # test-session-start.sh
-# Golden-file regression test runner for session-start.sh
+# Golden-file regression test runner for session-start.py
 # POSIX compatible (macOS bash 3.2 / dash)
 
 set -e
@@ -9,7 +9,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-SESSION_START="${REPO_ROOT}/plugins/sdd-workflow/scripts/session-start.sh"
+SESSION_START="${REPO_ROOT}/plugins/sdd-workflow/scripts/session-start.py"
 FIXTURES_DIR="${REPO_ROOT}/tests/fixtures"
 
 # Counters
@@ -94,15 +94,15 @@ run_fixture() {
     env_file="${tmp_dir}/env_output"
     touch "$env_file"
 
-    # Run session-start.sh in subprocess with mocked environment
+    # Run session-start.py in subprocess with mocked environment
     exit_code=0
     CLAUDE_PLUGIN_ROOT="$mock_plugin" \
         CLAUDE_PROJECT_DIR="$mock_project" \
         CLAUDE_ENV_FILE="$env_file" \
-        bash "$SESSION_START" > /dev/null 2>&1 || exit_code=$?
+        python3 "$SESSION_START" > /dev/null 2>&1 || exit_code=$?
 
     if [ "$exit_code" -ne 0 ]; then
-        printf "  session-start.sh exited with code %d\n" "$exit_code" >&2
+        printf "  session-start.py exited with code %d\n" "$exit_code" >&2
     fi
 
     # Extract and sort SDD_* export lines from env file
@@ -134,11 +134,11 @@ run_fixture() {
 }
 
 # Main
-printf "=== session-start.sh Regression Tests ===\n\n"
+printf "=== session-start.py Regression Tests ===\n\n"
 
 # Check prerequisites
 if [ ! -f "$SESSION_START" ]; then
-    printf "Error: session-start.sh not found at %s\n" "$SESSION_START" >&2
+    printf "Error: session-start.py not found at %s\n" "$SESSION_START" >&2
     exit 1
 fi
 
