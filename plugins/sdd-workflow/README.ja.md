@@ -53,7 +53,7 @@ Claude Code で以下を実行:
 次にプラグインをインストール:
 
 ```
-/plugin install sdd-workflow-ja@ToshikiImagawa/ai-sdd-workflow
+/plugin install sdd-workflow@ToshikiImagawa/ai-sdd-workflow
 ```
 
 ### 方法 2: GitHub からクローン
@@ -66,7 +66,7 @@ git clone https://github.com/ToshikiImagawa/ai-sdd-workflow.git ~/.claude/plugin
 
 ### 確認
 
-Claude Code で `/plugin` コマンドを実行し、`sdd-workflow-ja` が表示されることを確認してください。
+Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示されることを確認してください。
 
 ## 言語設定
 
