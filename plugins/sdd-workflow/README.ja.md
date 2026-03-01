@@ -22,7 +22,7 @@ AI駆動仕様駆動開発（AI-SDD）ワークフローを支援する統合 Cl
 
 ### Windows の制限事項
 
-このプラグインの `session-start.sh` フックは bash スクリプトとして実装されており、Windows では動作しません。
+このプラグインのフックは `python3` コマンドを bash 経由で実行しており、Windows のネイティブ環境では動作しません。
 
 ### Windows ユーザー向けの代替案
 
@@ -31,13 +31,8 @@ AI駆動仕様駆動開発（AI-SDD）ワークフローを支援する統合 Cl
     - [WSL インストールガイド](https://learn.microsoft.com/ja-jp/windows/wsl/install)
 
 2. **Git Bash の使用**
-    - Git for Windows に含まれる Git Bash で bash スクリプトを実行可能
+    - Git for Windows に含まれる Git Bash で実行可能な場合があります
     - [Git for Windows](https://gitforwindows.org/)
-
-### 今後のサポート予定
-
-- PowerShell 版スクリプトの追加を検討中
-- クロスプラットフォーム実装（例: Node.js）への移行を検討中
 
 ### Vibe Coding とは？
 
@@ -535,8 +530,7 @@ sdd-workflow-ja/
 ├── skills -> ../sdd-workflow/skills  # sdd-workflow へのシンボリックリンク
 ├── hooks/
 │   └── hooks.json                 # フック設定
-├── scripts/
-│   └── session-start.sh           # セッション開始初期化スクリプト（SDD_LANG=ja デフォルト）
+├── scripts -> ../sdd-workflow/scripts  # sdd-workflow へのシンボリックリンク
 ├── AI-SDD-PRINCIPLES.source.md -> ../sdd-workflow/AI-SDD-PRINCIPLES.source.md
 ├── LICENSE -> ../sdd-workflow/LICENSE
 ├── README.md

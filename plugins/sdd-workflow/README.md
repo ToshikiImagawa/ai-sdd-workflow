@@ -23,7 +23,7 @@ as the source of truth. Supports multiple languages via `SDD_LANG` configuration
 
 ### Windows Limitations
 
-The `session-start.sh` hook in this plugin is implemented as a bash script and does not work on Windows.
+This plugin's hooks execute `python3` via bash and do not work on native Windows environments.
 
 ### Alternatives for Windows Users
 
@@ -32,13 +32,8 @@ The `session-start.sh` hook in this plugin is implemented as a bash script and d
     - [WSL Installation Guide](https://learn.microsoft.com/en-us/windows/wsl/install)
 
 2. **Use Git Bash**
-    - Git Bash included with Git for Windows may allow bash scripts to run
+    - Git Bash included with Git for Windows may allow execution
     - [Git for Windows](https://gitforwindows.org/)
-
-### Future Support Plans
-
-- Considering adding PowerShell version of the script
-- Considering migration to cross-platform implementation (e.g., Node.js)
 
 ### What is Vibe Coding?
 
@@ -580,7 +575,7 @@ sdd-workflow/
 ├── hooks/
 │   └── hooks.json                 # Hooks configuration
 ├── scripts/
-│   └── session-start.sh           # Session start initialization script
+│   └── session-start.py           # Session start initialization script
 ├── AI-SDD-PRINCIPLES.source.md
 ├── LICENSE
 ├── README.md

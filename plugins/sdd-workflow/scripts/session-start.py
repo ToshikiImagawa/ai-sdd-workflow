@@ -48,7 +48,9 @@ def get_project_root():
 
 def load_or_create_config(config_path, default_lang):
     if not os.path.isfile(config_path):
-        os.makedirs(os.path.dirname(config_path), exist_ok=True)
+        parent = os.path.dirname(config_path)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
         default_config = {
             "root": ".sdd",
             "lang": default_lang,
