@@ -1,7 +1,12 @@
-# sdd-workflow
+# SDD Workflow
+
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey)]()
 
 A unified Claude Code plugin supporting AI-driven Specification-Driven Development (AI-SDD) workflow with multi-language
 support.
+
+[日本語版 README](README.ja.md)
 
 ## Overview
 
