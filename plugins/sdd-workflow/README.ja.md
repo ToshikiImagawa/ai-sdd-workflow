@@ -59,7 +59,7 @@ Claude Code で以下を実行:
 ### 方法 2: GitHub からクローン
 
 ```bash
-git clone https://github.com/ToshikiImagawa/ai-sdd-workflow.git ~/.claude/plugins/sdd-workflow-ja
+git clone https://github.com/ToshikiImagawa/ai-sdd-workflow.git ~/.claude/plugins/sdd-workflow
 ```
 
 インストール後、Claude Code を再起動してください。
