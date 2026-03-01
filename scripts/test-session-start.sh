@@ -94,12 +94,18 @@ run_fixture() {
     env_file="${tmp_dir}/env_output"
     touch "$env_file"
 
+    # Determine --default-lang from fixture (defaults to "en")
+    default_lang="en"
+    if [ -f "${fixture_dir}/default-lang" ]; then
+        default_lang="$(cat "${fixture_dir}/default-lang" | tr -d '[:space:]')"
+    fi
+
     # Run session-start.py in subprocess with mocked environment
     exit_code=0
     CLAUDE_PLUGIN_ROOT="$mock_plugin" \
         CLAUDE_PROJECT_DIR="$mock_project" \
         CLAUDE_ENV_FILE="$env_file" \
-        python3 "$SESSION_START" > /dev/null 2>&1 || exit_code=$?
+        python3 "$SESSION_START" --default-lang "$default_lang" > /dev/null 2>&1 || exit_code=$?
 
     if [ "$exit_code" -ne 0 ]; then
         printf "  session-start.py exited with code %d\n" "$exit_code" >&2

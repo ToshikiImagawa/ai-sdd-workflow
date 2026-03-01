@@ -72,16 +72,16 @@ def load_or_create_config(config_path, default_lang):
 
 def build_sdd_config(raw, default_lang):
     cfg = SddConfig(lang=default_lang)
-    if raw.get("root"):
+    if raw.get("root") is not None:
         cfg.root = raw["root"]
-    if raw.get("lang"):
+    if raw.get("lang") is not None:
         cfg.lang = raw["lang"]
     dirs = raw.get("directories", {})
-    if dirs.get("requirement"):
+    if dirs.get("requirement") is not None:
         cfg.requirement_dir = dirs["requirement"]
-    if dirs.get("specification"):
+    if dirs.get("specification") is not None:
         cfg.specification_dir = dirs["specification"]
-    if dirs.get("task"):
+    if dirs.get("task") is not None:
         cfg.task_dir = dirs["task"]
     return cfg
 
@@ -168,7 +168,7 @@ def compare_major_minor(plugin_version, project_version):
     return project_tuple >= plugin_tuple
 
 
-def check_claude_md(project_root, sdd_dir, docs_root, plugin_version):
+def check_claude_md(project_root, sdd_dir, plugin_version):
     if not os.path.isdir(sdd_dir):
         return
 
@@ -256,7 +256,7 @@ def main():
 
     write_env_vars(cfg)
 
-    check_claude_md(project_root, sdd_dir, cfg.root, plugin_version)
+    check_claude_md(project_root, sdd_dir, plugin_version)
 
 
 if __name__ == "__main__":
