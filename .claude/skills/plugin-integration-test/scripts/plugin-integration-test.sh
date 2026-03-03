@@ -167,8 +167,9 @@ _run_claude_with_metrics() {
     local phase_name="$5"
 
     # Claude を --print --output-format json で実行し、JSON レスポンスを取得
+    # stderr にも同じ JSON が出力されるため、stderr は捨てて stdout のみ取得
     local raw_json
-    raw_json=$(echo "$input_text" | claude --plugin-dir "$plugin_dir" --print --output-format json 2>&1) || true
+    raw_json=$(echo "$input_text" | claude --plugin-dir "$plugin_dir" --print --output-format json 2>/dev/null) || true
 
     # result テキストを保存（既存ログ形式を維持）
     echo "$raw_json" | jq -r '.result // ""' > "$output_log" 2>/dev/null || \
@@ -1042,9 +1043,12 @@ SUMMARY_EOF
     done
 
     # Context 使用率分析（Haiku 200K を想定）
+    # input_tokens はキャッシュ未使用の新規入力のみ。実際の context 占有量は
+    # input_tokens + cache_creation_input_tokens + cache_read_input_tokens の合計。
     echo "## Context 使用率分析" >> "$summary_file"
     echo "" >> "$summary_file"
     echo "> Haiku 200K コンテキストウィンドウ (200,000 トークン) を想定" >> "$summary_file"
+    echo "> context 占有量 = input_tokens + cache_creation_input_tokens + cache_read_input_tokens" >> "$summary_file"
     echo "" >> "$summary_file"
 
     for test_case in "${test_cases[@]}"; do
@@ -1052,16 +1056,19 @@ SUMMARY_EOF
         local token_file="${log_dir}/token-usage.log"
 
         if [ -f "$token_file" ]; then
-            local max_input=0
+            local max_context=0
+            local max_phase=""
             while IFS=: read -r phase input_tok output_tok cache_create cache_read cost_usd duration_ms num_turns; do
-                if [ "$input_tok" -gt "$max_input" ]; then
-                    max_input=$input_tok
+                local total_context=$((input_tok + cache_create + cache_read))
+                if [ "$total_context" -gt "$max_context" ]; then
+                    max_context=$total_context
+                    max_phase=$phase
                 fi
             done < "$token_file"
 
-            if [ "$max_input" -gt 0 ]; then
-                local usage_percent=$(( (max_input * 100) / 200000 ))
-                echo "- **${test_case}**: 最大入力トークン = ${max_input}, Context 使用率 = ${usage_percent}% (200K 中)" >> "$summary_file"
+            if [ "$max_context" -gt 0 ]; then
+                local usage_percent=$(( (max_context * 100) / 200000 ))
+                echo "- **${test_case}**: 最大 context = ${max_context} トークン (${max_phase}), 使用率 = ${usage_percent}% (200K 中)" >> "$summary_file"
             fi
         fi
     done
