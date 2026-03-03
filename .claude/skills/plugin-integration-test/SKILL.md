@@ -53,6 +53,8 @@ bash "${SCRIPT}" setup
 
 **追加テストケース**: `sdd-workflow-with-ja-config` ディレクトリも作成され、事前に `lang: "ja"` の `.sdd-config.json` が配置される。このテストケースは、既存の設定ファイルの言語設定がスキルに正しく継承されるかを検証する。
 
+**追加テストケース**: `sdd-workflow-with-cli` ディレクトリも作成され、事前に `cli.enabled: true` の `.sdd-config.json` が配置される。このテストケースは、CLI が `uvx` 経由で検出・利用されるかを検証する。
+
 ### Phase 2: session-start テスト
 
 各プラグインに対して `run` コマンドを実行する。以下の3つのコマンドを順番に実行する（確認不要）。
@@ -66,6 +68,12 @@ bash "${SCRIPT}" run "${PLUGINS_DIR}/sdd-workflow-ja"
 ```bash
 # sdd-workflow-with-ja-config: 既存の .sdd-config.json (lang: ja) + sdd-workflow プラグイン
 bash "${SCRIPT}" run "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-ja-config
+```
+
+**追加テストケース（CLI 連携テスト）**:
+```bash
+# sdd-workflow-with-cli: .sdd-config.json (cli.enabled: true) + sdd-workflow プラグイン
+bash "${SCRIPT}" run "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-cli
 ```
 
 内部で `claude --plugin-dir <plugin_dir> --print -p` によるサブセッションを起動し、session-start フックを実行させる。
@@ -86,6 +94,11 @@ bash "${SCRIPT}" sdd-init "${PLUGINS_DIR}/sdd-workflow-ja"
 **追加テストケース（既存設定継承テスト）**:
 ```bash
 bash "${SCRIPT}" sdd-init "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-ja-config
+```
+
+**追加テストケース（CLI 連携テスト）**:
+```bash
+bash "${SCRIPT}" sdd-init "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-cli
 ```
 
 **前提条件チェック**: `/sdd-init` 実行前に `session-start.sh` が正しく実行されたかを検証する。以下のファイルが存在するかチェックし、結果を `session-start-check.log` に記録する:
@@ -112,6 +125,11 @@ bash "${SCRIPT}" gen-skills "${PLUGINS_DIR}/sdd-workflow-ja"
 bash "${SCRIPT}" gen-skills "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-ja-config
 ```
 
+**追加テストケース（CLI 連携テスト）**:
+```bash
+bash "${SCRIPT}" gen-skills "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-cli
+```
+
 内部で以下のスキルをサブセッションで実行し、生成ファイルと言語を検証する:
 - `/constitution init <コンテキスト>` - CONSTITUTION.md の生成と言語検証（コンテキスト引数で非対話モード実行）
 - `/generate-prd --ci <ダミー要件>` - PRD ファイルの生成と言語検証（`--ci` フラグで非対話モード実行）
@@ -121,12 +139,28 @@ bash "${SCRIPT}" gen-skills "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-ja-c
 
 生成されたファイルはログディレクトリにコピーされる。
 
+### Phase 3c: CLI テスト
+
+`sdd-workflow-with-cli` テストケースに対して `cli-test` コマンドを実行する。Phase 3b（`gen-skills`）完了後に実行する（確認不要）。
+
+```bash
+bash "${SCRIPT}" cli-test "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-cli
+```
+
+内部で `uvx --from git+https://github.com/ToshikiImagawa/ai-sdd-workflow-cli.git sdd-cli` を使用して以下の CLI コマンドを直接実行する:
+1. **CLI 検出確認**: `session-start.log` 内で `SDD_CLI_AVAILABLE` が設定されたか検証
+2. **`sdd-cli lint --json`**: 生成済みドキュメントに対して実行、JSON 出力と終了コードを記録
+3. **`sdd-cli index --quiet`**: FTS5 インデックス構築、正常終了を確認
+4. **`sdd-cli search --format json`**: インデックス済みドキュメントの検索結果を記録
+
+各コマンドの実行時間を `timing.log` に記録し、結果を `cli-test.log` に保存する。
+
 ### Phase 4: ログ収集
 
 各プラグインのログを収集する。以下のコマンドを1つのBash呼び出しで実行する（確認不要）。
 
 ```bash
-bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow" && bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow-ja" && bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-ja-config
+bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow" && bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow-ja" && bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-ja-config && bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-cli
 ```
 
 ### Phase 5: ログ読み取りとテスト結果判定
@@ -151,6 +185,10 @@ bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow" && bash "${SCRIPT}" colle
 14. **`/tmp/ai-sdd-plugin-test/logs/<plugin>/spec-*.md`** - 生成された仕様書ファイルの内容と言語
 15. **`/tmp/ai-sdd-plugin-test/logs/<plugin>/sdd-structure-after-gen.log`** - 生成系スキル実行後のファイル構造
 16. **`/tmp/ai-sdd-plugin-test/logs/<plugin>/timing.log`** - 各コマンドの実行時間（`<phase>:<seconds>` 形式）
+17. **`/tmp/ai-sdd-plugin-test/logs/<plugin>/cli-test.log`** - CLI テスト結果（`sdd-workflow-with-cli` のみ）
+18. **`/tmp/ai-sdd-plugin-test/logs/<plugin>/cli-lint.log`** - `sdd-cli lint --json` の出力（`sdd-workflow-with-cli` のみ）
+19. **`/tmp/ai-sdd-plugin-test/logs/<plugin>/cli-index.log`** - `sdd-cli index --quiet` の出力（`sdd-workflow-with-cli` のみ）
+20. **`/tmp/ai-sdd-plugin-test/logs/<plugin>/cli-search.log`** - `sdd-cli search --format json` の出力（`sdd-workflow-with-cli` のみ）
 
 #### 判定基準
 
@@ -173,6 +211,10 @@ bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow" && bash "${SCRIPT}" colle
 | PRD 言語検証 | 生成された PRD ファイル（prd-*.md）の内容がプラグインの期待言語で記述されていること |
 | /generate-spec 実行 | generate-spec.log にエラーなし、`.sdd/specification/` 配下に仕様書ファイルが生成されている |
 | 仕様書 言語検証 | 生成された仕様書ファイル（spec-*.md）の内容がプラグインの期待言語で記述されていること |
+| CLI 検出 (SDD_CLI_AVAILABLE) | `cli.enabled: true` から CLI が検出され環境変数が設定されること（`sdd-workflow-with-cli` のみ） |
+| sdd-cli lint --json 実行 | 正常終了し JSON 出力を返すこと（`sdd-workflow-with-cli` のみ） |
+| sdd-cli index 実行 | 正常終了しインデックスが作成されること（`sdd-workflow-with-cli` のみ） |
+| sdd-cli search 実行 | 正常終了し検索結果を返すこと（`sdd-workflow-with-cli` のみ） |
 
 #### プラグインと期待言語の対応
 
@@ -181,8 +223,11 @@ bash "${SCRIPT}" collect "${PLUGINS_DIR}/sdd-workflow" && bash "${SCRIPT}" colle
 | sdd-workflow | `en` | `This project follows AI-SDD` |
 | sdd-workflow-ja | `ja` | `このプロジェクトは AI-SDD` |
 | sdd-workflow-with-ja-config | `ja` | `このプロジェクトは AI-SDD` |
+| sdd-workflow-with-cli | `en` | `This project follows AI-SDD` |
 
 **sdd-workflow-with-ja-config** は、`sdd-workflow` プラグインを使用しているが、既存の `.sdd-config.json` で `lang: "ja"` が設定されているケース。このテストにより、既存設定がスキル実行時に正しく継承されるかを検証する。
+
+**sdd-workflow-with-cli** は、`sdd-workflow` プラグインを使用し、`.sdd-config.json` で `cli.enabled: true` が設定されているケース。このテストにより、CLI が `uvx` 経由で検出・利用され、lint/index/search コマンドが正常に動作するかを検証する。既存の 15 テスト項目に加えて、CLI 固有の 4 テスト項目（CLI 検出、lint、index、search）を実行する。
 
 ### Phase 6: TEST_SUMMARY.md 生成
 

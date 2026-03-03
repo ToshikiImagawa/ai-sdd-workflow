@@ -12,6 +12,9 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 SESSION_START="${REPO_ROOT}/plugins/sdd-workflow/scripts/session-start.py"
 FIXTURES_DIR="${REPO_ROOT}/tests/fixtures"
 
+# Resolve python3 absolute path before modifying PATH
+PYTHON3="$(command -v python3)"
+
 # Counters
 PASS_COUNT=0
 FAIL_COUNT=0
@@ -85,9 +88,24 @@ run_fixture() {
         cp "${fixture_dir}/.sdd-config.json" "${mock_project}/.sdd-config.json"
     fi
 
+    # Copy .sdd-config.local.json if fixture provides it
+    if [ -f "${fixture_dir}/.sdd-config.local.json" ]; then
+        cp "${fixture_dir}/.sdd-config.local.json" "${mock_project}/.sdd-config.local.json"
+    fi
+
     # Run setup.sh if fixture provides it
+    test_env_file="${mock_project}/.test-env"
     if [ -f "${fixture_dir}/setup.sh" ]; then
         PROJECT_ROOT="$mock_project" sh "${fixture_dir}/setup.sh"
+    fi
+
+    # Build a minimal PATH that excludes sdd-cli/uvx by default
+    minimal_path="/usr/bin:/bin:/usr/sbin:/sbin"
+
+    # Load test environment overrides (e.g. PATH additions from setup.sh)
+    extra_path=""
+    if [ -f "$test_env_file" ]; then
+        extra_path="$(grep '^PATH_PREPEND=' "$test_env_file" | head -1 | sed 's/^PATH_PREPEND=//')"
     fi
 
     # Create CLAUDE_ENV_FILE
@@ -101,11 +119,17 @@ run_fixture() {
     fi
 
     # Run session-start.py in subprocess with mocked environment
+    # Use minimal PATH to isolate CLI detection from host environment
     exit_code=0
+    test_path="$minimal_path"
+    if [ -n "$extra_path" ]; then
+        test_path="${extra_path}:${test_path}"
+    fi
     CLAUDE_PLUGIN_ROOT="$mock_plugin" \
         CLAUDE_PROJECT_DIR="$mock_project" \
         CLAUDE_ENV_FILE="$env_file" \
-        python3 "$SESSION_START" --default-lang "$default_lang" > /dev/null 2>&1 || exit_code=$?
+        PATH="$test_path" \
+        "$PYTHON3" "$SESSION_START" --default-lang "$default_lang" > /dev/null 2>&1 || exit_code=$?
 
     if [ "$exit_code" -ne 0 ]; then
         printf "  session-start.py exited with code %d\n" "$exit_code" >&2

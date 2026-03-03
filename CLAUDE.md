@@ -145,6 +145,25 @@ CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実
 
 - 設定ファイルが存在しない場合はデフォルト値が使用されます
 - 部分的な設定も可能（指定されていない項目はデフォルト値）
+- `.sdd-config.local.json` でローカル環境固有の設定をオーバーライド可能（`.gitignore` 対象）
+
+#### CLI連携設定（オプショナル）
+
+`cli` フィールドで [ai-sdd-workflow-cli](https://github.com/ToshikiImagawa/ai-sdd-workflow-cli) との連携を設定できます。
+
+```json
+{
+  "cli": {
+    "enabled": true,
+    "repository": "https://github.com/ToshikiImagawa/ai-sdd-workflow-cli.git"
+  }
+}
+```
+
+- `cli` フィールドなし: 自動検出モード（`sdd-cli` がPATHにあれば有効）
+- `cli.enabled: true`: uvx フォールバックを含む積極的なCLI利用
+- `cli.enabled: false`: CLI検出をスキップ
+- `cli.repository`: 省略時はデフォルトURL
 
 ### 環境変数によるパス解決
 
@@ -160,6 +179,8 @@ CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実
 | `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | 要求仕様書フルパス      |
 | `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書・設計書フルパス    |
 | `SDD_TASK_PATH`          | `.sdd/task`          | タスクログフルパス      |
+| `SDD_CLI_AVAILABLE`      | `"false"`            | CLI利用可否フラグ     |
+| `SDD_CLI_COMMAND`        | ―                    | CLIコマンド（available時のみ） |
 
 **パス解決の優先順位:**
 

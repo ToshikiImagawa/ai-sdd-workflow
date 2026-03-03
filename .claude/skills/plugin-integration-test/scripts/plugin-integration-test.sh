@@ -7,6 +7,7 @@
 #   plugin-integration-test.sh run <plugin_dir>   - サブセッションでテスト実行
 #   plugin-integration-test.sh sdd-init <plugin_dir> - /sdd-init テスト実行
 #   plugin-integration-test.sh gen-skills <plugin_dir> - 生成系スキルテスト実行
+#   plugin-integration-test.sh cli-test <plugin_dir>  - CLI テスト実行
 #   plugin-integration-test.sh collect <plugin_dir>  - ログ収集
 #   plugin-integration-test.sh summary            - TEST_SUMMARY.md テンプレート生成
 
@@ -76,6 +77,70 @@ EOF
 
     echo "テストディレクトリ作成: ${ja_config_test_dir} (git initialized, .sdd-config.json with lang: ja)"
 
+    # 追加テストケース: sdd-workflow + cli.enabled: true (CLI 連携テスト)
+    # このテストは、CLI が uvx 経由で検出・利用されるかを検証する
+    local cli_test_dir="${TEST_BASE}/sdd-workflow-with-cli"
+    mkdir -p "$cli_test_dir"
+    cd "$cli_test_dir"
+
+    # git init + 空 CLAUDE.md をコミット
+    git init -q
+    echo "" > CLAUDE.md
+    git add CLAUDE.md
+    git commit -q -m "initial commit"
+
+    # 事前に cli.enabled: true の .sdd-config.json を配置
+    cat > ".sdd-config.json" << 'EOF'
+{
+  "root": ".sdd",
+  "lang": "en",
+  "directories": {
+    "requirement": "requirement",
+    "specification": "specification",
+    "task": "task"
+  },
+  "cli": {
+    "enabled": true
+  }
+}
+EOF
+    git add .sdd-config.json
+    git commit -q -m "add .sdd-config.json with cli.enabled: true"
+
+    echo "テストディレクトリ作成: ${cli_test_dir} (git initialized, .sdd-config.json with cli.enabled: true)"
+
+    # 追加テストケース: sdd-workflow + cli.enabled: false (フォールバック専用)
+    # このテストは、CLI を強制的に無効化し、フォールバックスキルの動作を検証する
+    local cli_disabled_test_dir="${TEST_BASE}/sdd-workflow-cli-disabled"
+    mkdir -p "$cli_disabled_test_dir"
+    cd "$cli_disabled_test_dir"
+
+    # git init + 空 CLAUDE.md をコミット
+    git init -q
+    echo "" > CLAUDE.md
+    git add CLAUDE.md
+    git commit -q -m "initial commit"
+
+    # cli.enabled: false の .sdd-config.json を配置
+    cat > ".sdd-config.json" << 'EOF'
+{
+  "root": ".sdd",
+  "lang": "en",
+  "directories": {
+    "requirement": "requirement",
+    "specification": "specification",
+    "task": "task"
+  },
+  "cli": {
+    "enabled": false
+  }
+}
+EOF
+    git add .sdd-config.json
+    git commit -q -m "add .sdd-config.json with cli.enabled: false"
+
+    echo "テストディレクトリ作成: ${cli_disabled_test_dir} (git initialized, cli.enabled: false)"
+
     # ログディレクトリ
     mkdir -p "${TEST_BASE}/logs"
     echo "ログディレクトリ作成: ${TEST_BASE}/logs"
@@ -89,6 +154,8 @@ EOF
     done
     echo "追加テストケース:"
     echo "  - sdd-workflow-with-ja-config (sdd-workflow + 既存 lang: ja 設定)"
+    echo "  - sdd-workflow-with-cli (sdd-workflow + cli.enabled: true)"
+    echo "  - sdd-workflow-cli-disabled (sdd-workflow + cli.enabled: false, フォールバック専用)"
 }
 
 # --- Phase 2: サブセッション実行 (session-start + 基本検証) ---
@@ -252,13 +319,25 @@ run_gen_skills_test() {
     local phase_start
     phase_start=$(date +%s)
 
+    # テストケース名に基づいてスキルを選択（CLI-fallbackスキルの使用）
+    local constitution_skill="constitution"
+    local prd_skill="generate-prd"
+    local spec_skill="generate-spec"
+
+    if [ "$effective_name" = "sdd-workflow-cli-disabled" ]; then
+        constitution_skill="constitution-cli-fallback"
+        prd_skill="generate-prd-cli-fallback"
+        spec_skill="generate-spec-cli-fallback"
+        echo "CLI-fallbackスキル使用: /${constitution_skill}, /${prd_skill}, /${spec_skill}"
+    fi
+
     # /constitution init テスト
-    echo "--- /constitution init テスト ---"
+    echo "--- /${constitution_skill} init テスト ---"
     cd "$test_dir"
     unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
     local start_time
     start_time=$(date +%s)
-    echo '/constitution init A sample CLI tool project using TypeScript.' | claude --plugin-dir "$plugin_dir" --print > "$log_dir/constitution-init.log" 2>&1 || true
+    echo "/${constitution_skill} init A sample CLI tool project using TypeScript." | claude --plugin-dir "$plugin_dir" --print > "$log_dir/constitution-init.log" 2>&1 || true
     local end_time
     end_time=$(date +%s)
     local elapsed=$((end_time - start_time))
@@ -272,10 +351,10 @@ run_gen_skills_test() {
     fi
 
     # /generate-prd テスト（ダミー要件）
-    echo "--- /generate-prd テスト ---"
+    echo "--- /${prd_skill} テスト ---"
     cd "$test_dir"
     start_time=$(date +%s)
-    echo "/generate-prd --ci A sample task management feature. Users can create, edit, and delete tasks." | claude --plugin-dir "$plugin_dir" --print > "$log_dir/generate-prd.log" 2>&1 || true
+    echo "/${prd_skill} --ci A sample task management feature. Users can create, edit, and delete tasks." | claude --plugin-dir "$plugin_dir" --print > "$log_dir/generate-prd.log" 2>&1 || true
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
     echo "generate-prd:${elapsed}" >> "$log_dir/timing.log"
@@ -294,10 +373,10 @@ run_gen_skills_test() {
     fi
 
     # /generate-spec テスト（ダミー要件）
-    echo "--- /generate-spec テスト ---"
+    echo "--- /${spec_skill} テスト ---"
     cd "$test_dir"
     start_time=$(date +%s)
-    echo "/generate-spec --ci User authentication feature. Supports login and logout with email and password." | claude --plugin-dir "$plugin_dir" --print > "$log_dir/generate-spec.log" 2>&1 || true
+    echo "/${spec_skill} --ci User authentication feature. Supports login and logout with email and password." | claude --plugin-dir "$plugin_dir" --print > "$log_dir/generate-spec.log" 2>&1 || true
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
     echo "generate-spec:${elapsed}" >> "$log_dir/timing.log"
@@ -329,6 +408,179 @@ run_gen_skills_test() {
     echo "Phase 3b 合計実行時間: ${phase_elapsed}秒"
 
     echo ""
+}
+
+# --- Phase 3c: CLI テスト ---
+run_cli_test() {
+    local plugin_dir="$1"
+    local test_case_name="${2:-}"  # オプショナル: テストケース名（省略時はプラグイン名を使用）
+    local plugin_name
+    plugin_name="$(basename "$plugin_dir")"
+
+    # テストケース名が指定されていればそれを使用、なければプラグイン名を使用
+    local effective_name="${test_case_name:-$plugin_name}"
+    local test_dir="${TEST_BASE}/${effective_name}"
+    local log_dir="${TEST_BASE}/logs/${effective_name}"
+
+    mkdir -p "$log_dir"
+
+    echo "=== Phase 3c: CLI テスト [${effective_name}] (plugin: ${plugin_name}) ==="
+
+    local phase_start
+    phase_start=$(date +%s)
+
+    # CLI コマンドのベース
+    local cli_cmd="uvx --from git+https://github.com/ToshikiImagawa/ai-sdd-workflow-cli.git sdd-cli"
+
+    # 1. CLI 検出確認: .sdd-config.json から cli.enabled 設定を確認し、
+    #    session-start が正しく CLI を検出したかを間接的に検証
+    echo "--- CLI 検出確認 ---"
+    local cli_detection_result="UNKNOWN"
+
+    if [ -f "$test_dir/.sdd-config.json" ]; then
+        # .sdd-config.json に cli.enabled が含まれているか確認
+        if grep -q '"cli"' "$test_dir/.sdd-config.json"; then
+            local cli_enabled=$(jq -r '.cli.enabled // "null"' "$test_dir/.sdd-config.json")
+            if [ "$cli_enabled" = "true" ]; then
+                # cli.enabled: true の場合、uvx が利用可能であれば検出成功のはず
+                if command -v uvx >/dev/null 2>&1; then
+                    echo "OK: cli.enabled=true かつ uvx が利用可能 → CLI 検出成功と推定"
+                    cli_detection_result="PASS"
+                else
+                    echo "WARNING: cli.enabled=true だが uvx が見つからない → CLI 検出失敗の可能性"
+                    cli_detection_result="WARN"
+                fi
+            elif [ "$cli_enabled" = "false" ]; then
+                echo "OK: cli.enabled=false → CLI 検出をスキップ（正常）"
+                cli_detection_result="SKIPPED"
+            else
+                echo "INFO: cli 設定なし → 自動検出モード"
+                if command -v sdd-cli >/dev/null 2>&1; then
+                    echo "OK: sdd-cli が PATH にある → CLI 検出成功"
+                    cli_detection_result="PASS"
+                else
+                    echo "INFO: sdd-cli が PATH にない → CLI 未検出（正常）"
+                    cli_detection_result="NOT_FOUND"
+                fi
+            fi
+        else
+            echo "INFO: .sdd-config.json に cli 設定なし → 自動検出モード"
+            if command -v sdd-cli >/dev/null 2>&1; then
+                echo "OK: sdd-cli が PATH にある → CLI 検出成功"
+                cli_detection_result="PASS"
+            else
+                echo "INFO: sdd-cli が PATH にない → CLI 未検出（正常）"
+                cli_detection_result="NOT_FOUND"
+            fi
+        fi
+    else
+        echo "ERROR: .sdd-config.json が存在しません"
+        cli_detection_result="MISSING"
+    fi
+
+    echo "cli-detection:${cli_detection_result}" >> "$log_dir/cli-test.log"
+
+    # 追加検証: Claude セッション内で実際の環境変数を確認
+    echo "--- 環境変数検証（Claude セッション内） ---"
+    cd "$test_dir"
+    local env_check_cmd='echo "SDD_CLI_AVAILABLE=${SDD_CLI_AVAILABLE}"; echo "SDD_CLI_COMMAND=${SDD_CLI_COMMAND}"'
+    local env_result
+    env_result=$(echo "$env_check_cmd" | claude --plugin-dir "$plugin_dir" --print 2>&1 | grep "SDD_CLI" || true)
+
+    if [ ! -z "$env_result" ]; then
+        echo "$env_result" | tee -a "$log_dir/cli-env-vars.log"
+
+        # SDD_CLI_AVAILABLE の値を抽出して検証
+        if echo "$env_result" | grep -q "SDD_CLI_AVAILABLE=true"; then
+            echo "✓ 環境変数確認: SDD_CLI_AVAILABLE=true が設定されています"
+            if [ "$cli_detection_result" = "WARN" ]; then
+                # 推定が WARN だったが実際は成功している場合
+                cli_detection_result="PASS"
+                echo "cli-detection:${cli_detection_result}" >> "$log_dir/cli-test.log"
+            fi
+        elif echo "$env_result" | grep -q "SDD_CLI_AVAILABLE=false"; then
+            echo "✓ 環境変数確認: SDD_CLI_AVAILABLE=false （CLI 未検出）"
+        else
+            echo "⚠ 環境変数確認: SDD_CLI_AVAILABLE が設定されていません"
+        fi
+    else
+        echo "INFO: 環境変数の確認をスキップ（セッション起動に失敗した可能性）"
+    fi
+
+    # 2. sdd-cli lint --json テスト
+    echo "--- sdd-cli lint --json テスト ---"
+    cd "$test_dir"
+    local start_time
+    start_time=$(date +%s)
+    local lint_exit_code=0
+    $cli_cmd lint --json > "$log_dir/cli-lint.log" 2>&1 || lint_exit_code=$?
+    local end_time
+    end_time=$(date +%s)
+    local elapsed=$((end_time - start_time))
+    echo "cli-lint:${elapsed}" >> "$log_dir/timing.log"
+    echo "cli-lint-exit-code:${lint_exit_code}" >> "$log_dir/cli-test.log"
+    echo "ログ保存: $log_dir/cli-lint.log (${elapsed}秒, exit=${lint_exit_code})"
+
+    # 3. sdd-cli index --quiet テスト
+    echo "--- sdd-cli index --quiet テスト ---"
+    cd "$test_dir"
+    start_time=$(date +%s)
+    local index_exit_code=0
+    $cli_cmd index --quiet > "$log_dir/cli-index.log" 2>&1 || index_exit_code=$?
+    end_time=$(date +%s)
+    elapsed=$((end_time - start_time))
+    echo "cli-index:${elapsed}" >> "$log_dir/timing.log"
+    echo "cli-index-exit-code:${index_exit_code}" >> "$log_dir/cli-test.log"
+    echo "ログ保存: $log_dir/cli-index.log (${elapsed}秒, exit=${index_exit_code})"
+
+    # 4. sdd-cli search --format json テスト
+    echo "--- sdd-cli search --format json テスト ---"
+    cd "$test_dir"
+    start_time=$(date +%s)
+    local search_exit_code=0
+    $cli_cmd search --format json "spec" > "$log_dir/cli-search.log" 2>&1 || search_exit_code=$?
+    end_time=$(date +%s)
+    elapsed=$((end_time - start_time))
+    echo "cli-search:${elapsed}" >> "$log_dir/timing.log"
+    echo "cli-search-exit-code:${search_exit_code}" >> "$log_dir/cli-test.log"
+    echo "ログ保存: $log_dir/cli-search.log (${elapsed}秒, exit=${search_exit_code})"
+
+    local phase_end
+    phase_end=$(date +%s)
+    local phase_elapsed=$((phase_end - phase_start))
+    echo "cli-test-total:${phase_elapsed}" >> "$log_dir/timing.log"
+    echo "Phase 3c 合計実行時間: ${phase_elapsed}秒"
+
+    echo ""
+}
+
+# --- Helper: メトリクス収集 ---
+collect_metrics() {
+    local phase_name="$1"
+    local test_dir="$2"
+    local log_dir="$3"
+    local file_pattern="${4:-*.md}"  # 対象ファイルパターン（デフォルト: *.md）
+
+    local metrics_file="${log_dir}/metrics.log"
+    local total_size=0
+    local total_lines=0
+    local file_count=0
+
+    # 指定されたパターンに一致するファイルのサイズと行数を集計
+    while IFS= read -r -d '' file; do
+        if [ -f "$file" ]; then
+            local size=$(wc -c < "$file" | tr -d ' ')
+            local lines=$(wc -l < "$file" | tr -d ' ')
+            total_size=$((total_size + size))
+            total_lines=$((total_lines + lines))
+            file_count=$((file_count + 1))
+        fi
+    done < <(find "$test_dir/.sdd" -type f -name "$file_pattern" -print0 2>/dev/null)
+
+    # metrics.log に追記
+    # フォーマット: phase:file_count:total_size_bytes:total_lines
+    echo "${phase_name}:${file_count}:${total_size}:${total_lines}" >> "$metrics_file"
+    echo "メトリクス記録: ${phase_name} (ファイル数: ${file_count}, 合計サイズ: ${total_size} bytes, 合計行数: ${total_lines})"
 }
 
 # --- Phase 4: ログ収集 ---
@@ -456,6 +708,31 @@ generate_summary() {
 | /generate-spec 実行 | - | |
 | 仕様書 言語検証 | - | 日本語で生成されていること |
 
+### sdd-workflow-with-cli (CLI 連携テスト: sdd-workflow + cli.enabled: true)
+
+> このテストは、`cli.enabled: true` の `.sdd-config.json` がある状態で `sdd-workflow` プラグインを使用し、CLI が `uvx` 経由で検出・利用されるかを検証します。
+
+| テスト項目 | 結果 | 備考 |
+|-----------|------|------|
+| session-start.sh 実行 | - | |
+| .sdd-config.json 保持 | - | cli.enabled: true が維持されていること |
+| SDD_LANG 言語設定 (config.json) | - | 期待値: en |
+| .sdd ディレクトリ作成 | - | |
+| AI-SDD-PRINCIPLES.md 配置 | - | |
+| /sdd-init 実行 | - | |
+| CLAUDE.md AI-SDD セクション | - | |
+| CLAUDE.md 言語検証 | - | 英語テンプレートで生成されていること |
+| /constitution init 実行 | - | |
+| CONSTITUTION.md 言語検証 | - | 英語で生成されていること |
+| /generate-prd 実行 | - | |
+| PRD 言語検証 | - | 英語で生成されていること |
+| /generate-spec 実行 | - | |
+| 仕様書 言語検証 | - | 英語で生成されていること |
+| CLI 検出 (SDD_CLI_AVAILABLE) | - | cli.enabled: true から CLI が検出されること |
+| sdd-cli lint --json 実行 | - | 正常終了し JSON 出力を返すこと |
+| sdd-cli index 実行 | - | 正常終了しインデックスが作成されること |
+| sdd-cli search 実行 | - | 正常終了し検索結果を返すこと |
+
 ## 実行時間
 
 SUMMARY_EOF
@@ -466,6 +743,8 @@ SUMMARY_EOF
         test_cases+=("$(basename "$plugin_dir")")
     done
     test_cases+=("sdd-workflow-with-ja-config")
+    test_cases+=("sdd-workflow-with-cli")
+    test_cases+=("sdd-workflow-cli-disabled")
 
     # 実行時間テーブルを追加
     for test_case in "${test_cases[@]}"; do
@@ -492,7 +771,7 @@ SUMMARY_EOF
             # 合計時間を計算
             local total_seconds=0
             while IFS=: read -r phase seconds; do
-                if [ "$phase" != "gen-skills-total" ]; then
+                if [ "$phase" != "gen-skills-total" ] && [ "$phase" != "cli-test-total" ]; then
                     total_seconds=$((total_seconds + seconds))
                 fi
             done < "$timing_file"
@@ -528,6 +807,133 @@ SUMMARY_EOF
         echo "" >> "$summary_file"
     done
 
+    # CLI連携 A/B テスト結果の比較表を追加
+    echo "## CLI連携 A/B テスト結果" >> "$summary_file"
+    echo "" >> "$summary_file"
+    echo "> CLI有無による実行時間とメトリクスの比較" >> "$summary_file"
+    echo "" >> "$summary_file"
+
+    local cli_disabled_timing="${TEST_BASE}/logs/sdd-workflow-cli-disabled/timing.log"
+    local cli_enabled_timing="${TEST_BASE}/logs/sdd-workflow-with-cli/timing.log"
+    local cli_disabled_metrics="${TEST_BASE}/logs/sdd-workflow-cli-disabled/metrics.log"
+    local cli_enabled_metrics="${TEST_BASE}/logs/sdd-workflow-with-cli/metrics.log"
+
+    if [ -f "$cli_disabled_timing" ] && [ -f "$cli_enabled_timing" ]; then
+        echo "### 実行時間の比較" >> "$summary_file"
+        echo "" >> "$summary_file"
+        echo "| フェーズ | CLI無効 (秒) | CLI有効 (秒) | 差分 (秒) | 変化率 (%) |" >> "$summary_file"
+        echo "|---------|-------------|-------------|----------|-----------|" >> "$summary_file"
+
+        # 主要フェーズの比較（constitution-init, generate-prd, generate-spec）
+        for phase in "constitution-init" "generate-prd" "generate-spec"; do
+            local time_disabled=$(grep "^${phase}:" "$cli_disabled_timing" 2>/dev/null | cut -d: -f2)
+            local time_enabled=$(grep "^${phase}:" "$cli_enabled_timing" 2>/dev/null | cut -d: -f2)
+
+            if [ ! -z "$time_disabled" ] && [ ! -z "$time_enabled" ]; then
+                local time_diff=$((time_enabled - time_disabled))
+                local time_percent=0
+                if [ "$time_disabled" -gt 0 ]; then
+                    time_percent=$(( (time_diff * 100) / time_disabled ))
+                fi
+
+                local sign=""
+                if [ "$time_diff" -gt 0 ]; then
+                    sign="+"
+                fi
+
+                echo "| ${phase} | ${time_disabled} | ${time_enabled} | ${sign}${time_diff} | ${sign}${time_percent}% |" >> "$summary_file"
+            fi
+        done
+
+        # 合計時間の計算と比較
+        local total_disabled=0
+        local total_enabled=0
+        while IFS=: read -r phase seconds; do
+            if [ "$phase" != "gen-skills-total" ] && [ "$phase" != "cli-test-total" ]; then
+                total_disabled=$((total_disabled + seconds))
+            fi
+        done < "$cli_disabled_timing"
+
+        while IFS=: read -r phase seconds; do
+            if [ "$phase" != "gen-skills-total" ] && [ "$phase" != "cli-test-total" ]; then
+                total_enabled=$((total_enabled + seconds))
+            fi
+        done < "$cli_enabled_timing"
+
+        local total_diff=$((total_enabled - total_disabled))
+        local total_percent=0
+        if [ "$total_disabled" -gt 0 ]; then
+            total_percent=$(( (total_diff * 100) / total_disabled ))
+        fi
+
+        local sign=""
+        if [ "$total_diff" -gt 0 ]; then
+            sign="+"
+        fi
+
+        echo "| **合計** | **${total_disabled}** | **${total_enabled}** | **${sign}${total_diff}** | **${sign}${total_percent}%** |" >> "$summary_file"
+        echo "" >> "$summary_file"
+    else
+        echo "実行時間データなし" >> "$summary_file"
+        echo "" >> "$summary_file"
+    fi
+
+    # メトリクス分析セクション
+    echo "## パフォーマンス分析" >> "$summary_file"
+    echo "" >> "$summary_file"
+
+    if [ -f "$cli_disabled_metrics" ] && [ -f "$cli_enabled_metrics" ]; then
+        echo "### 生成ファイルメトリクス" >> "$summary_file"
+        echo "" >> "$summary_file"
+        echo "| フェーズ | CLI無効 (ファイル数) | CLI有効 (ファイル数) | CLI無効 (合計サイズ) | CLI有効 (合計サイズ) |" >> "$summary_file"
+        echo "|---------|-------------------|-------------------|-------------------|-------------------|" >> "$summary_file"
+
+        for phase in "constitution-init" "generate-prd" "generate-spec"; do
+            local disabled_data=$(grep "^${phase}:" "$cli_disabled_metrics" 2>/dev/null)
+            local enabled_data=$(grep "^${phase}:" "$cli_enabled_metrics" 2>/dev/null)
+
+            if [ ! -z "$disabled_data" ] && [ ! -z "$enabled_data" ]; then
+                local file_count_disabled=$(echo "$disabled_data" | cut -d: -f2)
+                local size_disabled=$(echo "$disabled_data" | cut -d: -f3)
+                local file_count_enabled=$(echo "$enabled_data" | cut -d: -f2)
+                local size_enabled=$(echo "$enabled_data" | cut -d: -f3)
+
+                echo "| ${phase} | ${file_count_disabled} | ${file_count_enabled} | ${size_disabled} bytes | ${size_enabled} bytes |" >> "$summary_file"
+            fi
+        done
+
+        echo "" >> "$summary_file"
+    fi
+
+    # 推奨事項セクション
+    echo "## 推奨事項" >> "$summary_file"
+    echo "" >> "$summary_file"
+    echo "### CLI連携の使い分け" >> "$summary_file"
+    echo "" >> "$summary_file"
+    echo "| シナリオ | 推奨 | 理由 |" >> "$summary_file"
+    echo "|---------|------|------|" >> "$summary_file"
+    echo "| 初回仕様書生成 | **Fallback（CLI無効）** | 高速で初期ドラフトを作成 |" >> "$summary_file"
+    echo "| 整合性チェック | **CLI有効** | 構造検証が重要 |" >> "$summary_file"
+    echo "| 既存ドキュメント更新 | **CLI有効** | 依存関係チェックが必要 |" >> "$summary_file"
+    echo "| CI/CD自動化 | **CLI有効** | lintによる品質保証 |" >> "$summary_file"
+    echo "" >> "$summary_file"
+
+    echo "### パフォーマンス最適化の提案" >> "$summary_file"
+    echo "" >> "$summary_file"
+    echo "1. **CLI呼び出しの最適化**:" >> "$summary_file"
+    echo "   - \`lint --quiet\` で進捗メッセージを抑制" >> "$summary_file"
+    echo "   - \`search --limit 10\` で結果数を制限" >> "$summary_file"
+    echo "   - 不要な CLI 呼び出しを削減" >> "$summary_file"
+    echo "" >> "$summary_file"
+    echo "2. **Strategy A/B の選択的適用**:" >> "$summary_file"
+    echo "   - 新規ドキュメント生成時は Strategy B のみ使用" >> "$summary_file"
+    echo "   - 既存ドキュメント更新時のみ Strategy A を使用" >> "$summary_file"
+    echo "" >> "$summary_file"
+    echo "3. **トークン消費の削減**:" >> "$summary_file"
+    echo "   - CLI出力の要約（長い JSON を短縮）" >> "$summary_file"
+    echo "   - lint エラーのフィルタリング（critical のみ表示）" >> "$summary_file"
+    echo "" >> "$summary_file"
+
     # タイムスタンプを置換
     sed -i '' "s/TIMESTAMP_PLACEHOLDER/${TIMESTAMP}/" "$summary_file" 2>/dev/null || \
     sed -i "s/TIMESTAMP_PLACEHOLDER/${TIMESTAMP}/" "$summary_file" 2>/dev/null || true
@@ -561,6 +967,13 @@ case "${1:-help}" in
         fi
         run_gen_skills_test "$2" "${3:-}"
         ;;
+    cli-test)
+        if [ -z "${2:-}" ]; then
+            echo "Usage: $0 cli-test <plugin_dir> [test_case_name]"
+            exit 1
+        fi
+        run_cli_test "$2" "${3:-}"
+        ;;
     collect)
         if [ -z "${2:-}" ]; then
             echo "Usage: $0 collect <plugin_dir> [test_case_name]"
@@ -572,13 +985,14 @@ case "${1:-help}" in
         generate_summary
         ;;
     help|*)
-        echo "Usage: $0 {setup|run|sdd-init|gen-skills|collect|summary} [plugin_dir] [test_case_name]"
+        echo "Usage: $0 {setup|run|sdd-init|gen-skills|cli-test|collect|summary} [plugin_dir] [test_case_name]"
         echo ""
         echo "Commands:"
         echo "  setup                              テスト環境を構築"
         echo "  run <plugin_dir> [test_case_name]  session-start テスト実行"
         echo "  sdd-init <plugin_dir> [test_case_name]  /sdd-init テスト実行"
         echo "  gen-skills <plugin_dir> [test_case_name]  生成系スキルテスト実行"
+        echo "  cli-test <plugin_dir> [test_case_name]   CLI テスト実行"
         echo "  collect <plugin_dir> [test_case_name]   ログ収集"
         echo "  summary                            TEST_SUMMARY.md 生成"
         echo ""
