@@ -4,7 +4,7 @@ description: "Automatically executed during document updates or before implement
 version: 3.0.0
 license: MIT
 user-invocable: false
-allowed-tools: Read, Glob, Grep
+allowed-tools: Read, Glob, Grep, Bash
 ---
 
 # Doc Consistency Checker - Document Consistency Check
@@ -90,7 +90,39 @@ Consistency checks also consider parent-child relationships for hierarchical str
 
 ## Check Items
 
-### 0. Front Matter Cross-Reference Consistency
+### 0. Structural Consistency Check (Strategy A/B)
+
+#### Strategy A: CLI Available (`SDD_CLI_AVAILABLE=true`)
+
+Read `shared/references/cli_integration_guide.md` for standard CLI patterns and issue type mapping.
+
+When `SDD_CLI_AVAILABLE` is `"true"`, use CLI lint to **replace** LLM structural checks in Checks 1-3:
+
+```bash
+${SDD_CLI_COMMAND} lint --json 2>&1
+```
+
+The CLI covers the following structural checks — **LLM skips these when CLI results are available**:
+
+| CLI Issue Type          | Replaces in Check | LLM Check Skipped                           |
+|:------------------------|:-------------------|:--------------------------------------------|
+| `orphan-reference`      | Check 1            | Requirement ID mapping (structural part)    |
+| `unresolved-dependency` | Check 2            | Dependency chain integrity                  |
+| `broken-link`           | Check 2            | Cross-document reference validation         |
+| `circular-dependency`   | Check 2            | Circular dependency detection               |
+
+**Integration with Checks 1-3**:
+
+- CLI-detected issues feed directly into the consistency report — no separate "Pre-Check" section
+- For documents with CLI-detected structural issues: LLM reads and performs **semantic checks only**
+- For documents with **no CLI issues**: LLM **skips dependency chain traversal** and only checks semantic consistency if the document is in scope
+- LLM focuses on checks that CLI **cannot** perform (see each Check section below)
+
+#### Strategy B: CLI Not Available (Fallback)
+
+LLM performs all structural and semantic checks using Read, Glob, and Grep tools. Proceed directly to Checks 1-3 without CLI input.
+
+### 0.1. Front Matter Cross-Reference Consistency
 
 **Note**: Detailed front matter validation (common checks, type-specific checks, cross-reference checks) is handled by the `front-matter-reviewer` agent. The caller should invoke `front-matter-reviewer --cross-ref` separately when full front matter validation is needed.
 
@@ -98,21 +130,22 @@ This skill focuses on document content consistency only.
 
 ### 1. PRD ↔ spec Consistency
 
-| Check Item                                | Description                                            |
-|:------------------------------------------|:-------------------------------------------------------|
-| **Requirement ID Mapping**                | Are PRD requirement IDs referenced in spec?            |
-| **Functional Requirement Coverage**       | Are PRD functional requirements covered in spec?       |
-| **Non-Functional Requirement Reflection** | Are PRD non-functional requirements reflected in spec? |
-| **Terminology Consistency**               | Is same terminology used in PRD and spec?              |
+| Check Item                                | Description                                            | Strategy A (CLI) | Strategy B (LLM) |
+|:------------------------------------------|:-------------------------------------------------------|:------------------|:--------------------|
+| **Requirement ID Mapping**                | Are PRD requirement IDs referenced in spec?            | `orphan-reference` detects unreferenced IDs — LLM verifies **terminology consistency** only | LLM checks all |
+| **Functional Requirement Coverage**       | Are PRD functional requirements covered in spec?       | LLM checks (semantic) | LLM checks |
+| **Non-Functional Requirement Reflection** | Are PRD non-functional requirements reflected in spec? | LLM checks (semantic) | LLM checks |
+| **Terminology Consistency**               | Is same terminology used in PRD and spec?              | LLM checks (semantic) | LLM checks |
 
 ### 2. spec ↔ design Consistency
 
-| Check Item                                     | Description                                          |
-|:-----------------------------------------------|:-----------------------------------------------------|
-| **API Definition Match**                       | Is spec API detailed in design?                      |
-| **Data Model Match**                           | Do spec type definitions match design?               |
-| **Requirement Reflection in Design Decisions** | Are spec requirements reflected in design decisions? |
-| **Constraint Consideration**                   | Are spec constraints considered in design?           |
+| Check Item                                     | Description                                          | Strategy A (CLI) | Strategy B (LLM) |
+|:-----------------------------------------------|:-----------------------------------------------------|:------------------|:--------------------|
+| **API Definition Match**                       | Is spec API detailed in design?                      | LLM checks (semantic) | LLM checks |
+| **Data Model Match**                           | Do spec type definitions match design?               | LLM checks (semantic) | LLM checks |
+| **Requirement Reflection in Design Decisions** | Are spec requirements reflected in design decisions? | LLM checks (semantic) | LLM checks |
+| **Constraint Consideration**                   | Are spec constraints considered in design?           | LLM checks (semantic) | LLM checks |
+| **Dependency Chain Integrity**                 | Are `depends-on` references valid?                   | `unresolved-dependency`, `broken-link` — **LLM skips** | LLM checks |
 
 ### 3. design ↔ Implementation Consistency
 

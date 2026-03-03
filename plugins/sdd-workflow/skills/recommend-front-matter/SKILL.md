@@ -54,7 +54,24 @@ $ARGUMENTS
 
 **Optimized Execution Flow**:
 
-### Phase 1: Shell Script - Scan Documents
+### Phase 1: Document Scan
+
+#### Strategy A: CLI Available (`SDD_CLI_AVAILABLE=true`)
+
+Read `shared/references/cli_integration_guide.md` for standard CLI search patterns and JSON output schema.
+
+Use CLI search to scan all AI-SDD documents, **replacing shell script execution**:
+
+```bash
+${SDD_CLI_COMMAND} search --format json 2>&1
+```
+
+- CLI search returns all documents with `file_path`, `file_type`, `title`, and `feature_id`
+- LLM determines front matter presence by reading each document's first few lines (check for `---`)
+- **Do NOT execute `scan-documents.sh`** — CLI search replaces the shell script scan
+- Build the equivalent scan result structure from CLI search output
+
+#### Strategy B: CLI Not Available (Fallback)
 
 Execute `scan-documents.sh` to scan AI-SDD documents:
 
@@ -249,7 +266,31 @@ For each document without front matter (after user confirms):
 - If Edit fails for any file: Record error, continue to next file
 - Track success/skip/error counts
 
-#### 3. Generate Application Result Report
+#### 3. Post-Apply Verification with CLI Lint (when available)
+
+After applying front matter to all files, verify the results using CLI lint if available:
+
+```bash
+if [ "$SDD_CLI_AVAILABLE" = "true" ]; then
+    ${SDD_CLI_COMMAND} lint --json 2>&1
+fi
+```
+
+Check the lint output for the following issue types:
+
+| Issue Type               | Action                                                              |
+|:-------------------------|:--------------------------------------------------------------------|
+| `duplicate-id`           | Report as error — two documents received the same generated ID      |
+| `missing-required-field` | Report as warning — generated front matter may be incomplete        |
+| `invalid-field-value`    | Report as warning — inferred value does not match expected format   |
+| `unresolved-dependency`  | Report as info — `depends-on` target was not found                  |
+
+Include verification results in the Application Result Report. If any `duplicate-id` errors are found, list the
+conflicting files and recommend manual ID adjustment.
+
+**When CLI is not available**: Skip verification and proceed to the result report.
+
+#### 4. Generate Application Result Report
 
 Use the result template at `templates/${SDD_LANG}/application_result.md`.
 

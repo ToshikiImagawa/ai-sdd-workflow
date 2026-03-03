@@ -72,9 +72,32 @@ Replace placeholders with actual file names and counts.
 
 ## Processing Flow
 
-**Optimized Execution Flow**:
+### Phase 1: Document Discovery
 
-**Phase 1: Shell Script** - Execute `find-design-docs.sh` to scan design documents:
+#### Strategy A: CLI Available (`SDD_CLI_AVAILABLE=true`)
+
+Read `shared/references/cli_integration_guide.md` for standard CLI patterns and `cli_error_handling.md` for error handling.
+
+Use CLI search to discover target documents, **skipping shell script execution**:
+
+```bash
+${SDD_CLI_COMMAND} search --feature-id "${FEATURE_NAME}" --dir specification --format json 2>&1
+```
+
+- Filter results for `file_type: "design"` to identify target design documents
+- Filter results for `file_type: "spec"` to identify corresponding spec documents
+- Build the document mapping (design → spec → implementation) from search results
+- **Do NOT execute `find-design-docs.sh`** — CLI search replaces the shell script scan
+
+If the feature-name argument is omitted (all-document scan):
+
+```bash
+${SDD_CLI_COMMAND} search --dir specification --format json 2>&1
+```
+
+#### Strategy B: CLI Not Available (Fallback)
+
+Execute `find-design-docs.sh` to scan design documents:
 
 ```bash
 bash "${CLAUDE_PLUGIN_ROOT}/skills/check-spec/scripts/find-design-docs.sh" [feature-name]
@@ -89,7 +112,9 @@ This script:
    - `CHECK_SPEC_SPEC_FILES` - List of spec files
    - `CHECK_SPEC_MAPPING` - JSON mapping file
 
-**Phase 2: Claude** - Read design docs from pre-scanned lists and perform consistency check
+### Phase 2: Consistency Check
+
+Read design docs from discovery results and perform consistency check
 
 ### 1. Identify Target Documents
 
@@ -150,6 +175,37 @@ Search for code corresponding to specification contents:
 **Note**: This command specializes in **design <-> implementation consistency checking**. **Document-level consistency**
 (PRD <-> spec, spec <-> design) and **quality review** (CONSTITUTION.md compliance, completeness, clarity) are handled by
 the `spec-reviewer` agent when using the `--full` option.
+
+#### Structural Integrity Check
+
+##### Strategy A: CLI Available (`SDD_CLI_AVAILABLE=true`)
+
+Read `shared/references/cli_integration_guide.md` for CLI issue type mapping.
+
+When `SDD_CLI_AVAILABLE` is `"true"`, use CLI lint for structural consistency checks. **LLM skips these checks**:
+
+```bash
+${SDD_CLI_COMMAND} lint --json 2>&1
+```
+
+| CLI Issue Type          | Replaces LLM Check                    |
+|:------------------------|:--------------------------------------|
+| `broken-link`           | Cross-document reference validation   |
+| `circular-dependency`   | Dependency chain verification         |
+| `orphan-reference`      | Unused reference detection            |
+| `unresolved-dependency` | Dependency target existence check     |
+
+Include CLI-detected issues in the consistency report as machine-verified findings.
+
+**LLM focuses exclusively on semantic checks** that CLI cannot perform:
+
+- API signature match (function names, arguments, return values)
+- Type definition match (interfaces, types)
+- Functional requirement coverage verification
+
+##### Strategy B: CLI Not Available (Fallback)
+
+LLM performs both structural and semantic consistency checks using Read, Glob, and Grep tools.
 
 #### Front Matter Consistency
 

@@ -5,7 +5,7 @@ argument-hint: "<feature-name> [ticket-number]"
 version: 3.0.0
 license: MIT
 user-invocable: true
-allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 
 # Task Breakdown
@@ -35,11 +35,11 @@ The `SDD_LANG` environment variable determines the language (default: `en`).
 
 $ARGUMENTS
 
-| Argument | Required | Description |
-|:--|:--|:--|
-| `feature-name` | Yes | Target feature name or path (e.g., `user-auth`, `auth/user-login`). Design doc path is resolved from this value |
-| `ticket-number` | - | Used for output directory name (e.g., `TICKET-123`) |
-| `--ci` | - | CI/non-interactive mode. Exits with error if design doc is missing instead of prompting |
+| Argument        | Required | Description                                                                                                     |
+|:----------------|:---------|:----------------------------------------------------------------------------------------------------------------|
+| `feature-name`  | Yes      | Target feature name or path (e.g., `user-auth`, `auth/user-login`). Design doc path is resolved from this value |
+| `ticket-number` | -        | Used for output directory name (e.g., `TICKET-123`)                                                             |
+| `--ci`          | -        | CI/non-interactive mode. Exits with error if design doc is missing instead of prompting                         |
 
 ### Input Examples
 
@@ -56,19 +56,36 @@ See `references/front_matter_task.md` for full schema definition, dependency dir
 
 ### Task-Specific Field Rules
 
-| Field | Rule |
-|:------|:-----|
-| `id` | `"task-{feature-name}"`. For hierarchical: `"task-{parent}-{feature-name}"` |
-| `status` | `"pending"` for new task breakdowns |
-| `depends-on` | Design doc ID (e.g., `["design-user-auth"]`) |
-| `ticket` | Ticket number from input argument (if provided) |
-| `tags` | Inherit from design doc |
-| `category` | Inherit from design doc |
-| `priority` | Inherit from design doc |
+| Field        | Rule                                                                        |
+|:-------------|:----------------------------------------------------------------------------|
+| `id`         | `"task-{feature-name}"`. For hierarchical: `"task-{parent}-{feature-name}"` |
+| `status`     | `"pending"` for new task breakdowns                                         |
+| `depends-on` | Design doc ID (e.g., `["design-user-auth"]`)                                |
+| `ticket`     | Ticket number from input argument (if provided)                             |
+| `tags`       | Inherit from design doc                                                     |
+| `category`   | Inherit from design doc                                                     |
+| `priority`   | Inherit from design doc                                                     |
 
 ## Processing Flow
 
 ### 1. Load Related Documents
+
+#### Strategy A: CLI Available (`SDD_CLI_AVAILABLE=true`)
+
+Read `shared/references/cli_integration_guide.md` for standard CLI search patterns.
+
+Use CLI search to discover related documents, **skipping LLM path resolution**:
+
+```bash
+${SDD_CLI_COMMAND} search --feature-id "${FEATURE_NAME}" --format json 2>&1
+```
+
+- CLI search returns all related documents (PRD, spec, design) with their file paths
+- LLM reads **only the files returned by CLI search** — no Glob/Grep for document discovery
+- Filter results by `file_type` to identify each document role (prd, spec, design)
+- If no `file_type: "design"` result found → design document doesn't exist (handle as below)
+
+#### Strategy B: CLI Not Available (Fallback)
 
 Both flat and hierarchical structures are supported.
 
@@ -103,9 +120,11 @@ Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-n
 /task-breakdown auth/user-login TICKET-123
 ```
 
+#### Common: Missing Design Document Handling
+
 - If design document doesn't exist:
-  - **CI Mode (`--ci`)**: Output error message and stop processing.
-  - **Interactive**: Prompt creation with `/generate-spec` first.
+    - **CI Mode (`--ci`)**: Output error message and stop processing.
+    - **Interactive**: Prompt creation with `/generate-spec` first.
 - If PRD/spec exists, use to verify tasks cover requirements
 
 ### 2. Analyze Design Document
@@ -166,11 +185,40 @@ graph LR
 
 **Reference**: `examples/task_list_format.md`
 
-The example includes 5 phases (Foundation, Core Implementation, Integration, Testing, Finishing) with dependency diagrams and reference documents.
+The example includes 5 phases (Foundation, Core Implementation, Integration, Testing, Finishing) with dependency
+diagrams and reference documents.
 
 ## Output
 
-Use the `templates/${SDD_LANG:-en}/breakdown_output.md` template for output formatting. Save results to ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket_number}/tasks.md or ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{feature}/tasks.md.
+Use the `templates/${SDD_LANG:-en}/breakdown_output.md` template for output formatting. Save results
+to ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket_number}/tasks.md or ${CLAUDE_PROJECT_DIR}/$
+{SDD_TASK_PATH}/{feature}/tasks.md.
+
+## Dependency Verification (Strategy A/B)
+
+### Strategy A: CLI Available (`SDD_CLI_AVAILABLE=true`)
+
+Read `shared/references/cli_integration_guide.md` for CLI issue type mapping.
+
+Use CLI lint for dependency verification — **LLM skips dependency traversal**:
+
+```bash
+${SDD_CLI_COMMAND} lint --json 2>&1
+```
+
+| CLI Issue Type          | Replaces LLM Check                  |
+|:------------------------|:------------------------------------|
+| `circular-dependency`   | Dependency chain cycle detection    |
+| `broken-link`           | Cross-document reference validation |
+| `orphan-reference`      | Unused reference detection          |
+| `unresolved-dependency` | Dependency target existence check   |
+
+If structural issues are found, report them to the user before proceeding. These issues may affect task breakdown
+accuracy.
+
+### Strategy B: CLI Not Available (Fallback)
+
+LLM performs dependency verification during document loading using Read, Glob, and Grep tools.
 
 ## Requirement Coverage Verification
 
@@ -247,7 +295,6 @@ The following verifications are automatically performed during generation:
 - [x] **Requirement Coverage Check**: Verify PRD/spec requirements are covered by tasks
 - [x] **Dependency Consistency Check**: Confirm no contradictions in inter-task dependencies
 - [x] **Completion Criteria Specificity Check**: Verify each task has clear completion criteria
-
 
 ### Verification Commands
 

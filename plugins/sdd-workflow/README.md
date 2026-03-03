@@ -428,6 +428,44 @@ Add the following to your project's `.mcp.json`:
 
 All features work without Serena. Text-based search (Grep/Glob) is used for analysis and works language-agnostically.
 
+## CLI Integration (Optional)
+
+[ai-sdd-workflow-cli](https://github.com/ToshikiImagawa/ai-sdd-workflow-cli) (`sdd-cli`) provides document management commands (`lint`, `index`, `search`, `visualize`) that enhance the AI-SDD workflow.
+
+### Auto-Detection
+
+The session-start hook automatically detects `sdd-cli` on your PATH. No configuration needed:
+
+```bash
+# Install sdd-cli, then start a session — it will be detected automatically
+pip install ai-sdd-workflow-cli
+```
+
+### Explicit Configuration
+
+Add a `cli` field to `.sdd-config.json` (or `.sdd-config.local.json` for local overrides):
+
+```json
+{
+  "cli": {
+    "enabled": true,
+    "repository": "https://github.com/ToshikiImagawa/ai-sdd-workflow-cli.git"
+  }
+}
+```
+
+| Setting | Values | Description |
+|:--|:--|:--|
+| `cli.enabled` | `true` / `false` / omitted | `true`: enable with uvx fallback. `false`: disable. Omitted: auto-detect only |
+| `cli.repository` | URL | Git repository for uvx fallback (default: official repo) |
+
+### Environment Variables
+
+| Variable | Description |
+|:--|:--|
+| `SDD_CLI_AVAILABLE` | `"true"` if CLI is available, `"false"` otherwise |
+| `SDD_CLI_COMMAND` | The command to invoke the CLI (only set when available) |
+
 ## AI-SDD Development Flow
 
 ```

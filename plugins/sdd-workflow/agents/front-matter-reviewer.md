@@ -3,7 +3,7 @@ name: front-matter-reviewer
 description: "Validates YAML front matter in AI-SDD documents. Checks field formats, dependency direction, status values, type-specific fields, cross-reference integrity, and id uniqueness. Use after document generation or during consistency checks. Pass target document paths as arguments."
 model: sonnet
 color: cyan
-allowed-tools: Read, Glob, Grep, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Bash, AskUserQuestion
 skills: [ ]
 ---
 
@@ -81,8 +81,10 @@ Validate YAML front matter in AI-SDD documents from the following perspectives:
 **allowed-tools Design**:
 
 - `Read`: Load target documents and front matter reference
-- `Glob`: Search for related documents (for cross-reference checks)
-- `Grep`: Search for duplicate IDs, dependency targets
+- `Glob`: Search for related documents (for cross-reference checks, CLI fallback)
+- `Grep`: Search for duplicate IDs, dependency targets (CLI fallback)
+- `Bash`: **CLI only** — Execute `${SDD_CLI_COMMAND} lint --json` when `SDD_CLI_AVAILABLE=true`. Do NOT use Bash for
+  any other purpose.
 - `AskUserQuestion`: Confirm with user when judgment is required (e.g., ambiguous impl-status)
 
 **Exploration Scope**: Glob and Grep searches MUST be limited to `${SDD_ROOT}` directory (default: `.sdd/`). Do not
@@ -179,6 +181,42 @@ When `--cross-ref` option is specified, perform project-wide checks:
 | **Status propagation**     | info     | Changes in upstream status may require downstream review                   |
 
 **Cross-reference scanning procedure**:
+
+#### Strategy A: CLI Available (`SDD_CLI_AVAILABLE=true`)
+
+When `SDD_CLI_AVAILABLE` is `"true"`, use the CLI for efficient cross-reference validation:
+
+```bash
+${SDD_CLI_COMMAND} lint --json 2>&1
+```
+
+The CLI `lint --json` output includes the following issue types relevant to cross-reference checks:
+
+| CLI Issue Type             | Maps To                |
+|:---------------------------|:-----------------------|
+| `duplicate-id`             | `id` uniqueness        |
+| `unresolved-dependency`    | `depends-on` integrity |
+| `missing-required-field`   | Common field checks    |
+| `invalid-field-value`      | Type-specific checks   |
+| `orphan-reference`         | Status consistency     |
+| `circular-dependency`      | Dependency integrity   |
+| `broken-link`              | Link integrity         |
+
+**Procedure**:
+
+1. Execute `${SDD_CLI_COMMAND} lint --json` via Bash
+2. Parse the JSON output to extract issues
+3. Map CLI issue types to validation severity levels (error/warning/info)
+4. For target documents, merge CLI-detected issues with Step 4/5 results
+5. Perform **Status consistency** and **Status propagation** checks manually (CLI does not check semantic status
+   relationships)
+
+**Note**: Even with CLI, still perform Step 4 (Common Checks) and Step 5 (Type-Specific Checks) on target documents
+using Read, as CLI lint may not cover all validation rules defined in the front matter reference.
+
+#### Strategy B: CLI Not Available (Fallback)
+
+When `SDD_CLI_AVAILABLE` is not `"true"`, use the LLM scanning procedure:
 
 1. Use Glob to find all `.md` files under `${SDD_REQUIREMENT_PATH}`, `${SDD_SPECIFICATION_PATH}`, and
    `${SDD_TASK_PATH}`

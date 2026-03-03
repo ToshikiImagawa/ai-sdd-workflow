@@ -89,7 +89,32 @@ When adding a refactoring plan to an existing design doc:
 
 ### Phase 1: Pre-flight Checks
 
-**Step 1.1: Scan for Existing Documents**
+**Step 1.0 + 1.1: Document Discovery & Structural Validation**
+
+#### Strategy A: CLI Available (`SDD_CLI_AVAILABLE=true`)
+
+Read `shared/references/cli_integration_guide.md` for standard CLI patterns and `cli_error_handling.md` for error handling.
+
+Use CLI search + lint to discover documents and validate structure, **replacing shell script execution**:
+
+```bash
+# Discover related documents by feature
+${SDD_CLI_COMMAND} search --feature-id "${FEATURE_NAME}" --format json 2>&1
+
+# Structural validation
+${SDD_CLI_COMMAND} lint --json 2>&1
+```
+
+- **CLI search** identifies PRD, spec, and design documents — determines Case A (documents exist) or Case B (no documents)
+- **CLI lint** covers structural checks (`circular-dependency`, `broken-link`, `orphan-reference`) — **LLM skips** these
+- **Do NOT execute `scan-existing-docs.sh`** — CLI search replaces the shell script scan
+
+Build the document mapping from search results:
+- Filter for `file_type: "prd"` → `prd_exists`, `prd_path`
+- Filter for `file_type: "spec"` → `spec_exists`, `spec_path`
+- Filter for `file_type: "design"` → `design_exists`, `design_path`
+
+#### Strategy B: CLI Not Available (Fallback)
 
 Run the document scanning script:
 
@@ -289,6 +314,16 @@ Edit {design_path}
 Append the "## Refactoring Plan" section at the end of the document.
 
 See `references/design_doc_integration.md` for guidelines on integration.
+
+**Step 3A.6: Post-Update Verification (when CLI available)**
+
+When `SDD_CLI_AVAILABLE` is `"true"`, verify the updated document:
+
+```bash
+${SDD_CLI_COMMAND} lint --json 2>&1
+```
+
+Confirm no `broken-link`, `circular-dependency`, or `duplicate-id` issues were introduced by the update.
 
 ---
 

@@ -3,7 +3,7 @@ name: requirement-analyzer
 description: "Use this agent when requirement analysis is needed, when users say 'analyze requirements', 'check requirements diagram', 'verify traceability', or 'impact analysis', or before/after running /generate-spec or /generate-prd commands when requirement validation is needed. Analyzes .sdd/requirement/*.md SysML requirements diagrams for coverage gaps, dependency conflicts, and implementation traceability. Generates actionable reports with traceability status and classified proposals ([must]=critical issues, [recommend]=improvements, [nits]=minor suggestions). Requires the requirement file path or feature name to analyze."
 model: sonnet
 color: blue
-allowed-tools: Read, Glob, Grep, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Bash, AskUserQuestion
 skills: [ ]
 ---
 
@@ -155,6 +155,27 @@ Verify correspondence between implementation and requirements:
 - Verify correspondence between test cases and requirements
 
 **Traceability Verification Methods:**
+
+#### Strategy A: CLI Available (`SDD_CLI_AVAILABLE=true`)
+
+When `SDD_CLI_AVAILABLE` is `"true"`, use CLI search for efficient document discovery:
+
+1. **Build Search Index** (if not already built):
+   ```bash
+   ${SDD_CLI_COMMAND} index --quiet 2>&1
+   ```
+2. **Search Related Documents by Feature ID**:
+   ```bash
+   ${SDD_CLI_COMMAND} search --feature-id "{requirement-id}" --format json 2>&1
+   ```
+   This returns all `.sdd/` documents referencing the given requirement ID.
+3. **Codebase Search**: Use Grep tool to search for keywords in implementation code (CLI search covers `.sdd/` only,
+   source code search still requires Grep)
+4. **Correspondence with Test Files**: Compare functions verified in test files with requirements
+
+**Note**: Bash is available **only** for `${SDD_CLI_COMMAND}` execution. Do NOT use Bash for any other purpose.
+
+#### Strategy B: CLI Not Available (Fallback)
 
 1. **File Search from Requirement ID**: Identify directories or files corresponding to requirement ID
 2. **Codebase Search**: Use Grep tool to search for keywords related to requirement, reverse-lookup requirements from

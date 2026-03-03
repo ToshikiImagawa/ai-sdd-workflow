@@ -83,7 +83,30 @@ Read `templates/${SDD_LANG:-en}/phase_rules.md` for detailed execution rules for
 
 ### 1. Pre-Implementation Verification
 
+#### Strategy A: CLI Available (`SDD_CLI_AVAILABLE=true`)
+
+Read `shared/references/cli_integration_guide.md` for standard CLI patterns and `cli_error_handling.md` for error handling.
+
+Use CLI search + lint for prerequisite verification, **replacing LLM file existence checks**:
+
+```bash
+# Verify all prerequisite documents exist
+${SDD_CLI_COMMAND} search --feature-id "${FEATURE_NAME}" --format json 2>&1
+
+# Structural validation
+${SDD_CLI_COMMAND} lint --json 2>&1
+```
+
+- **CLI search** verifies existence of task breakdown, design doc, and spec in a single call
+- **CLI lint** detects `circular-dependency`, `broken-link`, `unresolved-dependency` — **LLM skips** structural verification
+- If structural issues are found in task or design documents, report to user before proceeding
+- LLM reads only the documents returned by search results
+
+#### Strategy B: CLI Not Available (Fallback)
+
 Read `templates/${SDD_LANG:-en}/pre_implementation_verification.md` for document loading and verification steps.
+
+LLM verifies prerequisite document existence and structural integrity using Read, Glob, and Grep tools.
 
 **Check Task Completion Rate**:
 

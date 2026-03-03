@@ -81,17 +81,47 @@ Read `references/verification_commands.md` for the verification command mapping 
 
 #### Verification Categories
 
-| Category (CHK-xxx)         | Auto-Verifiable | Verification Method                        |
-|:---------------------------|:----------------|:-------------------------------------------|
-| Requirements (1xx)         | Partial         | `/check-spec` for spec consistency         |
-| Specification (2xx)        | Partial         | Type checking, API signature validation    |
-| Design (3xx)               | Partial         | Dependency analysis, architecture checks   |
-| Implementation (4xx)       | Yes             | Linter, static analysis                    |
-| Testing (5xx)              | Yes             | Test execution, coverage measurement       |
-| Documentation (6xx)        | Partial         | Doc coverage tools                         |
-| Security (7xx)             | Yes             | Security scanners, audit commands          |
-| Performance (8xx)          | Partial         | Benchmark tools (if configured)            |
-| Deployment (9xx)           | Partial         | Config validation                          |
+| Category (CHK-xxx)         | Auto-Verifiable        | Verification Method                        |
+|:---------------------------|:-----------------------|:-------------------------------------------|
+| Requirements (1xx)         | **Yes** (with CLI)     | CLI `lint --json` + `/check-spec`          |
+| Specification (2xx)        | Partial                | Type checking, API signature validation    |
+| Design (3xx)               | Partial                | Dependency analysis, architecture checks   |
+| Implementation (4xx)       | Yes                    | Linter, static analysis                    |
+| Testing (5xx)              | Yes                    | Test execution, coverage measurement       |
+| Documentation (6xx)        | Partial                | Doc coverage tools                         |
+| Security (7xx)             | Yes                    | Security scanners, audit commands          |
+| Performance (8xx)          | Partial                | Benchmark tools (if configured)            |
+| Deployment (9xx)           | Partial                | Config validation                          |
+
+#### Requirements Verification (CHK-1xx) — Strategy A/B
+
+##### Strategy A: CLI Available (`SDD_CLI_AVAILABLE=true`)
+
+Read `shared/references/cli_integration_guide.md` for CLI issue type mapping.
+
+Use CLI lint to **fully automate** Requirements (1xx) verification — **LLM skips requirement checks**:
+
+```bash
+${SDD_CLI_COMMAND} lint --json 2>&1
+```
+
+**Automated Pass/Fail criteria from CLI lint** (replaces `/check-spec` for CHK-1xx):
+
+| CHK-1xx Check                  | CLI Issue Type           | Pass Condition               |
+|:-------------------------------|:-------------------------|:-----------------------------|
+| Requirement ID uniqueness      | `duplicate-id`           | Zero `duplicate-id` issues   |
+| Dependency chain integrity     | `unresolved-dependency`  | Zero unresolved dependencies |
+| Required fields present        | `missing-required-field` | Zero missing fields          |
+| Cross-document references      | `orphan-reference`       | Zero orphan references       |
+| Link validity                  | `broken-link`            | Zero broken links            |
+| No circular dependencies       | `circular-dependency`    | Zero circular deps           |
+
+Mark checklist items as `[x]` (Pass) or `[ ]` (Fail) based on CLI results. Include the CLI command output in the
+verification result block. **Do NOT additionally run `/check-spec`** for CHK-1xx items — CLI lint fully replaces it.
+
+##### Strategy B: CLI Not Available (Fallback)
+
+Fall back to `/check-spec` for partial verification. LLM checks requirement consistency using Read, Glob, and Grep tools.
 
 ### 4. Record Results
 

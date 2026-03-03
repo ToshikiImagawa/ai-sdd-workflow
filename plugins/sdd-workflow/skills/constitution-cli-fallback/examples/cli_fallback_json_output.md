@@ -1,0 +1,1 @@
+../../../shared/examples/cli_fallback_json_output.md

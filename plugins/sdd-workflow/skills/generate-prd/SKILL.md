@@ -120,16 +120,93 @@ Extract the following from requirements description:
 > **CI Mode**: Skip Vibe Coding risk assessment. Make reasonable assumptions for ambiguous requirements.
 > **Interactive Mode**: If requirements are vague, ask clarifying questions using AskUserQuestion.
 
-### Step 3: Check Existing PRD
+### Step 3: Strategy Selection (CLI or Fallback)
+
+Check `SDD_CLI_AVAILABLE` environment variable to determine execution strategy:
+
+```bash
+if [ "${SDD_CLI_AVAILABLE}" = "true" ]; then
+    STRATEGY="A"  # Use CLI
+else
+    STRATEGY="B"  # Use CLI-fallback skill
+fi
+```
+
+**Branch execution**:
+
+#### Strategy A: CLI Available (`SDD_CLI_AVAILABLE=true`)
+
+**Continue with steps below** (Step 4 onwards), using CLI commands where applicable.
+
+CLI commands will be used for:
+- Step 4: Checking existing PRD documents (search)
+- Post-generation: Validation and consistency checks (lint)
+
+#### Strategy B: CLI-fallback Skill (`SDD_CLI_AVAILABLE=false` or not set)
+
+**Call the CLI-fallback version of this skill using Skill tool**:
+
+```bash
+# Use Skill tool to invoke generate-prd-cli-fallback
+Skill tool parameters:
+- skill: "generate-prd-cli-fallback"
+- args: "${REQUIREMENTS_DESCRIPTION} ${CI_FLAG}"
+```
+
+Where:
+- `${REQUIREMENTS_DESCRIPTION}`: The original requirements description from user input
+- `${CI_FLAG}`: Pass `--ci` if CI mode is enabled
+
+**Process the JSON output**:
+
+The CLI-fallback skill will return JSON in the following format:
+
+```json
+{
+  "search_results": { "results": [...] },
+  "lint_results": { "issues": [...] },
+  "generated_file": "/path/to/prd.md",
+  "status": "success"
+}
+```
+
+**After receiving the JSON output**:
+1. Extract `generated_file` path
+2. Read the generated PRD file using Read tool
+3. Present the PRD content to the user
+4. Report any issues from `lint_results.issues`
+5. **Do NOT proceed with steps below** (Step 4 onwards are already handled by CLI-fallback)
+
+---
+
+**The following steps (Step 4 onwards) are only executed when Strategy A (CLI Available) is selected.**
+
+### Step 4: Check Existing PRD
+
+#### Strategy A: CLI Available (`SDD_CLI_AVAILABLE=true`)
+
+Read `shared/references/cli_integration_guide.md` for standard CLI search patterns.
+
+Use CLI search to check for existing PRD, **skipping LLM path checks**:
+
+```bash
+${SDD_CLI_COMMAND} search --feature-id "${FEATURE_NAME}" --dir requirement --format json 2>&1
+```
+
+If search returns results with `file_type: "prd"`, the PRD already exists.
+
+#### Strategy B: CLI Not Available (Fallback)
 
 Check if PRD already exists at `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md`
+
+#### Common: Overwrite Handling
 
 | Mode        | If PRD exists           | Action                       |
 |:------------|:------------------------|:-----------------------------|
 | Interactive | Ask user                | Confirm overwrite            |
 | CI (`--ci`) | Auto-approve            | Proceed with overwrite       |
 
-### Step 4: Generate Use Case Diagram
+### Step 5: Generate Use Case Diagram
 
 Generate a Mermaid flowchart representing actors, use cases, and system boundaries.
 
@@ -145,7 +222,7 @@ Generate a Mermaid flowchart representing actors, use cases, and system boundari
 - Actors table
 - Use Cases table
 
-### Step 5: Analyze Requirements
+### Step 6: Analyze Requirements
 
 Extract structured requirements from the use case diagram and business context.
 
@@ -167,7 +244,7 @@ Extract structured requirements from the use case diagram and business context.
 - Count by category (UR/FR/NFR)
 - Count by priority (Must/Should/Could)
 
-### Step 6: Generate Requirements Diagram
+### Step 7: Generate Requirements Diagram
 
 Generate a SysML requirements diagram in Mermaid `requirementDiagram` format.
 
@@ -178,7 +255,7 @@ Generate a SysML requirements diagram in Mermaid `requirementDiagram` format.
 - Use correct requirement types: `requirement`, `functionalRequirement`, `performanceRequirement`
 - Use correct relationships: `contains`, `derives`, `traces`
 
-### Step 7: Integrate Into Complete PRD
+### Step 8: Integrate Into Complete PRD
 
 Combine all generated sections following the PRD template structure:
 
@@ -195,7 +272,7 @@ Combine all generated sections following the PRD template structure:
 - Match the PRD template language (English or Japanese)
 - Do NOT mix languages
 
-### Step 8: Add YAML Front Matter
+### Step 9: Add YAML Front Matter
 
 Generate YAML front matter following `references/front_matter_prd.md` schema:
 
@@ -215,11 +292,11 @@ category: "{category}"
 ---
 ```
 
-### Step 9: Validate
+### Step 10: Validate
 
 Check Quality Checks items before saving.
 
-### Step 10: Save PRD File
+### Step 11: Save PRD File
 
 **MANDATORY**: Use the `Write` tool to save the complete PRD to:
 

@@ -1,11 +1,11 @@
 ---
-name: generate-spec
-description: "Generate Abstract Specification and Technical Design Document from input content"
+name: generate-spec-cli-fallback
+description: "Generate Abstract Specification and Technical Design Document from input content (CLI-fallback version without CLI integration). Used when sdd-cli is not available."
 argument-hint: "<requirements-description>"
 version: 3.0.0
 license: MIT
-user-invocable: true
-allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash
+user-invocable: false
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # Specification & Design Doc Generator
@@ -22,6 +22,7 @@ Generates the following documents from input content according to the AI-SDD wor
 - `references/prerequisites_plugin_update.md` - Check for plugin updates
 - `references/prerequisites_principles.md` - Read AI-SDD principles document
 - `references/prerequisites_directory_paths.md` - Resolve directory paths using `SDD_*` environment variables
+- `examples/cli_fallback_json_output.md` - JSON output format specification
 
 ### Template Preparation Flow (Optimized)
 
@@ -32,13 +33,15 @@ python3 "${CLAUDE_PLUGIN_ROOT}/skills/generate-spec/scripts/prepare-spec.py"
 ```
 
 This script:
-1. Checks `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/SPECIFICATION_TEMPLATE.md` and `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md` (project templates) first
+
+1. Checks `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/SPECIFICATION_TEMPLATE.md` and
+   `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md` (project templates) first
 2. If not found, copies from `templates/${SDD_LANG}/` to cache
 3. Copies all reference files to cache
 4. Exports environment variables to `$CLAUDE_ENV_FILE`:
-   - `GENERATE_SPEC_SPEC_TEMPLATE` - Path to cached spec template
-   - `GENERATE_SPEC_DESIGN_TEMPLATE` - Path to cached design template
-   - `GENERATE_SPEC_REFERENCES` - Path to cached references
+    - `GENERATE_SPEC_SPEC_TEMPLATE` - Path to cached spec template
+    - `GENERATE_SPEC_DESIGN_TEMPLATE` - Path to cached design template
+    - `GENERATE_SPEC_REFERENCES` - Path to cached references
 
 **Phase 2: Claude** - Read from cache using environment variables instead of searching files
 
@@ -58,10 +61,9 @@ Before generation, verify the following:
 
 $ARGUMENTS
 
-| Argument                   | Required | Description                                                                                                                  |
-|:---------------------------|:---------|:-----------------------------------------------------------------------------------------------------------------------------|
-| `requirements-description` | Yes      | Feature description text. Feature name is extracted from description                                                         |
-| `--ci`                     | -        | CI/non-interactive mode. Skips Vibe Coding check, auto-approves overwrites, skips spec-reviewer, always generates Design Doc |
+| Argument                   | Required | Description                                                          |
+|:---------------------------|:---------|:---------------------------------------------------------------------|
+| `requirements-description` | Yes      | Feature description text. Feature name is extracted from description |
 
 ## Input Examples
 
@@ -72,27 +74,21 @@ Provides password reset functionality, with session management via JWT tokens.
 Provides an API to check login status and middleware to protect endpoints requiring authentication.
 ```
 
+## Execution Mode
+
+**This skill operates in non-interactive mode (equivalent to `--ci` flag)**:
+
+- ✅ Skip Vibe Coding risk assessment → Make reasonable assumptions
+- ✅ Skip user questions → Automatically proceed with best guess
+- ✅ Auto-approve overwrites → No confirmation prompts
+- ✅ Skip spec-reviewer/prd-reviewer → Only perform automated checks
+- ✅ Always generate Design Doc → No skip confirmation
+
 ## Generation Rules
 
-### 1. Vibe Coding Risk Assessment (Perform First)
+### 1. Input Content Analysis
 
-> **CI Mode**: If `--ci` flag is specified, skip this section entirely and proceed to step 4.
-
-Analyze input content and assess risk based on the following criteria:
-
-| Risk   | Condition                     | Response                                                |
-|:-------|:------------------------------|:--------------------------------------------------------|
-| High   | No specs + vague instructions | Confirm missing information with user before generating |
-| Medium | Some requirements unclear     | Clarify ambiguous points before generating              |
-| Low    | Requirements clear            | Can generate as-is                                      |
-
-**Examples of Vague Input**:
-
-- "Make it nice," "somehow" -> Confirm specific requirements
-- "Improve performance" -> Confirm target and goal values
-- "Same as before" -> Confirm reference
-
-### 2. Input Content Analysis
+**Non-Interactive Mode**: Make reasonable assumptions for vague or unclear requirements. Do not confirm with user.
 
 Extract/infer the following from input:
 
@@ -117,92 +113,7 @@ Extract/infer the following from input:
 | **Design Decisions**            | Reasons for technology selection/alternatives |          |
 | **Non-Functional Requirements** | Performance/security requirements             |          |
 
-### 3. Missing Information Confirmation
-
-If important items cannot be determined from input, **confirm with user before generation**:
-
-- Feature name unclear
-- Required extraction items cannot be inferred from input
-- No technology stack specified (confirm whether to follow existing patterns)
-- Ambiguous business rules or edge cases
-
-### 4. Strategy Selection (CLI or Fallback)
-
-Check `SDD_CLI_AVAILABLE` environment variable to determine execution strategy:
-
-```bash
-if [ "${SDD_CLI_AVAILABLE}" = "true" ]; then
-    STRATEGY="A"  # Use CLI
-else
-    STRATEGY="B"  # Use CLI-fallback skill
-fi
-```
-
-**Branch execution**:
-
-#### Strategy A: CLI Available (`SDD_CLI_AVAILABLE=true`)
-
-**Continue with steps below** (Step 5 onwards), using CLI commands where applicable.
-
-CLI commands will be used for:
-- Step 5: Checking existing documents (search)
-- Post-generation: Validation and consistency checks (lint)
-
-#### Strategy B: CLI-fallback Skill (`SDD_CLI_AVAILABLE=false` or not set)
-
-**Call the CLI-fallback version of this skill using Skill tool**:
-
-```bash
-# Use Skill tool to invoke generate-spec-cli-fallback
-Skill tool parameters:
-- skill: "generate-spec-cli-fallback"
-- args: "${REQUIREMENTS_DESCRIPTION} ${CI_FLAG}"
-```
-
-Where:
-- `${REQUIREMENTS_DESCRIPTION}`: The original requirements description from user input
-- `${CI_FLAG}`: Pass `--ci` if CI mode is enabled
-
-**Process the JSON output**:
-
-The CLI-fallback skill will return JSON in the following format:
-
-```json
-{
-  "search_results": { "results": [...] },
-  "lint_results": { "issues": [...] },
-  "generated_files": ["/path/to/spec.md", "/path/to/design.md"],
-  "status": "success"
-}
-```
-
-**After receiving the JSON output**:
-1. Extract `generated_files` paths
-2. Read the generated spec and design files using Read tool
-3. Present the content to the user
-4. Report any issues from `lint_results.issues`
-5. **Do NOT proceed with steps below** (Step 5 onwards are already handled by CLI-fallback)
-
----
-
-**The following steps (Step 5 onwards) are only executed when Strategy A (CLI Available) is selected.**
-
-### 5. Existing Document Check
-
-#### Strategy A: CLI Available (`SDD_CLI_AVAILABLE=true`)
-
-Read `shared/references/cli_integration_guide.md` for standard CLI search patterns.
-
-Use CLI search to check existing documents in a single call, **skipping LLM path enumeration**:
-
-```bash
-${SDD_CLI_COMMAND} search --feature-id "${FEATURE_NAME}" --format json 2>&1
-```
-
-- Filter results by `file_type` to identify existing PRD, spec, and design documents
-- Automatically handles both flat and hierarchical structures
-
-#### Strategy B: CLI Not Available (Fallback)
+### 2. Existing Document Check
 
 Check the following before generation. Both flat and hierarchical structures are supported.
 
@@ -244,8 +155,7 @@ Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-n
 
 **If spec/design exists**:
 
-- **CI Mode (`--ci`)**: Overwrite without confirmation.
-- **Interactive**: Confirm with user whether to overwrite.
+- **Non-Interactive Mode**: Overwrite without confirmation.
 
 ## Output Format
 
@@ -269,8 +179,10 @@ Follow these steps to prepare the template:
 **Save Location**:
 
 - Flat structure: `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md`
-- Hierarchical structure (parent feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md`
-- Hierarchical structure (child feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md`
+- Hierarchical structure (parent feature):
+  `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md`
+- Hierarchical structure (child feature):
+  `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md`
 
 ### Phase 2: Technical Design Document (Plan Phase)
 
@@ -294,49 +206,44 @@ Follow these steps to prepare the template:
 **Save Location**:
 
 - Flat structure: `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md`
-- Hierarchical structure (parent feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md`
-- Hierarchical structure (child feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md`
+- Hierarchical structure (parent feature):
+  `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md`
+- Hierarchical structure (child feature):
+  `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md`
 
-### Skip Design Doc Generation
-
-> **CI Mode**: If `--ci` flag is specified, always generate Design Doc (do not skip).
-
-Skip Design Doc generation and confirm with user in the following cases:
-
-- No technical information in input at all
-- Unclear whether to follow existing design patterns
-- Technology selection requires investigation/consideration
+**Non-Interactive Mode**: Always generate Design Doc (do not skip).
 
 ## Front Matter Generation Rules
 
 Generated specs and design docs must include YAML front matter at the top of the file.
 
-See `references/front_matter_spec_design.md` for full schema definition, dependency direction rules, and validation checklist.
+See `references/front_matter_spec_design.md` for full schema definition, dependency direction rules, and validation
+checklist.
 
 ### Spec-Specific Field Rules
 
-| Field | Rule |
-|:------|:-----|
-| `id` | `"spec-{feature-name}"`. For hierarchical: `"spec-{parent}-{feature-name}"` |
-| `status` | `"draft"` for new specs |
-| `depends-on` | PRD ID (e.g., `["prd-user-auth"]`) |
-| `priority` | Inherit from PRD if exists, otherwise `"medium"` |
-| `risk` | Inherit from PRD if exists, otherwise `"medium"` |
+| Field        | Rule                                                                        |
+|:-------------|:----------------------------------------------------------------------------|
+| `id`         | `"spec-{feature-name}"`. For hierarchical: `"spec-{parent}-{feature-name}"` |
+| `status`     | `"draft"` for new specs                                                     |
+| `depends-on` | PRD ID (e.g., `["prd-user-auth"]`)                                          |
+| `priority`   | Inherit from PRD if exists, otherwise `"medium"`                            |
+| `risk`       | Inherit from PRD if exists, otherwise `"medium"`                            |
 
 ### Design Doc-Specific Field Rules
 
-| Field | Rule |
-|:------|:-----|
-| `id` | `"design-{feature-name}"`. For hierarchical: `"design-{parent}-{feature-name}"` |
-| `status` | `"draft"` for new design docs |
-| `impl-status` | `"not-implemented"` for new design docs |
-| `depends-on` | Spec ID (e.g., `["spec-user-auth"]`) |
-| `tags` | Inherit from spec |
-| `category` | Inherit from spec |
-| `priority` | Inherit from spec |
-| `risk` | Inherit from spec |
+| Field         | Rule                                                                            |
+|:--------------|:--------------------------------------------------------------------------------|
+| `id`          | `"design-{feature-name}"`. For hierarchical: `"design-{parent}-{feature-name}"` |
+| `status`      | `"draft"` for new design docs                                                   |
+| `impl-status` | `"not-implemented"` for new design docs                                         |
+| `depends-on`  | Spec ID (e.g., `["spec-user-auth"]`)                                            |
+| `tags`        | Inherit from spec                                                               |
+| `category`    | Inherit from spec                                                               |
+| `priority`    | Inherit from spec                                                               |
+| `risk`        | Inherit from spec                                                               |
 
-## Generation Flow
+## Generation Flow (Non-Interactive Mode)
 
 ```
 1. Analyze input content
@@ -347,44 +254,23 @@ See `references/front_matter_spec_design.md` for full schema definition, depende
    |   |- Understand principle categories (B-xxx, A-xxx, D-xxx, T-xxx)
    |- If not exists: Skip (note this in output)
    |
-3. Vibe Coding risk assessment (skip if --ci)
-   |- High: Confirm missing info with user -> Resume after response
-   |- Medium: Confirm ambiguous points -> Resume after response
-   |- Low: Proceed to next step
-   |
-4. Check existing documents
+3. Check existing documents
    |- If PRD exists: Pre-load and understand requirements
-   |- If spec/design exists: Confirm overwrite (auto-approve if --ci)
+   |- If spec/design exists: Auto-approve overwrite
    |
-5. Generate and save abstract specification (Specify)
+4. Generate and save abstract specification (Specify)
    |
-6. Spec principle compliance check with spec-reviewer (skip if --ci)
-   |- Call spec-reviewer agent (--summary option)
-   |- **Target**: {feature-name}_spec.md only (Design Doc not yet generated)
-   |- Check CONSTITUTION.md compliance (Architecture/Development principles focus)
-   |- On violation detection: Review fix proposals and apply approved fixes (main agent)
-   |- After fix, re-check
+5. Perform structural verification (CLI not available)
+   |- Duplicate ID check
+   |- Unresolved dependency check
+   |- YAML front matter validation
+   |- Cross-reference validation
    |
-6a. Front matter validation with front-matter-reviewer (skip if --ci)
-   |- Call front-matter-reviewer agent
-   |- **Target**: {feature-name}_spec.md
-   |- On issue detection: Apply fixes (main agent)
+6. Generate and save Design Doc (always generate in non-interactive mode)
    |
-7. Confirm Design Doc generation (always generate if --ci)
-   |- Technical info present: Generate and save (Plan)
-   |- No technical info: Confirm whether to skip
+7. Perform structural verification for Design Doc
    |
-8. Design Doc principle compliance check with spec-reviewer (skip if --ci)
-   |- Call spec-reviewer agent (--summary option)
-   |- **Target**: {feature-name}_design.md only (Spec already checked in step 6)
-   |- Check CONSTITUTION.md compliance (Technical constraints/Architecture focus)
-   |- On violation detection: Review fix proposals and apply approved fixes (main agent)
-   |- After fix, re-check
-   |
-8a. Front matter validation with front-matter-reviewer (skip if --ci)
-   |- Call front-matter-reviewer agent
-   |- **Target**: {feature-name}_design.md
-   |- On issue detection: Apply fixes (main agent)
+8. Generate JSON output
 ```
 
 ## PRD Consistency Review
@@ -412,15 +298,91 @@ Add the following to spec's end (if PRD exists):
 
 **Reference**: `examples/prd_reference_section.md`
 
-For hierarchical structure, parent feature PRD is `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md`
+For hierarchical structure, parent feature PRD is
+`${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md`
+
+## Final Step: Generate JSON Output
+
+**MANDATORY**: After spec and design generation, output JSON to stdout using Bash tool.
+
+**Format specification**: See `examples/cli_fallback_json_output.md` > "Spec/Design Generation Output"
+
+**Important**: Include all issues found during Structural Verification (steps 5 and 7 in Generation Flow) in
+`lint_results.issues`.
+
+**Example output with structural validation results**:
+
+```bash
+cat << 'EOF'
+{
+  "search_results": {
+    "results": [
+      {
+        "file_path": "/absolute/path/.sdd/specification/user-login_spec.md",
+        "file_type": "spec",
+        "title": "User Login Specification",
+        "feature_id": "user-login",
+        "id": "spec-user-login",
+        "status": "draft",
+        "tags": ["auth"],
+        "category": "authentication"
+      },
+      {
+        "file_path": "/absolute/path/.sdd/specification/user-login_design.md",
+        "file_type": "design",
+        "title": "User Login Design",
+        "feature_id": "user-login",
+        "id": "design-user-login",
+        "status": "draft",
+        "tags": ["auth"],
+        "category": "authentication"
+      }
+    ]
+  },
+  "lint_results": {
+    "issues": [
+      {
+        "severity": "error",
+        "rule": "duplicate-id",
+        "file_path": "/absolute/path/.sdd/specification/legacy/user_spec.md",
+        "line": 5,
+        "column": 0,
+        "message": "Duplicate ID 'spec-user-auth' found",
+        "details": {
+          "field": "id",
+          "duplicate_id": "spec-user-auth",
+          "other_files": ["/absolute/path/.sdd/specification/auth/user_spec.md"]
+        }
+      }
+    ]
+  },
+  "generated_files": [
+    "/absolute/path/.sdd/specification/user-login_spec.md",
+    "/absolute/path/.sdd/specification/user-login_design.md"
+  ],
+  "status": "success"
+}
+EOF
+```
+
+**Important**:
+
+- Replace placeholders with actual values from generated spec and design
+- Use absolute paths (e.g., `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/...`)
+- Extract values from YAML front matter of generated files
+- Include all issues from Structural Verification in `lint_results.issues`
+- If no issues found, use empty array `"issues": []`
 
 ## Post-Generation Actions
 
 1. **Save Files**:
-    - Flat structure: `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md`, `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md`
-    - Hierarchical structure (parent feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md`,
+    - Flat structure: `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md`,
+      `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md`
+    - Hierarchical structure (parent feature):
+      `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md`,
       `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md`
-    - Hierarchical structure (child feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md`,
+    - Hierarchical structure (child feature):
+      `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md`,
       `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md`
 
 2. **Consistency Check**:
@@ -441,16 +403,73 @@ The following verifications are automatically performed during generation:
 - [x] **PRD Consistency Check**: Confirm requirement ID references and functional requirement coverage
 - [x] **Template Compliance Check**: Verify presence of required sections
 
-### CLI Post-Generation Verification (when available)
+### Structural Verification (CLI Not Available)
 
-When `SDD_CLI_AVAILABLE` is `"true"`, run lint after generation to detect structural issues:
+Since CLI lint is not available, **verify the following structural integrity**:
+
+#### 1. Duplicate ID Check
+
+Use Grep to search for all `id:` entries in YAML front matter and verify no duplicates exist:
 
 ```bash
-${SDD_CLI_COMMAND} lint --json 2>&1
+# Extract all IDs from requirement, specification directories
+grep -h "^id:" ${SDD_REQUIREMENT_PATH}/**/*.md ${SDD_SPECIFICATION_PATH}/**/*.md 2>/dev/null | sort | uniq -d
 ```
 
-Check for `duplicate-id` and `unresolved-dependency` issues in generated documents. Report any findings to the user
-before proceeding to verification commands.
+**Expected**: No output (no duplicates)
+
+**If duplicates found**: Report to user with file paths and ask which ID to rename
+
+#### 2. Unresolved Dependency Check
+
+For each generated document, verify all `depends-on` references are valid:
+
+1. **Extract depends-on entries**:
+    - Read YAML front matter from generated spec and design files
+    - Parse `depends-on:` array
+
+2. **Validate each reference**:
+    - For PRD references: Check `${SDD_REQUIREMENT_PATH}/{id}.md` exists
+    - For spec references: Check `${SDD_SPECIFICATION_PATH}/{id}_spec.md` exists
+    - For design references: Check `${SDD_SPECIFICATION_PATH}/{id}_design.md` exists
+
+3. **Report broken dependencies**:
+    - List any `depends-on` entries pointing to non-existent files
+    - Suggest creating missing dependencies or removing invalid references
+
+#### 3. YAML Front Matter Validation
+
+Verify YAML front matter is well-formed:
+
+```bash
+# Check if YAML can be parsed (requires yq or similar)
+for file in ${SDD_SPECIFICATION_PATH}/**/*.md; do
+  if ! head -20 "$file" | grep -q "^---$"; then
+    echo "WARNING: Missing front matter in $file"
+  fi
+done
+```
+
+**Verification checklist**:
+
+- [ ] All spec/design files have YAML front matter (`---` delimiters)
+- [ ] Required fields are present: `id`, `title`, `type`, `status`
+- [ ] `type` field matches file suffix (`spec` for `*_spec.md`, `design` for `*_design.md`)
+- [ ] No syntax errors in YAML (proper indentation, quoted strings)
+
+#### 4. Cross-Reference Validation
+
+After generation, perform a quick cross-reference check:
+
+1. **Read generated spec file** and note all mentioned requirement IDs (e.g., `UR-001`, `FR-002`)
+2. **Verify these IDs exist** in the corresponding PRD file
+3. **Report any missing IDs** that are referenced but not defined
+
+**Implementation**:
+
+- Use Grep to find all `UR-\d+`, `FR-\d+`, `NFR-\d+` patterns in spec
+- Cross-check with PRD content
+- Warn user if spec references non-existent requirements
 
 ### Verification Commands
 
@@ -511,7 +530,8 @@ If existing code reference is needed, recommend manual verification to user.
 
 ## Loading CONSTITUTION.md (Required)
 
-Before spec/design generation, **you must read `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md` using the Read tool**.
+Before spec/design generation,
+**you must read `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md` using the Read tool**.
 
 ```
 Read: ${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md
@@ -544,40 +564,9 @@ After loading CONSTITUTION.md, understand the following principles and ensure sp
 3. **Recommend to user**: "Run `/sdd-init` or `/constitution init` to create project principles"
 4. **Continue with spec/design generation** (other quality checks will still be performed)
 
-## Principle Compliance Check with spec-reviewer (Required)
+## Principle Compliance Check
 
-> **CI Mode**: If `--ci` flag is specified, skip principle compliance check.
+**Non-Interactive Mode**: Skip spec-reviewer and front-matter-reviewer agent calls.
 
-After spec and design generation, **you must call the `spec-reviewer` agent to check principle compliance**.
-
-### Check Flow
-
-```
-1. Call spec-reviewer agent
-   |
-2. Execute CONSTITUTION.md compliance check
-   |
-3. If violations detected:
-   |- Review fix proposals from spec-reviewer
-   |- Apply approved fixes using Edit tool (main agent)
-   |- Report non-applicable fixes to user
-   |
-4. Call front-matter-reviewer agent (pass spec/design file path)
-   |- On issue detection: Apply fixes (main agent)
-   |
-5. After fix, re-check to verify
-   |
-6. Include check results in output
-```
-
-### Abstract Specification Check Result Output
-
-Include the following after spec generation:
-
-**Reference**: `examples/compliance_check_spec.md`
-
-### Technical Design Document Check Result Output
-
-Include the following after design doc generation:
-
-**Reference**: `examples/compliance_check_design.md`
+**Alternative**: Perform structural verification as documented
+in the "Structural Verification (CLI Not Available)" section.
