@@ -158,6 +158,39 @@ EOF
     echo "  - sdd-workflow-cli-disabled (sdd-workflow + cli.enabled: false, フォールバック専用)"
 }
 
+# --- Helper: Claude 呼び出しとトークン使用量記録 ---
+_run_claude_with_metrics() {
+    local input_text="$1"
+    local plugin_dir="$2"
+    local output_log="$3"
+    local token_log="$4"
+    local phase_name="$5"
+
+    # Claude を --print --output-format json で実行し、JSON レスポンスを取得
+    local raw_json
+    raw_json=$(echo "$input_text" | claude --plugin-dir "$plugin_dir" --print --output-format json 2>&1) || true
+
+    # result テキストを保存（既存ログ形式を維持）
+    echo "$raw_json" | jq -r '.result // ""' > "$output_log" 2>/dev/null || \
+        echo "$raw_json" > "$output_log"  # jq 失敗時はそのまま保存
+
+    # トークン使用量を抽出してログに記録
+    local input_tok output_tok cache_create cache_read cost_usd duration_ms num_turns
+    input_tok=$(echo "$raw_json"    | jq -r '.usage.input_tokens // 0' 2>/dev/null || echo 0)
+    output_tok=$(echo "$raw_json"   | jq -r '.usage.output_tokens // 0' 2>/dev/null || echo 0)
+    cache_create=$(echo "$raw_json" | jq -r '.usage.cache_creation_input_tokens // 0' 2>/dev/null || echo 0)
+    cache_read=$(echo "$raw_json"   | jq -r '.usage.cache_read_input_tokens // 0' 2>/dev/null || echo 0)
+    cost_usd=$(echo "$raw_json"     | jq -r '.total_cost_usd // 0' 2>/dev/null || echo 0)
+    duration_ms=$(echo "$raw_json"  | jq -r '.duration_ms // 0' 2>/dev/null || echo 0)
+    num_turns=$(echo "$raw_json"    | jq -r '.num_turns // 0' 2>/dev/null || echo 0)
+
+    # token-usage.log にフォーマット: phase:input:output:cache_create:cache_read:cost:duration_ms:num_turns
+    echo "${phase_name}:${input_tok}:${output_tok}:${cache_create}:${cache_read}:${cost_usd}:${duration_ms}:${num_turns}" >> "$token_log"
+
+    # 標準出力に進捗メッセージを表示
+    echo "トークン: 入力=${input_tok}, 出力=${output_tok}, キャッシュ作成=${cache_create}, キャッシュ読込=${cache_read}, コスト=\$${cost_usd}, ターン数=${num_turns}"
+}
+
 # --- Phase 2: サブセッション実行 (session-start + 基本検証) ---
 run_test() {
     local plugin_dir="$1"
@@ -183,7 +216,12 @@ run_test() {
     # 代わりに、フックが生成するファイル（.sdd-config.json, .sdd/ ディレクトリ）を直接検証する。
     cd "$test_dir"
     unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
-    echo "session-start フックが実行されました。このメッセージが表示されれば正常です。" | claude --plugin-dir "$plugin_dir" --print > "$log_dir/session-start.log" 2>&1 || true
+    _run_claude_with_metrics \
+        "session-start フックが実行されました。このメッセージが表示されれば正常です。" \
+        "$plugin_dir" \
+        "$log_dir/session-start.log" \
+        "$log_dir/token-usage.log" \
+        "session-start"
 
     echo "ログ保存: $log_dir/session-start.log"
 
@@ -274,7 +312,12 @@ run_sdd_init_test() {
     echo "--- /sdd-init --ci 実行 ---"
     cd "$test_dir"
     unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
-    echo "/sdd-init --ci" | claude --plugin-dir "$plugin_dir" --print > "$log_dir/sdd-init.log" 2>&1 || true
+    _run_claude_with_metrics \
+        "/sdd-init --ci" \
+        "$plugin_dir" \
+        "$log_dir/sdd-init.log" \
+        "$log_dir/token-usage.log" \
+        "sdd-init"
 
     echo "ログ保存: $log_dir/sdd-init.log"
 
@@ -337,7 +380,12 @@ run_gen_skills_test() {
     unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
     local start_time
     start_time=$(date +%s)
-    echo "/${constitution_skill} init A sample CLI tool project using TypeScript." | claude --plugin-dir "$plugin_dir" --print > "$log_dir/constitution-init.log" 2>&1 || true
+    _run_claude_with_metrics \
+        "/${constitution_skill} init A sample CLI tool project using TypeScript." \
+        "$plugin_dir" \
+        "$log_dir/constitution-init.log" \
+        "$log_dir/token-usage.log" \
+        "constitution-init"
     local end_time
     end_time=$(date +%s)
     local elapsed=$((end_time - start_time))
@@ -354,7 +402,12 @@ run_gen_skills_test() {
     echo "--- /${prd_skill} テスト ---"
     cd "$test_dir"
     start_time=$(date +%s)
-    echo "/${prd_skill} --ci A sample task management feature. Users can create, edit, and delete tasks." | claude --plugin-dir "$plugin_dir" --print > "$log_dir/generate-prd.log" 2>&1 || true
+    _run_claude_with_metrics \
+        "/${prd_skill} --ci A sample task management feature. Users can create, edit, and delete tasks." \
+        "$plugin_dir" \
+        "$log_dir/generate-prd.log" \
+        "$log_dir/token-usage.log" \
+        "generate-prd"
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
     echo "generate-prd:${elapsed}" >> "$log_dir/timing.log"
@@ -376,7 +429,12 @@ run_gen_skills_test() {
     echo "--- /${spec_skill} テスト ---"
     cd "$test_dir"
     start_time=$(date +%s)
-    echo "/${spec_skill} --ci User authentication feature. Supports login and logout with email and password." | claude --plugin-dir "$plugin_dir" --print > "$log_dir/generate-spec.log" 2>&1 || true
+    _run_claude_with_metrics \
+        "/${spec_skill} --ci User authentication feature. Supports login and logout with email and password." \
+        "$plugin_dir" \
+        "$log_dir/generate-spec.log" \
+        "$log_dir/token-usage.log" \
+        "generate-spec"
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
     echo "generate-spec:${elapsed}" >> "$log_dir/timing.log"
@@ -932,6 +990,81 @@ SUMMARY_EOF
     echo "3. **トークン消費の削減**:" >> "$summary_file"
     echo "   - CLI出力の要約（長い JSON を短縮）" >> "$summary_file"
     echo "   - lint エラーのフィルタリング（critical のみ表示）" >> "$summary_file"
+    echo "" >> "$summary_file"
+
+    # トークン使用量分析セクションを追加
+    echo "## トークン使用量・API コスト分析" >> "$summary_file"
+    echo "" >> "$summary_file"
+    echo "> 各フェーズでの API 呼び出しメトリクス" >> "$summary_file"
+    echo "" >> "$summary_file"
+
+    # テストケース別のトークン使用量テーブルを生成
+    for test_case in "${test_cases[@]}"; do
+        local log_dir="${TEST_BASE}/logs/${test_case}"
+        local token_file="${log_dir}/token-usage.log"
+
+        echo "### ${test_case}" >> "$summary_file"
+        echo "" >> "$summary_file"
+
+        if [ -f "$token_file" ]; then
+            echo "| フェーズ | 入力トークン | 出力トークン | キャッシュ作成 | キャッシュ読込 | コスト (USD) | ターン数 |" >> "$summary_file"
+            echo "|---------|------------|------------|-------------|-------------|------------|--------|" >> "$summary_file"
+
+            local total_input=0
+            local total_output=0
+            local total_cache_create=0
+            local total_cache_read=0
+            local total_cost=0
+            local total_turns=0
+
+            while IFS=: read -r phase input_tok output_tok cache_create cache_read cost_usd duration_ms num_turns; do
+                if [ ! -z "$phase" ]; then
+                    total_input=$((total_input + input_tok))
+                    total_output=$((total_output + output_tok))
+                    total_cache_create=$((total_cache_create + cache_create))
+                    total_cache_read=$((total_cache_read + cache_read))
+                    # cost_usd は浮動小数点なので bc で加算（bc が利用可能な場合）
+                    if command -v bc >/dev/null 2>&1; then
+                        total_cost=$(echo "$total_cost + $cost_usd" | bc -l)
+                    fi
+                    total_turns=$((total_turns + num_turns))
+
+                    echo "| ${phase} | ${input_tok} | ${output_tok} | ${cache_create} | ${cache_read} | \$${cost_usd} | ${num_turns} |" >> "$summary_file"
+                fi
+            done < "$token_file"
+
+            # 合計行を追加
+            echo "| **合計** | **${total_input}** | **${total_output}** | **${total_cache_create}** | **${total_cache_read}** | **\$${total_cost}** | **${total_turns}** |" >> "$summary_file"
+        else
+            echo "トークン使用量データなし" >> "$summary_file"
+        fi
+        echo "" >> "$summary_file"
+    done
+
+    # Context 使用率分析（Haiku 200K を想定）
+    echo "## Context 使用率分析" >> "$summary_file"
+    echo "" >> "$summary_file"
+    echo "> Haiku 200K コンテキストウィンドウ (200,000 トークン) を想定" >> "$summary_file"
+    echo "" >> "$summary_file"
+
+    for test_case in "${test_cases[@]}"; do
+        local log_dir="${TEST_BASE}/logs/${test_case}"
+        local token_file="${log_dir}/token-usage.log"
+
+        if [ -f "$token_file" ]; then
+            local max_input=0
+            while IFS=: read -r phase input_tok output_tok cache_create cache_read cost_usd duration_ms num_turns; do
+                if [ "$input_tok" -gt "$max_input" ]; then
+                    max_input=$input_tok
+                fi
+            done < "$token_file"
+
+            if [ "$max_input" -gt 0 ]; then
+                local usage_percent=$(( (max_input * 100) / 200000 ))
+                echo "- **${test_case}**: 最大入力トークン = ${max_input}, Context 使用率 = ${usage_percent}% (200K 中)" >> "$summary_file"
+            fi
+        fi
+    done
     echo "" >> "$summary_file"
 
     # タイムスタンプを置換
