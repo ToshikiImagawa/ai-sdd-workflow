@@ -1,6 +1,7 @@
 # ai-sdd-workflow
 
 [![CI](https://github.com/ToshikiImagawa/ai-sdd-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/ToshikiImagawa/ai-sdd-workflow/actions/workflows/ci.yml)
+[![Security Scan](https://github.com/ToshikiImagawa/ai-sdd-workflow/actions/workflows/security-scan.yml/badge.svg)](https://github.com/ToshikiImagawa/ai-sdd-workflow/actions/workflows/security-scan.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey)]()
 

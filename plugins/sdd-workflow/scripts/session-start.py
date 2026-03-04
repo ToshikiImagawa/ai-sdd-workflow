@@ -13,12 +13,12 @@ import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 
 @dataclass
 class CliConfig:
-    enabled: bool | None = None  # None = auto-detect mode
+    enabled: Optional[bool] = None  # None = auto-detect mode
     repository: str = "https://github.com/ToshikiImagawa/ai-sdd-workflow-cli.git"
 
 
@@ -35,7 +35,7 @@ class SddConfig:
     requirement_dir: str = "requirement"
     specification_dir: str = "specification"
     task_dir: str = "task"
-    cli: CliConfig = None
+    cli: Optional[CliConfig] = None
 
     def __post_init__(self) -> None:
         if self.cli is None:
@@ -179,10 +179,12 @@ def validate_repository_url(url: str) -> bool:
 def detect_cli(cli_cfg: CliConfig) -> CliResult:
     # cli.enabled == False: skip detection entirely
     if cli_cfg.enabled is False:
+        print("[AI-SDD] CLI integration disabled (cli.enabled=false)", file=sys.stderr)
         return CliResult(available=False)
 
     # Check if sdd-cli is on PATH
     if shutil.which("sdd-cli"):
+        print("[AI-SDD] CLI available: sdd-cli found on PATH", file=sys.stderr)
         return CliResult(available=True, command="sdd-cli")
 
     # If cli.enabled is explicitly True, try uvx fallback
@@ -201,12 +203,14 @@ def detect_cli(cli_cfg: CliConfig) -> CliResult:
                 return CliResult(available=False)
 
             command = f"uvx --from git+{cli_cfg.repository} sdd-cli"
+            print(f"[AI-SDD] CLI available via uvx: {command}", file=sys.stderr)
             return CliResult(available=True, command=command)
         else:
             print("[AI-SDD] Warning: cli.enabled is true but neither sdd-cli nor uvx found on PATH.", file=sys.stderr)
             return CliResult(available=False)
 
     # Auto-detect mode (enabled=None): sdd-cli not found, no fallback
+    print("[AI-SDD] CLI not detected (auto-detect mode)", file=sys.stderr)
     return CliResult(available=False)
 
 

@@ -314,7 +314,24 @@ For security concerns, contact:
 - GitHub Security Advisory: [Report a vulnerability](https://github.com/ToshikiImagawa/ai-sdd-workflow/security/advisories/new)
 - Maintainer: See repository maintainer contact info
 
+## Security Review Schedule
+
+This security policy is reviewed quarterly to ensure it remains current and effective.
+
+- **Last reviewed**: 2024-03-04
+- **Next review**: 2024-06-04
+- **Review frequency**: Quarterly (every 3 months)
+- **Reviewer**: Project maintainers
+
+**Review checklist**:
+- [ ] Update supported versions if needed
+- [ ] Review and update security best practices
+- [ ] Check for new attack vectors or vulnerabilities
+- [ ] Update security test coverage
+- [ ] Review incident response procedures
+- [ ] Update dependency security checks
+
 ---
 
 **Last updated**: 2024-03-04
-**Next review**: 2024-06-04
+**Security policy version**: 1.0

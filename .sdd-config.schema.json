@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/ToshikiImagawa/ai-sdd-workflow/blob/main/.sdd-config.schema.json",
+  "title": "AI-SDD Configuration",
+  "description": "Configuration file for AI-SDD Workflow plugin",
+  "type": "object",
+  "properties": {
+    "root": {
+      "type": "string",
+      "description": "Root directory for AI-SDD documents (default: .sdd)",
+      "default": ".sdd",
+      "examples": [".sdd", "docs/sdd", ".ai-sdd"]
+    },
+    "lang": {
+      "type": "string",
+      "description": "Default language for document templates",
+      "enum": ["en", "ja"],
+      "default": "en"
+    },
+    "directories": {
+      "type": "object",
+      "description": "Custom directory names within the root directory",
+      "properties": {
+        "requirement": {
+          "type": "string",
+          "description": "Directory name for PRD (Product Requirements Documents)",
+          "default": "requirement",
+          "examples": ["requirement", "prd", "requirements"]
+        },
+        "specification": {
+          "type": "string",
+          "description": "Directory name for specifications and design documents",
+          "default": "specification",
+          "examples": ["specification", "spec", "design"]
+        },
+        "task": {
+          "type": "string",
+          "description": "Directory name for task logs (temporary)",
+          "default": "task",
+          "examples": ["task", "tasks", "logs"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "cli": {
+      "type": "object",
+      "description": "CLI integration settings for ai-sdd-workflow-cli",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable/disable CLI integration. If not specified, auto-detect mode is used.",
+          "examples": [true, false]
+        },
+        "repository": {
+          "type": "string",
+          "description": "GitHub repository URL for ai-sdd-workflow-cli (HTTPS only, used with uvx)",
+          "pattern": "^https://github\\.com/[\\w-]+/[\\w\\.-]+\\.git$",
+          "default": "https://github.com/ToshikiImagawa/ai-sdd-workflow-cli.git",
+          "examples": [
+            "https://github.com/ToshikiImagawa/ai-sdd-workflow-cli.git",
+            "https://github.com/user/fork.git"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "root": ".sdd",
+      "lang": "en"
+    },
+    {
+      "root": ".sdd",
+      "lang": "ja",
+      "directories": {
+        "requirement": "要求仕様",
+        "specification": "仕様書",
+        "task": "タスク"
+      }
+    },
+    {
+      "root": ".sdd",
+      "lang": "en",
+      "cli": {
+        "enabled": true,
+        "repository": "https://github.com/ToshikiImagawa/ai-sdd-workflow-cli.git"
+      }
+    },
+    {
+      "root": ".sdd",
+      "lang": "en",
+      "cli": {
+        "enabled": false
+      }
+    }
+  ]
+}
