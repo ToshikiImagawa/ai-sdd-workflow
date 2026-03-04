@@ -1,6 +1,6 @@
 ---
 name: plugin-integration-test
-description: "sdd-workflow / sdd-workflow-ja プラグインの統合テストを実行する。session-start.sh、環境変数、/sdd-init を検証しログを記録する。"
+description: "sdd-workflowプラグインの成果物生成確認テスト。言語別・CLI有無別の4ケースで、session-start、/sdd-init、生成系スキルの動作を検証する。"
 disable-model-invocation: true
 context: fork
 user-invocable: true
@@ -12,7 +12,7 @@ allowed-prompts:
 
 # Plugin Integration Test
 
-sdd-workflow / sdd-workflow-ja プラグインの統合テストを実行し、session-start.sh のフック動作・環境変数設定・`/sdd-init` スキルの動作を検証する。
+sdd-workflowプラグインの成果物生成確認テストを実行し、4ケース（言語別×CLI有無別）でドキュメント生成機能を検証する。
 
 ## 実行ポリシー
 
@@ -24,7 +24,7 @@ sdd-workflow / sdd-workflow-ja プラグインの統合テストを実行し、s
 ## 前提条件
 
 - `claude` CLI がインストール済み
-- リポジトリルートに `plugins/sdd-workflow/` と `plugins/sdd-workflow-ja/` が存在すること
+- リポジトリルートに `plugins/sdd-workflow/` が存在すること
 
 ## パス定義
 
@@ -37,7 +37,7 @@ TEST_BASE = /tmp/ai-sdd-plugin-test
 
 ## 処理フロー
 
-**IMPORTANT: 以下の Phase 1～6 を自動的に順番に実行してください。各フェーズの実行前にユーザーに確認を求めず、連続して実行してください。**
+**IMPORTANT: 以下の Phase 1～5 を自動的に順番に実行してください。各フェーズの実行前にユーザーに確認を求めず、連続して実行してください。**
 
 以下の Phase を順番に実行する。
 
@@ -49,31 +49,22 @@ TEST_BASE = /tmp/ai-sdd-plugin-test
 bash "${SCRIPT}" setup
 ```
 
-これにより `/tmp/ai-sdd-plugin-test/` 以下にプラグインごとのテストディレクトリが作成される（git init + 空 CLAUDE.md のコミット済み）。
+これにより `/tmp/ai-sdd-plugin-test/` 以下に4ケースのテストディレクトリが作成される（git init + 空 CLAUDE.md + .sdd-config.json のコミット済み）:
 
-**追加テストケース**: `sdd-workflow-with-ja-config` ディレクトリも作成され、事前に `lang: "ja"` の `.sdd-config.json` が配置される。このテストケースは、既存の設定ファイルの言語設定がスキルに正しく継承されるかを検証する。
-
-**追加テストケース**: `sdd-workflow-with-cli` ディレクトリも作成され、事前に `cli.enabled: true` の `.sdd-config.json` が配置される。このテストケースは、CLI が `uvx` 経由で検出・利用されるかを検証する。
+- `en-cli-disabled`: lang=en, cli.enabled=false
+- `en-cli-enabled`: lang=en, cli.enabled=true
+- `ja-cli-disabled`: lang=ja, cli.enabled=false
+- `ja-cli-enabled`: lang=ja, cli.enabled=true
 
 ### Phase 2: session-start テスト
 
-各プラグインに対して `run` コマンドを実行する。以下の3つのコマンドを順番に実行する（確認不要）。
+各テストケースに対して `run` コマンドを実行する。以下の4つのコマンドを順番に実行する（確認不要）。
 
 ```bash
-bash "${SCRIPT}" run "${PLUGINS_DIR}/sdd-workflow"
-bash "${SCRIPT}" run "${PLUGINS_DIR}/sdd-workflow-ja"
-```
-
-**追加テストケース（既存設定継承テスト）**:
-```bash
-# sdd-workflow-with-ja-config: 既存の .sdd-config.json (lang: ja) + sdd-workflow プラグイン
-bash "${SCRIPT}" run "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-ja-config
-```
-
-**追加テストケース（CLI 連携テスト）**:
-```bash
-# sdd-workflow-with-cli: .sdd-config.json (cli.enabled: true) + sdd-workflow プラグイン
-bash "${SCRIPT}" run "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-cli
+bash "${SCRIPT}" run "${PLUGINS_DIR}/sdd-workflow" en-cli-disabled
+bash "${SCRIPT}" run "${PLUGINS_DIR}/sdd-workflow" en-cli-enabled
+bash "${SCRIPT}" run "${PLUGINS_DIR}/sdd-workflow" ja-cli-disabled
+bash "${SCRIPT}" run "${PLUGINS_DIR}/sdd-workflow" ja-cli-enabled
 ```
 
 内部で `claude --plugin-dir <plugin_dir> --print -p` によるサブセッションを起動し、session-start フックを実行させる。
