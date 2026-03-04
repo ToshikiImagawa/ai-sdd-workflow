@@ -13,7 +13,6 @@
 set -euo pipefail
 
 TEST_BASE="/tmp/ai-sdd-plugin-test"
-REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 
 # --- Phase 1: Setup ---

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2155
 #
 # CLI A/B テストスクリプト
 # CLI有効/無効での実行時間・トークン使用量・コストを比較する
@@ -315,7 +316,7 @@ generate_comparison_report() {
 
     # トークンデータの読み取り
     declare -A enabled_tokens_data disabled_tokens_data
-    while IFS=: read -r phase input output cache_create cache_read cost duration turns; do
+    while IFS=: read -r phase input output cache_create cache_read cost _duration _turns; do
         enabled_tokens_data["${phase}_input"]="$input"
         enabled_tokens_data["${phase}_output"]="$output"
         enabled_tokens_data["${phase}_cache_create"]="$cache_create"
@@ -323,7 +324,7 @@ generate_comparison_report() {
         enabled_tokens_data["${phase}_cost"]="$cost"
     done < "$enabled_tokens"
 
-    while IFS=: read -r phase input output cache_create cache_read cost duration turns; do
+    while IFS=: read -r phase input output cache_create cache_read cost _duration _turns; do
         disabled_tokens_data["${phase}_input"]="$input"
         disabled_tokens_data["${phase}_output"]="$output"
         disabled_tokens_data["${phase}_cache_create"]="$cache_create"

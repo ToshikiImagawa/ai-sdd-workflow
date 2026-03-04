@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2155
 # cli-integration-test.sh
 # sdd-cli と sdd-workflow プラグインの統合テスト
 #
@@ -10,7 +11,6 @@
 set -euo pipefail
 
 TEST_BASE="/tmp/ai-sdd-cli-integration-test"
-REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 
 # --- Setup: テスト環境構築 ---
