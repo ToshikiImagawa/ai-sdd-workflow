@@ -437,8 +437,8 @@ generate_comparison_report() {
 
 ## 結論
 
-- CLI連携により実行時間が **${time_change_pct}%短縮**（${disabled_total_time}秒 → ${enabled_total_time}秒）
-- コストが **${cost_change_pct}%削減**（\$${disabled_total_cost_fmt} → \$${enabled_total_cost_fmt}）
+- CLI連携により実行時間が **${time_change_pct}%変化**（${disabled_total_time}秒 → ${enabled_total_time}秒）
+- コストが **${cost_change_pct}%変化**（\$${disabled_total_cost_fmt} → \$${enabled_total_cost_fmt}）
 EOF
 
     echo "レポート生成完了: ${REPORT_FILE}"
