@@ -546,6 +546,10 @@ Place a `.sdd-config.json` file in your project root to customize directory name
     "requirement": "requirement",
     "specification": "specification",
     "task": "task"
+  },
+  "cli": {
+    "enabled": true,
+    "repository": "https://github.com/ToshikiImagawa/ai-sdd-workflow-cli.git"
   }
 }
 ```
@@ -557,11 +561,21 @@ Place a `.sdd-config.json` file in your project root to customize directory name
 | `directories.requirement`   | `requirement`   | PRD (Requirements Specification) directory |
 | `directories.specification` | `specification` | Specification/design document directory    |
 | `directories.task`          | `task`          | Temporary task logs directory              |
+| `cli.enabled`               | (auto-detect)   | Enable/disable CLI integration             |
+| `cli.repository`            | (default repo)  | GitHub repository URL for CLI              |
+
+**CLI Integration Settings**:
+
+- No `cli` field: Auto-detect mode (enabled if `sdd-cli` is on PATH)
+- `cli.enabled: true`: Aggressive CLI usage including uvx fallback
+- `cli.enabled: false`: Skip CLI detection entirely
+- `cli.repository`: Custom repository URL (HTTPS GitHub only)
 
 **Notes**:
 
 - If the configuration file doesn't exist, default values are used
 - Partial configuration is supported (unspecified items use defaults)
+- `.sdd-config.local.json` can override local environment settings (ignored by `.gitignore`)
 
 ## Plugin Structure
 

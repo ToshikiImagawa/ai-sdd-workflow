@@ -504,6 +504,10 @@ CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実
     "requirement": "requirement",
     "specification": "specification",
     "task": "task"
+  },
+  "cli": {
+    "enabled": true,
+    "repository": "https://github.com/ToshikiImagawa/ai-sdd-workflow-cli.git"
   }
 }
 ```
@@ -515,11 +519,21 @@ CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実
 | `directories.requirement`   | `requirement`   | PRD（要求仕様書）ディレクトリ  |
 | `directories.specification` | `specification` | 仕様書/設計書ディレクトリ     |
 | `directories.task`          | `task`          | 一時タスクログディレクトリ     |
+| `cli.enabled`               | （自動検出）          | CLI統合の有効/無効      |
+| `cli.repository`            | （デフォルトリポジトリ）    | CLI用GitHubリポジトリURL |
+
+**CLI統合設定**:
+
+- `cli` フィールドなし: 自動検出モード（`sdd-cli` がPATHにあれば有効）
+- `cli.enabled: true`: uvx フォールバックを含む積極的なCLI利用
+- `cli.enabled: false`: CLI検出をスキップ
+- `cli.repository`: カスタムリポジトリURL（HTTPS GitHubのみ）
 
 **注**:
 
 - 設定ファイルが存在しない場合、デフォルト値が使用されます
 - 部分的な設定もサポートされています（未指定の項目はデフォルト値を使用）
+- `.sdd-config.local.json` でローカル環境固有の設定をオーバーライド可能（`.gitignore` 対象）
 
 ## プラグイン構造
 
