@@ -140,6 +140,42 @@ def build_sdd_config(raw: Dict[str, Any], default_lang: str) -> SddConfig:
     return cfg
 
 
+def validate_repository_url(url: str) -> bool:
+    """Validate that repository URL is a safe GitHub HTTPS URL.
+
+    Only allows GitHub repositories in the format:
+    https://github.com/{owner}/{repo}.git
+
+    Where {owner} and {repo} contain only:
+    - Alphanumeric characters (a-z, A-Z, 0-9)
+    - Hyphens (-)
+    - Underscores (_)
+    - Dots (.) in repo name only
+
+    This prevents command injection attacks via malicious repository URLs.
+
+    Args:
+        url: Repository URL to validate
+
+    Returns:
+        True if URL is safe, False otherwise
+    """
+    # Pattern: https://github.com/{owner}/{repo}.git
+    # owner: alphanumeric, hyphens, underscores (GitHub username rules)
+    # repo: alphanumeric, hyphens, underscores, dots
+    pattern = r'^https://github\.com/[\w-]+/[\w\.-]+\.git$'
+
+    if not re.match(pattern, url):
+        return False
+
+    # Additional safety checks: reject URLs with shell metacharacters
+    dangerous_chars = [';', '|', '&', '$', '`', '(', ')', '<', '>', '\n', '\r', ' ']
+    if any(char in url for char in dangerous_chars):
+        return False
+
+    return True
+
+
 def detect_cli(cli_cfg: CliConfig) -> CliResult:
     # cli.enabled == False: skip detection entirely
     if cli_cfg.enabled is False:
@@ -152,6 +188,18 @@ def detect_cli(cli_cfg: CliConfig) -> CliResult:
     # If cli.enabled is explicitly True, try uvx fallback
     if cli_cfg.enabled:
         if shutil.which("uvx"):
+            # Validate repository URL before using it (security check)
+            if not validate_repository_url(cli_cfg.repository):
+                print(
+                    f"[AI-SDD] Error: Invalid or potentially unsafe repository URL: {cli_cfg.repository}",
+                    file=sys.stderr
+                )
+                print(
+                    "[AI-SDD] Only GitHub HTTPS URLs are allowed (e.g., https://github.com/user/repo.git)",
+                    file=sys.stderr
+                )
+                return CliResult(available=False)
+
             command = f"uvx --from git+{cli_cfg.repository} sdd-cli"
             return CliResult(available=True, command=command)
         else:
