@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2155
 #
 # CLI A/B テストスクリプト
 # CLI有効/無効での実行時間・トークン使用量・コストを比較する
@@ -346,7 +345,8 @@ generate_comparison_report() {
     done
 
     local time_diff=$((enabled_total_time - disabled_total_time))
-    local cost_diff=$(echo "$enabled_total_cost - $disabled_total_cost" | bc -l)
+    local cost_diff
+    cost_diff=$(echo "$enabled_total_cost - $disabled_total_cost" | bc -l)
 
     local time_change_pct=0
     if [ "$disabled_total_time" -gt 0 ]; then
@@ -380,17 +380,26 @@ generate_comparison_report() {
     fi
 
     # コストのフォーマット（小数点以下2桁）
-    local disabled_total_cost_fmt=$(printf "%.2f" "$disabled_total_cost")
-    local enabled_total_cost_fmt=$(printf "%.2f" "$enabled_total_cost")
-    local cost_diff_fmt=$(printf "%.2f" "$cost_diff")
+    local disabled_total_cost_fmt
+    disabled_total_cost_fmt=$(printf "%.2f" "$disabled_total_cost")
+    local enabled_total_cost_fmt
+    enabled_total_cost_fmt=$(printf "%.2f" "$enabled_total_cost")
+    local cost_diff_fmt
+    cost_diff_fmt=$(printf "%.2f" "$cost_diff")
 
     # 各フェーズのコストフォーマット
-    local constitution_cost_disabled=$(printf "%.2f" "${disabled_tokens_data[constitution-init_cost]:-0}")
-    local constitution_cost_enabled=$(printf "%.2f" "${enabled_tokens_data[constitution-init_cost]:-0}")
-    local prd_cost_disabled=$(printf "%.2f" "${disabled_tokens_data[generate-prd_cost]:-0}")
-    local prd_cost_enabled=$(printf "%.2f" "${enabled_tokens_data[generate-prd_cost]:-0}")
-    local spec_cost_disabled=$(printf "%.2f" "${disabled_tokens_data[generate-spec_cost]:-0}")
-    local spec_cost_enabled=$(printf "%.2f" "${enabled_tokens_data[generate-spec_cost]:-0}")
+    local constitution_cost_disabled
+    constitution_cost_disabled=$(printf "%.2f" "${disabled_tokens_data[constitution-init_cost]:-0}")
+    local constitution_cost_enabled
+    constitution_cost_enabled=$(printf "%.2f" "${enabled_tokens_data[constitution-init_cost]:-0}")
+    local prd_cost_disabled
+    prd_cost_disabled=$(printf "%.2f" "${disabled_tokens_data[generate-prd_cost]:-0}")
+    local prd_cost_enabled
+    prd_cost_enabled=$(printf "%.2f" "${enabled_tokens_data[generate-prd_cost]:-0}")
+    local spec_cost_disabled
+    spec_cost_disabled=$(printf "%.2f" "${disabled_tokens_data[generate-spec_cost]:-0}")
+    local spec_cost_enabled
+    spec_cost_enabled=$(printf "%.2f" "${enabled_tokens_data[generate-spec_cost]:-0}")
 
     # レポート生成
     cat > "$REPORT_FILE" <<EOF

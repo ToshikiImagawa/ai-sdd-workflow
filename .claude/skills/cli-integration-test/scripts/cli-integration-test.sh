@@ -1,5 +1,4 @@
 #!/bin/bash
-# shellcheck disable=SC2155
 # cli-integration-test.sh
 # sdd-cli と sdd-workflow プラグインの統合テスト
 #
@@ -36,7 +35,8 @@ setup() {
 # --- Test: CLIテスト実行 ---
 run_test() {
     local test_dir="$1"
-    local test_name="$(basename "$test_dir")"
+    local test_name
+    test_name="$(basename "$test_dir")"
     local log_dir="${TEST_BASE}/logs/${test_name}"
 
     mkdir -p "$log_dir"
@@ -64,7 +64,8 @@ run_test() {
     local cli_detection_result="UNKNOWN"
 
     if grep -q '"cli"' "$test_dir/.sdd-config.json"; then
-        local cli_enabled=$(jq -r '.cli.enabled // "null"' "$test_dir/.sdd-config.json")
+        local cli_enabled
+        cli_enabled=$(jq -r '.cli.enabled // "null"' "$test_dir/.sdd-config.json")
         if [ "$cli_enabled" = "true" ]; then
             if command -v uvx >/dev/null 2>&1; then
                 echo "✓ cli.enabled=true かつ uvx が利用可能"
@@ -199,7 +200,8 @@ SUMMARY_EOF
             continue
         fi
 
-        local test_name="$(basename "$log_dir")"
+        local test_name
+        test_name="$(basename "$log_dir")"
         local test_log="${log_dir}/cli-test.log"
         local timing_log="${log_dir}/timing.log"
 
@@ -216,7 +218,8 @@ SUMMARY_EOF
         echo "| テスト項目 | 結果 | 終了コード |" >> "$summary_file"
         echo "|-----------|------|-----------|" >> "$summary_file"
 
-        local detection=$(grep "^cli-detection:" "$test_log" 2>/dev/null | cut -d: -f2 || echo "UNKNOWN")
+        local detection
+        detection=$(grep "^cli-detection:" "$test_log" 2>/dev/null | cut -d: -f2 || echo "UNKNOWN")
         echo "| CLI 検出 | ${detection} | - |" >> "$summary_file"
 
         if [ "$detection" = "SKIPPED" ] || [ "$detection" = "NOT_FOUND" ]; then
@@ -224,9 +227,12 @@ SUMMARY_EOF
             continue
         fi
 
-        local lint_code=$(grep "^cli-lint-exit-code:" "$test_log" 2>/dev/null | cut -d: -f2 || echo "?")
-        local index_code=$(grep "^cli-index-exit-code:" "$test_log" 2>/dev/null | cut -d: -f2 || echo "?")
-        local search_code=$(grep "^cli-search-exit-code:" "$test_log" 2>/dev/null | cut -d: -f2 || echo "?")
+        local lint_code
+        lint_code=$(grep "^cli-lint-exit-code:" "$test_log" 2>/dev/null | cut -d: -f2 || echo "?")
+        local index_code
+        index_code=$(grep "^cli-index-exit-code:" "$test_log" 2>/dev/null | cut -d: -f2 || echo "?")
+        local search_code
+        search_code=$(grep "^cli-search-exit-code:" "$test_log" 2>/dev/null | cut -d: -f2 || echo "?")
 
         local lint_result="FAIL"
         [ "$lint_code" = "0" ] && lint_result="PASS"
@@ -265,7 +271,8 @@ SUMMARY_EOF
             continue
         fi
 
-        local test_name="$(basename "$log_dir")"
+        local test_name
+        test_name="$(basename "$log_dir")"
         echo "### ${test_name}" >> "$summary_file"
         echo "" >> "$summary_file"
 
