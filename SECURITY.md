@@ -273,7 +273,7 @@ This project implements the following security controls:
 - Added security regression detection tests
 - Integrated security tests into CI/CD pipeline
 
-### [2024-03-04] - Security Fix
+### [2026-03-04] - Security Fix
 
 - **Fixed**: Command injection vulnerability in `session-start.py` (CVE-pending)
 - **Impact**: High - allowed arbitrary command execution via malicious `.sdd-config.json`
@@ -318,8 +318,8 @@ For security concerns, contact:
 
 This security policy is reviewed quarterly to ensure it remains current and effective.
 
-- **Last reviewed**: 2024-03-04
-- **Next review**: 2024-06-04
+- **Last reviewed**: 2026-03-04
+- **Next review**: 2026-06-04
 - **Review frequency**: Quarterly (every 3 months)
 - **Reviewer**: Project maintainers
 
@@ -333,5 +333,5 @@ This security policy is reviewed quarterly to ensure it remains current and effe
 
 ---
 
-**Last updated**: 2024-03-04
+**Last updated**: 2026-03-04
 **Security policy version**: 1.0
