@@ -11,7 +11,6 @@ set -euo pipefail
 
 TEST_BASE="/tmp/ai-sdd-cli-integration-test"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
-PLUGINS_DIR="${REPO_ROOT}/plugins"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 
 # --- Setup: テスト環境構築 ---

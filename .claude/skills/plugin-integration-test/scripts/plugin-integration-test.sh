@@ -14,7 +14,6 @@ set -euo pipefail
 
 TEST_BASE="/tmp/ai-sdd-plugin-test"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
-PLUGINS_DIR="${REPO_ROOT}/plugins"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 
 # --- Phase 1: Setup ---
@@ -515,7 +514,7 @@ generate_summary() {
 SUMMARY_EOF
 
     # テストケース一覧（4ケース）
-    local test_cases=(
+    local case_names=(
         "en-cli-disabled"
         "en-cli-enabled"
         "ja-cli-disabled"
@@ -523,7 +522,7 @@ SUMMARY_EOF
     )
 
     # 実行時間テーブルを追加
-    for test_case in "${test_cases[@]}"; do
+    for test_case in "${case_names[@]}"; do
         local log_dir="${TEST_BASE}/logs/${test_case}"
         local timing_file="${log_dir}/timing.log"
 
