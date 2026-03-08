@@ -1,0 +1,1 @@
+../../check-spec/examples/scope_confirmation.md

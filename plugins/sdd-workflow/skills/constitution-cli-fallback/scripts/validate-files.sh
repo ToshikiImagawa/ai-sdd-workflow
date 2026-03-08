@@ -1,0 +1,1 @@
+../../constitution/scripts/validate-files.sh

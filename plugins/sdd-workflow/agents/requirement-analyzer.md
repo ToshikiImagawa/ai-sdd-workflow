@@ -3,7 +3,7 @@ name: requirement-analyzer
 description: "Use this agent when requirement analysis is needed, when users say 'analyze requirements', 'check requirements diagram', 'verify traceability', or 'impact analysis', or before/after running /generate-spec or /generate-prd commands when requirement validation is needed. Analyzes .sdd/requirement/*.md SysML requirements diagrams for coverage gaps, dependency conflicts, and implementation traceability. Generates actionable reports with traceability status and classified proposals ([must]=critical issues, [recommend]=improvements, [nits]=minor suggestions). Requires the requirement file path or feature name to analyze."
 model: sonnet
 color: blue
-allowed-tools: Read, Glob, Grep, AskUserQuestion
+allowed-tools: Read, Glob, Grep, AskUserQuestion, Bash
 skills: [ ]
 ---
 
@@ -48,10 +48,42 @@ Requirement analysis result report (requirement validity assessment, detected is
 - `Glob`: Search for requirement files, related documents
 - `Grep`: Search for requirement IDs, traceability links
 - `AskUserQuestion`: Resolve requirement ambiguities, interactively add new requirements
+- `Bash`: Execute `sdd-cli` commands and `git grep` for traceability (CLI enabled only)
 
 **Exploration Scope**: Glob and Grep searches MUST be limited to `${SDD_ROOT}` directory (default: `.sdd/`). Do not
 search outside this scope. Exception: The `--trace` subcommand requires searching source code files. In this case,
 exclude the following directories: `node_modules`, `.git`, `dist`, `build`, `.next`, `.cache`, `vendor`, `__pycache__`.
+
+## CLI A/B Branching
+
+This agent uses inline A/B branching based on the `SDD_CLI_AVAILABLE` environment variable.
+(Subagents cannot invoke other subagents, so the 3-layer router pattern used by skills is not applicable.)
+
+### Path A: CLI Enabled (`SDD_CLI_AVAILABLE=true`)
+
+When CLI is available, use `sdd-cli` and `git grep` via the Bash tool for efficient processing:
+
+| Operation | CLI Method |
+|:---|:---|
+| Document discovery | `sdd-cli search --dir requirement --format json` |
+| Structure validation | `sdd-cli lint --dir requirement --json` |
+| Traceability (`--trace`) | `git grep <req_id>` for codebase-wide search |
+| Impact analysis (`--impact`) | `sdd-cli search --feature-id <name> --format json` for dependency chain |
+
+### Path B: CLI Disabled (`SDD_CLI_AVAILABLE` is unset or `false`)
+
+Use existing Glob/Grep/Read tools only (current behavior, no changes).
+
+### Fallback
+
+If any CLI command fails, automatically fall back to Path B.
+Follow the error handling principles in `cli_error_handling.md`:
+
+- Exit code 1: Log error, retry once, then fallback
+- Exit codes 2, 3, 4: Fallback immediately (no retry)
+- JSON parse error: Log and fallback
+- Timeout (>30s): Fallback
+- Record "CLI not used" in output when fallback occurs
 
 ## Prerequisites
 
@@ -64,6 +96,13 @@ AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
 Understand AI-SDD principles, document structure, persistence rules, and Vibe Coding prevention details.
 
 This agent performs requirement analysis based on AI-SDD principles.
+
+### CLI Integration References
+
+**If `SDD_CLI_AVAILABLE=true`, read the following references before execution:**
+
+- `${CLAUDE_PLUGIN_ROOT}/shared/references/cli_integration_guide.md` — CLI command reference and responsibility split
+- `${CLAUDE_PLUGIN_ROOT}/shared/references/cli_error_handling.md` — Error handling and fallback strategy
 
 ### Directory Path Resolution
 
@@ -154,7 +193,30 @@ Verify correspondence between implementation and requirements:
 - Identify implementations not satisfying requirements
 - Verify correspondence between test cases and requirements
 
-**Traceability Verification Methods:**
+**Traceability Verification Phases (CLI-enhanced `--trace`):**
+
+When `SDD_CLI_AVAILABLE=true`, use the following phased approach:
+
+```
+Phase 1: CLI — Document Discovery & Structure Validation
+  sdd-cli search --dir requirement --format json
+  sdd-cli lint --dir requirement --json
+  → Retrieve requirement documents and front matter metadata
+
+Phase 2: CLI — Source Code Search (--trace only)
+  git grep <requirement_id> -- "." ":!node_modules" ":!.git" ":!dist" ":!build"
+  → Identify implementation locations in the codebase
+  git grep <requirement_id> -- "*.test.*" "*.spec.*" "*_test.*"
+  → Verify test coverage for each requirement
+
+Phase 3: LLM — Semantic Analysis
+  → Analyze coverage, quality, and consistency based on CLI results
+  → Generate traceability matrix and gap report
+```
+
+When `SDD_CLI_AVAILABLE` is unset or `false`, Phase 1 uses Glob/Read and Phase 2 uses the Grep tool instead.
+
+**Traceability Verification Methods (Path B fallback):**
 
 1. **File Search from Requirement ID**: Identify directories or files corresponding to requirement ID
 2. **Codebase Search**: Use Grep tool to search for keywords related to requirement, reverse-lookup requirements from

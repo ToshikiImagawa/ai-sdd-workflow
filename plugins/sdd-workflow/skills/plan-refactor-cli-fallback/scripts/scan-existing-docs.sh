@@ -1,0 +1,1 @@
+../../plan-refactor/scripts/scan-existing-docs.sh

@@ -13,7 +13,19 @@ import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any, Dict, Optional
+
+
+@dataclass
+class CliConfig:
+    enabled: Optional[bool] = None  # None = auto-detect mode
+    repository: str = "https://github.com/ToshikiImagawa/ai-sdd-workflow-cli.git"
+
+
+@dataclass
+class CliResult:
+    available: bool = False
+    command: str = ""
 
 
 @dataclass
@@ -23,6 +35,11 @@ class SddConfig:
     requirement_dir: str = "requirement"
     specification_dir: str = "specification"
     task_dir: str = "task"
+    cli: Optional[CliConfig] = None
+
+    def __post_init__(self) -> None:
+        if self.cli is None:
+            self.cli = CliConfig()
 
 
 def get_plugin_root() -> str:
@@ -75,6 +92,28 @@ def load_or_create_config(config_path: str, default_lang: str) -> Dict[str, Any]
             return {}
 
 
+def load_local_config(project_root: str) -> Dict[str, Any]:
+    local_path = os.path.join(project_root, ".sdd-config.local.json")
+    if not os.path.isfile(local_path):
+        return {}
+    try:
+        with open(local_path, encoding="utf-8") as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"[AI-SDD] Warning: .sdd-config.local.json parse error ({e}). Ignoring.", file=sys.stderr)
+        return {}
+
+
+def merge_configs(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+    result = dict(base)
+    for key, value in override.items():
+        if isinstance(value, dict) and isinstance(result.get(key), dict):
+            result[key] = {**result[key], **value}
+        else:
+            result[key] = value
+    return result
+
+
 def build_sdd_config(raw: Dict[str, Any], default_lang: str) -> SddConfig:
     cfg = SddConfig(lang=default_lang)
     if raw.get("root"):
@@ -88,7 +127,91 @@ def build_sdd_config(raw: Dict[str, Any], default_lang: str) -> SddConfig:
         cfg.specification_dir = dirs["specification"]
     if dirs.get("task"):
         cfg.task_dir = dirs["task"]
+
+    cli_raw = raw.get("cli", {})
+    if isinstance(cli_raw, dict):
+        cli_cfg = CliConfig()
+        if "enabled" in cli_raw:
+            cli_cfg.enabled = bool(cli_raw["enabled"])
+        if cli_raw.get("repository"):
+            cli_cfg.repository = cli_raw["repository"]
+        cfg.cli = cli_cfg
+
     return cfg
+
+
+def validate_repository_url(url: str) -> bool:
+    """Validate that repository URL is a safe GitHub HTTPS URL.
+
+    Only allows GitHub repositories in the format:
+    https://github.com/{owner}/{repo}.git
+
+    Where {owner} and {repo} contain only:
+    - Alphanumeric characters (a-z, A-Z, 0-9)
+    - Hyphens (-)
+    - Underscores (_)
+    - Dots (.) in repo name only
+
+    This prevents command injection attacks via malicious repository URLs.
+
+    Args:
+        url: Repository URL to validate
+
+    Returns:
+        True if URL is safe, False otherwise
+    """
+    # Pattern: https://github.com/{owner}/{repo}.git
+    # owner: alphanumeric, hyphens, underscores (GitHub username rules)
+    # repo: alphanumeric, hyphens, underscores, dots
+    pattern = r'^https://github\.com/[\w-]+/[\w\.-]+\.git$'
+
+    if not re.match(pattern, url):
+        return False
+
+    # Additional safety checks: reject URLs with shell metacharacters
+    dangerous_chars = [';', '|', '&', '$', '`', '(', ')', '<', '>', '\n', '\r', ' ']
+    if any(char in url for char in dangerous_chars):
+        return False
+
+    return True
+
+
+def detect_cli(cli_cfg: CliConfig) -> CliResult:
+    # cli.enabled == False: skip detection entirely
+    if cli_cfg.enabled is False:
+        print("[AI-SDD] CLI integration disabled (cli.enabled=false)", file=sys.stderr)
+        return CliResult(available=False)
+
+    # Check if sdd-cli is on PATH
+    if shutil.which("sdd-cli"):
+        print("[AI-SDD] CLI available: sdd-cli found on PATH", file=sys.stderr)
+        return CliResult(available=True, command="sdd-cli")
+
+    # If cli.enabled is explicitly True, try uvx fallback
+    if cli_cfg.enabled:
+        if shutil.which("uvx"):
+            # Validate repository URL before using it (security check)
+            if not validate_repository_url(cli_cfg.repository):
+                print(
+                    f"[AI-SDD] Error: Invalid or potentially unsafe repository URL: {cli_cfg.repository}",
+                    file=sys.stderr
+                )
+                print(
+                    "[AI-SDD] Only GitHub HTTPS URLs are allowed (e.g., https://github.com/user/repo.git)",
+                    file=sys.stderr
+                )
+                return CliResult(available=False)
+
+            command = f"uvx --from git+{cli_cfg.repository} sdd-cli"
+            print(f"[AI-SDD] CLI available via uvx: {command}", file=sys.stderr)
+            return CliResult(available=True, command=command)
+        else:
+            print("[AI-SDD] Warning: cli.enabled is true but neither sdd-cli nor uvx found on PATH.", file=sys.stderr)
+            return CliResult(available=False)
+
+    # Auto-detect mode (enabled=None): sdd-cli not found, no fallback
+    print("[AI-SDD] CLI not detected (auto-detect mode)", file=sys.stderr)
+    return CliResult(available=False)
 
 
 def ensure_sdd_directory(sdd_dir: str, docs_root: str) -> None:
@@ -135,7 +258,7 @@ def sync_principles_file(plugin_root: str, sdd_dir: str, plugin_version: str) ->
         print("[AI-SDD] AI-SDD-PRINCIPLES.md copied (version unknown).")
 
 
-def write_env_vars(cfg: SddConfig) -> None:
+def write_env_vars(cfg: SddConfig, cli_result: CliResult) -> None:
     env_file = os.environ.get("CLAUDE_ENV_FILE", "")
     if not env_file:
         return
@@ -154,7 +277,11 @@ def write_env_vars(cfg: SddConfig) -> None:
         f'export SDD_SPECIFICATION_PATH="{cfg.root}/{cfg.specification_dir}"',
         f'export SDD_TASK_PATH="{cfg.root}/{cfg.task_dir}"',
         f'export SDD_LANG="{cfg.lang}"',
+        f'export SDD_CLI_AVAILABLE="{"true" if cli_result.available else "false"}"',
     ]
+
+    if cli_result.available and cli_result.command:
+        env_entries.append(f'export SDD_CLI_COMMAND="{cli_result.command}"')
 
     tmp_path = env_file + ".tmp"
     with open(tmp_path, "w", encoding="utf-8") as f:
@@ -253,7 +380,9 @@ def main() -> None:
     config_path = os.path.join(project_root, ".sdd-config.json")
 
     raw_config = load_or_create_config(config_path, args.default_lang)
-    cfg = build_sdd_config(raw_config, args.default_lang)
+    local_config = load_local_config(project_root)
+    merged_config = merge_configs(raw_config, local_config)
+    cfg = build_sdd_config(merged_config, args.default_lang)
 
     sdd_dir = os.path.join(project_root, cfg.root)
     ensure_sdd_directory(sdd_dir, cfg.root)
@@ -261,7 +390,8 @@ def main() -> None:
     plugin_version = get_plugin_version(plugin_root)
     sync_principles_file(plugin_root, sdd_dir, plugin_version)
 
-    write_env_vars(cfg)
+    cli_result = detect_cli(cfg.cli)
+    write_env_vars(cfg, cli_result)
 
     check_claude_md(project_root, sdd_dir, plugin_version)
 

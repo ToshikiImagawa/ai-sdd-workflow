@@ -1,0 +1,1 @@
+../../doc-consistency-checker/references/document_dependencies.md

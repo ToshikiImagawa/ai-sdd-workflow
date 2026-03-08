@@ -1,0 +1,1 @@
+../../../implement/templates/ja/tdd_cycle.md

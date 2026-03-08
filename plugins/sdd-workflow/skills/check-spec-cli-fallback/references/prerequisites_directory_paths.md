@@ -1,0 +1,1 @@
+../../check-spec/references/prerequisites_directory_paths.md

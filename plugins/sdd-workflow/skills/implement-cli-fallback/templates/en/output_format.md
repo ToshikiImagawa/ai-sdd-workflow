@@ -1,0 +1,1 @@
+../../../implement/templates/en/output_format.md

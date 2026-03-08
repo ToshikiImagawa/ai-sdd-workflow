@@ -1,0 +1,1 @@
+../../check-spec/examples/serena_symbol_analysis.md

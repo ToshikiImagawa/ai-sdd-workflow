@@ -1,0 +1,1 @@
+../../../doc-consistency-checker/templates/en/consistency_report.md

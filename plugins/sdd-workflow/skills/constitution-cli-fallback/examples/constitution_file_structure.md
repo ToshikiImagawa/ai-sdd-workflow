@@ -1,0 +1,1 @@
+../../constitution/examples/constitution_file_structure.md

@@ -1,0 +1,1 @@
+../../../implement/templates/ja/phase_rules.md

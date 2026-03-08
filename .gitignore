@@ -16,3 +16,7 @@ Thumbs.db
 
 # ghq worktree symlinks
 .ghq-worktree-symlinks
+
+# Python
+__pycache__/
+*.pyc

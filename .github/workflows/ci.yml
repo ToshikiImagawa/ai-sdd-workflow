@@ -52,3 +52,38 @@ jobs:
           python-version: '3.x'
       - name: Run session-start regression tests
         run: bash scripts/test-session-start.sh
+
+  security:
+    name: Security regression tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Install pytest and coverage tools
+        run: pip install pytest pytest-cov
+      - name: Run security tests with coverage
+        run: |
+          pytest tests/test_security_session_start.py \
+            --cov=plugins/sdd-workflow/scripts/session-start \
+            --cov-report=term \
+            --cov-report=html:coverage-${{ matrix.os }} \
+            -v
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-${{ matrix.os }}
+          path: coverage-${{ matrix.os }}
+      - name: Upload security test results (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-test-results-${{ matrix.os }}
+          path: |
+            tests/test_security_session_start.py
+            scripts/test-security.sh

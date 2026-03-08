@@ -1,0 +1,1 @@
+../../../implement/templates/ja/error_spec_inconsistency.md
