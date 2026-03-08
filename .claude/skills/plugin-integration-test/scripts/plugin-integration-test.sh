@@ -76,6 +76,33 @@ EOF
 
     echo "テストディレクトリ作成: ${ja_config_test_dir} (git initialized, .sdd-config.json with lang: ja)"
 
+    # 追加テストケース: sdd-workflow + CLI有効設定
+    # このテストは、CLI有効時にトークン削減効果があるかを検証する
+    local cli_test_dir="${TEST_BASE}/sdd-workflow-with-cli"
+    mkdir -p "$cli_test_dir"
+    cd "$cli_test_dir"
+
+    # git init + 空 CLAUDE.md をコミット
+    git init -q
+    echo "" > CLAUDE.md
+    git add CLAUDE.md
+    git commit -q -m "initial commit"
+
+    # CLI有効設定
+    cat > ".sdd-config.json" << 'EOF'
+{
+  "root": ".sdd",
+  "lang": "en",
+  "cli": {
+    "enabled": true
+  }
+}
+EOF
+    git add .sdd-config.json
+    git commit -q -m "add .sdd-config.json with cli enabled"
+
+    echo "テストディレクトリ作成: ${cli_test_dir} (git initialized, .sdd-config.json with cli enabled)"
+
     # ログディレクトリ
     mkdir -p "${TEST_BASE}/logs"
     echo "ログディレクトリ作成: ${TEST_BASE}/logs"
@@ -89,6 +116,7 @@ EOF
     done
     echo "追加テストケース:"
     echo "  - sdd-workflow-with-ja-config (sdd-workflow + 既存 lang: ja 設定)"
+    echo "  - sdd-workflow-with-cli (sdd-workflow + CLI有効設定)"
 }
 
 # --- Phase 2: サブセッション実行 (session-start + 基本検証) ---
@@ -116,9 +144,16 @@ run_test() {
     # 代わりに、フックが生成するファイル（.sdd-config.json, .sdd/ ディレクトリ）を直接検証する。
     cd "$test_dir"
     unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
-    echo "session-start フックが実行されました。このメッセージが表示されれば正常です。" | claude --plugin-dir "$plugin_dir" --print > "$log_dir/session-start.log" 2>&1 || true
+    echo "session-start フックが実行されました。このメッセージが表示されれば正常です。" | claude --plugin-dir "$plugin_dir" --print --output-format stream-json \
+      > "$log_dir/session-start.jsonl" 2>"$log_dir/session-start.stderr.log" || true
 
-    echo "ログ保存: $log_dir/session-start.log"
+    # メトリクス収集
+    if [ -f "$log_dir/session-start.jsonl" ]; then
+        python3 "$REPO_ROOT/scripts/collect-metrics.py" \
+          "$log_dir/session-start.jsonl" > "$log_dir/session-start-metrics.json" 2>/dev/null || true
+    fi
+
+    echo "ログ保存: $log_dir/session-start.jsonl"
 
     # .sdd-config.json を保存（session-start.sh が自動生成）
     if [ -f "$test_dir/.sdd-config.json" ]; then
@@ -207,9 +242,16 @@ run_sdd_init_test() {
     echo "--- /sdd-init --ci 実行 ---"
     cd "$test_dir"
     unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
-    echo "/sdd-init --ci" | claude --plugin-dir "$plugin_dir" --print > "$log_dir/sdd-init.log" 2>&1 || true
+    echo "/sdd-init --ci" | claude --plugin-dir "$plugin_dir" --print --output-format stream-json \
+      > "$log_dir/sdd-init.jsonl" 2>"$log_dir/sdd-init.stderr.log" || true
 
-    echo "ログ保存: $log_dir/sdd-init.log"
+    # メトリクス収集
+    if [ -f "$log_dir/sdd-init.jsonl" ]; then
+        python3 "$REPO_ROOT/scripts/collect-metrics.py" \
+          "$log_dir/sdd-init.jsonl" > "$log_dir/sdd-init-metrics.json" 2>/dev/null || true
+    fi
+
+    echo "ログ保存: $log_dir/sdd-init.jsonl"
 
     # /sdd-init 後のディレクトリ構造を記録
     cd "$test_dir"
@@ -258,12 +300,19 @@ run_gen_skills_test() {
     unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
     local start_time
     start_time=$(date +%s)
-    echo '/constitution init A sample CLI tool project using TypeScript.' | claude --plugin-dir "$plugin_dir" --print > "$log_dir/constitution-init.log" 2>&1 || true
+    echo '/constitution init A sample CLI tool project using TypeScript.' | claude --plugin-dir "$plugin_dir" --print --output-format stream-json \
+      > "$log_dir/constitution-init.jsonl" 2>"$log_dir/constitution-init.stderr.log" || true
     local end_time
     end_time=$(date +%s)
     local elapsed=$((end_time - start_time))
     echo "constitution-init:${elapsed}" >> "$log_dir/timing.log"
-    echo "ログ保存: $log_dir/constitution-init.log (${elapsed}秒)"
+    echo "ログ保存: $log_dir/constitution-init.jsonl (${elapsed}秒)"
+
+    # メトリクス収集
+    if [ -f "$log_dir/constitution-init.jsonl" ]; then
+        python3 "$REPO_ROOT/scripts/collect-metrics.py" \
+          "$log_dir/constitution-init.jsonl" > "$log_dir/constitution-init-metrics.json" 2>/dev/null || true
+    fi
 
     # CONSTITUTION.md を保存
     if [ -f "$test_dir/.sdd/CONSTITUTION.md" ]; then
@@ -275,11 +324,18 @@ run_gen_skills_test() {
     echo "--- /generate-prd テスト ---"
     cd "$test_dir"
     start_time=$(date +%s)
-    echo "/generate-prd --ci A sample task management feature. Users can create, edit, and delete tasks." | claude --plugin-dir "$plugin_dir" --print > "$log_dir/generate-prd.log" 2>&1 || true
+    echo "/generate-prd --ci A sample task management feature. Users can create, edit, and delete tasks." | claude --plugin-dir "$plugin_dir" --print --output-format stream-json \
+      > "$log_dir/generate-prd.jsonl" 2>"$log_dir/generate-prd.stderr.log" || true
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
     echo "generate-prd:${elapsed}" >> "$log_dir/timing.log"
-    echo "ログ保存: $log_dir/generate-prd.log (${elapsed}秒)"
+    echo "ログ保存: $log_dir/generate-prd.jsonl (${elapsed}秒)"
+
+    # メトリクス収集
+    if [ -f "$log_dir/generate-prd.jsonl" ]; then
+        python3 "$REPO_ROOT/scripts/collect-metrics.py" \
+          "$log_dir/generate-prd.jsonl" > "$log_dir/generate-prd-metrics.json" 2>/dev/null || true
+    fi
 
     # 生成された PRD ファイルを保存
     if [ -d "$test_dir/.sdd/requirement" ]; then
@@ -297,11 +353,18 @@ run_gen_skills_test() {
     echo "--- /generate-spec テスト ---"
     cd "$test_dir"
     start_time=$(date +%s)
-    echo "/generate-spec --ci User authentication feature. Supports login and logout with email and password." | claude --plugin-dir "$plugin_dir" --print > "$log_dir/generate-spec.log" 2>&1 || true
+    echo "/generate-spec --ci User authentication feature. Supports login and logout with email and password." | claude --plugin-dir "$plugin_dir" --print --output-format stream-json \
+      > "$log_dir/generate-spec.jsonl" 2>"$log_dir/generate-spec.stderr.log" || true
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
     echo "generate-spec:${elapsed}" >> "$log_dir/timing.log"
-    echo "ログ保存: $log_dir/generate-spec.log (${elapsed}秒)"
+    echo "ログ保存: $log_dir/generate-spec.jsonl (${elapsed}秒)"
+
+    # メトリクス収集
+    if [ -f "$log_dir/generate-spec.jsonl" ]; then
+        python3 "$REPO_ROOT/scripts/collect-metrics.py" \
+          "$log_dir/generate-spec.jsonl" > "$log_dir/generate-spec-metrics.json" 2>/dev/null || true
+    fi
 
     # 生成された仕様書ファイルを保存
     if [ -d "$test_dir/.sdd/specification" ]; then
@@ -456,6 +519,22 @@ generate_summary() {
 | /generate-spec 実行 | - | |
 | 仕様書 言語検証 | - | 日本語で生成されていること |
 
+### sdd-workflow-with-cli (CLI有効テスト: sdd-workflow + cli.enabled)
+
+> このテストは、CLI有効時にトークン削減効果があるかを検証します。`sdd-workflow` と同一タスクを実行し、トークン使用量を比較します。
+
+| テスト項目 | 結果 | 備考 |
+|-----------|------|------|
+| session-start.sh 実行 | - | CLI自動起動を確認 |
+| .sdd-config.json 保持 | - | cli.enabled: true が維持されていること |
+| .sdd ディレクトリ作成 | - | |
+| AI-SDD-PRINCIPLES.md 配置 | - | |
+| /sdd-init 実行 | - | |
+| CLAUDE.md AI-SDD セクション | - | |
+| /constitution init 実行 | - | |
+| /generate-prd 実行 | - | |
+| /generate-spec 実行 | - | |
+
 ## 実行時間
 
 SUMMARY_EOF
@@ -466,6 +545,7 @@ SUMMARY_EOF
         test_cases+=("$(basename "$plugin_dir")")
     done
     test_cases+=("sdd-workflow-with-ja-config")
+    test_cases+=("sdd-workflow-with-cli")
 
     # 実行時間テーブルを追加
     for test_case in "${test_cases[@]}"; do
@@ -527,6 +607,87 @@ SUMMARY_EOF
         fi
         echo "" >> "$summary_file"
     done
+
+    # トークン使用量比較テーブル (CLI A/B)
+    echo "## トークン使用量比較 (CLI A/B)" >> "$summary_file"
+    echo "" >> "$summary_file"
+    echo "> \`sdd-workflow\` (CLI無効) と \`sdd-workflow-with-cli\` (CLI有効) のトークン使用量を比較します。" >> "$summary_file"
+    echo "" >> "$summary_file"
+
+    local phases=("session-start" "sdd-init" "constitution-init" "generate-prd" "generate-spec")
+    local baseline_dir="${TEST_BASE}/logs/sdd-workflow"
+    local cli_dir="${TEST_BASE}/logs/sdd-workflow-with-cli"
+
+    echo "| フェーズ | CLI無効 (tokens) | CLI無効 (cost) | CLI有効 (tokens) | CLI有効 (cost) | 削減率 |" >> "$summary_file"
+    echo "|---------|-----------------|---------------|-----------------|---------------|--------|" >> "$summary_file"
+
+    local total_baseline_tokens=0
+    local total_cli_tokens=0
+    local total_baseline_cost="0"
+    local total_cli_cost="0"
+
+    for phase in "${phases[@]}"; do
+        local baseline_metrics="${baseline_dir}/${phase}-metrics.json"
+        local cli_metrics="${cli_dir}/${phase}-metrics.json"
+
+        local b_tokens="-"
+        local b_cost="-"
+        local c_tokens="-"
+        local c_cost="-"
+        local reduction="-"
+
+        if [ -f "$baseline_metrics" ]; then
+            b_tokens=$(python3 -c "import json; d=json.load(open('$baseline_metrics')); print(f\"{d['total_tokens']:,}\")" 2>/dev/null || echo "-")
+            b_cost=$(python3 -c "import json; d=json.load(open('$baseline_metrics')); print(f\"\\${d['cost_usd']:.4f}\" if d['cost_usd'] is not None else '-')" 2>/dev/null || echo "-")
+            local b_tokens_raw=$(python3 -c "import json; d=json.load(open('$baseline_metrics')); print(d['total_tokens'])" 2>/dev/null || echo "0")
+            local b_cost_raw=$(python3 -c "import json; d=json.load(open('$baseline_metrics')); print(d['cost_usd'] if d['cost_usd'] is not None else 0)" 2>/dev/null || echo "0")
+            total_baseline_tokens=$((total_baseline_tokens + b_tokens_raw))
+            total_baseline_cost=$(python3 -c "print(${total_baseline_cost} + ${b_cost_raw})" 2>/dev/null || echo "$total_baseline_cost")
+        fi
+
+        if [ -f "$cli_metrics" ]; then
+            c_tokens=$(python3 -c "import json; d=json.load(open('$cli_metrics')); print(f\"{d['total_tokens']:,}\")" 2>/dev/null || echo "-")
+            c_cost=$(python3 -c "import json; d=json.load(open('$cli_metrics')); print(f\"\\${d['cost_usd']:.4f}\" if d['cost_usd'] is not None else '-')" 2>/dev/null || echo "-")
+            local c_tokens_raw=$(python3 -c "import json; d=json.load(open('$cli_metrics')); print(d['total_tokens'])" 2>/dev/null || echo "0")
+            local c_cost_raw=$(python3 -c "import json; d=json.load(open('$cli_metrics')); print(d['cost_usd'] if d['cost_usd'] is not None else 0)" 2>/dev/null || echo "0")
+            total_cli_tokens=$((total_cli_tokens + c_tokens_raw))
+            total_cli_cost=$(python3 -c "print(${total_cli_cost} + ${c_cost_raw})" 2>/dev/null || echo "$total_cli_cost")
+        fi
+
+        # 削減率を計算
+        if [ -f "$baseline_metrics" ] && [ -f "$cli_metrics" ]; then
+            reduction=$(python3 -c "
+import json
+b=json.load(open('$baseline_metrics'))
+c=json.load(open('$cli_metrics'))
+bt=b['total_tokens']; ct=c['total_tokens']
+if bt > 0:
+    r = ((bt - ct) / bt) * 100
+    print(f'{r:+.1f}%')
+else:
+    print('-')
+" 2>/dev/null || echo "-")
+        fi
+
+        echo "| ${phase} | ${b_tokens} | ${b_cost} | ${c_tokens} | ${c_cost} | ${reduction} |" >> "$summary_file"
+    done
+
+    # 合計行
+    local total_reduction="-"
+    if [ "$total_baseline_tokens" -gt 0 ] && [ "$total_cli_tokens" -gt 0 ]; then
+        total_reduction=$(python3 -c "
+bt=${total_baseline_tokens}; ct=${total_cli_tokens}
+r = ((bt - ct) / bt) * 100
+print(f'{r:+.1f}%')
+" 2>/dev/null || echo "-")
+    fi
+    local fmt_baseline_tokens=$(python3 -c "print(f'${total_baseline_tokens:,}')" 2>/dev/null || echo "$total_baseline_tokens")
+    local fmt_cli_tokens=$(python3 -c "print(f'${total_cli_tokens:,}')" 2>/dev/null || echo "$total_cli_tokens")
+    local fmt_baseline_cost=$(python3 -c "print(f'\\${${total_baseline_cost}:.4f}')" 2>/dev/null || echo "$total_baseline_cost")
+    local fmt_cli_cost=$(python3 -c "print(f'\\${${total_cli_cost}:.4f}')" 2>/dev/null || echo "$total_cli_cost")
+
+    echo "| **合計** | **${fmt_baseline_tokens}** | **${fmt_baseline_cost}** | **${fmt_cli_tokens}** | **${fmt_cli_cost}** | **${total_reduction}** |" >> "$summary_file"
+    echo "" >> "$summary_file"
 
     # タイムスタンプを置換
     sed -i '' "s/TIMESTAMP_PLACEHOLDER/${TIMESTAMP}/" "$summary_file" 2>/dev/null || \
