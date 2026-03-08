@@ -1,0 +1,1 @@
+../../../check-spec/templates/ja/check_spec_output.md

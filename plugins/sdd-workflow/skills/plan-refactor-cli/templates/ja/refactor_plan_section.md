@@ -1,0 +1,1 @@
+../../../plan-refactor/templates/ja/refactor_plan_section.md

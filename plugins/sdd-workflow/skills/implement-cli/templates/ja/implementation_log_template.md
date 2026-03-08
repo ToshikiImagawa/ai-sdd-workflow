@@ -1,0 +1,1 @@
+../../../implement/templates/ja/implementation_log_template.md

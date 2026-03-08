@@ -1,0 +1,1 @@
+../../../plan-refactor/templates/en/reverse_spec_template.md

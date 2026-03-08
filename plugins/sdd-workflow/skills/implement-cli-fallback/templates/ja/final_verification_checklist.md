@@ -1,0 +1,1 @@
+../../../implement/templates/ja/final_verification_checklist.md

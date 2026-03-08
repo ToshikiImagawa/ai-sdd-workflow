@@ -143,7 +143,7 @@ for skill_dir in "$PLUGIN_DIR"/skills/*/; do
     for sub_dir in templates examples references; do
         check_dir="${skill_dir}${sub_dir}"
         [ -d "$check_dir" ] || continue
-        find "$check_dir" -type f | while IFS= read -r filepath; do
+        find -L "$check_dir" -type f | while IFS= read -r filepath; do
             fname="$(basename "$filepath")"
             if ! echo "$fname" | grep -qE '^[a-z0-9_]+\.[a-z]+$'; then
                 relpath="${filepath#"$REPO_ROOT"/}"
@@ -169,8 +169,8 @@ for skill_dir in "$PLUGIN_DIR"/skills/*/; do
 
         # --- 2.4 Language File Set Consistency ---
         if [ "$has_en" -eq 1 ] && [ "$has_ja" -eq 1 ]; then
-            en_files="$(cd "${templates_dir}/en" && find . -type f | sort)"
-            ja_files="$(cd "${templates_dir}/ja" && find . -type f | sort)"
+            en_files="$(cd "${templates_dir}/en" && find -L . -type f | sort)"
+            ja_files="$(cd "${templates_dir}/ja" && find -L . -type f | sort)"
 
             if [ "$en_files" != "$ja_files" ]; then
                 echo "$en_files" | while IFS= read -r f; do
@@ -195,7 +195,7 @@ for skill_dir in "$PLUGIN_DIR"/skills/*/; do
     for sub_dir in templates references; do
         check_dir="${skill_dir}${sub_dir}"
         [ -d "$check_dir" ] || continue
-        find "$check_dir" -type f | while IFS= read -r filepath; do
+        find -L "$check_dir" -type f | while IFS= read -r filepath; do
             fname="$(basename "$filepath")"
             ext="${fname##*.}"
             if [ "$ext" != "md" ]; then

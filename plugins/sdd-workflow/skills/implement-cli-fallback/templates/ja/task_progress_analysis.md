@@ -1,0 +1,1 @@
+../../../implement/templates/ja/task_progress_analysis.md
