@@ -47,7 +47,9 @@ def collect_metrics(jsonl_path: str) -> dict:
                 num_turns += 1
 
             elif record_type == "result":
-                cost_usd = record.get("cost_usd", cost_usd)
+                cost_usd = record.get(
+                    "total_cost_usd", record.get("cost_usd", cost_usd)
+                )
                 duration_ms = record.get("duration_ms", duration_ms)
                 result_num_turns = record.get("num_turns", result_num_turns)
 

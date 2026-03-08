@@ -609,85 +609,77 @@ SUMMARY_EOF
     done
 
     # トークン使用量比較テーブル (CLI A/B)
-    echo "## トークン使用量比較 (CLI A/B)" >> "$summary_file"
-    echo "" >> "$summary_file"
-    echo "> \`sdd-workflow\` (CLI無効) と \`sdd-workflow-with-cli\` (CLI有効) のトークン使用量を比較します。" >> "$summary_file"
-    echo "" >> "$summary_file"
-
-    local phases=("session-start" "sdd-init" "constitution-init" "generate-prd" "generate-spec")
+    # bash/Python のクォーティング衝突を避けるため、単一の Python スクリプトで生成
     local baseline_dir="${TEST_BASE}/logs/sdd-workflow"
     local cli_dir="${TEST_BASE}/logs/sdd-workflow-with-cli"
 
-    echo "| フェーズ | CLI無効 (tokens) | CLI無効 (cost) | CLI有効 (tokens) | CLI有効 (cost) | 削減率 |" >> "$summary_file"
-    echo "|---------|-----------------|---------------|-----------------|---------------|--------|" >> "$summary_file"
+    python3 - "$baseline_dir" "$cli_dir" >> "$summary_file" << 'PYEOF'
+import json, sys, os
 
-    local total_baseline_tokens=0
-    local total_cli_tokens=0
-    local total_baseline_cost="0"
-    local total_cli_cost="0"
+baseline_dir = sys.argv[1]
+cli_dir = sys.argv[2]
+phases = ["session-start", "sdd-init", "constitution-init", "generate-prd", "generate-spec"]
 
-    for phase in "${phases[@]}"; do
-        local baseline_metrics="${baseline_dir}/${phase}-metrics.json"
-        local cli_metrics="${cli_dir}/${phase}-metrics.json"
+print("## トークン使用量比較 (CLI A/B)")
+print()
+print("> `sdd-workflow` (CLI無効) と `sdd-workflow-with-cli` (CLI有効) のトークン使用量を比較します。")
+print()
+print("| フェーズ | CLI無効 (tokens) | CLI無効 (cost) | CLI有効 (tokens) | CLI有効 (cost) | 削減率 |")
+print("|---------|-----------------|---------------|-----------------|---------------|--------|")
 
-        local b_tokens="-"
-        local b_cost="-"
-        local c_tokens="-"
-        local c_cost="-"
-        local reduction="-"
+total_b_tokens = 0
+total_c_tokens = 0
+total_b_cost = 0.0
+total_c_cost = 0.0
 
-        if [ -f "$baseline_metrics" ]; then
-            b_tokens=$(python3 -c "import json; d=json.load(open('$baseline_metrics')); print(f\"{d['total_tokens']:,}\")" 2>/dev/null || echo "-")
-            b_cost=$(python3 -c "import json; d=json.load(open('$baseline_metrics')); print(f\"\\${d['cost_usd']:.4f}\" if d['cost_usd'] is not None else '-')" 2>/dev/null || echo "-")
-            local b_tokens_raw=$(python3 -c "import json; d=json.load(open('$baseline_metrics')); print(d['total_tokens'])" 2>/dev/null || echo "0")
-            local b_cost_raw=$(python3 -c "import json; d=json.load(open('$baseline_metrics')); print(d['cost_usd'] if d['cost_usd'] is not None else 0)" 2>/dev/null || echo "0")
-            total_baseline_tokens=$((total_baseline_tokens + b_tokens_raw))
-            total_baseline_cost=$(python3 -c "print(${total_baseline_cost} + ${b_cost_raw})" 2>/dev/null || echo "$total_baseline_cost")
-        fi
+for phase in phases:
+    b_file = os.path.join(baseline_dir, f"{phase}-metrics.json")
+    c_file = os.path.join(cli_dir, f"{phase}-metrics.json")
 
-        if [ -f "$cli_metrics" ]; then
-            c_tokens=$(python3 -c "import json; d=json.load(open('$cli_metrics')); print(f\"{d['total_tokens']:,}\")" 2>/dev/null || echo "-")
-            c_cost=$(python3 -c "import json; d=json.load(open('$cli_metrics')); print(f\"\\${d['cost_usd']:.4f}\" if d['cost_usd'] is not None else '-')" 2>/dev/null || echo "-")
-            local c_tokens_raw=$(python3 -c "import json; d=json.load(open('$cli_metrics')); print(d['total_tokens'])" 2>/dev/null || echo "0")
-            local c_cost_raw=$(python3 -c "import json; d=json.load(open('$cli_metrics')); print(d['cost_usd'] if d['cost_usd'] is not None else 0)" 2>/dev/null || echo "0")
-            total_cli_tokens=$((total_cli_tokens + c_tokens_raw))
-            total_cli_cost=$(python3 -c "print(${total_cli_cost} + ${c_cost_raw})" 2>/dev/null || echo "$total_cli_cost")
-        fi
+    b_tokens_str = "-"
+    b_cost_str = "-"
+    c_tokens_str = "-"
+    c_cost_str = "-"
+    reduction_str = "-"
 
-        # 削減率を計算
-        if [ -f "$baseline_metrics" ] && [ -f "$cli_metrics" ]; then
-            reduction=$(python3 -c "
-import json
-b=json.load(open('$baseline_metrics'))
-c=json.load(open('$cli_metrics'))
-bt=b['total_tokens']; ct=c['total_tokens']
-if bt > 0:
-    r = ((bt - ct) / bt) * 100
-    print(f'{r:+.1f}%')
-else:
-    print('-')
-" 2>/dev/null || echo "-")
-        fi
+    bt = 0
+    ct = 0
 
-        echo "| ${phase} | ${b_tokens} | ${b_cost} | ${c_tokens} | ${c_cost} | ${reduction} |" >> "$summary_file"
-    done
+    if os.path.isfile(b_file):
+        with open(b_file) as f:
+            b = json.load(f)
+        bt = b.get("total_tokens", 0)
+        bc = b.get("cost_usd")
+        b_tokens_str = f"{bt:,}"
+        b_cost_str = f"${bc:.4f}" if bc is not None else "-"
+        total_b_tokens += bt
+        total_b_cost += bc if bc is not None else 0
 
-    # 合計行
-    local total_reduction="-"
-    if [ "$total_baseline_tokens" -gt 0 ] && [ "$total_cli_tokens" -gt 0 ]; then
-        total_reduction=$(python3 -c "
-bt=${total_baseline_tokens}; ct=${total_cli_tokens}
-r = ((bt - ct) / bt) * 100
-print(f'{r:+.1f}%')
-" 2>/dev/null || echo "-")
-    fi
-    local fmt_baseline_tokens=$(python3 -c "print(f'${total_baseline_tokens:,}')" 2>/dev/null || echo "$total_baseline_tokens")
-    local fmt_cli_tokens=$(python3 -c "print(f'${total_cli_tokens:,}')" 2>/dev/null || echo "$total_cli_tokens")
-    local fmt_baseline_cost=$(python3 -c "print(f'\\${${total_baseline_cost}:.4f}')" 2>/dev/null || echo "$total_baseline_cost")
-    local fmt_cli_cost=$(python3 -c "print(f'\\${${total_cli_cost}:.4f}')" 2>/dev/null || echo "$total_cli_cost")
+    if os.path.isfile(c_file):
+        with open(c_file) as f:
+            c = json.load(f)
+        ct = c.get("total_tokens", 0)
+        cc = c.get("cost_usd")
+        c_tokens_str = f"{ct:,}"
+        c_cost_str = f"${cc:.4f}" if cc is not None else "-"
+        total_c_tokens += ct
+        total_c_cost += cc if cc is not None else 0
 
-    echo "| **合計** | **${fmt_baseline_tokens}** | **${fmt_baseline_cost}** | **${fmt_cli_tokens}** | **${fmt_cli_cost}** | **${total_reduction}** |" >> "$summary_file"
-    echo "" >> "$summary_file"
+    if bt > 0 and ct > 0:
+        r = ((bt - ct) / bt) * 100
+        reduction_str = f"{r:+.1f}%"
+
+    print(f"| {phase} | {b_tokens_str} | {b_cost_str} | {c_tokens_str} | {c_cost_str} | {reduction_str} |")
+
+# 合計行
+total_reduction_str = "-"
+if total_b_tokens > 0 and total_c_tokens > 0:
+    r = ((total_b_tokens - total_c_tokens) / total_b_tokens) * 100
+    total_reduction_str = f"{r:+.1f}%"
+
+print(f"| **合計** | **{total_b_tokens:,}** | **${total_b_cost:.4f}** | **{total_c_tokens:,}** | **${total_c_cost:.4f}** | **{total_reduction_str}** |")
+print()
+PYEOF
 
     # タイムスタンプを置換
     sed -i '' "s/TIMESTAMP_PLACEHOLDER/${TIMESTAMP}/" "$summary_file" 2>/dev/null || \
