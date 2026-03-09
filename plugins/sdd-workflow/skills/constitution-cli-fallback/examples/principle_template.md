@@ -1,0 +1,1 @@
+../../constitution/examples/principle_template.md

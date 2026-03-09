@@ -1,0 +1,1 @@
+../../implement/examples/output_phase_completion.md

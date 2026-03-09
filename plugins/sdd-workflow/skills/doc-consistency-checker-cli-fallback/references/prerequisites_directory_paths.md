@@ -1,0 +1,1 @@
+../../doc-consistency-checker/references/prerequisites_directory_paths.md

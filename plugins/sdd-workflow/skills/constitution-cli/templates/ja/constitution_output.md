@@ -1,0 +1,1 @@
+../../../constitution/templates/ja/constitution_output.md

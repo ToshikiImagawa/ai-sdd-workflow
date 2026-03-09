@@ -1,0 +1,1 @@
+../../../plan-refactor/templates/ja/reverse_design_template.md

@@ -116,9 +116,16 @@ run_test() {
     # 代わりに、フックが生成するファイル（.sdd-config.json, .sdd/ ディレクトリ）を直接検証する。
     cd "$test_dir"
     unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
-    echo "session-start フックが実行されました。このメッセージが表示されれば正常です。" | claude --plugin-dir "$plugin_dir" --print > "$log_dir/session-start.log" 2>&1 || true
+    echo "session-start フックが実行されました。このメッセージが表示されれば正常です。" | claude --plugin-dir "$plugin_dir" --print --verbose --output-format stream-json \
+      > "$log_dir/session-start.jsonl" 2>"$log_dir/session-start.stderr.log" || true
 
-    echo "ログ保存: $log_dir/session-start.log"
+    # メトリクス収集
+    if [ -f "$log_dir/session-start.jsonl" ]; then
+        python3 "$REPO_ROOT/scripts/collect-metrics.py" \
+          "$log_dir/session-start.jsonl" > "$log_dir/session-start-metrics.json" 2>/dev/null || true
+    fi
+
+    echo "ログ保存: $log_dir/session-start.jsonl"
 
     # .sdd-config.json を保存（session-start.sh が自動生成）
     if [ -f "$test_dir/.sdd-config.json" ]; then
@@ -207,9 +214,16 @@ run_sdd_init_test() {
     echo "--- /sdd-init --ci 実行 ---"
     cd "$test_dir"
     unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
-    echo "/sdd-init --ci" | claude --plugin-dir "$plugin_dir" --print > "$log_dir/sdd-init.log" 2>&1 || true
+    echo "/sdd-init --ci" | claude --plugin-dir "$plugin_dir" --print --verbose --output-format stream-json \
+      > "$log_dir/sdd-init.jsonl" 2>"$log_dir/sdd-init.stderr.log" || true
 
-    echo "ログ保存: $log_dir/sdd-init.log"
+    # メトリクス収集
+    if [ -f "$log_dir/sdd-init.jsonl" ]; then
+        python3 "$REPO_ROOT/scripts/collect-metrics.py" \
+          "$log_dir/sdd-init.jsonl" > "$log_dir/sdd-init-metrics.json" 2>/dev/null || true
+    fi
+
+    echo "ログ保存: $log_dir/sdd-init.jsonl"
 
     # /sdd-init 後のディレクトリ構造を記録
     cd "$test_dir"
@@ -258,12 +272,19 @@ run_gen_skills_test() {
     unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
     local start_time
     start_time=$(date +%s)
-    echo '/constitution init A sample CLI tool project using TypeScript.' | claude --plugin-dir "$plugin_dir" --print > "$log_dir/constitution-init.log" 2>&1 || true
+    echo '/constitution init A sample CLI tool project using TypeScript.' | claude --plugin-dir "$plugin_dir" --print --verbose --output-format stream-json \
+      > "$log_dir/constitution-init.jsonl" 2>"$log_dir/constitution-init.stderr.log" || true
     local end_time
     end_time=$(date +%s)
     local elapsed=$((end_time - start_time))
     echo "constitution-init:${elapsed}" >> "$log_dir/timing.log"
-    echo "ログ保存: $log_dir/constitution-init.log (${elapsed}秒)"
+    echo "ログ保存: $log_dir/constitution-init.jsonl (${elapsed}秒)"
+
+    # メトリクス収集
+    if [ -f "$log_dir/constitution-init.jsonl" ]; then
+        python3 "$REPO_ROOT/scripts/collect-metrics.py" \
+          "$log_dir/constitution-init.jsonl" > "$log_dir/constitution-init-metrics.json" 2>/dev/null || true
+    fi
 
     # CONSTITUTION.md を保存
     if [ -f "$test_dir/.sdd/CONSTITUTION.md" ]; then
@@ -275,11 +296,18 @@ run_gen_skills_test() {
     echo "--- /generate-prd テスト ---"
     cd "$test_dir"
     start_time=$(date +%s)
-    echo "/generate-prd --ci A sample task management feature. Users can create, edit, and delete tasks." | claude --plugin-dir "$plugin_dir" --print > "$log_dir/generate-prd.log" 2>&1 || true
+    echo "/generate-prd --ci A sample task management feature. Users can create, edit, and delete tasks." | claude --plugin-dir "$plugin_dir" --print --verbose --output-format stream-json \
+      > "$log_dir/generate-prd.jsonl" 2>"$log_dir/generate-prd.stderr.log" || true
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
     echo "generate-prd:${elapsed}" >> "$log_dir/timing.log"
-    echo "ログ保存: $log_dir/generate-prd.log (${elapsed}秒)"
+    echo "ログ保存: $log_dir/generate-prd.jsonl (${elapsed}秒)"
+
+    # メトリクス収集
+    if [ -f "$log_dir/generate-prd.jsonl" ]; then
+        python3 "$REPO_ROOT/scripts/collect-metrics.py" \
+          "$log_dir/generate-prd.jsonl" > "$log_dir/generate-prd-metrics.json" 2>/dev/null || true
+    fi
 
     # 生成された PRD ファイルを保存
     if [ -d "$test_dir/.sdd/requirement" ]; then
@@ -297,11 +325,18 @@ run_gen_skills_test() {
     echo "--- /generate-spec テスト ---"
     cd "$test_dir"
     start_time=$(date +%s)
-    echo "/generate-spec --ci User authentication feature. Supports login and logout with email and password." | claude --plugin-dir "$plugin_dir" --print > "$log_dir/generate-spec.log" 2>&1 || true
+    echo "/generate-spec --ci User authentication feature. Supports login and logout with email and password." | claude --plugin-dir "$plugin_dir" --print --verbose --output-format stream-json \
+      > "$log_dir/generate-spec.jsonl" 2>"$log_dir/generate-spec.stderr.log" || true
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
     echo "generate-spec:${elapsed}" >> "$log_dir/timing.log"
-    echo "ログ保存: $log_dir/generate-spec.log (${elapsed}秒)"
+    echo "ログ保存: $log_dir/generate-spec.jsonl (${elapsed}秒)"
+
+    # メトリクス収集
+    if [ -f "$log_dir/generate-spec.jsonl" ]; then
+        python3 "$REPO_ROOT/scripts/collect-metrics.py" \
+          "$log_dir/generate-spec.jsonl" > "$log_dir/generate-spec-metrics.json" 2>/dev/null || true
+    fi
 
     # 生成された仕様書ファイルを保存
     if [ -d "$test_dir/.sdd/specification" ]; then

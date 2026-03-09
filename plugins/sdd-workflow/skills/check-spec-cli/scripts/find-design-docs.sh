@@ -1,0 +1,1 @@
+../../check-spec/scripts/find-design-docs.sh

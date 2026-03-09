@@ -1,0 +1,1 @@
+../../../implement/templates/ja/continuous_verification.md

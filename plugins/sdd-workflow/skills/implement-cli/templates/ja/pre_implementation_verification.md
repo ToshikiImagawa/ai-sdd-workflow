@@ -1,0 +1,1 @@
+../../../implement/templates/ja/pre_implementation_verification.md
