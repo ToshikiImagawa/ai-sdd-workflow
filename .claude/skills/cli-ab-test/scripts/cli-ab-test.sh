@@ -197,6 +197,7 @@ run_sdd_init_test() {
     cd "$test_dir"
     unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
     echo "/sdd-init --ci" | claude --plugin-dir "$plugin_dir" --print --verbose --output-format stream-json \
+      --allowedTools 'Bash(*)' 'Read' 'Write' 'Edit' 'Glob' 'Grep' 'Skill' \
       > "$log_dir/sdd-init.jsonl" 2>"$log_dir/sdd-init.stderr.log" || true
 
     # メトリクス収集
@@ -254,6 +255,7 @@ run_gen_skills_test() {
     local start_time
     start_time=$(date +%s)
     echo '/constitution init A sample CLI tool project using TypeScript.' | claude --plugin-dir "$plugin_dir" --print --verbose --output-format stream-json \
+      --allowedTools 'Bash(*)' 'Read' 'Write' 'Edit' 'Glob' 'Grep' 'Skill' \
       > "$log_dir/constitution-init.jsonl" 2>"$log_dir/constitution-init.stderr.log" || true
     local end_time
     end_time=$(date +%s)
@@ -278,6 +280,7 @@ run_gen_skills_test() {
     cd "$test_dir"
     start_time=$(date +%s)
     echo "/generate-prd --ci A sample task management feature. Users can create, edit, and delete tasks." | claude --plugin-dir "$plugin_dir" --print --verbose --output-format stream-json \
+      --allowedTools 'Bash(*)' 'Read' 'Write' 'Edit' 'Glob' 'Grep' 'Skill' \
       > "$log_dir/generate-prd.jsonl" 2>"$log_dir/generate-prd.stderr.log" || true
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
@@ -307,6 +310,7 @@ run_gen_skills_test() {
     cd "$test_dir"
     start_time=$(date +%s)
     echo "/generate-spec --ci User authentication feature. Supports login and logout with email and password." | claude --plugin-dir "$plugin_dir" --print --verbose --output-format stream-json \
+      --allowedTools 'Bash(*)' 'Read' 'Write' 'Edit' 'Glob' 'Grep' 'Skill' \
       > "$log_dir/generate-spec.jsonl" 2>"$log_dir/generate-spec.stderr.log" || true
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
@@ -407,6 +411,7 @@ run_cli_skills_test() {
     local start_time
     start_time=$(date +%s)
     echo "/task-breakdown --ci ${feature_name}" | claude --plugin-dir "$plugin_dir" --print --verbose --output-format stream-json \
+      --allowedTools 'Bash(*)' 'Read' 'Write' 'Edit' 'Glob' 'Grep' 'Skill' \
       > "$log_dir/task-breakdown.jsonl" 2>"$log_dir/task-breakdown.stderr.log" || true
     local end_time
     end_time=$(date +%s)
@@ -434,6 +439,7 @@ run_cli_skills_test() {
     unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
     start_time=$(date +%s)
     echo "/constitution validate" | claude --plugin-dir "$plugin_dir" --print --verbose --output-format stream-json \
+      --allowedTools 'Bash(*)' 'Read' 'Write' 'Edit' 'Glob' 'Grep' 'Skill' \
       > "$log_dir/constitution-validate.jsonl" 2>"$log_dir/constitution-validate.stderr.log" || true
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
@@ -454,6 +460,7 @@ run_cli_skills_test() {
     unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
     start_time=$(date +%s)
     echo "/check-spec ${feature_name} --ci" | claude --plugin-dir "$plugin_dir" --print --verbose --output-format stream-json \
+      --allowedTools 'Bash(*)' 'Read' 'Write' 'Edit' 'Glob' 'Grep' 'Skill' \
       > "$log_dir/check-spec.jsonl" 2>"$log_dir/check-spec.stderr.log" || true
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
