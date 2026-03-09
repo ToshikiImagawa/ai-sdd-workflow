@@ -11,8 +11,6 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 PLUGIN_DIR="${REPO_ROOT}/plugins/sdd-workflow"
 SKILLS_DIR="${PLUGIN_DIR}/skills"
-SHARED_REFS_DIR="${PLUGIN_DIR}/shared/references"
-
 # Target skills with 3-layer split
 ROUTER_SKILLS="check-spec constitution doc-consistency-checker implement plan-refactor task-breakdown"
 
