@@ -1,25 +1,27 @@
 #!/bin/bash
-# plugin-integration-test.sh
-# sdd-workflow / sdd-workflow-ja プラグインの統合テスト実行スクリプト
+# cli-ab-test.sh
+# CLI有効/無効のA/Bテスト実行スクリプト
+# sdd-workflow (ベースライン) と sdd-workflow-with-cli (CLI有効) で
+# 同一タスクを実行し、トークン使用量を比較する。
 #
 # Usage:
-#   plugin-integration-test.sh setup              - テスト環境を構築
-#   plugin-integration-test.sh run <plugin_dir>   - サブセッションでテスト実行
-#   plugin-integration-test.sh sdd-init <plugin_dir> - /sdd-init テスト実行
-#   plugin-integration-test.sh gen-skills <plugin_dir> - 生成系スキルテスト実行
-#   plugin-integration-test.sh collect <plugin_dir>  - ログ収集
-#   plugin-integration-test.sh summary            - TEST_SUMMARY.md テンプレート生成
+#   cli-ab-test.sh setup                              - テスト環境を構築
+#   cli-ab-test.sh run <plugin_dir> [test_case_name]  - session-start テスト実行
+#   cli-ab-test.sh sdd-init <plugin_dir> [test_case_name] - /sdd-init テスト実行
+#   cli-ab-test.sh gen-skills <plugin_dir> [test_case_name] - 生成系スキルテスト実行（前提条件構築）
+#   cli-ab-test.sh cli-skills <plugin_dir> [test_case_name] - CLI分岐スキルテスト実行（メトリクス比較対象）
+#   cli-ab-test.sh collect <plugin_dir> [test_case_name]  - ログ収集
+#   cli-ab-test.sh summary                            - TEST_SUMMARY.md テンプレート生成
 
 set -euo pipefail
 
-TEST_BASE="/tmp/ai-sdd-plugin-test"
+TEST_BASE="/tmp/ai-sdd-cli-ab-test"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
-PLUGINS_DIR="${REPO_ROOT}/plugins"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 
 # --- Phase 1: Setup ---
 setup() {
-    echo "=== Phase 1: テスト環境構築 ==="
+    echo "=== Phase 1: テスト環境構築 (CLI A/B) ==="
 
     # クリーンアップ
     if [ -d "$TEST_BASE" ]; then
@@ -30,51 +32,42 @@ setup() {
     mkdir -p "$TEST_BASE"
     echo "テストベースディレクトリ作成: $TEST_BASE"
 
-    # プラグインごとのテストディレクトリを作成
-    for plugin_dir in "$PLUGINS_DIR"/*/; do
-        plugin_name="$(basename "$plugin_dir")"
-        test_dir="${TEST_BASE}/${plugin_name}"
+    # ベースライン: sdd-workflow (CLI無効)
+    local baseline_dir="${TEST_BASE}/sdd-workflow"
+    mkdir -p "$baseline_dir"
+    cd "$baseline_dir"
 
-        mkdir -p "$test_dir"
-        cd "$test_dir"
-
-        # git init + 空 CLAUDE.md をコミット
-        git init -q
-        echo "" > CLAUDE.md
-        git add CLAUDE.md
-        git commit -q -m "initial commit"
-
-        echo "テストディレクトリ作成: ${test_dir} (git initialized)"
-    done
-
-    # 追加テストケース: sdd-workflow + 既存 .sdd-config.json (lang: ja)
-    # このテストは、既存の設定ファイルの言語設定がスキルに正しく引き継がれるかを検証する
-    local ja_config_test_dir="${TEST_BASE}/sdd-workflow-with-ja-config"
-    mkdir -p "$ja_config_test_dir"
-    cd "$ja_config_test_dir"
-
-    # git init + 空 CLAUDE.md をコミット
     git init -q
     echo "" > CLAUDE.md
     git add CLAUDE.md
     git commit -q -m "initial commit"
 
-    # 事前に lang: "ja" の .sdd-config.json を配置
+    echo "テストディレクトリ作成: ${baseline_dir} (git initialized, ベースライン)"
+
+    # CLI有効: sdd-workflow-with-cli
+    local cli_dir="${TEST_BASE}/sdd-workflow-with-cli"
+    mkdir -p "$cli_dir"
+    cd "$cli_dir"
+
+    git init -q
+    echo "" > CLAUDE.md
+    git add CLAUDE.md
+    git commit -q -m "initial commit"
+
+    # CLI有効設定
     cat > ".sdd-config.json" << 'EOF'
 {
   "root": ".sdd",
-  "lang": "ja",
-  "directories": {
-    "requirement": "requirement",
-    "specification": "specification",
-    "task": "task"
+  "lang": "en",
+  "cli": {
+    "enabled": true
   }
 }
 EOF
     git add .sdd-config.json
-    git commit -q -m "add .sdd-config.json with lang: ja"
+    git commit -q -m "add .sdd-config.json with cli enabled"
 
-    echo "テストディレクトリ作成: ${ja_config_test_dir} (git initialized, .sdd-config.json with lang: ja)"
+    echo "テストディレクトリ作成: ${cli_dir} (git initialized, CLI有効)"
 
     # ログディレクトリ
     mkdir -p "${TEST_BASE}/logs"
@@ -83,22 +76,18 @@ EOF
     echo ""
     echo "=== セットアップ完了 ==="
     echo "テストディレクトリ: $TEST_BASE"
-    echo "検出プラグイン:"
-    for plugin_dir in "$PLUGINS_DIR"/*/; do
-        echo "  - $(basename "$plugin_dir")"
-    done
-    echo "追加テストケース:"
-    echo "  - sdd-workflow-with-ja-config (sdd-workflow + 既存 lang: ja 設定)"
+    echo "テストケース:"
+    echo "  - sdd-workflow (ベースライン: CLI無効)"
+    echo "  - sdd-workflow-with-cli (CLI有効)"
 }
 
 # --- Phase 2: サブセッション実行 (session-start + 基本検証) ---
 run_test() {
     local plugin_dir="$1"
-    local test_case_name="${2:-}"  # オプショナル: テストケース名（省略時はプラグイン名を使用）
+    local test_case_name="${2:-}"
     local plugin_name
     plugin_name="$(basename "$plugin_dir")"
 
-    # テストケース名が指定されていればそれを使用、なければプラグイン名を使用
     local effective_name="${test_case_name:-$plugin_name}"
     local test_dir="${TEST_BASE}/${effective_name}"
     local log_dir="${TEST_BASE}/logs/${effective_name}"
@@ -110,10 +99,6 @@ run_test() {
     local start_time
     start_time=$(date +%s)
 
-    # claude サブセッションを起動して session-start フックを実行させる
-    # session-start.sh は CLAUDE_ENV_FILE 経由で環境変数を設定するため、
-    # echo による環境変数確認はサンドボックス制限で動作しない。
-    # 代わりに、フックが生成するファイル（.sdd-config.json, .sdd/ ディレクトリ）を直接検証する。
     cd "$test_dir"
     unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
     echo "session-start フックが実行されました。このメッセージが表示されれば正常です。" | claude --plugin-dir "$plugin_dir" --print --verbose --output-format stream-json \
@@ -127,7 +112,7 @@ run_test() {
 
     echo "ログ保存: $log_dir/session-start.jsonl"
 
-    # .sdd-config.json を保存（session-start.sh が自動生成）
+    # .sdd-config.json を保存
     if [ -f "$test_dir/.sdd-config.json" ]; then
         cp "$test_dir/.sdd-config.json" "$log_dir/config.json"
         echo "config.json 保存完了"
@@ -158,49 +143,47 @@ run_test() {
     echo ""
 }
 
-# --- Phase 3: /sdd-init テスト ---
+# --- Phase 2b: /sdd-init テスト ---
 run_sdd_init_test() {
     local plugin_dir="$1"
-    local test_case_name="${2:-}"  # オプショナル: テストケース名（省略時はプラグイン名を使用）
+    local test_case_name="${2:-}"
     local plugin_name
     plugin_name="$(basename "$plugin_dir")"
 
-    # テストケース名が指定されていればそれを使用、なければプラグイン名を使用
     local effective_name="${test_case_name:-$plugin_name}"
     local test_dir="${TEST_BASE}/${effective_name}"
     local log_dir="${TEST_BASE}/logs/${effective_name}"
 
     mkdir -p "$log_dir"
 
-    echo "=== Phase 3: /sdd-init テスト [${effective_name}] (plugin: ${plugin_name}) ==="
+    echo "=== Phase 2b: /sdd-init テスト [${effective_name}] (plugin: ${plugin_name}) ==="
 
     local start_time
     start_time=$(date +%s)
 
-    # 前提条件チェック: session-start.sh が実行されたか確認
+    # 前提条件チェック
     echo "--- session-start 実行確認 ---"
     local session_start_ok=true
 
     if [ ! -f "$test_dir/.sdd-config.json" ]; then
-        echo "ERROR: .sdd-config.json が存在しません（session-start.sh が実行されていない可能性）"
+        echo "ERROR: .sdd-config.json が存在しません"
         session_start_ok=false
     fi
 
     if [ ! -d "$test_dir/.sdd" ]; then
-        echo "ERROR: .sdd ディレクトリが存在しません（session-start.sh が実行されていない可能性）"
+        echo "ERROR: .sdd ディレクトリが存在しません"
         session_start_ok=false
     fi
 
     if [ ! -f "$test_dir/.sdd/AI-SDD-PRINCIPLES.md" ]; then
-        echo "ERROR: AI-SDD-PRINCIPLES.md が存在しません（session-start.sh が実行されていない可能性）"
+        echo "ERROR: AI-SDD-PRINCIPLES.md が存在しません"
         session_start_ok=false
     fi
 
     if [ "$session_start_ok" = true ]; then
-        echo "OK: session-start.sh の実行を確認（.sdd-config.json, .sdd/, AI-SDD-PRINCIPLES.md が存在）"
+        echo "OK: session-start.sh の実行を確認"
     else
         echo "WARNING: session-start.sh が正しく実行されていない可能性があります"
-        echo "  -> Phase 2 (run) を先に実行してください"
     fi
 
     # session-start 実行確認結果をログに保存
@@ -209,7 +192,6 @@ run_sdd_init_test() {
     echo "  .sdd-config.json: $([ -f "$test_dir/.sdd-config.json" ] && echo 'exists' || echo 'missing')" >> "$log_dir/session-start-check.log"
     echo "  .sdd/: $([ -d "$test_dir/.sdd" ] && echo 'exists' || echo 'missing')" >> "$log_dir/session-start-check.log"
     echo "  .sdd/AI-SDD-PRINCIPLES.md: $([ -f "$test_dir/.sdd/AI-SDD-PRINCIPLES.md" ] && echo 'exists' || echo 'missing')" >> "$log_dir/session-start-check.log"
-    echo "session-start-check.log 保存完了"
 
     echo "--- /sdd-init --ci 実行 ---"
     cd "$test_dir"
@@ -247,21 +229,20 @@ run_sdd_init_test() {
     echo ""
 }
 
-# --- Phase 3b: 生成系スキルテスト ---
+# --- Phase 2c: 生成系スキルテスト ---
 run_gen_skills_test() {
     local plugin_dir="$1"
-    local test_case_name="${2:-}"  # オプショナル: テストケース名（省略時はプラグイン名を使用）
+    local test_case_name="${2:-}"
     local plugin_name
     plugin_name="$(basename "$plugin_dir")"
 
-    # テストケース名が指定されていればそれを使用、なければプラグイン名を使用
     local effective_name="${test_case_name:-$plugin_name}"
     local test_dir="${TEST_BASE}/${effective_name}"
     local log_dir="${TEST_BASE}/logs/${effective_name}"
 
     mkdir -p "$log_dir"
 
-    echo "=== Phase 3b: 生成系スキルテスト [${effective_name}] (plugin: ${plugin_name}) ==="
+    echo "=== Phase 2c: 生成系スキルテスト [${effective_name}] (plugin: ${plugin_name}) ==="
 
     local phase_start
     phase_start=$(date +%s)
@@ -292,7 +273,7 @@ run_gen_skills_test() {
         echo "CONSTITUTION.md 保存完了"
     fi
 
-    # /generate-prd テスト（ダミー要件）
+    # /generate-prd テスト
     echo "--- /generate-prd テスト ---"
     cd "$test_dir"
     start_time=$(date +%s)
@@ -321,7 +302,7 @@ run_gen_skills_test() {
         done
     fi
 
-    # /generate-spec テスト（ダミー要件）
+    # /generate-spec テスト
     echo "--- /generate-spec テスト ---"
     cd "$test_dir"
     start_time=$(date +%s)
@@ -350,7 +331,7 @@ run_gen_skills_test() {
         done
     fi
 
-    # /sdd-init 後のディレクトリ構造を再記録（生成スキル実行後）
+    # ディレクトリ構造を再記録（生成スキル実行後）
     cd "$test_dir"
     if [ -d ".sdd" ]; then
         find .sdd -type f | sort > "$log_dir/sdd-structure-after-gen.log" 2>&1 || true
@@ -361,7 +342,138 @@ run_gen_skills_test() {
     phase_end=$(date +%s)
     local phase_elapsed=$((phase_end - phase_start))
     echo "gen-skills-total:${phase_elapsed}" >> "$log_dir/timing.log"
-    echo "Phase 3b 合計実行時間: ${phase_elapsed}秒"
+    echo "Phase 2c 合計実行時間: ${phase_elapsed}秒"
+
+    echo ""
+}
+
+# --- Phase 3: CLI分岐スキルテスト ---
+run_cli_skills_test() {
+    local plugin_dir="$1"
+    local test_case_name="${2:-}"
+    local plugin_name
+    plugin_name="$(basename "$plugin_dir")"
+
+    local effective_name="${test_case_name:-$plugin_name}"
+    local test_dir="${TEST_BASE}/${effective_name}"
+    local log_dir="${TEST_BASE}/logs/${effective_name}"
+
+    mkdir -p "$log_dir"
+
+    echo "=== Phase 3: CLI分岐スキルテスト [${effective_name}] (plugin: ${plugin_name}) ==="
+
+    local phase_start
+    phase_start=$(date +%s)
+
+    # 設計書からフィーチャー名を動的に取得
+    local feature_name=""
+    if [ -d "$test_dir/.sdd/specification" ]; then
+        for f in "$test_dir/.sdd/specification"/*_design.md; do
+            if [ -f "$f" ]; then
+                local basename_f
+                basename_f="$(basename "$f")"
+                feature_name="${basename_f%_design.md}"
+                echo "検出されたフィーチャー名: ${feature_name}"
+                break
+            fi
+        done
+    fi
+
+    if [ -z "$feature_name" ]; then
+        echo "WARNING: 設計書が見つかりません。_spec.md からフィーチャー名を取得します。"
+        if [ -d "$test_dir/.sdd/specification" ]; then
+            for f in "$test_dir/.sdd/specification"/*_spec.md; do
+                if [ -f "$f" ]; then
+                    local basename_f
+                    basename_f="$(basename "$f")"
+                    feature_name="${basename_f%_spec.md}"
+                    echo "検出されたフィーチャー名 (spec): ${feature_name}"
+                    break
+                fi
+            done
+        fi
+    fi
+
+    if [ -z "$feature_name" ]; then
+        echo "ERROR: フィーチャー名を取得できません。specification ディレクトリにファイルがありません。"
+        echo "cli-skills フェーズをスキップします。"
+        return 1
+    fi
+
+    # /task-breakdown テスト
+    echo "--- /task-breakdown --ci ${feature_name} テスト ---"
+    cd "$test_dir"
+    unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
+    local start_time
+    start_time=$(date +%s)
+    echo "/task-breakdown --ci ${feature_name}" | claude --plugin-dir "$plugin_dir" --print --verbose --output-format stream-json \
+      > "$log_dir/task-breakdown.jsonl" 2>"$log_dir/task-breakdown.stderr.log" || true
+    local end_time
+    end_time=$(date +%s)
+    local elapsed=$((end_time - start_time))
+    echo "task-breakdown:${elapsed}" >> "$log_dir/timing.log"
+    echo "ログ保存: $log_dir/task-breakdown.jsonl (${elapsed}秒)"
+
+    # メトリクス収集
+    if [ -f "$log_dir/task-breakdown.jsonl" ]; then
+        python3 "$REPO_ROOT/scripts/collect-metrics.py" \
+          "$log_dir/task-breakdown.jsonl" > "$log_dir/task-breakdown-metrics.json" 2>/dev/null || true
+    fi
+
+    # タスクファイルを保存
+    if [ -d "$test_dir/.sdd/task" ]; then
+        find "$test_dir/.sdd/task" -type f | sort > "$log_dir/task-files.log" 2>&1 || true
+        echo "task-files.log 保存完了"
+    fi
+
+    # /constitution validate テスト
+    echo "--- /constitution validate テスト ---"
+    cd "$test_dir"
+    unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
+    start_time=$(date +%s)
+    echo "/constitution validate" | claude --plugin-dir "$plugin_dir" --print --verbose --output-format stream-json \
+      > "$log_dir/constitution-validate.jsonl" 2>"$log_dir/constitution-validate.stderr.log" || true
+    end_time=$(date +%s)
+    elapsed=$((end_time - start_time))
+    echo "constitution-validate:${elapsed}" >> "$log_dir/timing.log"
+    echo "ログ保存: $log_dir/constitution-validate.jsonl (${elapsed}秒)"
+
+    # メトリクス収集
+    if [ -f "$log_dir/constitution-validate.jsonl" ]; then
+        python3 "$REPO_ROOT/scripts/collect-metrics.py" \
+          "$log_dir/constitution-validate.jsonl" > "$log_dir/constitution-validate-metrics.json" 2>/dev/null || true
+    fi
+
+    # /check-spec テスト
+    echo "--- /check-spec ${feature_name} --ci テスト ---"
+    cd "$test_dir"
+    unset CLAUDECODE SDD_LANG SDD_ROOT SDD_REQUIREMENT_DIR SDD_SPECIFICATION_DIR SDD_TASK_DIR SDD_REQUIREMENT_PATH SDD_SPECIFICATION_PATH SDD_TASK_PATH 2>/dev/null || true
+    start_time=$(date +%s)
+    echo "/check-spec ${feature_name} --ci" | claude --plugin-dir "$plugin_dir" --print --verbose --output-format stream-json \
+      > "$log_dir/check-spec.jsonl" 2>"$log_dir/check-spec.stderr.log" || true
+    end_time=$(date +%s)
+    elapsed=$((end_time - start_time))
+    echo "check-spec:${elapsed}" >> "$log_dir/timing.log"
+    echo "ログ保存: $log_dir/check-spec.jsonl (${elapsed}秒)"
+
+    # メトリクス収集
+    if [ -f "$log_dir/check-spec.jsonl" ]; then
+        python3 "$REPO_ROOT/scripts/collect-metrics.py" \
+          "$log_dir/check-spec.jsonl" > "$log_dir/check-spec-metrics.json" 2>/dev/null || true
+    fi
+
+    # ディレクトリ構造を再記録（CLI分岐スキル実行後）
+    cd "$test_dir"
+    if [ -d ".sdd" ]; then
+        find .sdd -type f | sort > "$log_dir/sdd-structure-after-cli-skills.log" 2>&1 || true
+        echo "sdd-structure-after-cli-skills.log 保存完了"
+    fi
+
+    local phase_end
+    phase_end=$(date +%s)
+    local phase_elapsed=$((phase_end - phase_start))
+    echo "cli-skills-total:${phase_elapsed}" >> "$log_dir/timing.log"
+    echo "Phase 3 合計実行時間: ${phase_elapsed}秒"
 
     echo ""
 }
@@ -369,16 +481,15 @@ run_gen_skills_test() {
 # --- Phase 4: ログ収集 ---
 collect_logs() {
     local plugin_dir="$1"
-    local test_case_name="${2:-}"  # オプショナル: テストケース名（省略時はプラグイン名を使用）
+    local test_case_name="${2:-}"
     local plugin_name
     plugin_name="$(basename "$plugin_dir")"
 
-    # テストケース名が指定されていればそれを使用、なければプラグイン名を使用
     local effective_name="${test_case_name:-$plugin_name}"
     local test_dir="${TEST_BASE}/${effective_name}"
     local log_dir="${TEST_BASE}/logs/${effective_name}"
 
-    echo "=== Phase 4: ログ収集 [${effective_name}] (plugin: ${plugin_name}) ==="
+    echo "=== Phase 3: ログ収集 [${effective_name}] (plugin: ${plugin_name}) ==="
 
     if [ ! -d "$log_dir" ]; then
         echo "ログディレクトリが見つかりません: $log_dir"
@@ -391,7 +502,7 @@ collect_logs() {
         echo "config.json を収集しました"
     fi
 
-    # .sdd/ ディレクトリ構造を記録（session-start 後、まだ記録されていない場合）
+    # .sdd/ ディレクトリ構造を記録（まだ記録されていない場合）
     if [ -d "$test_dir/.sdd" ] && [ ! -f "$log_dir/sdd-structure-after-session.log" ]; then
         find "$test_dir/.sdd" -type f | sort > "$log_dir/sdd-structure-after-session.log" 2>&1 || true
         echo "sdd-structure-after-session.log を収集しました"
@@ -417,90 +528,66 @@ collect_logs() {
 # --- Summary 生成 ---
 generate_summary() {
     local summary_file="${TEST_BASE}/TEST_SUMMARY.md"
+    local test_cases=("sdd-workflow" "sdd-workflow-with-cli")
 
     cat > "$summary_file" << 'SUMMARY_EOF'
-# Plugin Integration Test Summary
+# CLI A/B Test Summary
 
-> 自動生成テンプレート - テスト結果を記入してください
+> CLI有効/無効のトークン使用量比較テスト（CLI分岐スキルに特化）
 
 ## テスト実行情報
 
 | 項目 | 値 |
 |------|-----|
 | 実行日時 | TIMESTAMP_PLACEHOLDER |
-| テストベース | /tmp/ai-sdd-plugin-test |
+| テストベース | /tmp/ai-sdd-cli-ab-test |
 
-## テスト結果
+## 前提条件構築（Phase 2）
 
-### sdd-workflow (期待言語: en)
+> session-start → sdd-init → gen-skills はCLI分岐しないため、メトリクス比較対象外。
+> 前提ファイル（CONSTITUTION.md, PRD, spec, design）を生成するために実行。
 
-| テスト項目 | 結果 | 備考 |
-|-----------|------|------|
-| session-start.sh 実行 | - | |
-| .sdd-config.json 生成 | - | |
-| SDD_LANG 言語設定 (config.json) | - | 期待値: en |
-| .sdd ディレクトリ作成 | - | |
-| AI-SDD-PRINCIPLES.md 配置 | - | |
-| /sdd-init 実行 | - | |
-| CLAUDE.md AI-SDD セクション | - | |
-| CLAUDE.md 言語検証 | - | 英語テンプレートで生成されていること |
-| /constitution init 実行 | - | |
-| CONSTITUTION.md 言語検証 | - | 英語で生成されていること |
-| /generate-prd 実行 | - | |
-| PRD 言語検証 | - | 英語で生成されていること |
-| /generate-spec 実行 | - | |
-| 仕様書 言語検証 | - | 英語で生成されていること |
-
-### sdd-workflow-ja (期待言語: ja)
+### sdd-workflow (ベースライン: CLI無効)
 
 | テスト項目 | 結果 | 備考 |
 |-----------|------|------|
 | session-start.sh 実行 | - | |
-| .sdd-config.json 生成 | - | |
-| SDD_LANG 言語設定 (config.json) | - | 期待値: ja |
-| .sdd ディレクトリ作成 | - | |
-| AI-SDD-PRINCIPLES.md 配置 | - | |
 | /sdd-init 実行 | - | |
-| CLAUDE.md AI-SDD セクション | - | |
-| CLAUDE.md 言語検証 | - | 日本語テンプレートで生成されていること |
 | /constitution init 実行 | - | |
-| CONSTITUTION.md 言語検証 | - | 日本語で生成されていること |
 | /generate-prd 実行 | - | |
-| PRD 言語検証 | - | 日本語で生成されていること |
 | /generate-spec 実行 | - | |
-| 仕様書 言語検証 | - | 日本語で生成されていること |
 
-### sdd-workflow-with-ja-config (既存設定継承テスト: sdd-workflow + lang: ja)
-
-> このテストは、既存の `.sdd-config.json` (lang: ja) がある状態で `sdd-workflow` プラグインを使用した場合に、設定が正しく継承されるかを検証します。
+### sdd-workflow-with-cli (CLI有効)
 
 | テスト項目 | 結果 | 備考 |
 |-----------|------|------|
-| session-start.sh 実行 | - | 既存 .sdd-config.json を上書きしないこと |
-| .sdd-config.json 保持 | - | lang: ja が維持されていること |
-| SDD_LANG 言語設定 (config.json) | - | 期待値: ja（既存設定を継承） |
-| .sdd ディレクトリ作成 | - | |
-| AI-SDD-PRINCIPLES.md 配置 | - | |
+| session-start.sh 実行 | - | CLI自動起動を確認 |
 | /sdd-init 実行 | - | |
-| CLAUDE.md AI-SDD セクション | - | |
-| CLAUDE.md 言語検証 | - | 日本語テンプレートで生成されていること |
 | /constitution init 実行 | - | |
-| CONSTITUTION.md 言語検証 | - | **日本語で生成されていること（重要）** |
 | /generate-prd 実行 | - | |
-| PRD 言語検証 | - | 日本語で生成されていること |
 | /generate-spec 実行 | - | |
-| 仕様書 言語検証 | - | 日本語で生成されていること |
+
+## CLI分岐スキルテスト結果（Phase 3 — メトリクス比較対象）
+
+### sdd-workflow (ベースライン: CLI無効)
+
+| テスト項目 | 結果 | 備考 |
+|-----------|------|------|
+| /task-breakdown 実行 | - | .sdd/task/ 配下にタスクファイル生成 |
+| /constitution validate 実行 | - | 検証レポート出力 |
+| /check-spec 実行 | - | 整合性チェック結果出力 |
+
+### sdd-workflow-with-cli (CLI有効)
+
+| テスト項目 | 結果 | 備考 |
+|-----------|------|------|
+| /task-breakdown 実行 | - | .sdd/task/ 配下にタスクファイル生成 |
+| /constitution validate 実行 | - | 検証レポート出力 |
+| /check-spec 実行 | - | 整合性チェック結果出力 |
 
 ## 実行時間
 
 SUMMARY_EOF
-
-    # テストケース一覧（プラグイン + 追加テストケース）
-    local test_cases=()
-    for plugin_dir in "$PLUGINS_DIR"/*/; do
-        test_cases+=("$(basename "$plugin_dir")")
-    done
-    test_cases+=("sdd-workflow-with-ja-config")
 
     # 実行時間テーブルを追加
     for test_case in "${test_cases[@]}"; do
@@ -527,7 +614,7 @@ SUMMARY_EOF
             # 合計時間を計算
             local total_seconds=0
             while IFS=: read -r phase seconds; do
-                if [ "$phase" != "gen-skills-total" ]; then
+                if [ "$phase" != "gen-skills-total" ] && [ "$phase" != "cli-skills-total" ]; then
                     total_seconds=$((total_seconds + seconds))
                 fi
             done < "$timing_file"
@@ -563,6 +650,100 @@ SUMMARY_EOF
         echo "" >> "$summary_file"
     done
 
+    # トークン使用量比較テーブル
+    local baseline_dir="${TEST_BASE}/logs/sdd-workflow"
+    local cli_dir="${TEST_BASE}/logs/sdd-workflow-with-cli"
+
+    python3 - "$baseline_dir" "$cli_dir" >> "$summary_file" << 'PYEOF'
+import json, sys, os
+
+baseline_dir = sys.argv[1]
+cli_dir = sys.argv[2]
+
+# CLI分岐スキルのみがメトリクス比較対象
+comparison_phases = ["task-breakdown", "constitution-validate", "check-spec"]
+# 前提条件構築フェーズ（参考情報として記録）
+setup_phases = ["session-start", "sdd-init", "constitution-init", "generate-prd", "generate-spec"]
+
+print("## トークン使用量比較 (CLI A/B) — CLI分岐スキル")
+print()
+print("> CLI分岐スキル（`SDD_CLI_AVAILABLE` で処理が変わるスキル）のみを比較対象とします。")
+print()
+print("| フェーズ | CLI無効 (tokens) | CLI無効 (cost) | CLI有効 (tokens) | CLI有効 (cost) | 削減率 |")
+print("|---------|-----------------|---------------|-----------------|---------------|--------|")
+
+def read_metrics(directory, phase):
+    filepath = os.path.join(directory, f"{phase}-metrics.json")
+    if os.path.isfile(filepath):
+        with open(filepath) as f:
+            return json.load(f)
+    return None
+
+def format_row(phase, b_data, c_data):
+    bt = b_data.get("total_tokens", 0) if b_data else 0
+    bc = b_data.get("cost_usd") if b_data else None
+    ct = c_data.get("total_tokens", 0) if c_data else 0
+    cc = c_data.get("cost_usd") if c_data else None
+
+    b_tokens_str = f"{bt:,}" if b_data else "-"
+    b_cost_str = f"${bc:.4f}" if bc is not None else "-"
+    c_tokens_str = f"{ct:,}" if c_data else "-"
+    c_cost_str = f"${cc:.4f}" if cc is not None else "-"
+    reduction_str = "-"
+    if bt > 0 and ct > 0:
+        r = ((bt - ct) / bt) * 100
+        reduction_str = f"{r:+.1f}%"
+
+    print(f"| {phase} | {b_tokens_str} | {b_cost_str} | {c_tokens_str} | {c_cost_str} | {reduction_str} |")
+    return bt, bc or 0, ct, cc or 0
+
+total_b_tokens = 0
+total_c_tokens = 0
+total_b_cost = 0.0
+total_c_cost = 0.0
+
+for phase in comparison_phases:
+    b_data = read_metrics(baseline_dir, phase)
+    c_data = read_metrics(cli_dir, phase)
+    bt, bc, ct, cc = format_row(phase, b_data, c_data)
+    total_b_tokens += bt
+    total_c_tokens += ct
+    total_b_cost += bc
+    total_c_cost += cc
+
+# 合計行
+total_reduction_str = "-"
+if total_b_tokens > 0 and total_c_tokens > 0:
+    r = ((total_b_tokens - total_c_tokens) / total_b_tokens) * 100
+    total_reduction_str = f"{r:+.1f}%"
+
+print(f"| **合計** | **{total_b_tokens:,}** | **${total_b_cost:.4f}** | **{total_c_tokens:,}** | **${total_c_cost:.4f}** | **{total_reduction_str}** |")
+print()
+
+# 前提条件構築フェーズ（参考情報）
+print("### 前提条件構築フェーズ（参考）")
+print()
+print("> 以下はCLI分岐しないスキルのため、トークン比較の参考情報です。")
+print()
+print("| フェーズ | CLI無効 (tokens) | CLI無効 (cost) | CLI有効 (tokens) | CLI有効 (cost) |")
+print("|---------|-----------------|---------------|-----------------|---------------|")
+
+for phase in setup_phases:
+    b_data = read_metrics(baseline_dir, phase)
+    c_data = read_metrics(cli_dir, phase)
+    bt = b_data.get("total_tokens", 0) if b_data else 0
+    bc = b_data.get("cost_usd") if b_data else None
+    ct = c_data.get("total_tokens", 0) if c_data else 0
+    cc = c_data.get("cost_usd") if c_data else None
+    b_tokens_str = f"{bt:,}" if b_data else "-"
+    b_cost_str = f"${bc:.4f}" if bc is not None else "-"
+    c_tokens_str = f"{ct:,}" if c_data else "-"
+    c_cost_str = f"${cc:.4f}" if cc is not None else "-"
+    print(f"| {phase} | {b_tokens_str} | {b_cost_str} | {c_tokens_str} | {c_cost_str} |")
+
+print()
+PYEOF
+
     # タイムスタンプを置換
     sed -i '' "s/TIMESTAMP_PLACEHOLDER/${TIMESTAMP}/" "$summary_file" 2>/dev/null || \
     sed -i "s/TIMESTAMP_PLACEHOLDER/${TIMESTAMP}/" "$summary_file" 2>/dev/null || true
@@ -596,6 +777,13 @@ case "${1:-help}" in
         fi
         run_gen_skills_test "$2" "${3:-}"
         ;;
+    cli-skills)
+        if [ -z "${2:-}" ]; then
+            echo "Usage: $0 cli-skills <plugin_dir> [test_case_name]"
+            exit 1
+        fi
+        run_cli_skills_test "$2" "${3:-}"
+        ;;
     collect)
         if [ -z "${2:-}" ]; then
             echo "Usage: $0 collect <plugin_dir> [test_case_name]"
@@ -607,18 +795,19 @@ case "${1:-help}" in
         generate_summary
         ;;
     help|*)
-        echo "Usage: $0 {setup|run|sdd-init|gen-skills|collect|summary} [plugin_dir] [test_case_name]"
+        echo "Usage: $0 {setup|run|sdd-init|gen-skills|cli-skills|collect|summary} [plugin_dir] [test_case_name]"
         echo ""
         echo "Commands:"
-        echo "  setup                              テスト環境を構築"
+        echo "  setup                              テスト環境を構築（ベースライン + CLI有効）"
         echo "  run <plugin_dir> [test_case_name]  session-start テスト実行"
         echo "  sdd-init <plugin_dir> [test_case_name]  /sdd-init テスト実行"
-        echo "  gen-skills <plugin_dir> [test_case_name]  生成系スキルテスト実行"
+        echo "  gen-skills <plugin_dir> [test_case_name]  生成系スキルテスト実行（前提条件構築）"
+        echo "  cli-skills <plugin_dir> [test_case_name]  CLI分岐スキルテスト実行（メトリクス比較対象）"
         echo "  collect <plugin_dir> [test_case_name]   ログ収集"
-        echo "  summary                            TEST_SUMMARY.md 生成"
+        echo "  summary                            TEST_SUMMARY.md 生成（トークン比較テーブル付き）"
         echo ""
         echo "test_case_name: オプション。テストケース名（省略時はプラグイン名を使用）"
-        echo "                例: sdd-workflow-with-ja-config"
+        echo "                例: sdd-workflow-with-cli"
         exit 1
         ;;
 esac
