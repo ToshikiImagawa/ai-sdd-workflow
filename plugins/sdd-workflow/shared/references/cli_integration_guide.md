@@ -6,17 +6,6 @@ The `sdd-cli` command provides structural validation and document discovery for 
 When `SDD_CLI_AVAILABLE=true`, skills should delegate structural/mechanical checks to the CLI
 and focus LLM effort on semantic analysis.
 
-## Responsibility Split
-
-| Responsibility | Without CLI (LLM) | With CLI |
-|:---|:---|:---|
-| File discovery | Glob/Grep patterns | `sdd-cli search` |
-| Structure validation | Manual pattern matching | `sdd-cli lint --json` |
-| Front matter parsing | Read + manual extraction | `sdd-cli lint --json` |
-| Dependency chain | Manual traversal | `sdd-cli lint --json` |
-| Semantic analysis | LLM (full) | LLM (focused) |
-| Quality review | LLM (full) | LLM (full) |
-
 ## CLI Commands
 
 ### `sdd-cli search`
@@ -24,112 +13,28 @@ and focus LLM effort on semantic analysis.
 Search for SDD documents by various criteria.
 
 ```bash
-# Search all documents
-sdd-cli search --format json
-
-# Search by directory
-sdd-cli search --dir specification --format json
-sdd-cli search --dir requirement --format json
-
-# Search by feature ID
-sdd-cli search --feature-id <name> --format json
-sdd-cli search --feature-id <name> --dir specification --format json
+# Search documents (optionally filter by --dir and/or --feature-id)
+sdd-cli search [--dir specification|requirement] [--feature-id <name>] --format json
 ```
 
-**JSON Output Schema**:
-
-```json
-{
-  "documents": [
-    {
-      "path": "relative/path/to/file.md",
-      "type": "spec|design|prd|task|implementation-log",
-      "id": "spec-feature-name",
-      "title": "Document Title",
-      "status": "draft|review|approved|implemented",
-      "depends_on": ["prd-feature-name"],
-      "front_matter": { ... }
-    }
-  ],
-  "total": 5
-}
-```
+**Output fields**: `documents[]` array with `path`, `type` (spec|design|prd|task|implementation-log), `id`, `title`, `status`, `depends_on`, `front_matter`. Top-level `total` count.
 
 ### `sdd-cli lint`
 
 Validate document structure, front matter, and cross-references.
 
 ```bash
-# Lint all documents
-sdd-cli lint --json
-
-# Lint specific file
-sdd-cli lint --file path/to/file.md --json
-
-# Lint specific directory
-sdd-cli lint --dir specification --json
+# Lint all, specific file, or specific directory
+sdd-cli lint [--file path/to/file.md] [--dir specification] --json
 ```
 
-**JSON Output Schema**:
+**Output fields**: `results[]` array with `file`, `valid`, `errors[]` (code/message/line), `warnings[]`, `front_matter` (id/type/status/depends_on), `dependencies` (upstream/downstream). `summary` with total/valid/errors/warnings counts.
 
-```json
-{
-  "results": [
-    {
-      "file": "relative/path/to/file.md",
-      "valid": true,
-      "errors": [],
-      "warnings": [
-        {
-          "code": "W001",
-          "message": "Missing optional field: tags",
-          "line": 3
-        }
-      ],
-      "front_matter": {
-        "id": "design-user-auth",
-        "type": "design",
-        "status": "approved",
-        "depends_on": ["spec-user-auth"]
-      },
-      "dependencies": {
-        "upstream": ["spec-user-auth"],
-        "downstream": ["task-user-auth"]
-      }
-    }
-  ],
-  "summary": {
-    "total": 10,
-    "valid": 8,
-    "errors": 2,
-    "warnings": 5
-  }
-}
-```
+## Integration for Skills
 
-## Integration Pattern for Skills
-
-### Step 1: Use CLI for structural validation
-
-```bash
-# Get document inventory
-sdd-cli search --dir specification --format json
-
-# Validate structure
-sdd-cli lint --json
-```
-
-### Step 2: Parse CLI JSON output
-
-Extract file paths, front matter, dependency chains from JSON.
-
-### Step 3: Focus LLM on semantic analysis
-
-With structural data from CLI, the LLM can focus on:
-- API signature semantic correctness
-- Terminology consistency
-- Design decision quality
-- Requirement coverage completeness
+1. **CLI for structural validation**: Use `sdd-cli search` and `sdd-cli lint --json` to get document inventory, front matter, and dependency chains
+2. **Parse JSON output**: Extract file paths, front matter, dependencies
+3. **Focus LLM on semantic analysis**: With structural data from CLI, focus on API signature correctness, terminology consistency, design quality, requirement coverage
 
 ## Environment Variable
 

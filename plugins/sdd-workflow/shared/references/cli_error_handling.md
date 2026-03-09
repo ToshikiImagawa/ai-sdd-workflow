@@ -25,34 +25,12 @@ When CLI command fails after retry:
 1. Log the CLI error for debugging
 2. Fall back to non-CLI approach (Glob/Grep/Read)
 3. Continue execution without interruption
-4. Note in output that CLI was unavailable
 
 **IMPORTANT**: CLI failure should never block skill execution. Always have a fallback path.
 
-### Fallback Pattern
-
-```
-1. Attempt CLI command
-   |
-   +-- Success -> Parse JSON, continue with CLI results
-   |
-   +-- Failure -> Log error
-                  |
-                  +-- Retry (if retryable)
-                  |     |
-                  |     +-- Success -> Parse JSON, continue
-                  |     +-- Failure -> Fall back
-                  |
-                  +-- Fall back to Glob/Grep/Read approach
-```
-
-## JSON Parse Errors
-
-If CLI returns exit code 0 but output is not valid JSON:
-
-1. Log the raw output for debugging
-2. Fall back to non-CLI approach
-3. Report the parsing error in output
+- On success: parse JSON, continue with CLI results
+- On retryable failure: retry once, then fall back to Glob/Grep/Read
+- On non-retryable failure or invalid JSON output: log and fall back immediately
 
 ## Timeout Handling
 

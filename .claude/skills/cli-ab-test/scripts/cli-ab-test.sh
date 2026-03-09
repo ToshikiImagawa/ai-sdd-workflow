@@ -418,6 +418,8 @@ run_cli_skills_test() {
     if [ -f "$log_dir/task-breakdown.jsonl" ]; then
         python3 "$REPO_ROOT/scripts/collect-metrics.py" \
           "$log_dir/task-breakdown.jsonl" > "$log_dir/task-breakdown-metrics.json" 2>/dev/null || true
+        python3 "$REPO_ROOT/.claude/skills/cli-ab-test/scripts/collect-quality-metrics.py" \
+          "$log_dir/task-breakdown.jsonl" > "$log_dir/task-breakdown-quality.json" 2>/dev/null || true
     fi
 
     # タスクファイルを保存
@@ -442,6 +444,8 @@ run_cli_skills_test() {
     if [ -f "$log_dir/constitution-validate.jsonl" ]; then
         python3 "$REPO_ROOT/scripts/collect-metrics.py" \
           "$log_dir/constitution-validate.jsonl" > "$log_dir/constitution-validate-metrics.json" 2>/dev/null || true
+        python3 "$REPO_ROOT/.claude/skills/cli-ab-test/scripts/collect-quality-metrics.py" \
+          "$log_dir/constitution-validate.jsonl" > "$log_dir/constitution-validate-quality.json" 2>/dev/null || true
     fi
 
     # /check-spec テスト
@@ -460,6 +464,8 @@ run_cli_skills_test() {
     if [ -f "$log_dir/check-spec.jsonl" ]; then
         python3 "$REPO_ROOT/scripts/collect-metrics.py" \
           "$log_dir/check-spec.jsonl" > "$log_dir/check-spec-metrics.json" 2>/dev/null || true
+        python3 "$REPO_ROOT/.claude/skills/cli-ab-test/scripts/collect-quality-metrics.py" \
+          "$log_dir/check-spec.jsonl" > "$log_dir/check-spec-quality.json" 2>/dev/null || true
     fi
 
     # ディレクトリ構造を再記録（CLI分岐スキル実行後）
@@ -740,6 +746,47 @@ for phase in setup_phases:
     c_tokens_str = f"{ct:,}" if c_data else "-"
     c_cost_str = f"${cc:.4f}" if cc is not None else "-"
     print(f"| {phase} | {b_tokens_str} | {b_cost_str} | {c_tokens_str} | {c_cost_str} |")
+
+print()
+
+# 品質比較テーブル
+print("## 出力品質比較 (CLI A/B)")
+print()
+
+quality_phases = ["task-breakdown", "constitution-validate", "check-spec"]
+quality_metrics_keys = [
+    ("text_length", "テキスト長"),
+    ("section_count", "セクション数"),
+    ("table_count", "テーブル数"),
+    ("checklist_count", "チェックリスト数"),
+    ("detected_issues", "検出項目数"),
+]
+
+def read_quality(directory, phase):
+    filepath = os.path.join(directory, f"{phase}-quality.json")
+    if os.path.isfile(filepath):
+        with open(filepath) as f:
+            return json.load(f)
+    return None
+
+# ヘッダー
+header = "| 指標 |"
+separator = "|------|"
+for phase in quality_phases:
+    header += f" CLI無効 ({phase}) | CLI有効 ({phase}) |"
+    separator += "------|------|"
+print(header)
+print(separator)
+
+for key, label in quality_metrics_keys:
+    row = f"| {label} |"
+    for phase in quality_phases:
+        b_q = read_quality(baseline_dir, phase)
+        c_q = read_quality(cli_dir, phase)
+        b_val = b_q.get(key, "-") if b_q else "-"
+        c_val = c_q.get(key, "-") if c_q else "-"
+        row += f" {b_val} | {c_val} |"
+    print(row)
 
 print()
 PYEOF

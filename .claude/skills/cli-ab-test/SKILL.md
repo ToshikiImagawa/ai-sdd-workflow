@@ -105,6 +105,7 @@ CLI分岐スキルの各テスト項目について PASS / FAIL を判定:
 | /task-breakdown 実行 | ログにエラーなし、`.sdd/task/` 配下にタスクファイル生成 |
 | /constitution validate 実行 | ログにエラーなし、検証レポート出力 |
 | /check-spec 実行 | ログにエラーなし、整合性チェック結果出力 |
+| 品質メトリクス収集 | 全スキルの quality.json が生成されていること |
 
 読み取るログファイル（各テストケースについて）:
 
@@ -123,6 +124,9 @@ CLI分岐スキルの各テスト項目について PASS / FAIL を判定:
 10. **`/tmp/ai-sdd-cli-ab-test/logs/<test_case>/check-spec.jsonl`**
 11. **`/tmp/ai-sdd-cli-ab-test/logs/<test_case>/sdd-structure-after-cli-skills.log`**
 12. **`/tmp/ai-sdd-cli-ab-test/logs/<test_case>/timing.log`**
+13. **`/tmp/ai-sdd-cli-ab-test/logs/<test_case>/task-breakdown-quality.json`**
+14. **`/tmp/ai-sdd-cli-ab-test/logs/<test_case>/constitution-validate-quality.json`**
+15. **`/tmp/ai-sdd-cli-ab-test/logs/<test_case>/check-spec-quality.json`**
 
 ## 出力
 
@@ -130,8 +134,9 @@ CLI分岐スキルの各テスト項目について PASS / FAIL を判定:
 
 1. 各テストケースのCLI分岐スキルテスト項目の PASS / FAIL
 2. **トークン使用量比較テーブル**（CLI分岐スキルごとの CLI無効 vs CLI有効 のトークン数・コスト・削減率）
-3. **各コマンドの実行時間集計**（`timing.log` から読み取り、テーブル形式で表示）
-4. FAIL がある場合は該当ログの抜粋と原因の推定
-5. `/tmp/ai-sdd-cli-ab-test/TEST_SUMMARY.md` のパス
+3. **出力品質比較テーブル**（テキスト長・セクション数・テーブル数・検出項目数の CLI無効 vs CLI有効 比較）
+4. **各コマンドの実行時間集計**（`timing.log` から読み取り、テーブル形式で表示）
+5. FAIL がある場合は該当ログの抜粋と原因の推定
+6. `/tmp/ai-sdd-cli-ab-test/TEST_SUMMARY.md` のパス
 
 **重要**: Phase 1～4の実行中にユーザーに進行確認を求めないこと。
