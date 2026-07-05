@@ -18,10 +18,9 @@ specifications as the source of truth.
 
 ## 利用可能なプラグイン / Available Plugins
 
-| プラグイン / Plugin    | 言語 / Language | 説明 / Description                          |
-|:------------------|:--------------|:------------------------------------------|
-| `sdd-workflow-ja` | 日本語           | AI-SDD ワークフローを支援する日本語プラグイン                |
-| `sdd-workflow`    | English       | English plugin supporting AI-SDD workflow |
+| プラグイン / Plugin | 言語 / Language        | 説明 / Description                                                                                  |
+|:---------------|:---------------------|:---------------------------------------------------------------------------------------------------|
+| `sdd-workflow` | 多言語 / Multilingual | AI-SDD ワークフローを支援する統合プラグイン（`SDD_LANG` で言語切替）/ Unified plugin supporting AI-SDD workflow |
 
 ## インストール / Installation
 
@@ -35,26 +34,21 @@ Claude Code で以下を実行 / Run the following in Claude Code:
 
 ### プラグインをインストール / Install Plugin
 
-**日本語版 / Japanese version:**
-
-```
-/plugin install sdd-workflow-ja@ToshikiImagawa/ai-sdd-workflow
-```
-
-**English version:**
-
 ```
 /plugin install sdd-workflow@ToshikiImagawa/ai-sdd-workflow
 ```
 
+言語は `.sdd-config.json` の `lang` フィールド（`en` / `ja`）で設定できます。
+The language can be configured via the `lang` field (`en` / `ja`) in `.sdd-config.json`.
+
 ## プラグイン詳細 / Plugin Details
 
-各プラグインの詳細はそれぞれのREADMEを参照してください。
+プラグインの詳細は README を参照してください。
 
-For details on each plugin, see their respective READMEs.
+For plugin details, see the README.
 
-- [sdd-workflow-ja README](./plugins/sdd-workflow-ja/README.md)
 - [sdd-workflow README](./plugins/sdd-workflow/README.md)
+- [sdd-workflow README（日本語）](./plugins/sdd-workflow/README.ja.md)
 
 ## リポジトリ構成 / Repository Structure
 
@@ -63,28 +57,17 @@ ai-sdd-workflow/
 ├── .claude-plugin/
 │   └── marketplace.json           # マーケットプレイスメタデータ
 ├── plugins/
-│   ├── sdd-workflow-ja/           # 日本語プラグイン
-│   │   ├── .claude-plugin/
-│   │   │   └── plugin.json
-│   │   ├── agents/
-│   │   ├── commands/
-│   │   ├── skills/
-│   │   ├── hooks/
-│   │   ├── scripts/
-│   │   ├── CHANGELOG.md
-│   │   ├── LICENSE
-│   │   └── README.md
-│   └── sdd-workflow/              # English plugin
+│   └── sdd-workflow/              # 統合プラグイン（多言語対応）/ Unified plugin (multilingual)
 │       ├── .claude-plugin/
 │       │   └── plugin.json
 │       ├── agents/
-│       ├── commands/
 │       ├── skills/
 │       ├── hooks/
 │       ├── scripts/
 │       ├── CHANGELOG.md
 │       ├── LICENSE
-│       └── README.md
+│       ├── README.md
+│       └── README.ja.md
 ├── CLAUDE.md
 ├── LICENSE
 └── README.md

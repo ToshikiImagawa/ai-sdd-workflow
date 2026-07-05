@@ -4,12 +4,14 @@ description: "Lint check for AI-SDD plugin prompt files and support file structu
 version: 3.0.0
 license: MIT
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Bash
+allowed-tools: Bash, Read
 ---
 
 # Plugin Lint - プラグイン構造品質チェック
 
 プラグインのプロンプトMarkdownファイルとサポートファイル構造をlintチェックし、問題をレポートする。自動修正は行わない。
+
+検出ロジックはすべて Python スクリプト（`scripts/plugin_lint.py`）に実装されている。このスキルの役割は、スクリプトの実行と結果の整形レポートのみ。
 
 ## Input
 
@@ -19,115 +21,47 @@ $ARGUMENTS
 
 ### Input Examples
 
-```
 /plugin-lint
-```
 
 ## Check Items
 
-### Check 1: Code Block Detection in Prompt Markdown
+スクリプトが以下をチェックする（詳細は `scripts/plugin_lint.py` を参照）:
 
-プロンプトMarkdownファイル内のコードブロック（` ``` ` で始まる行）を検出する。
-
-#### Target Files
-
-- `plugins/sdd-workflow/agents/*.md`
-- `plugins/sdd-workflow/skills/*/SKILL.md`
-
-#### Excluded Paths
-
-以下のディレクトリ配下のファイルはチェック対象外:
-
-- `templates/`
-- `examples/`
-- `references/`
-
-#### Detection Pattern
-
-` ``` ` で始まる行（コードブロックの開始/終了）を検出する。
-
-#### Report Content
-
-検出されたコードブロックごとに以下を報告:
-
-- ファイルパス（プロジェクトルートからの相対パス）
-- 行番号
-- ブロックタイプ（` ``` ` の後に続く言語指定、なければ `plain`）
-
-#### Recommendation
-
-プロンプトMarkdown内のコードブロックは、LLMが出力時にコードブロックの開始/終了を混同するリスクがある。以下を推奨:
-
-- 構造例やフォーマット定義 → `templates/` 配下に分離
-- コード例 → `examples/` 配下に分離
-- 参考資料 → `references/` 配下に分離
-
-### Check 2: Support File Structure Validation
-
-スキルディレクトリ配下のサポートファイル構造を検証する。
-
-#### Target
-
-`plugins/sdd-workflow/skills/*/` 配下の以下のディレクトリ:
-
-- `templates/`
-- `examples/`
-- `references/`
-
-#### 2.1 Directory Name Accuracy
-
-サポートファイル用ディレクトリ名が正確であることを検証する。
-SKILL.md、README.md 以外のファイル・ディレクトリが `templates`, `examples`, `references`, `scripts` のいずれかであるか。
-
-#### 2.2 File Name Convention (snake_case)
-
-サポートファイルのファイル名がスネークケース（`^[a-z0-9_]+\.[a-z]+$`）であるかチェックする。
-
-対象: `templates/`, `examples/`, `references/` 配下の全ファイル
-
-#### 2.3 Language Directory Completeness
-
-`templates/` ディレクトリに `en/` と `ja/` の両方が存在するかチェックする。
-
-#### 2.4 Language File Set Consistency
-
-`templates/en/` と `templates/ja/` で同じファイルセットを持つかチェックする。片方にのみ存在するファイルを報告する。
-
-#### 2.5 Support File Extension
-
-サポートファイル（`templates/`, `examples/`, `references/` 配下）の拡張子が `.md` であるかチェックする。ただし `scripts/` 配下は対象外。
+| Check ID | 内容 |
+|:---|:---|
+| 1 | プロンプトMarkdown（`plugins/sdd-workflow/agents/*.md`, `skills/*/SKILL.md`）内のコードブロック検出。`templates/`, `examples/`, `references/` 配下は除外 |
+| 2.1 | スキルディレクトリ直下のエントリが `SKILL.md`, `README.md`, `templates`, `examples`, `references`, `scripts` のいずれかであること |
+| 2.2 | サポートファイル名が snake_case（`^[a-z0-9_]+\.[a-z]+$`）であること（`shared/references/` を含む） |
+| 2.3 | `templates/` に `en/` と `ja/` の両方が存在すること |
+| 2.4 | `templates/en/` と `templates/ja/` のファイルセットが一致すること |
+| 2.5 | サポートファイルの拡張子が `.md` であること（`scripts/` は対象外） |
 
 ## Processing Flow
 
-### Step 1: Target File Discovery
+### Step 1: Run Lint Script
 
-Glob で以下のパターンのファイルを取得:
+Bash でスクリプトを実行する:
 
-- `plugins/sdd-workflow/agents/*.md`
-- `plugins/sdd-workflow/skills/*/SKILL.md`
+    python3 "$(git rev-parse --show-toplevel)/.claude/skills/plugin-lint/scripts/plugin_lint.py"
 
-### Step 2: Code Block Detection (Check 1)
+- 終了コード 0: 問題なし
+- 終了コード 1: 問題あり（stdout の JSON に findings が含まれる）
+- 終了コード 2: 実行エラー（stderr を確認して報告する）
 
-Step 1 で取得した各ファイルに対して:
+出力 JSON の構造: `{"total": n, "summary_by_check": {"<check_id>": n}, "findings": [{"check_id", "file", "line", "message", ...}]}`
 
-1. Grep で `` ^``` `` パターンを検索
-2. ヒットした行番号とブロックタイプを記録
-3. `templates/`, `examples/`, `references/` 配下のファイルは除外
+findings が多い場合は出力をファイルにリダイレクトし、Read で読み取る。
 
-### Step 3: Support File Structure Scan (Check 2)
+### Step 2: Report Generation
 
-Glob で `plugins/sdd-workflow/skills/*/` 配下のディレクトリとファイルを取得し、各サブチェック（2.1〜2.5）を実行。
+JSON 結果を `templates/lint_report.md` テンプレートの形式で整形して報告する。
 
-### Step 4: Report Generation
-
-`templates/ja/lint_report.md` テンプレートに基づいてレポートを生成・出力する。
-
-## Output
-
-Read `templates/ja/lint_report.md` and use it for lint check output formatting.
+- 各チェック項目のステータス（✅ パス / ⚠️ 警告）と件数を summary_by_check から埋める
+- Check 1 の findings には推奨事項（`templates/`, `examples/`, `references/` への分離）を添える
+- 件数が多い場合はファイル単位で集約して報告してよい
 
 ## Notes
 
 - このスキルは **検出とレポートのみ** を行い、自動修正は行わない
 - コードブロック検出は誤検知の可能性がある（意図的に含めている場合）ため、開発者の判断に委ねる
-- サポートファイル構造の検証は AI-SDD プラグインの規約に基づく
+- チェックロジックの変更は `scripts/plugin_lint.py` を編集する（SKILL.md ではなく）

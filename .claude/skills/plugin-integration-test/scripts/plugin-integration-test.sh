@@ -1,6 +1,6 @@
 #!/bin/bash
 # plugin-integration-test.sh
-# sdd-workflow / sdd-workflow-ja プラグインの統合テスト実行スクリプト
+# sdd-workflow プラグインの統合テスト実行スクリプト
 #
 # Usage:
 #   plugin-integration-test.sh setup              - テスト環境を構築
@@ -8,6 +8,7 @@
 #   plugin-integration-test.sh sdd-init <plugin_dir> - /sdd-init テスト実行
 #   plugin-integration-test.sh gen-skills <plugin_dir> - 生成系スキルテスト実行
 #   plugin-integration-test.sh collect <plugin_dir>  - ログ収集
+#   plugin-integration-test.sh judge <test_case_name> <expected_lang> - 決定論的 PASS/FAIL 判定
 #   plugin-integration-test.sh summary            - TEST_SUMMARY.md テンプレート生成
 
 set -euo pipefail
@@ -111,7 +112,7 @@ run_test() {
     start_time=$(date +%s)
 
     # claude サブセッションを起動して session-start フックを実行させる
-    # session-start.sh は CLAUDE_ENV_FILE 経由で環境変数を設定するため、
+    # session-start.py は CLAUDE_ENV_FILE 経由で環境変数を設定するため、
     # echo による環境変数確認はサンドボックス制限で動作しない。
     # 代わりに、フックが生成するファイル（.sdd-config.json, .sdd/ ディレクトリ）を直接検証する。
     cd "$test_dir"
@@ -120,7 +121,7 @@ run_test() {
 
     echo "ログ保存: $log_dir/session-start.log"
 
-    # .sdd-config.json を保存（session-start.sh が自動生成）
+    # .sdd-config.json を保存（session-start.py が自動生成）
     if [ -f "$test_dir/.sdd-config.json" ]; then
         cp "$test_dir/.sdd-config.json" "$log_dir/config.json"
         echo "config.json 保存完了"
@@ -170,29 +171,29 @@ run_sdd_init_test() {
     local start_time
     start_time=$(date +%s)
 
-    # 前提条件チェック: session-start.sh が実行されたか確認
+    # 前提条件チェック: session-start.py が実行されたか確認
     echo "--- session-start 実行確認 ---"
     local session_start_ok=true
 
     if [ ! -f "$test_dir/.sdd-config.json" ]; then
-        echo "ERROR: .sdd-config.json が存在しません（session-start.sh が実行されていない可能性）"
+        echo "ERROR: .sdd-config.json が存在しません（session-start.py が実行されていない可能性）"
         session_start_ok=false
     fi
 
     if [ ! -d "$test_dir/.sdd" ]; then
-        echo "ERROR: .sdd ディレクトリが存在しません（session-start.sh が実行されていない可能性）"
+        echo "ERROR: .sdd ディレクトリが存在しません（session-start.py が実行されていない可能性）"
         session_start_ok=false
     fi
 
     if [ ! -f "$test_dir/.sdd/AI-SDD-PRINCIPLES.md" ]; then
-        echo "ERROR: AI-SDD-PRINCIPLES.md が存在しません（session-start.sh が実行されていない可能性）"
+        echo "ERROR: AI-SDD-PRINCIPLES.md が存在しません（session-start.py が実行されていない可能性）"
         session_start_ok=false
     fi
 
     if [ "$session_start_ok" = true ]; then
-        echo "OK: session-start.sh の実行を確認（.sdd-config.json, .sdd/, AI-SDD-PRINCIPLES.md が存在）"
+        echo "OK: session-start.py の実行を確認（.sdd-config.json, .sdd/, AI-SDD-PRINCIPLES.md が存在）"
     else
-        echo "WARNING: session-start.sh が正しく実行されていない可能性があります"
+        echo "WARNING: session-start.py が正しく実行されていない可能性があります"
         echo "  -> Phase 2 (run) を先に実行してください"
     fi
 
@@ -379,6 +380,131 @@ collect_logs() {
     echo ""
 }
 
+# --- Phase 5: 決定論的判定 ---
+judge_test() {
+    local test_case="$1"
+    local expected_lang="$2"
+    local log_dir="${TEST_BASE}/logs/${test_case}"
+
+    echo "=== Phase 5: 判定 [${test_case}] (期待言語: ${expected_lang}) ==="
+
+    if [ ! -d "$log_dir" ]; then
+        echo "ERROR: ログディレクトリが見つかりません: $log_dir"
+        return 1
+    fi
+
+    local pass=0
+    local fail=0
+
+    # 判定結果を1行ずつ出力するヘルパー
+    report() {
+        local name="$1" result="$2" note="${3:-}"
+        if [ "$result" = "PASS" ]; then
+            pass=$((pass + 1))
+        else
+            fail=$((fail + 1))
+        fi
+        echo "${result}: ${name}${note:+ (${note})}"
+    }
+
+    # session-start.py 実行（session-start.log にエラーなし）
+    if [ -f "$log_dir/session-start.log" ] && ! grep -qi "error\|traceback" "$log_dir/session-start.log"; then
+        report "session-start.py 実行" PASS
+    else
+        report "session-start.py 実行" FAIL "session-start.log 不在またはエラー検出"
+    fi
+
+    # .sdd-config.json 生成（root/lang/directories を含む）
+    if [ -f "$log_dir/config.json" ] && \
+       python3 -c "import json,sys;d=json.load(open('$log_dir/config.json'));sys.exit(0 if all(k in d for k in ('root','lang','directories')) else 1)" 2>/dev/null; then
+        report ".sdd-config.json 生成" PASS
+    else
+        report ".sdd-config.json 生成" FAIL
+    fi
+
+    # SDD_LANG 言語設定（config.json の lang が期待値と一致）
+    local actual_lang
+    actual_lang="$(python3 -c "import json;print(json.load(open('$log_dir/config.json')).get('lang',''))" 2>/dev/null || echo '')"
+    if [ "$actual_lang" = "$expected_lang" ]; then
+        report "SDD_LANG 言語設定" PASS
+    else
+        report "SDD_LANG 言語設定" FAIL "期待: ${expected_lang}, 実際: ${actual_lang:-なし}"
+    fi
+
+    # .sdd ディレクトリ作成
+    if [ -s "$log_dir/sdd-structure-after-session.log" ]; then
+        report ".sdd ディレクトリ作成" PASS
+    else
+        report ".sdd ディレクトリ作成" FAIL
+    fi
+
+    # AI-SDD-PRINCIPLES.md 配置（frontmatter に version を含む）
+    if [ -f "$log_dir/AI-SDD-PRINCIPLES.md" ] && head -10 "$log_dir/AI-SDD-PRINCIPLES.md" | grep -q "^version:"; then
+        report "AI-SDD-PRINCIPLES.md 配置" PASS
+    else
+        report "AI-SDD-PRINCIPLES.md 配置" FAIL
+    fi
+
+    # session-start 前提条件チェック
+    if [ -f "$log_dir/session-start-check.log" ] && grep -q "session_start_executed: true" "$log_dir/session-start-check.log"; then
+        report "session-start 前提条件チェック" PASS
+    else
+        report "session-start 前提条件チェック" FAIL
+    fi
+
+    # /sdd-init 実行
+    if [ -f "$log_dir/sdd-init.log" ] && ! grep -qi "^error" "$log_dir/sdd-init.log"; then
+        report "/sdd-init 実行" PASS
+    else
+        report "/sdd-init 実行" FAIL
+    fi
+
+    # CLAUDE.md AI-SDD セクション
+    if [ -f "$log_dir/CLAUDE.md.after-init" ] && grep -q "## AI-SDD Instructions" "$log_dir/CLAUDE.md.after-init"; then
+        report "CLAUDE.md AI-SDD セクション" PASS
+    else
+        report "CLAUDE.md AI-SDD セクション" FAIL
+    fi
+
+    # CLAUDE.md 言語マーカー
+    local lang_marker
+    if [ "$expected_lang" = "ja" ]; then
+        lang_marker="このプロジェクトは"
+    else
+        lang_marker="This project follows"
+    fi
+    if [ -f "$log_dir/CLAUDE.md.after-init" ] && grep -q "$lang_marker" "$log_dir/CLAUDE.md.after-init"; then
+        report "CLAUDE.md 言語マーカー" PASS
+    else
+        report "CLAUDE.md 言語マーカー" FAIL "マーカー '${lang_marker}' 不在"
+    fi
+
+    # /constitution init 実行（CONSTITUTION.md が生成されている）
+    if [ -f "$log_dir/CONSTITUTION.md" ]; then
+        report "/constitution init 実行" PASS
+    else
+        report "/constitution init 実行" FAIL "CONSTITUTION.md 未生成"
+    fi
+
+    # /generate-prd 実行（prd-*.md が存在）
+    if ls "$log_dir"/prd-*.md >/dev/null 2>&1; then
+        report "/generate-prd 実行" PASS
+    else
+        report "/generate-prd 実行" FAIL "PRD ファイル未生成"
+    fi
+
+    # /generate-spec 実行（spec-*.md が存在）
+    if ls "$log_dir"/spec-*.md >/dev/null 2>&1; then
+        report "/generate-spec 実行" PASS
+    else
+        report "/generate-spec 実行" FAIL "仕様書ファイル未生成"
+    fi
+
+    echo ""
+    echo "判定結果: PASS ${pass} / FAIL ${fail} / 計 $((pass + fail))"
+    echo "注: 生成文書の内容言語検証（CONSTITUTION.md / PRD / 仕様書）は LLM が別途実施すること"
+}
+
 # --- Summary 生成 ---
 generate_summary() {
     local summary_file="${TEST_BASE}/TEST_SUMMARY.md"
@@ -401,7 +527,7 @@ generate_summary() {
 
 | テスト項目 | 結果 | 備考 |
 |-----------|------|------|
-| session-start.sh 実行 | - | |
+| session-start.py 実行 | - | |
 | .sdd-config.json 生成 | - | |
 | SDD_LANG 言語設定 (config.json) | - | 期待値: en |
 | .sdd ディレクトリ作成 | - | |
@@ -416,32 +542,13 @@ generate_summary() {
 | /generate-spec 実行 | - | |
 | 仕様書 言語検証 | - | 英語で生成されていること |
 
-### sdd-workflow-ja (期待言語: ja)
-
-| テスト項目 | 結果 | 備考 |
-|-----------|------|------|
-| session-start.sh 実行 | - | |
-| .sdd-config.json 生成 | - | |
-| SDD_LANG 言語設定 (config.json) | - | 期待値: ja |
-| .sdd ディレクトリ作成 | - | |
-| AI-SDD-PRINCIPLES.md 配置 | - | |
-| /sdd-init 実行 | - | |
-| CLAUDE.md AI-SDD セクション | - | |
-| CLAUDE.md 言語検証 | - | 日本語テンプレートで生成されていること |
-| /constitution init 実行 | - | |
-| CONSTITUTION.md 言語検証 | - | 日本語で生成されていること |
-| /generate-prd 実行 | - | |
-| PRD 言語検証 | - | 日本語で生成されていること |
-| /generate-spec 実行 | - | |
-| 仕様書 言語検証 | - | 日本語で生成されていること |
-
 ### sdd-workflow-with-ja-config (既存設定継承テスト: sdd-workflow + lang: ja)
 
 > このテストは、既存の `.sdd-config.json` (lang: ja) がある状態で `sdd-workflow` プラグインを使用した場合に、設定が正しく継承されるかを検証します。
 
 | テスト項目 | 結果 | 備考 |
 |-----------|------|------|
-| session-start.sh 実行 | - | 既存 .sdd-config.json を上書きしないこと |
+| session-start.py 実行 | - | 既存 .sdd-config.json を上書きしないこと |
 | .sdd-config.json 保持 | - | lang: ja が維持されていること |
 | SDD_LANG 言語設定 (config.json) | - | 期待値: ja（既存設定を継承） |
 | .sdd ディレクトリ作成 | - | |
@@ -567,6 +674,13 @@ case "${1:-help}" in
             exit 1
         fi
         collect_logs "$2" "${3:-}"
+        ;;
+    judge)
+        if [ -z "${2:-}" ] || [ -z "${3:-}" ]; then
+            echo "Usage: $0 judge <test_case_name> <expected_lang>"
+            exit 1
+        fi
+        judge_test "$2" "$3"
         ;;
     summary)
         generate_summary

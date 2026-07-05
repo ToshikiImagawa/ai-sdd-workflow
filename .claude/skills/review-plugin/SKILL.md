@@ -1,9 +1,9 @@
 ---
 name: review-plugin
 description: "Claude Codeプラグインの品質レビュー。Agents, Skills, Hooks, プラグイン構造を設計ガイドに基づいてチェックし、改善提案を提供します。"
-argument-hint: "[対象パス|--agents|--skills|--hooks|--all] [--ja|--en]"
+argument-hint: "[対象パス|--agents|--skills|--hooks|--all]"
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Task
+allowed-tools: Read, Glob, Grep, Workflow
 ---
 
 # Review Plugin - プラグイン品質レビュー
@@ -30,33 +30,44 @@ $ARGUMENTS
 - `--skills`: 指定プラグインの全スキルをレビュー
 - `--hooks`: 指定プラグインのHooks設定をレビュー
 - `--all`: プラグイン全体（Agents + Skills + Hooks + 構造）をレビュー
-- `--ja`: 日本語プラグイン (sdd-workflow-ja) のみ対象
-- `--en`: 英語プラグイン (sdd-workflow) のみ対象
-- プラグイン名省略時は全プラグインが対象
+- プラグイン名省略時は全プラグイン (sdd-workflow) が対象
 
 ## 処理フロー
 
 ### Step 1: 対象の特定
 
-| オプション      | 対象パターン                                   |
-|:-----------|:-----------------------------------------|
-| `--agents` | `plugins/sdd-workflow{-ja}/agents/*.md`  |
-| `--skills` | `plugins/sdd-workflow{-ja}/skills/*/`    |
-| `--hooks`  | `plugins/sdd-workflow{-ja}/hooks/*.json` |
-| `--all`    | 上記すべて + `plugin.json`                    |
-| 個別パス       | 指定パスをそのまま使用                              |
+| オプション      | 対象パターン                                |
+|:-----------|:--------------------------------------|
+| `--agents` | `plugins/sdd-workflow/agents/*.md`    |
+| `--skills` | `plugins/sdd-workflow/skills/*/`      |
+| `--hooks`  | `plugins/sdd-workflow/hooks/*.json`   |
+| `--all`    | 上記すべて + `plugin.json`                 |
+| 個別パス       | 指定パスをそのまま使用                           |
 
-### Step 2: 設計原則の読み込み
+Glob で対象ファイルの一覧を確定する。
 
-対象に応じて参照リファレンスを読み込む。
+### Step 2: レビュー実行
 
-### Step 3: レビュー実行
+#### 単一ファイル指定時（個別パス）
 
-各対象ファイルに対して Task ツールでレビューを実行する。Task の prompt に対象ファイルパスと該当するレビュー観点を渡す。
+対象に応じたリファレンス（下記「参考リファレンス」）を読み込み、メインコンテキストでレビュー観点に沿ってレビューする。
 
-### Step 4: 結果統合（複数ファイル時）
+#### 複数ファイル時（--agents / --skills / --hooks / --all）
 
-評価サマリーテーブルと全体推奨アクションを統合出力する。
+**Workflow ツール**でレビューを決定論的にファンアウトする:
+
+1. Step 1 で確定した対象ファイルの一覧を、種別（agent / skill / hooks / structure）付きで Workflow の `args` に渡す
+2. ワークフロースクリプトは `pipeline(args, ...)` で対象ごとにレビューエージェントを起動する
+3. 各エージェントの prompt には以下を含める:
+   - 対象ファイルの絶対パス（skill の場合はディレクトリと SKILL.md）
+   - 種別に対応するレビュー観点（エージェント: A1〜A7、スキル: S1〜S5、Hooks: H1〜H4、構造: P1〜P3）。本 SKILL.md の該当セクションのパスと観点IDを渡し、エージェント自身に読み込ませる
+   - 種別に対応する参考リファレンスのファイルパス（下記テーブル参照）
+4. `schema` オプションで構造化出力を強制する。各観点につき `{id, rating: "green"|"yellow"|"red", issue, suggestion}` と、対象全体の `{file, overall, top_actions}` を返させる
+5. レビューエージェントは読み取り専用（ファイル修正はしない）。再委譲（エージェント内からの Agent/Workflow 呼び出し）は禁止と prompt に明記する
+
+### Step 3: 結果統合（複数ファイル時）
+
+Workflow の返り値（構造化された全レビュー結果）を [batch-review-output.md](templates/batch-review-output.md) の形式に整形し、評価サマリーテーブルと全体推奨アクションを統合出力する。
 
 ---
 

@@ -24,6 +24,7 @@
 | Security Review       | -           | -  | -  | -  | -  |
 | Performance Review    | -           | -  | -  | -  | -  |
 | Deployment Review     | -           | -  | -  | -  | -  |
+| Project Principles Review | -      | -  | -  | -  | -  |
 
 **Priority Levels**:
 
@@ -441,6 +442,32 @@
 
 - Review deployment documentation
 - Test rollback procedure
+
+---
+
+## Project Principles Review
+
+### CHK029 [P0] - CONSTITUTION.md Compliance
+
+- [ ] The applicable principles from `CONSTITUTION.md` are stated in the Spec/Design doc
+- [ ] The implementation complies with the stated principles
+- [ ] Any deviation from a principle follows the exception process (justification, review approval)
+
+**Verification**:
+
+- Run `/constitution validate`
+- Review the "Principle Alignment" section of the Spec/Design doc
+
+---
+
+### CHK030 [P1] - Template Sync with Constitution
+
+- [ ] SPECIFICATION_TEMPLATE.md / DESIGN_DOC_TEMPLATE.md in use is aligned with the latest CONSTITUTION.md version
+- [ ] No missing updates due to `/constitution sync` not being run
+
+**Verification**:
+
+- Compare CONSTITUTION.md change history with each template's last update date
 
 ---
 

@@ -28,26 +28,6 @@
         "requirements",
         "documentation"
       ]
-    },
-    {
-      "name": "sdd-workflow-ja",
-      "source": "./plugins/sdd-workflow-ja",
-      "description": "AI駆動仕様駆動開発（AI-SDD）ワークフローの日本語デフォルトプラグイン。sdd-workflowと同一機能で、SDD_LANGのデフォルトがjaに設定されています。",
-      "version": "3.3.0",
-      "author": {
-        "name": "toshiki.imagawa",
-        "url": "https://github.com/ToshikiImagawa"
-      },
-      "category": "development",
-      "license": "MIT",
-      "tags": [
-        "specification-driven-development",
-        "japanese",
-        "workflow",
-        "sysml",
-        "requirements",
-        "documentation"
-      ]
     }
   ]
 }

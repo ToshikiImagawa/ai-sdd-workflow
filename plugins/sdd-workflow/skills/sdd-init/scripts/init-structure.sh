@@ -50,7 +50,6 @@ PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-}"
 if [ -z "$PLUGIN_ROOT" ]; then
     # Fallback: detect from script location (for development)
     # This script is at: plugins/sdd-workflow/skills/sdd-init/scripts/init-structure.sh
-    # Note: sdd-workflow-ja/skills is a symlink to sdd-workflow/skills
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     # Go up 3 levels: scripts -> sdd-init -> skills -> sdd-workflow
     PLUGIN_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
