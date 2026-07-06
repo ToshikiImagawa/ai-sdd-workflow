@@ -18,6 +18,40 @@ SUPPORT_DIRS = ("templates", "examples", "references")
 ALLOWED_SKILL_ENTRIES = {"SKILL.md", "README.md", "templates", "examples", "references", "scripts"}
 SNAKE_CASE_RE = re.compile(r"^[a-z0-9_]+\.[a-z]+$")
 
+# Claude Code の組み込みツール名（allowed-tools フロントマターで指定可能な名称）。
+# 新しいツールが追加された場合はここに追記する。
+KNOWN_TOOLS = {
+    "Agent",
+    "Artifact",
+    "AskUserQuestion",
+    "Bash",
+    "BashOutput",
+    "Edit",
+    "ExitPlanMode",
+    "Glob",
+    "Grep",
+    "KillBash",
+    "MultiEdit",
+    "NotebookEdit",
+    "Read",
+    "ScheduleWakeup",
+    "SendMessage",
+    "ShareOnboardingGuide",
+    "Skill",
+    "SlashCommand",
+    "Task",
+    "TaskCreate",
+    "TaskGet",
+    "TaskList",
+    "TaskUpdate",
+    "TodoWrite",
+    "ToolSearch",
+    "WebFetch",
+    "WebSearch",
+    "Workflow",
+    "Write",
+}
+
 
 def repo_root() -> Path:
     out = subprocess.run(
@@ -152,6 +186,39 @@ def check_support_structure(root: Path, findings: list) -> None:
             )
 
 
+def check_allowed_tools(root: Path, findings: list) -> None:
+    """Check 3: スキル SKILL.md の allowed-tools フィールド検証（3.1〜3.2）。"""
+    for file in sorted(root.glob(f"{PLUGIN_DIR}/skills/*/SKILL.md")):
+        rel = file.relative_to(root)
+        for line in file.read_text(encoding="utf-8").splitlines():
+            if not line.startswith("allowed-tools:"):
+                continue
+            tools = [t.strip() for t in line[len("allowed-tools:") :].split(",")]
+            tools = [t for t in tools if t]
+            seen = set()
+            for tool in tools:
+                if tool not in KNOWN_TOOLS:
+                    findings.append(
+                        {
+                            "check_id": "3.1",
+                            "file": str(rel),
+                            "line": None,
+                            "message": f"未知のツール名です: {tool}",
+                        }
+                    )
+                if tool in seen:
+                    findings.append(
+                        {
+                            "check_id": "3.2",
+                            "file": str(rel),
+                            "line": None,
+                            "message": f"ツール名が重複しています: {tool}",
+                        }
+                    )
+                seen.add(tool)
+            break
+
+
 def main() -> int:
     try:
         root = repo_root()
@@ -162,6 +229,7 @@ def main() -> int:
     findings: list = []
     check_code_blocks(root, findings)
     check_support_structure(root, findings)
+    check_allowed_tools(root, findings)
 
     summary = {}
     for f in findings:
