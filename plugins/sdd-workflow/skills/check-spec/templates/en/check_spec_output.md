@@ -14,6 +14,7 @@
 | API Implementation    | 🟢 OK   | All APIs implemented     |
 | Data Model            | 🔴 NG   | {count} mismatches found |
 | Module Structure      | 🟢 OK   | Follows design           |
+| Literal Values        | 🟡 Warn | {count} value drifts     |
 | Implementation Status | 🟡 Warn | {count} items incomplete |
 
 #### 🔴 Mismatches
@@ -43,6 +44,23 @@ interface User {
 **Impact**: Type mismatch causes runtime errors
 
 **Fix Suggestion**: Change `id` to `string` type
+
+---
+
+#### 🟡 Value Drift
+
+##### {value_name} (e.g., rag_confidence_threshold)
+
+```
+[WARN] Value drift detected: {value_name}
+  spec: {spec_value} ({spec_section}, {requirement_id})
+  design: {design_value} ({design_section})
+  {implementation_file}: {impl_value} ← drift
+```
+
+**Impact**: {impact description, e.g., gate threshold looser than specified}
+
+**Fix Suggestion**: Align {implementation_file} with the spec value, or update spec/design if the implementation is correct
 
 ---
 

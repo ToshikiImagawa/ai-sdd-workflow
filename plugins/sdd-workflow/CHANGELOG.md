@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### Skills
+
+- **`check-spec`** (v3.1.0) - Extended consistency check to literal values ([#50](https://github.com/ToshikiImagawa/ai-sdd-workflow/issues/50))
+    - Parses the spec's "Value Range / Threshold Registry" (Schema Registry) section when present, with fallback to
+      extracting literal values from spec/design body text
+    - Extracts implementation-side literals from config files, ORM CHECK constraints, validation constraints
+      (e.g., Pydantic), and language-specific enums/constants
+    - Detects value drift across spec / design / implementation and reports it as a Warning
+      (e.g., spec `0.7` vs `config.py` `0.6`)
+    - Verifies enum / CHECK constraint member-set completeness and requirement ID trace completeness
+      (PRD <-> spec <-> design)
+    - Added value drift sections to output templates (en/ja)
+
 ## [3.3.0] - 2026-03-02
 
 ### Changed
