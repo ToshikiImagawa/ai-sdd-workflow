@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Hooks
+
+- **`PreToolUse`** (`scripts/pre-tool-use.py`) - Migrated naming-violation blocking from stderr + `exit 2`
+  to JSON Decision Control (`permissionDecision: "deny"` + `permissionDecisionReason`)
+  ([#82](https://github.com/ToshikiImagawa/ai-sdd-workflow/issues/82))
+- **`PreToolUse`** - Injects `.sdd/CONSTITUTION.md` principles as `additionalContext` when Write/Edit
+  targets implementation source code ([#82](https://github.com/ToshikiImagawa/ai-sdd-workflow/issues/82))
+    - Injection is limited to source-file edits inside the project, happens at most once per session,
+      and is truncated to 3000 characters to avoid context bloat
+    - Nothing is injected when CONSTITUTION.md does not exist
+
 #### Agents
 
 - **`front-matter-reviewer`** - Changed `model` from `sonnet` to `haiku` ([#55](https://github.com/ToshikiImagawa/ai-sdd-workflow/issues/55))

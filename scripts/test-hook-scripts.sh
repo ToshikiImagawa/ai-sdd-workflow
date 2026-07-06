@@ -87,13 +87,17 @@ run_hook "pre: valid spec name passes" "pre-tool-use.py" \
     "{\"cwd\": \"$TMP_DIR\", \"tool_input\": {\"file_path\": \"$TMP_DIR/.sdd/specification/user-login_spec.md\"}}" \
     0 ""
 
-run_hook "pre: specification without suffix is blocked" "pre-tool-use.py" \
+run_hook "pre: specification without suffix is denied via JSON" "pre-tool-use.py" \
     "{\"cwd\": \"$TMP_DIR\", \"tool_input\": {\"file_path\": \"$TMP_DIR/.sdd/specification/user-login.md\"}}" \
-    2 "Naming violation"
+    0 "\"permissionDecision\": \"deny\""
 
-run_hook "pre: requirement with _spec suffix is blocked" "pre-tool-use.py" \
+run_hook "pre: deny reason mentions the naming violation" "pre-tool-use.py" \
+    "{\"cwd\": \"$TMP_DIR\", \"tool_input\": {\"file_path\": \"$TMP_DIR/.sdd/specification/user-login.md\"}}" \
+    0 "Naming violation"
+
+run_hook "pre: requirement with _spec suffix is denied via JSON" "pre-tool-use.py" \
     "{\"cwd\": \"$TMP_DIR\", \"tool_input\": {\"file_path\": \"$TMP_DIR/.sdd/requirement/user-login_spec.md\"}}" \
-    2 "Naming violation"
+    0 "\"permissionDecision\": \"deny\""
 
 run_hook "pre: requirement without suffix passes" "pre-tool-use.py" \
     "{\"cwd\": \"$TMP_DIR\", \"tool_input\": {\"file_path\": \"$TMP_DIR/.sdd/requirement/user-login.md\"}}" \
@@ -106,6 +110,27 @@ run_hook "pre: non-sdd file passes" "pre-tool-use.py" \
 run_hook "pre: invalid stdin is a no-op" "pre-tool-use.py" \
     "not-json" \
     0 ""
+
+# Constitution injection tests (separate project with .sdd/CONSTITUTION.md)
+CONST_DIR="$TMP_DIR/const-project"
+mkdir -p "$CONST_DIR/.sdd" "$CONST_DIR/src"
+printf '# Project Constitution\n\n- Simplicity first\n' > "$CONST_DIR/.sdd/CONSTITUTION.md"
+SESSION_ID="test-hook-$$"
+rm -f "${TMPDIR:-/tmp}/sdd-constitution-injected-${SESSION_ID}"
+
+run_hook "pre: source edit injects CONSTITUTION principles" "pre-tool-use.py" \
+    "{\"cwd\": \"$CONST_DIR\", \"session_id\": \"$SESSION_ID\", \"tool_input\": {\"file_path\": \"$CONST_DIR/src/main.py\"}}" \
+    0 "Simplicity first"
+
+run_hook "pre: second injection in same session is suppressed" "pre-tool-use.py" \
+    "{\"cwd\": \"$CONST_DIR\", \"session_id\": \"$SESSION_ID\", \"tool_input\": {\"file_path\": \"$CONST_DIR/src/other.py\"}}" \
+    0 ""
+
+run_hook "pre: non-source file gets no injection" "pre-tool-use.py" \
+    "{\"cwd\": \"$CONST_DIR\", \"session_id\": \"$SESSION_ID-doc\", \"tool_input\": {\"file_path\": \"$CONST_DIR/README.md\"}}" \
+    0 ""
+
+rm -f "${TMPDIR:-/tmp}/sdd-constitution-injected-${SESSION_ID}"
 
 echo "=== post-tool-use.py ==="
 

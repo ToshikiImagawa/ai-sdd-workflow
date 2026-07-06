@@ -146,7 +146,7 @@ This command automatically:
 |:----------------|:-------------|:------------------------------------------------------------------------------------|
 | `session-start` | SessionStart | Loads settings from `.sdd-config.json` and sets environment variables automatically |
 | `user-prompt-submit` | UserPromptSubmit | Detects Vibe Coding signals (vague instructions) in the user prompt and injects a clarification reminder |
-| `pre-tool-use`  | PreToolUse (Write/Edit) | Blocks writes to `.sdd/` documents that violate file naming conventions |
+| `pre-tool-use`  | PreToolUse (Write/Edit) | Denies writes to `.sdd/` documents that violate file naming conventions, and injects `CONSTITUTION.md` principles when editing implementation source code (once per session) |
 | `post-tool-use` | PostToolUse (Write/Edit) | Reminds about document consistency checks after editing `.sdd/` docs or source files with a matching design doc |
 
 **Note**: Hooks are automatically enabled when the plugin is installed. No additional configuration is required.
@@ -359,7 +359,7 @@ This plugin automatically loads `.sdd-config.json` and sets environment variable
 |:----------------|:-------------|:----------------------------------------------------------------------|
 | `session-start` | SessionStart | Loads settings from `.sdd-config.json` and sets environment variables |
 | `user-prompt-submit` | UserPromptSubmit | Detects Vibe Coding signals (vague instructions) in the user prompt and injects a clarification reminder |
-| `pre-tool-use`  | PreToolUse (Write/Edit) | Blocks writes to `.sdd/` documents that violate file naming conventions |
+| `pre-tool-use`  | PreToolUse (Write/Edit) | Denies writes to `.sdd/` documents that violate file naming conventions, and injects `CONSTITUTION.md` principles when editing implementation source code (once per session) |
 | `post-tool-use` | PostToolUse (Write/Edit) | Reminds about document consistency checks after editing `.sdd/` docs or source files with a matching design doc |
 
 ### Environment Variables Set

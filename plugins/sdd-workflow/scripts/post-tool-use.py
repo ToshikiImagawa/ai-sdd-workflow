@@ -11,16 +11,12 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from hook_common import (  # noqa: E402
+    SOURCE_EXTENSIONS,
     emit_additional_context,
     get_project_root,
     load_sdd_paths,
     read_stdin_json,
     relative_to_project,
-)
-
-SOURCE_EXTENSIONS = (
-    ".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs", ".java",
-    ".kt", ".swift", ".cs", ".rb", ".php", ".c", ".cc", ".cpp", ".h",
 )
 
 
