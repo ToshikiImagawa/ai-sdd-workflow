@@ -5,6 +5,7 @@ argument-hint: "[feature-name]"
 license: MIT
 user-invocable: false
 allowed-tools: Read, Glob, Grep
+disallowed-tools: Write, Edit, Bash
 ---
 
 # Doc Consistency Checker - Document Consistency Check

@@ -5,6 +5,7 @@ argument-hint: "[feature-name] [--full]"
 license: MIT
 user-invocable: true
 allowed-tools: Read, Glob, Grep, AskUserQuestion, Bash
+disallowed-tools: Write, Edit
 ---
 
 # Check Spec - Design & Implementation Consistency Check

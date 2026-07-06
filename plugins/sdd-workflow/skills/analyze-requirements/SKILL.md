@@ -7,6 +7,7 @@ user-invocable: true
 context: fork
 agent: sonnet
 allowed-tools: Read, Glob, Grep, AskUserQuestion
+disallowed-tools: Write, Edit, Bash
 ---
 
 # Analyze Requirements
