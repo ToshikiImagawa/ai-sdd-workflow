@@ -360,6 +360,17 @@ The following are out of scope for this PRD:
 - ❌ API definitions and type definitions
 - ❌ Database schema
 
+## Downstream Propagation Checklist for New Requirement IDs
+
+When adding or renaming requirement IDs (FR/PR/IR/DC, etc.), ensure all of the following:
+
+- [ ] IDs within the PRD remain in ascending order (`XX_001`, `XX_002`, ...)
+- [ ] Added corresponding rows to the traceability table in the spec
+- [ ] Added corresponding rows to the traceability table in the design
+- [ ] IDs follow the naming convention defined by the project (e.g., `FR_001`)
+- [ ] Ran the requirement-analyzer agent to verify consistency
+- [ ] Trace rows across all 3 layers (PRD / spec / design) are included in the same PR
+
 ---
 
 # Customization Guidelines for Projects

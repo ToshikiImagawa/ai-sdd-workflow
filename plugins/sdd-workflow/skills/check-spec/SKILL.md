@@ -2,7 +2,7 @@
 name: check-spec
 description: "Check consistency between implementation code and design documents (design), detecting discrepancies"
 argument-hint: "[feature-name] [--full]"
-version: 3.0.0
+version: 3.1.0
 license: MIT
 user-invocable: true
 allowed-tools: Read, Glob, Grep, AskUserQuestion, Bash
@@ -136,6 +136,14 @@ Argument is "{parent-feature}" only -> Target the following files:
 | **Interface Definitions**   | API signatures (function names, arguments, return values), type definitions, data models |
 | **Functional Requirements** | List of features to implement                                                            |
 | **Implementation Approach** | Architecture patterns, design decisions                                                  |
+| **Literal Values**          | Thresholds, enum values, CHECK constraint values, durations, and other constants         |
+
+**Literal value extraction sources** (in priority order):
+
+1. **Schema Registry section** in the corresponding `*_spec.md` (a "Value Range / Threshold Registry" table), if present.
+   Parse each entry as `{value-id, value, unit, source-requirement-id, section}`.
+2. If no registry section exists, extract literal values mentioned in the body text of `*_spec.md` and `*_design.md`
+   (e.g., "confidence threshold 70%", `default 0.7`, `CHECK (risk_level IN ('low', 'high'))`, "p95 <= 15s").
 
 ### 3. Verify Implementation Code
 
@@ -144,6 +152,11 @@ Search for code corresponding to specification contents:
 - Search APIs/functions (using methods appropriate for project language)
 - Search type definitions/data models
 - Verify module/file existence
+- Extract literal values from implementation:
+    - Configuration files (`config.py`, `settings.py`, `*.toml`, `*.yaml`, `*.json`, `.env.example`)
+    - ORM CHECK constraints and DB migration files (e.g., `CheckConstraint`, `CHECK (... IN (...))`)
+    - Validation constraints (e.g., Pydantic `Field(ge=..., le=...)`, zod, Bean Validation)
+    - Language-specific enums and constants (`Enum`, `const`, `Literal[...]`, union types)
 
 ### 4. Consistency Check Items
 
@@ -166,7 +179,35 @@ After results are returned, integrate `impl-status` findings into the design ↔
 | **Type Definitions**        | Do interfaces and types match?                     | High       |
 | **Module Structure**        | Does directory/file structure match?               | Medium     |
 | **Functional Requirements** | Are functions specified in specs implemented?      | High       |
+| **Literal Values**          | Do thresholds, enum values, and constraint values match across spec/design/implementation? | High |
 | **Technology Stack**        | Are documented libraries being used?               | Low        |
+
+#### Literal Value Consistency Check
+
+Compare literal values across the three layers (spec -> design -> implementation) and detect drift:
+
+1. **Build a value table**: For each value extracted in step 2 (spec registry or body text), find the corresponding
+   value in `*_design.md` and in the implementation (step 3 extraction sources). Match by value identifier, requirement
+   ID (UR/FR/NFR-xxx), or surrounding context (setting name, column name, enum name).
+2. **Normalize before comparison**: Treat equivalent representations as equal (e.g., `70%` and `0.7`, `15s` and
+   `15000ms`). Report the comparison in the original notation of each layer.
+3. **Detect drift**: Report any layer whose value differs from the spec as a **Warning**, marking the drifting layer:
+
+   ```
+   [WARN] Value drift detected: rag_confidence_threshold
+     spec: 0.7 (§4.1, NFR-AI-005)
+     design: 0.7 (§9.1)
+     config.py: 0.6 ← drift
+   ```
+
+4. **Enum / CHECK constraint completeness**: For enumerated values, compare the full member sets. A member present in
+   the implementation but missing from the design's CHECK constraint (or vice versa) is a drift, even if all other
+   members match.
+5. **Trace completeness**: If the spec registry entry references a requirement ID, verify the same ID appears in the
+   PRD <-> spec <-> design traceability table. Report missing IDs as a Warning.
+
+If a value exists in only one layer (e.g., a threshold hard-coded in the implementation with no spec/design mention),
+report it under "Implementation not documented in specs" instead of as drift.
 
 ### 5. Discrepancy Classification
 
@@ -180,6 +221,8 @@ Classify detected discrepancies as follows:
 
 **Warning (Action Recommended)**:
 
+- Literal value drift (thresholds, enum values, CHECK constraint values differing across spec/design/implementation)
+- Requirement ID referenced by a spec registry entry missing from the traceability table
 - Module structure mismatch
 - Classes/functions existing but not in documentation
 - Naming convention mismatch
