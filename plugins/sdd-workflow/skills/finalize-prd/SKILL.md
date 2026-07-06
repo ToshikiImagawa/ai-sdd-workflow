@@ -40,7 +40,7 @@ This skill operates in two modes:
 
 | File                                                    | Purpose                                  |
 |:--------------------------------------------------------|:-----------------------------------------|
-| `../shared/references/prerequisites_directory_paths.md` | Resolve `${SDD_*}` environment variables |
+| `references/prerequisites_directory_paths.md`           | Resolve `${SDD_*}` environment variables |
 
 **Load PRD template** (in order):
 
