@@ -21,6 +21,7 @@ as the source of truth. Supports multiple languages via `SDD_LANG` configuration
 | Linux       |    ✅    | Fully supported                        |
 | Windows     |    ❌    | Not supported (see alternatives below) |
 | Python      |  3.7+   | Required for hook scripts              |
+| Claude Code | 2.1.199+ | Required for named skill arguments (`arguments` frontmatter / `$name` substitution). On older versions, `$name` placeholders are not substituted and skills fall back to interpreting the raw argument string |
 
 ### Windows Limitations
 

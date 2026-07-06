@@ -2,6 +2,7 @@
 name: check-spec
 description: "Check consistency between implementation code and design documents (design), detecting discrepancies"
 argument-hint: "[feature-name] [--full]"
+arguments: [feature-name]
 license: MIT
 user-invocable: true
 allowed-tools: Read, Glob, Grep, AskUserQuestion, Bash
@@ -35,7 +36,13 @@ The `SDD_LANG` environment variable determines the language (default: `en`).
 
 ## Input
 
-$ARGUMENTS
+- `feature-name`: $feature-name
+
+Full argument string: $ARGUMENTS
+
+> **Fallback**: If the value above is empty, remains a literal `$` placeholder, or starts with `--`
+> (a flag captured positionally), treat the argument as omitted and interpret the full argument
+> string instead (e.g., `/check-spec --full` means all design docs with the `--full` option).
 
 | Argument       | Required | Description                                                                                                  |
 |:---------------|:---------|:-------------------------------------------------------------------------------------------------------------|

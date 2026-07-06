@@ -2,6 +2,7 @@
 name: task-cleanup
 description: "Clean up task/ directory after implementation completion, integrating important design decisions into *_design.md before deletion"
 argument-hint: "[ticket-number]"
+arguments: [ticket-number]
 license: MIT
 user-invocable: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
@@ -34,7 +35,12 @@ The `SDD_LANG` environment variable determines the language (default: `en`).
 
 ## Input
 
-$ARGUMENTS
+- `ticket-number`: $ticket-number
+
+Full argument string: $ARGUMENTS
+
+> **Fallback**: If the value above is empty or remains a literal `$` placeholder, treat the
+> argument as omitted and follow the no-argument flow (scope confirmation below).
 
 | Argument | Required | Description |
 |:--|:--|:--|

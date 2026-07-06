@@ -2,6 +2,7 @@
 name: plan-refactor
 description: "Plan refactoring for existing features. Analyzes current implementation and creates/updates design documents with refactoring plan."
 argument-hint: "<feature-name> [context] [--scope=<dir>] [--ci]"
+arguments: [feature-name]
 license: MIT
 user-invocable: true
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash
@@ -32,7 +33,15 @@ The `SDD_LANG` environment variable determines the language (default: `en`).
 
 ## Input
 
-$ARGUMENTS
+- `feature-name`: $feature-name
+
+Full argument string: $ARGUMENTS
+
+> **Fallback**: If the value above is empty, remains a literal `$` placeholder, or starts with `--`
+> (a flag captured positionally), treat the argument as omitted and interpret the full argument
+> string instead. Ask the user interactively when a required argument is missing.
+> `context` is free-form text and flags — extract them from the full argument string
+> (everything after `feature-name`).
 
 | Argument        | Required | Description                                                          |
 |:----------------|:---------|:---------------------------------------------------------------------|

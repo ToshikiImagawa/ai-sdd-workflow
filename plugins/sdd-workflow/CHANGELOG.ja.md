@@ -29,6 +29,17 @@
     - 他のエージェント（prd-reviewer, spec-reviewer, requirement-analyzer, clarification-assistant）は
       ドキュメント横断の整合性推論が必要なため `sonnet` を維持
 
+#### Skills
+
+- `arguments` frontmatter フィールドによる名前付きスキル引数を導入（Claude Code v2.1.199+）
+  ([#81](https://github.com/ToshikiImagawa/ai-sdd-workflow/issues/81))
+    - 8スキル（`task-breakdown`, `implement`, `clarify`, `check-spec`, `checklist`, `run-checklist`,
+      `task-cleanup`, `plan-refactor`）が `feature-name` / `ticket-number` を名前付き位置引数として宣言し、
+      本文で `$name` 置換構文により参照するよう移行
+    - 自由文入力のスキル（`generate-spec`, `generate-prd` 等）は従来どおり `$ARGUMENTS` 全体を解釈
+    - 各スキル本文にフォールバックを明記: 値が空・未置換・位置的に捕捉されたフラグ（`--...`）の場合は
+      引数文字列全体の解釈または対話的な確認にフォールバックし、v2.1.199 未満の挙動を維持
+
 ### Added
 
 #### Hooks

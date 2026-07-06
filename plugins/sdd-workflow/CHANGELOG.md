@@ -29,6 +29,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Other agents (prd-reviewer, spec-reviewer, requirement-analyzer, clarification-assistant) keep `sonnet`
       because they require cross-document consistency reasoning
 
+#### Skills
+
+- Introduced named skill arguments via the `arguments` frontmatter field (Claude Code v2.1.199+)
+  ([#81](https://github.com/ToshikiImagawa/ai-sdd-workflow/issues/81))
+    - 8 skills (`task-breakdown`, `implement`, `clarify`, `check-spec`, `checklist`, `run-checklist`,
+      `task-cleanup`, `plan-refactor`) now declare `feature-name` / `ticket-number` as named positional
+      arguments and reference them via `$name` substitution in the skill body
+    - Free-text-input skills (`generate-spec`, `generate-prd`, etc.) keep interpreting the whole
+      `$ARGUMENTS` string
+    - Each skill body documents a fallback: when a value is empty, unsubstituted, or a positionally
+      captured flag (`--...`), the skill falls back to interpreting the full argument string or asking
+      the user interactively, preserving pre-v2.1.199 behavior
+
 ### Added
 
 #### Hooks
