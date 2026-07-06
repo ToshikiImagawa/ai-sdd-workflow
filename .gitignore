@@ -22,3 +22,5 @@ __pycache__/
 
 # ghq worktree symlinks
 .ghq-worktree-symlinks
+# AI-SDD skill cache
+.sdd/.cache/
