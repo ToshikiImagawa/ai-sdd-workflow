@@ -4,6 +4,7 @@ description: "Lint check for AI-SDD plugin prompt files and support file structu
 version: 3.0.0
 license: MIT
 user-invocable: true
+argument-hint: "[none]"
 allowed-tools: Bash, Read
 ---
 
