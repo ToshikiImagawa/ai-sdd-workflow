@@ -1,3 +1,8 @@
+# Constitution as Code Example
+
+Example machine-readable JSON export of a constitution (see `/constitution export --format json`):
+
+```json
 {
   "version": "1.0.0",
   "principles": [
@@ -14,3 +19,4 @@
     }
   ]
 }
+```

@@ -44,12 +44,10 @@ $ARGUMENTS
 
 ### Input Format
 
-```
-/run-checklist {feature-name} {ticket-number}
-/run-checklist {feature-name}  # Uses feature-name as ticket directory
-/run-checklist {feature-name} {ticket-number} --category testing
-/run-checklist {feature-name} {ticket-number} --priority P1
-```
+- `/run-checklist {feature-name} {ticket-number}`
+- `/run-checklist {feature-name}` (uses feature-name as ticket directory)
+- `/run-checklist {feature-name} {ticket-number} --category testing`
+- `/run-checklist {feature-name} {ticket-number} --priority P1`
 
 ## Processing Flow
 
@@ -112,22 +110,7 @@ Output verification summary to `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/
 
 ### Updated Checklist
 
-Original checklist items are updated with verification status:
-
-```markdown
-### CHK-501 [P1] Unit Test Coverage
-
-- [x] Unit tests exist for all business logic ✅ Verified: 2024-01-15
-- [x] Code coverage >= 80% ✅ Verified: 85.2% coverage
-- [x] All public functions are tested ✅ Verified: 2024-01-15
-- [ ] Edge cases are covered ⚠️ Manual verification required
-
-**Automated Verification Result**:
-- Command: `npm test -- --coverage`
-- Status: PASSED
-- Coverage: 85.2% (lines), 78.5% (branches)
-- Executed: 2024-01-15 10:30:45
-```
+Original checklist items are updated with verification status. See `templates/${SDD_LANG:-en}/result_format.md` for the exact checklist item update format and the Automated Verification Result block format.
 
 ### Verification Report
 
@@ -147,27 +130,11 @@ Read `templates/${SDD_LANG:-en}/tasklist_patterns.md` for TaskList usage pattern
 
 ### Test Failure
 
-When tests fail, record the failure details and continue with other verifications:
-
-```markdown
-**Automated Verification Result**:
-- Command: `npm test`
-- Status: FAILED
-- Failures: 3 tests failed
-- Details: See test output below
-- Executed: 2024-01-15 10:30:45
-```
+When tests fail, record the failure details and continue with other verifications. See the "Failure Details Format" section in `templates/${SDD_LANG:-en}/result_format.md`.
 
 ### Tool Not Available
 
-When a verification tool is not configured:
-
-```markdown
-**Automated Verification Result**:
-- Status: SKIPPED
-- Reason: ESLint not configured in this project
-- Suggestion: Add `.eslintrc` to enable linting verification
-```
+When a verification tool is not configured, record `Status: SKIPPED` with the reason and a suggestion (e.g., "ESLint not configured in this project" / "Add `.eslintrc` to enable linting verification"), using the Automated Verification Result block format from `templates/${SDD_LANG:-en}/result_format.md`.
 
 ## Best Practices
 
@@ -180,19 +147,12 @@ When a verification tool is not configured:
 
 ## Integration with Other Commands
 
-```
-/generate-spec {feature}
-   |
-/task-breakdown {feature}
-   |
-/checklist {feature} {ticket}  <- Generate checklist
-   |
-/implement {feature} {ticket}  <- Implement feature
-   |
-/run-checklist {feature} {ticket}  <- Verify implementation
-   |
-Review verification report before PR
-```
+1. `/generate-spec {feature}`
+2. `/task-breakdown {feature}`
+3. `/checklist {feature} {ticket}` - Generate checklist
+4. `/implement {feature} {ticket}` - Implement feature
+5. `/run-checklist {feature} {ticket}` - Verify implementation
+6. Review verification report before PR
 
 ## Notes
 

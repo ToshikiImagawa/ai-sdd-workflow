@@ -46,38 +46,8 @@ See `references/document_dependencies.md` for the document dependency chain and 
 
 ## Directory Structure Support
 
-Both flat and hierarchical structures are supported.
-
-**Flat Structure**:
-
-```
-${SDD_ROOT}/
-├── CONSTITUTION.md                        # Project constitution (top-level)
-├── requirement/{feature-name}.md
-└── specification/
-    ├── {feature-name}_spec.md
-    └── {feature-name}_design.md
-```
-
-**Hierarchical Structure**:
-
-```
-${SDD_ROOT}/
-├── CONSTITUTION.md                        # Project constitution (top-level)
-├── requirement/
-│   ├── {feature-name}.md                  # Top-level feature
-│   └── {parent-feature}/
-│       ├── index.md                       # Parent feature overview and requirements list
-│       └── {child-feature}.md             # Child feature requirements
-└── specification/
-    ├── {feature-name}_spec.md             # Top-level feature
-    ├── {feature-name}_design.md
-    └── {parent-feature}/
-        ├── index_spec.md                  # Parent feature abstract specification
-        ├── index_design.md                # Parent feature technical design document
-        ├── {child-feature}_spec.md        # Child feature abstract specification
-        └── {child-feature}_design.md      # Child feature technical design document
-```
+Both flat and hierarchical structures are supported. See `references/directory_structure.md` for the
+flat and hierarchical directory layouts.
 
 **⚠️ Note the difference in naming conventions**:
 
@@ -132,19 +102,7 @@ This skill focuses on document content consistency only.
 
 ### Detection Method
 
-```
-1. Load target documents
-   ↓
-2. Extract the following elements:
-   - Requirement IDs (PRD)
-   - API definitions (spec)
-   - Type definitions (spec, design)
-   - Module structure (design)
-   ↓
-3. Compare across documents
-   ↓
-4. Detect and classify inconsistencies
-```
+See `references/detection_method.md` for the step-by-step detection procedure.
 
 ## Output Format
 

@@ -83,59 +83,13 @@ It receives user input context for analysis.
 
 ## Detection Response Flow
 
-```
-1. Identify ambiguous points
-   ↓
-2. Determine risk level
-   ↓
-3. Request user confirmation/clarification
-   ├─ Clarified → Proceed to implementation
-   └─ Declined → Go to 4
-   ↓
-4. Propose specification creation/update
-   ├─ Accepted → Implement after spec creation
-   └─ Declined → Go to 5
-   ↓
-5. Explicitly warn of risks
-   ↓
-6. Record inferred specs in task/
-   ↓
-7. Implement with verification points set
-```
+See `references/detection_response_flow.md` for the step-by-step response flow.
 
 ## Output Format
 
 Read `templates/${SDD_LANG:-en}/risk_report.md` and use it for risk detection output.
 
-**If template does not exist**: Generate output following the structure below:
-
-```markdown
-# Vibe Coding Risk Report
-
-**Detection Date**: {YYYY-MM-DD}
-**Risk Level**: 🔴 High / 🟡 Medium / 🟢 Low
-
-## Detected Issues
-
-- {Issue description with specific examples from user input}
-- {Issue description...}
-
-## Missing Information
-
-- {What information is unclear or missing}
-- {What assumptions would need to be made}
-
-## Recommended Actions
-
-1. {Specific action to clarify requirements}
-2. {Specific action...}
-
-## Risks if Proceeding Without Clarification
-
-- Risk of re-implementation due to misunderstood requirements
-- Risk of bug introduction from unhandled edge cases
-- Risk of technical debt accumulation
-```
+**If template does not exist**: Use `templates/${SDD_LANG:-en}/risk_report_fallback.md` as the output structure.
 
 ## Escalation When Specifications Are Insufficient
 
@@ -145,42 +99,8 @@ Even when user refuses specification creation, ensure minimum guardrails:
 
 Read `templates/${SDD_LANG:-en}/assumed_spec.md` and use it for creating inferred specification documents.
 
-**If template does not exist**: Generate document following the structure below:
-
-```markdown
-# Assumed Specification (Inferred)
-
-⚠️ **WARNING**: This specification was inferred from vague requirements and may not match user intent.
-
-**Created**: {YYYY-MM-DD}
-**Based on**: {Original user request}
-
-## Assumptions Made
-
-1. {Assumption with reasoning}
-2. {Assumption...}
-
-## Inferred Requirements
-
-### Functional Requirements
-
-- {Inferred requirement}
-- {Inferred requirement...}
-
-### Non-Functional Requirements
-
-- {Inferred NFR if any}
-
-## Items Requiring Verification
-
-- [ ] {Item to verify with user}
-- [ ] {Item to verify...}
-
-## Known Risks
-
-- {Risk from assumption}
-- {Risk...}
-```
+**If template does not exist**: Use `templates/${SDD_LANG:-en}/assumed_spec_fallback.md` as the document
+structure.
 
 **Save Location**: `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/assumed-spec.md`
 

@@ -44,14 +44,7 @@ $ARGUMENTS
 
 ## Input Examples
 
-```
-/plan-refactor auth
-/plan-refactor user-list "無限スクロール化してパフォーマンス改善"
-/plan-refactor auth "依存性注入を導入してテスト容易性を向上"
-/plan-refactor user-profile --scope=src/profile
-/plan-refactor auth/login --ci
-/plan-refactor payment-service "Strangler Figパターンで段階的にマイクロサービス化" --scope=src/services
-```
+See `examples/cli_usage.md` for example invocations.
 
 ## Front Matter Generation Rules
 
@@ -91,11 +84,7 @@ When adding a refactoring plan to an existing design doc:
 
 **Step 1.1: Scan for Existing Documents**
 
-Run the document scanning script:
-
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/scripts/scan-existing-docs.sh" "${FEATURE_NAME}"
-```
+Run the document scanning script: `bash "${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/scripts/scan-existing-docs.sh" "${FEATURE_NAME}"`
 
 This script:
 
@@ -105,24 +94,9 @@ This script:
 
 **Step 1.2: Read Scan Results**
 
-```bash
-Read ${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/.cache/plan-refactor/existing-docs.json
-```
+Read `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/.cache/plan-refactor/existing-docs.json`.
 
-Example output:
-
-```json
-{
-  "prd_exists": true,
-  "spec_exists": true,
-  "design_exists": true,
-  "prd_path": ".sdd/requirement/auth.md",
-  "spec_path": ".sdd/specification/auth_spec.md",
-  "design_path": ".sdd/specification/auth_design.md",
-  "structure": "flat",
-  "feature_name": "auth"
-}
-```
+See `examples/cache_json_outputs.md` for an example of this file's content.
 
 **Step 1.3: Determine Processing Case**
 
@@ -167,12 +141,8 @@ Parse the user's refactoring goal and extract:
 
 **Step 2.1: Find Implementation Files**
 
-Run the implementation file search script:
-
-```bash
-SCOPE_DIR="${SCOPE_ARG}"  # From --scope argument, or empty
-bash "${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/scripts/find-implementation-files.sh" "${FEATURE_NAME}" "${SCOPE_DIR}"
-```
+Run the implementation file search script. Set `SCOPE_DIR` from the `--scope` argument (or leave empty), then run
+`bash "${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/scripts/find-implementation-files.sh" "${FEATURE_NAME}" "${SCOPE_DIR}"`.
 
 This script:
 
@@ -183,20 +153,9 @@ This script:
 
 **Step 2.2: Read Implementation File List**
 
-```bash
-Read ${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/.cache/plan-refactor/implementation-files.json
-```
+Read `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/.cache/plan-refactor/implementation-files.json`.
 
-Example output:
-
-```json
-{
-  "feature_name": "auth",
-  "file_count": 8,
-  "scope_dir": "src/",
-  "files_list_path": ".sdd/.cache/plan-refactor/all-files.txt"
-}
-```
+See `examples/cache_json_outputs.md` for an example of this file's content.
 
 **Step 2.3: Validate File Count**
 
@@ -207,9 +166,7 @@ Example output:
 
 **Step 2.4: Read Implementation Files**
 
-```bash
-Read ${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/.cache/plan-refactor/all-files.txt
-```
+Read `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/.cache/plan-refactor/all-files.txt`.
 
 Then read the actual implementation files (prioritize key files):
 
@@ -255,11 +212,7 @@ Based on analysis, identify:
 
 **Step 3A.4: Generate Refactoring Plan**
 
-Use template:
-
-```bash
-Read ${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/templates/${SDD_LANG}/refactor_plan_section.md
-```
+Use template: read `${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/templates/${SDD_LANG}/refactor_plan_section.md`.
 
 Fill in the template with:
 
@@ -280,11 +233,7 @@ Fill in the template with:
 
 **Step 3A.5: Update Design Document**
 
-Edit the existing design document:
-
-```bash
-Edit {design_path}
-```
+Edit the existing design document: `Edit {design_path}`.
 
 Append the "## Refactoring Plan" section at the end of the document.
 
@@ -304,11 +253,7 @@ Analyze implementation files and extract:
 - Dependencies
 - Data model
 
-Use template:
-
-```bash
-Read ${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/templates/${SDD_LANG}/reverse_spec_template.md
-```
+Use template: read `${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/templates/${SDD_LANG}/reverse_spec_template.md`.
 
 **Step 3B.2: Write Specification Document**
 
@@ -317,9 +262,7 @@ Determine path based on structure:
 - Flat: `${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md`
 - Hierarchical: `${SDD_SPECIFICATION_PATH}/{parent-feature}/{child-feature}_spec.md`
 
-```bash
-Write {spec_path}
-```
+`Write {spec_path}`.
 
 Mark the document as reverse-engineered:
 > **⚠️ Note**: This specification was reverse-engineered from existing implementation on {DATE}.
@@ -338,11 +281,7 @@ Analyze implementation files and extract:
 - Testing strategy
 - Technical debt observations
 
-Use template:
-
-```bash
-Read ${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/templates/${SDD_LANG}/reverse_design_template.md
-```
+Use template: read `${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/templates/${SDD_LANG}/reverse_design_template.md`.
 
 **Step 3B.4: Write Design Document**
 
@@ -351,9 +290,7 @@ Determine path based on structure:
 - Flat: `${SDD_SPECIFICATION_PATH}/{feature-name}_design.md`
 - Hierarchical: `${SDD_SPECIFICATION_PATH}/{parent-feature}/{child-feature}_design.md`
 
-```bash
-Write {design_path}
-```
+`Write {design_path}`.
 
 **Step 3B.5: Generate Refactoring Plan**
 
@@ -386,23 +323,8 @@ If any required section is missing, add it before proceeding.
 
 ### Phase 5: Next Steps
 
-Output a summary and recommend next steps:
-
-```
-✅ Refactoring plan completed
-
-**Generated/Updated Files:**
-- {spec_path} (if Case B)
-- {design_path}
-
-**Refactoring Plan Location:**
-{design_path} - "Refactoring Plan" section
-
-**Next Steps:**
-1. Review the refactoring plan at: {design_path}
-2. Run `/task-breakdown {feature-name}` to break down the refactoring into actionable tasks
-3. Execute tasks with `/implement {feature-name}` using TDD approach
-```
+Output a summary and recommend next steps. See `templates/${SDD_LANG:-en}/completion_output.md` for the "Next Steps
+Summary" format.
 
 ## Output
 
@@ -411,13 +333,7 @@ Output a summary and recommend next steps:
     - New specification document (reverse-engineered)
     - New design document (reverse-engineered with refactoring plan)
 
-Output format:
-
-```
-File: {file_path}
-Status: {Created/Updated}
-Sections Added: Refactoring Plan
-```
+Output format: see the "Output Format" section in `templates/${SDD_LANG:-en}/completion_output.md`.
 
 ## Notes
 
@@ -425,19 +341,11 @@ Sections Added: Refactoring Plan
 
 The optional `context` parameter allows you to explicitly specify your refactoring goal:
 
-**Without context (automatic analysis):**
-
-```bash
-/plan-refactor user-list
-```
+**Without context (automatic analysis):** `/plan-refactor user-list`
 
 → Claude analyzes code and design, automatically identifies technical debt and proposes generic refactoring
 
-**With context (goal-directed refactoring):**
-
-```bash
-/plan-refactor user-list "無限スクロール化してパフォーマンス改善"
-```
+**With context (goal-directed refactoring):** `/plan-refactor user-list "無限スクロール化してパフォーマンス改善"`
 
 → Claude focuses on infinite scroll implementation, prioritizes performance issues, proposes specific approach
 
@@ -462,16 +370,8 @@ The optional `context` parameter allows you to explicitly specify your refactori
 
 **Ambiguous Context:**
 
-If context is unclear or too vague (e.g., "improve it", "make it better"), use `AskUserQuestion` to clarify:
-
-```
-Question: "What specific aspect do you want to improve?"
-Options:
-- Performance (e.g., speed, memory usage)
-- Maintainability (e.g., code structure, readability)
-- Testability (e.g., unit test coverage, mockability)
-- Scalability (e.g., handle more users, larger datasets)
-```
+If context is unclear or too vague (e.g., "improve it", "make it better"), use `AskUserQuestion` to clarify. See
+`examples/ask_user_question_patterns.md` for the question/options pattern.
 
 **Unrealistic or Infeasible Context:**
 
@@ -489,18 +389,9 @@ Example:
 
 **Conflicting Requirements:**
 
-If context includes conflicting goals (e.g., "maximize performance and minimize code complexity"):
-
-1. Use `AskUserQuestion` to prioritize:
-   ```
-   Question: "These goals may conflict. Which is more important?"
-   Options:
-   - Prioritize performance (may increase complexity)
-   - Prioritize simplicity (may sacrifice some performance)
-   - Balance both (moderate improvements to each)
-   ```
-
-2. Document the prioritization in "Purpose and Background"
+If context includes conflicting goals (e.g., "maximize performance and minimize code complexity"), use
+`AskUserQuestion` to prioritize. See `examples/ask_user_question_patterns.md` for the question/options pattern.
+Document the prioritization in "Purpose and Background".
 
 ### Document Integration
 
@@ -525,45 +416,8 @@ If context includes conflicting goals (e.g., "maximize performance and minimize 
 
 ### Hierarchical Structure Support
 
-Both flat and hierarchical structures are supported:
-
-**Flat Structure:**
-
-```
-.sdd/
-├── requirement/
-│   └── auth.md
-└── specification/
-    ├── auth_spec.md
-    └── auth_design.md
-```
-
-**Hierarchical Structure (Parent):**
-
-```
-.sdd/
-├── requirement/
-│   └── auth/
-│       └── index.md
-└── specification/
-    └── auth/
-        ├── index_spec.md
-        └── index_design.md
-```
-
-**Hierarchical Structure (Child):**
-
-```
-.sdd/
-├── requirement/
-│   └── auth/
-│       ├── index.md
-│       └── login.md
-└── specification/
-    └── auth/
-        ├── index_design.md
-        └── login_design.md
-```
+Both flat and hierarchical structures are supported. See the "Hierarchical Structure Support" section in
+`references/design_doc_integration.md` for the flat / hierarchical-parent / hierarchical-child directory layouts.
 
 ### Examples
 

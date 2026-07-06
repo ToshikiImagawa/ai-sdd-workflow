@@ -172,18 +172,8 @@ of `--analyze`, or standalone via `--validate-ids`.
 
 Validate each requirement ID against the expected pattern.
 
-- If `.sdd-config.json` has an `id_conventions` section, use its regex patterns as the convention:
-
-```json
-{
-  "id_conventions": {
-    "prd_functional": "^FR_[A-Z]+_\\d{3}$",
-    "spec_functional": "^FR-[A-Z]+-\\d{3}'?$",
-    "spec_refined_relation": "^FR-{domain}-{prd_num}'$"
-  }
-}
-```
-
+- If `.sdd-config.json` has an `id_conventions` section, use its regex patterns as the convention. See
+  `references/id_conventions_config.md` for an example configuration.
 - If `id_conventions` is not configured, infer the dominant ID pattern from existing IDs in the target document and
   report IDs deviating from it
 - For refined IDs (e.g., `FR-AI-002'` refining `FR_AI_002`), verify the numeric part matches the refined source
@@ -204,20 +194,7 @@ out-of-order sequence with a concrete move suggestion.
 **Severity mapping:** naming convention violation = `[must]`, non-ascending order = `[recommend]`, unexplained gap =
 `[recommend]`.
 
-**Output example:**
-
-```
-[must] ID convention violation:
-  File: .sdd/specification/auth_spec.md:99
-  Found: FR-AI-001'
-  Expected pattern: FR-AI-{PRD#}'
-  Hint: This refines FR_AI_002, so it should be FR-AI-002'
-
-[recommend] Non-ascending ID order:
-  File: .sdd/requirement/infrastructure.md
-  Sequence: IR_INFRA_001 ... IR_INFRA_007 → IR_INFRA_009 → IR_INFRA_008
-  Suggestion: Move IR_INFRA_009 section after IR_INFRA_008
-```
+**Output example:** See `examples/requirement_analyzer_usage.md` ("ID Numbering Validation Output Example" section).
 
 ### 5. Impact Analysis
 

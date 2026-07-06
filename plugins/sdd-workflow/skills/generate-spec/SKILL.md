@@ -25,11 +25,7 @@ Generates the following documents from input content according to the AI-SDD wor
 
 ### Template Preparation Flow (Optimized)
 
-**Phase 1: Python Script** - Execute `prepare-spec.py` to pre-load templates and references:
-
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/generate-spec/scripts/prepare-spec.py"
-```
+**Phase 1: Python Script** - Execute `python3 "${CLAUDE_PLUGIN_ROOT}/skills/generate-spec/scripts/prepare-spec.py"` to pre-load templates and references.
 
 This script:
 1. Checks `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/SPECIFICATION_TEMPLATE.md` and `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md` (project templates) first
@@ -65,12 +61,7 @@ $ARGUMENTS
 
 ## Input Examples
 
-```
-/generate-spec User authentication feature.
-Supports login and logout with email and password.
-Provides password reset functionality, with session management via JWT tokens.
-Provides an API to check login status and middleware to protect endpoints requiring authentication.
-```
+**Reference**: `examples/input_example.md`
 
 ## Generation Rules
 
@@ -130,24 +121,7 @@ If important items cannot be determined from input, **confirm with user before g
 
 Check the following before generation. Both flat and hierarchical structures are supported.
 
-**For flat structure**:
-
-```
-Does ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md exist? (PRD)
-Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md already exist?
-Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md already exist?
-```
-
-**For hierarchical structure** (when placing under parent feature):
-
-```
-Does ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md exist? (parent feature PRD)
-Does ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/{feature-name}.md exist? (child feature PRD)
-Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md already exist? (parent feature spec)
-Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md already exist? (child feature spec)
-Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md already exist? (parent feature design)
-Does ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md already exist? (child feature design)
-```
+See `references/existing_document_check.md` for the list of paths to check for flat and hierarchical structures.
 
 **Note the difference in naming conventions**:
 
@@ -262,54 +236,7 @@ See `references/front_matter_spec_design.md` for full schema definition, depende
 
 ## Generation Flow
 
-```
-1. Analyze input content
-   |
-2. Load project principles (Required)
-   |- If CONSTITUTION.md exists:
-   |   |- Read ${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md using Read tool
-   |   |- Understand principle categories (B-xxx, A-xxx, D-xxx, T-xxx)
-   |- If not exists: Skip (note this in output)
-   |
-3. Vibe Coding risk assessment (skip if --ci)
-   |- High: Confirm missing info with user -> Resume after response
-   |- Medium: Confirm ambiguous points -> Resume after response
-   |- Low: Proceed to next step
-   |
-4. Check existing documents
-   |- If PRD exists: Pre-load and understand requirements
-   |- If spec/design exists: Confirm overwrite (auto-approve if --ci)
-   |
-5. Generate and save abstract specification (Specify)
-   |
-6. Spec principle compliance check with spec-reviewer (skip if --ci)
-   |- Call spec-reviewer agent (--summary option)
-   |- **Target**: {feature-name}_spec.md only (Design Doc not yet generated)
-   |- Check CONSTITUTION.md compliance (Architecture/Development principles focus)
-   |- On violation detection: Review fix proposals and apply approved fixes (main agent)
-   |- After fix, re-check
-   |
-6a. Front matter validation with front-matter-reviewer (skip if --ci)
-   |- Call front-matter-reviewer agent
-   |- **Target**: {feature-name}_spec.md
-   |- On issue detection: Apply fixes (main agent)
-   |
-7. Confirm Design Doc generation (always generate if --ci)
-   |- Technical info present: Generate and save (Plan)
-   |- No technical info: Confirm whether to skip
-   |
-8. Design Doc principle compliance check with spec-reviewer (skip if --ci)
-   |- Call spec-reviewer agent (--summary option)
-   |- **Target**: {feature-name}_design.md only (Spec already checked in step 6)
-   |- Check CONSTITUTION.md compliance (Technical constraints/Architecture focus)
-   |- On violation detection: Review fix proposals and apply approved fixes (main agent)
-   |- After fix, re-check
-   |
-8a. Front matter validation with front-matter-reviewer (skip if --ci)
-   |- Call front-matter-reviewer agent
-   |- **Target**: {feature-name}_design.md
-   |- On issue detection: Apply fixes (main agent)
-```
+See `references/generation_flow.md` for the full step-by-step generation flow (input analysis through Design Doc front matter validation).
 
 ## PRD Consistency Review
 
@@ -367,16 +294,7 @@ The following verifications are automatically performed during generation:
 
 ### Verification Commands
 
-```bash
-# Consistency check (design <-> implementation)
-/check-spec {feature-name}
-
-# Comprehensive review (cross-document consistency + quality)
-/check-spec {feature-name} --full
-
-# Specification clarity scan
-/clarify {feature-name}
-```
+**Reference**: `examples/verification_commands.md`
 
 ## Serena MCP Integration (Optional)
 
@@ -405,17 +323,7 @@ If Serena MCP is enabled, existing codebase semantic analysis can be leveraged t
 
 #### Integration into Generation Flow
 
-```
-1. Analyze input content
-   |
-2. [When Serena enabled] Analyze existing codebase
-   |- Search for similar features
-   |- Understand existing types/interfaces
-   |- Extract naming conventions
-   |
-3. Vibe Coding risk assessment
-   ...
-```
+See `references/serena_integration_flow.md` for how the Serena-enabled codebase analysis step is inserted into the Generation Flow.
 
 ### Behavior When Serena is Not Configured
 
@@ -425,10 +333,6 @@ If existing code reference is needed, recommend manual verification to user.
 ## Loading CONSTITUTION.md (Required)
 
 Before spec/design generation, **you must read `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md` using the Read tool**.
-
-```
-Read: ${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md
-```
 
 ### Post-Load Verification
 
@@ -465,23 +369,7 @@ After spec and design generation, **you must call the `spec-reviewer` agent to c
 
 ### Check Flow
 
-```
-1. Call spec-reviewer agent
-   |
-2. Execute CONSTITUTION.md compliance check
-   |
-3. If violations detected:
-   |- Review fix proposals from spec-reviewer
-   |- Apply approved fixes using Edit tool (main agent)
-   |- Report non-applicable fixes to user
-   |
-4. Call front-matter-reviewer agent (pass spec/design file path)
-   |- On issue detection: Apply fixes (main agent)
-   |
-5. After fix, re-check to verify
-   |
-6. Include check results in output
-```
+See `references/spec_reviewer_check_flow.md` for the full check flow (calling spec-reviewer through re-check and result reporting).
 
 ### Abstract Specification Check Result Output
 
