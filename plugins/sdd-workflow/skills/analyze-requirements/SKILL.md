@@ -2,7 +2,6 @@
 name: analyze-requirements
 description: "Analyze and extract requirements from use case diagram. Use when extracting UR/FR/NFR from use cases or when called by generate-prd."
 argument-hint: "<input-text> [--ci]"
-version: 3.0.1
 license: MIT
 user-invocable: true
 context: fork

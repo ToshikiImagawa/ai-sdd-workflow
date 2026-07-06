@@ -2,7 +2,6 @@
 name: check-spec
 description: "Check consistency between implementation code and design documents (design), detecting discrepancies"
 argument-hint: "[feature-name] [--full]"
-version: 3.1.0
 license: MIT
 user-invocable: true
 allowed-tools: Read, Glob, Grep, AskUserQuestion, Bash

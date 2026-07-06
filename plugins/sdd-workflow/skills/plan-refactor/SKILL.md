@@ -2,7 +2,6 @@
 name: plan-refactor
 description: "Plan refactoring for existing features. Analyzes current implementation and creates/updates design documents with refactoring plan."
 argument-hint: "<feature-name> [context] [--scope=<dir>] [--ci]"
-version: 1.0.2
 license: MIT
 user-invocable: true
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash

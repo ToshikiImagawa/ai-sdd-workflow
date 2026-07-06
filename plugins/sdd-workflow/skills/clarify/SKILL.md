@@ -2,7 +2,6 @@
 name: clarify
 description: "Analyze specifications and generate clarification questions to eliminate ambiguity before implementation"
 argument-hint: "<feature-name> [--interactive]"
-version: 3.0.0
 license: MIT
 user-invocable: true
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
