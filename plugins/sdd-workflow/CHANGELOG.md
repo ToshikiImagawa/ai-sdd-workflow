@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Agents
+
+- **`requirement-analyzer`** - Added ID numbering validation (`--validate-ids`, also runs as part of `--analyze`)
+    - Naming convention validation via configurable regex patterns (`id_conventions` section in `.sdd-config.json`)
+    - Ascending order validation with move suggestions for out-of-order ID sequences
+    - Numbering gap detection and stale-ID detection after renames
+    - Added "ID Numbering Validation" section to `requirement_analysis_output` templates (en/ja)
+
+#### Documentation
+
+- **`AI-SDD-PRINCIPLES`** - Documented the optional `id_conventions` section of `.sdd-config.json`
+
 #### Skills
 
 - **`check-spec`** (v3.1.0) - Extended consistency check to literal values ([#50](https://github.com/ToshikiImagawa/ai-sdd-workflow/issues/50))
