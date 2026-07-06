@@ -10,6 +10,8 @@ Thumbs.db
 
 # claude
 .claude/settings.local.json
+.claude/worktrees/
+.claude/skills/parallel-worktree/prompts/
 
 # direnv
 .envrc
