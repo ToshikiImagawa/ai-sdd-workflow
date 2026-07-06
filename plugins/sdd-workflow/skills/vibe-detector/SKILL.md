@@ -5,6 +5,7 @@ argument-hint: "[user-instruction]"
 license: MIT
 user-invocable: false
 allowed-tools: Read, Glob, Grep, AskUserQuestion
+disallowed-tools: Write, Edit, Bash
 ---
 
 # Vibe Detector - Automatic Detection of Vague Instructions
