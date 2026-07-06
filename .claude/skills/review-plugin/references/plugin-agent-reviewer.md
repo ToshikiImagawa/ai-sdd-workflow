@@ -54,8 +54,8 @@ $ARGUMENTS
 
 ### 入力例
 
-sdd-workflow-ja:spec-reviewer .sdd/specification/user-auth_spec.md
-sdd-workflow-ja:spec-reviewer .sdd/specification/user-auth_spec.md --summary
+sdd-workflow:spec-reviewer .sdd/specification/user-auth_spec.md
+sdd-workflow:spec-reviewer .sdd/specification/user-auth_spec.md --summary
 
 ## 前提条件
 
@@ -132,7 +132,7 @@ allowed-tools: [ Read, Glob, Grep, AskUserQuestion ]
 
 **必須記述**:
 
-- `.sdd/AI-SDD-PRINCIPLES.md` の読み込み明記（session-start.sh により自動更新）
+- `.sdd/AI-SDD-PRINCIPLES.md` の読み込み明記（session-start.py により自動更新）
 - 環境変数 `SDD_*` によるディレクトリパス解決の説明
 - パス解決の優先順位（環境変数 → `.sdd-config.json` → デフォルト値）
 

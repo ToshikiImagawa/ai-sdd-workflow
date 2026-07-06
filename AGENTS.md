@@ -135,8 +135,8 @@ $ARGUMENTS
 
 ```
 
-sdd-workflow-ja:spec-reviewer .sdd/specification/user-auth_spec.md
-sdd-workflow-ja:spec-reviewer .sdd/specification/user-auth_spec.md --summary
+sdd-workflow:spec-reviewer .sdd/specification/user-auth_spec.md
+sdd-workflow:spec-reviewer .sdd/specification/user-auth_spec.md --summary
 
 ```
 
@@ -190,7 +190,7 @@ description: "仕様書レビューエージェント"
 model: sonnet
 color: green
 allowed-tools: [ Read, Glob, Grep, AskUserQuestion ]
-skills: [ "sdd-workflow-ja:sdd-templates" ]
+skills: [ "sdd-workflow:sdd-templates" ]
 ---
 ```
 
@@ -443,7 +443,7 @@ name: spec-reviewer
 description: "仕様書レビューエージェント"
 model: sonnet
 allowed-tools: [ Read, Glob, Grep, AskUserQuestion ]
-skills: [ "sdd-workflow-ja:sdd-templates" ]
+skills: [ "sdd-workflow:sdd-templates" ]
 ---
 ```
 
@@ -664,5 +664,5 @@ grep -r "spec-reviewer" sidechains/
 
 ```bash
 # ローカルのプラグインディレクトリを直接指定してテスト
-claude --plugin-dir ./plugins/sdd-workflow-ja
+claude --plugin-dir ./plugins/sdd-workflow
 ```

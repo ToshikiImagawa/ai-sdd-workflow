@@ -49,12 +49,6 @@ jobs:
             ERRORS+=("sdd-workflow plugin.json version: expected $VERSION, got $SDD_VER")
           fi
 
-          # 4. sdd-workflow-ja plugin.json
-          JA_VER=$(jq -r '.version' plugins/sdd-workflow-ja/.claude-plugin/plugin.json)
-          if [ "$JA_VER" != "$VERSION" ]; then
-            ERRORS+=("sdd-workflow-ja plugin.json version: expected $VERSION, got $JA_VER")
-          fi
-
           if [ ${#ERRORS[@]} -gt 0 ]; then
             echo "::error::Version mismatch detected between tag v$VERSION and manifest files:"
             for err in "${ERRORS[@]}"; do
