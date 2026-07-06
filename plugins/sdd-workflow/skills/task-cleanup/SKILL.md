@@ -2,7 +2,6 @@
 name: task-cleanup
 description: "Clean up task/ directory after implementation completion, integrating important design decisions into *_design.md before deletion"
 argument-hint: "[ticket-number]"
-version: 3.0.0
 license: MIT
 user-invocable: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion

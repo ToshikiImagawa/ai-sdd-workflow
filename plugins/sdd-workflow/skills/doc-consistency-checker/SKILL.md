@@ -2,7 +2,6 @@
 name: doc-consistency-checker
 description: "Automatically executed during document updates or before implementation to check consistency between PRD ↔ *_spec.md ↔ *_design.md. Detects missing requirement ID (UR/FR/NFR) references, data model mismatches, API definition discrepancies, terminology inconsistencies, and ensures traceability between documents."
 argument-hint: "[feature-name]"
-version: 3.0.0
 license: MIT
 user-invocable: false
 allowed-tools: Read, Glob, Grep

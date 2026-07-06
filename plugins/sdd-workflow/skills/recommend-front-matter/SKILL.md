@@ -2,7 +2,6 @@
 name: recommend-front-matter
 description: "Scan existing AI-SDD documents and recommend YAML front matter additions"
 argument-hint: "[--apply]"
-version: 3.2.0
 license: MIT
 user-invocable: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion

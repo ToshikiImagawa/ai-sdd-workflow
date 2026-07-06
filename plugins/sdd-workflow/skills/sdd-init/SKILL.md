@@ -2,7 +2,6 @@
 name: sdd-init
 description: "Initialize AI-SDD workflow in the current project. Sets up CLAUDE.md and generates document templates."
 argument-hint: "[--ci]"
-version: 3.0.0
 license: MIT
 user-invocable: true
 disable-model-invocation: true

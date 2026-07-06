@@ -2,7 +2,6 @@
 name: generate-prd
 description: "Generates complete PRD document from business requirements. Creates use case diagrams, requirements analysis (UR/FR/NFR), SysML diagrams, and complete PRD file. Use when user mentions PRD, product requirements, feature definition, requirement specification, or starting AI-SDD workflow."
 argument-hint: "<requirements-description> [--ci]"
-version: 3.1.0
 license: MIT
 user-invocable: true
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash
