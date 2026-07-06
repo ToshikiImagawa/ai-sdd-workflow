@@ -11,6 +11,17 @@
 
 ### Changed
 
+#### Hooks
+
+- **`PreToolUse`** (`scripts/pre-tool-use.py`) - 命名規則違反のブロックを stderr + `exit 2` 方式から
+  JSON Decision Control（`permissionDecision: "deny"` + `permissionDecisionReason`）へ移行
+  ([#82](https://github.com/ToshikiImagawa/ai-sdd-workflow/issues/82))
+- **`PreToolUse`** - Write/Edit 対象が実装コードの場合に `.sdd/CONSTITUTION.md` の原則を
+  `additionalContext` として注入 ([#82](https://github.com/ToshikiImagawa/ai-sdd-workflow/issues/82))
+    - コンテキスト肥大化を防ぐため、注入はプロジェクト内のソースファイル編集に限定し、
+      セッションごとに最大1回、3000文字で切り詰めて注入する
+    - CONSTITUTION.md が存在しない場合は何も注入しない
+
 #### Agents
 
 - **`front-matter-reviewer`** - `model` を `sonnet` から `haiku` に変更 ([#55](https://github.com/ToshikiImagawa/ai-sdd-workflow/issues/55))

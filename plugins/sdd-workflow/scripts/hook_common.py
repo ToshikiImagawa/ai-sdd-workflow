@@ -50,6 +50,22 @@ def load_sdd_paths(project_root: str) -> Tuple[str, str, str]:
     return root, requirement_dir, specification_dir
 
 
+SOURCE_EXTENSIONS = (
+    ".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs", ".java",
+    ".kt", ".swift", ".cs", ".rb", ".php", ".c", ".cc", ".cpp", ".h",
+)
+
+
+def emit_permission_deny(event_name: str, reason: str) -> None:
+    print(json.dumps({
+        "hookSpecificOutput": {
+            "hookEventName": event_name,
+            "permissionDecision": "deny",
+            "permissionDecisionReason": reason,
+        },
+    }, ensure_ascii=False))
+
+
 def emit_additional_context(event_name: str, text: str) -> None:
     print(json.dumps({
         "hookSpecificOutput": {
