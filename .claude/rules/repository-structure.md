@@ -44,7 +44,8 @@ ai-sdd-workflow/
 │       ├── AI-SDD-PRINCIPLES.source.md
 │       ├── LICENSE
 │       ├── README.md
-│       └── CHANGELOG.md
+│       ├── CHANGELOG.md
+│       └── CHANGELOG.ja.md
 ├── CLAUDE.md
 ├── AGENTS.md
 ├── PLUGIN.md

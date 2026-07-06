@@ -65,6 +65,7 @@ ai-sdd-workflow/
 │       ├── hooks/
 │       ├── scripts/
 │       ├── CHANGELOG.md
+│       ├── CHANGELOG.ja.md
 │       ├── LICENSE
 │       ├── README.md
 │       └── README.ja.md
