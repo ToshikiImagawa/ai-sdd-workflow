@@ -39,6 +39,7 @@ $ARGUMENTS
 | ファイル | 言語 |
 |:---|:---|
 | `plugins/sdd-workflow/CHANGELOG.md` | English |
+| `plugins/sdd-workflow/CHANGELOG.ja.md` | 日本語 |
 
 ### Version Manifest Files
 
@@ -66,7 +67,7 @@ $ARGUMENTS
 
 ### Step 3: Read Current [Unreleased] Content
 
-CHANGELOG ファイルを Read で読み込み、`## [Unreleased]` セクションの内容を抽出する。
+英語版 CHANGELOG（`CHANGELOG.md`）を Read で読み込み、`## [Unreleased]` セクションの内容を抽出する。
 
 - **内容あり**: 既存エントリをベースとして保持する
 - **内容なし**: Step 4 で全エントリを生成する
@@ -131,7 +132,7 @@ git diff <previous-tag>..HEAD --stat
 
 ### Step 6: Update CHANGELOG Files
 
-CHANGELOG ファイルに対して以下を実行する:
+**両方の CHANGELOG ファイル**（英語版・日本語版）に対して以下を実行する:
 
 1. `## [Unreleased]` セクションの既存内容をクリアする
 2. `## [Unreleased]` の直後に空行を挟んで新バージョンセクションを挿入する:
@@ -140,6 +141,9 @@ CHANGELOG ファイルに対して以下を実行する:
    ```
 3. 日付は実行日（`date +%Y-%m-%d` で取得）を使用する
 4. Step 5 で生成/統合したエントリを配置する
+   - 英語版には英語のエントリを配置する
+   - 日本語版には同内容の日本語訳エントリを配置する（コード識別子・ファイル名・カテゴリ見出しは英語を維持）
+   - 日本語版の `[Unreleased]` に既存の日本語エントリがあればそれを優先的に活用する
 
 ### Step 7: Update Version Manifests
 
@@ -183,6 +187,7 @@ CHANGELOG ファイルに対して以下を実行する:
 ### Updated Files
 
 - [ ] `plugins/sdd-workflow/CHANGELOG.md`
+- [ ] `plugins/sdd-workflow/CHANGELOG.ja.md`
 - [ ] `.claude-plugin/marketplace.json`
 - [ ] `plugins/sdd-workflow/.claude-plugin/plugin.json`
 
@@ -200,4 +205,4 @@ CHANGELOG ファイルに対して以下を実行する:
 - このスキルは CHANGELOG の **生成・編集** と **バージョン更新** を行う。コミットやタグ作成は行わない
 - 生成されたエントリは必ずユーザーにレビューを促す
 - プレリリースバージョン（`-alpha`, `-rc.1` 等）もサポートする
-- CHANGELOG は `plugins/sdd-workflow/CHANGELOG.md`（英語）である
+- CHANGELOG は `plugins/sdd-workflow/CHANGELOG.md`（英語）と `plugins/sdd-workflow/CHANGELOG.ja.md`（日本語）の 2 ファイルであり、常に両方を同期して更新する

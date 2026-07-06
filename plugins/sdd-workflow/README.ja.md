@@ -547,7 +547,8 @@ sdd-workflow/
 ├── LICENSE
 ├── README.md
 ├── README.ja.md
-└── CHANGELOG.md
+├── CHANGELOG.md
+└── CHANGELOG.ja.md
 ```
 
 ## ライセンス
