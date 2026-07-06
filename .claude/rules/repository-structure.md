@@ -36,7 +36,11 @@ ai-sdd-workflow/
 │       ├── hooks/
 │       │   └── hooks.json         # フック設定（JSON形式）
 │       ├── scripts/
-│       │   └── session-start.py   # セッション開始時の初期化
+│       │   ├── session-start.py   # セッション開始時の初期化
+│       │   ├── hook_common.py     # フックスクリプト共通ヘルパー
+│       │   ├── user-prompt-submit.py  # Vibe Coding兆候検知
+│       │   ├── pre-tool-use.py    # .sdd/ ファイル命名規則検証
+│       │   └── post-tool-use.py   # ドキュメント更新漏れ検知
 │       ├── AI-SDD-PRINCIPLES.source.md
 │       ├── LICENSE
 │       ├── README.md
