@@ -1,6 +1,6 @@
 ---
 name: requirement-analyzer
-description: "Use this agent when requirement analysis is needed, when users say 'analyze requirements', 'check requirements diagram', 'verify traceability', or 'impact analysis', or before/after running /generate-spec or /generate-prd commands when requirement validation is needed. Analyzes .sdd/requirement/*.md SysML requirements diagrams for coverage gaps, dependency conflicts, and implementation traceability. Generates actionable reports with traceability status and classified proposals ([must]=critical issues, [recommend]=improvements, [nits]=minor suggestions). Requires the requirement file path or feature name to analyze."
+description: "Use this agent when requirement analysis is needed, when users say 'analyze requirements', 'check requirements diagram', 'verify traceability', or 'impact analysis', or before/after running /generate-spec or /generate-prd commands when requirement validation is needed. Analyzes .sdd/requirement/*.md SysML requirements diagrams for coverage gaps, dependency conflicts, implementation traceability, and ID numbering (naming convention, ordering, gaps). Generates actionable reports with traceability status and classified proposals ([must]=critical issues, [recommend]=improvements, [nits]=minor suggestions). Requires the requirement file path or feature name to analyze."
 model: sonnet
 color: blue
 allowed-tools: Read, Glob, Grep, AskUserQuestion
@@ -23,6 +23,7 @@ $ARGUMENTS
 | `--trace`                    | No       | Traceability verification (correspondence with implementation) |
 | `--impact <req_id>`          | No       | Impact analysis (scope of changes to target requirement)       |
 | `--add-requirement`          | No       | Add new requirement (interactive)                              |
+| `--validate-ids`             | No       | ID numbering validation (naming convention, ordering, gaps)    |
 
 ### Input Examples
 
@@ -162,7 +163,63 @@ Verify correspondence between implementation and requirements:
 3. **Correspondence with Test Files**: Compare functions verified in test files with requirements, identify untested
    requirements
 
-### 4. Impact Analysis
+### 4. ID Numbering Validation
+
+Validate requirement ID numbering across PRD, specification, and design documents. Run this validation always as part
+of `--analyze`, or standalone via `--validate-ids`.
+
+**4-1. Naming Convention Validation:**
+
+Validate each requirement ID against the expected pattern.
+
+- If `.sdd-config.json` has an `id_conventions` section, use its regex patterns as the convention:
+
+```json
+{
+  "id_conventions": {
+    "prd_functional": "^FR_[A-Z]+_\\d{3}$",
+    "spec_functional": "^FR-[A-Z]+-\\d{3}'?$",
+    "spec_refined_relation": "^FR-{domain}-{prd_num}'$"
+  }
+}
+```
+
+- If `id_conventions` is not configured, infer the dominant ID pattern from existing IDs in the target document and
+  report IDs deviating from it
+- For refined IDs (e.g., `FR-AI-002'` refining `FR_AI_002`), verify the numeric part matches the refined source
+  requirement's number
+
+**4-2. Ascending Order Validation:**
+
+Verify that requirement IDs within each document (and each section) appear in ascending numeric order. Report any
+out-of-order sequence with a concrete move suggestion.
+
+**4-3. Numbering Gap Detection:**
+
+- Report missing numbers in a sequence (e.g., `001 → 003` with no `002`) as `[recommend]` unless a comment near the
+  gap explains the reason (e.g., intentional deprecation)
+- After a rename, verify the old ID no longer remains anywhere in `${SDD_ROOT}` (use Grep); report leftovers as
+  `[must]`
+
+**Severity mapping:** naming convention violation = `[must]`, non-ascending order = `[recommend]`, unexplained gap =
+`[recommend]`.
+
+**Output example:**
+
+```
+[must] ID convention violation:
+  File: .sdd/specification/auth_spec.md:99
+  Found: FR-AI-001'
+  Expected pattern: FR-AI-{PRD#}'
+  Hint: This refines FR_AI_002, so it should be FR-AI-002'
+
+[recommend] Non-ascending ID order:
+  File: .sdd/requirement/infrastructure.md
+  Sequence: IR_INFRA_001 ... IR_INFRA_007 → IR_INFRA_009 → IR_INFRA_008
+  Suggestion: Move IR_INFRA_009 section after IR_INFRA_008
+```
+
+### 5. Impact Analysis
 
 Analyze scope of impact when requirements change:
 
@@ -192,6 +249,16 @@ Read `templates/${SDD_LANG:-en}/requirement_analysis_output.md` and use it for o
 3. **Identify Gaps**: Identify missing or ambiguous requirements
 4. **Verify Implementation**: Cross-reference with codebase to verify traceability
 5. **Create Report**: Structure and report analysis results
+
+### During ID Numbering Validation
+
+1. **Resolve Conventions**: Read `id_conventions` from `.sdd-config.json` if present; otherwise infer the dominant
+   pattern from existing IDs
+2. **Collect IDs**: Extract all requirement IDs from the target document (and related spec/design documents when
+   validating refined IDs)
+3. **Validate**: Check naming convention, ascending order, and numbering gaps
+4. **Check Stale IDs**: Grep `${SDD_ROOT}` for renamed/removed IDs that still remain
+5. **Report**: Output violations with file, line, found ID, expected pattern, and a concrete fix suggestion
 
 ### During Impact Analysis
 

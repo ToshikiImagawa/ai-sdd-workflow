@@ -30,6 +30,15 @@
 - **Location**: {Section / Requirement ID}
 - **Recommended Fix**: {How to fix}
 
+### ID Numbering Validation
+
+| Check             | Result | Details                                        |
+|:------------------|:-------|:-----------------------------------------------|
+| Naming convention | OK/NG  | {Violating IDs and expected pattern, if any}   |
+| Ascending order   | OK/NG  | {Out-of-order sequence and move suggestion}    |
+| Numbering gaps    | OK/NG  | {Missing numbers and whether reason is stated} |
+| Stale IDs         | OK/NG  | {Old IDs remaining after rename, if any}       |
+
 ### Traceability
 
 | Requirement ID | Requirement Type | Implementation Status | Test Status | Notes |
