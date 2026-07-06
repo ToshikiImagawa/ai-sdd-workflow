@@ -13,25 +13,40 @@ ai-sdd-workflow/
 │       │   ├── prd-reviewer.md    # PRDレビューエージェント
 │       │   ├── requirement-analyzer.md  # 要求仕様分析エージェント
 │       │   └── clarification-assistant.md  # 仕様明確化アシスタント
-│       ├── skills/                # 11スキル（旧commands）+ 4スキル（既存）
-│       │   ├── sdd-init/          # AI-SDDワークフロー初期化
-│       │   ├── constitution/      # プロジェクト原則管理
-│       │   ├── generate-spec/     # 仕様書・設計書生成
-│       │   ├── generate-prd/      # PRD生成
-│       │   ├── check-spec/        # 整合性チェック
-│       │   ├── task-breakdown/    # タスク分解
-│       │   ├── implement/         # TDD実装
-│       │   ├── clarify/           # 仕様明確化
-│       │   ├── task-cleanup/      # タスククリーンアップ
-│       │   ├── sdd-migrate/       # マイグレーション
-│       │   ├── checklist/         # 品質チェックリスト
-│       │   ├── vibe-detector/     # Vibe Coding検出
+│       ├── skills/                # 19スキル
+│       │   ├── analyze-requirements/       # 要求分析（UR/FR/NFR抽出）
+│       │   ├── check-spec/                 # 実装とdesignの整合性チェック
 │       │   │   └── templates/{en,ja}/
-│       │   ├── sdd-templates/     # AI-SDDテンプレート
+│       │   ├── checklist/                  # 品質チェックリスト生成
 │       │   │   └── templates/{en,ja}/
-│       │   ├── doc-consistency-checker/  # ドキュメント整合性チェッカー
+│       │   ├── clarify/                    # 仕様明確化
 │       │   │   └── templates/{en,ja}/
-│       │   └── output-templates/  # 出力テンプレート
+│       │   ├── constitution/               # プロジェクト原則管理
+│       │   │   └── templates/{en,ja}/
+│       │   ├── doc-consistency-checker/    # ドキュメント整合性チェッカー
+│       │   │   └── templates/{en,ja}/
+│       │   ├── finalize-prd/               # PRD統合・完成
+│       │   │   └── templates/{en,ja}/
+│       │   ├── generate-prd/               # PRD生成
+│       │   │   └── templates/{en,ja}/
+│       │   ├── generate-requirements-diagram/  # SysML要求図生成
+│       │   ├── generate-spec/              # 仕様書・設計書生成
+│       │   │   └── templates/{en,ja}/
+│       │   ├── generate-usecase-diagram/   # ユースケース図生成
+│       │   ├── implement/                  # TDD実装
+│       │   │   └── templates/{en,ja}/
+│       │   ├── plan-refactor/              # リファクタリング計画
+│       │   │   └── templates/{en,ja}/
+│       │   ├── recommend-front-matter/     # front matter推奨
+│       │   │   └── templates/{en,ja}/
+│       │   ├── run-checklist/              # チェックリスト自動検証
+│       │   │   └── templates/{en,ja}/
+│       │   ├── sdd-init/                   # AI-SDDワークフロー初期化
+│       │   │   └── templates/{en,ja}/
+│       │   ├── task-breakdown/             # タスク分解
+│       │   ├── task-cleanup/               # タスククリーンアップ
+│       │   │   └── templates/{en,ja}/
+│       │   └── vibe-detector/              # Vibe Coding検出
 │       │       └── templates/{en,ja}/
 │       ├── hooks/
 │       │   └── hooks.json         # フック設定（JSON形式）
