@@ -43,10 +43,8 @@ $ARGUMENTS
 
 ### Input Examples
 
-```
-/task-breakdown user-auth
-/task-breakdown task-management TICKET-123
-```
+- `/task-breakdown user-auth`
+- `/task-breakdown task-management TICKET-123`
 
 ## Front Matter Generation Rules
 
@@ -74,22 +72,18 @@ Both flat and hierarchical structures are supported.
 
 **For flat structure**:
 
-```
-Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md (PRD, if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md (if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md (required)
-```
+- Load `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md` (PRD, if exists)
+- Load `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md` (if exists)
+- Load `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md` (required)
 
 **For hierarchical structure** (when argument contains `/`):
 
-```
-Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md (parent feature PRD, if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/{feature-name}.md (child feature PRD, if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md (parent feature spec, if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md (child feature spec, if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md (parent feature design, if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md (child feature design, required)
-```
+- Load `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md` (parent feature PRD, if exists)
+- Load `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/{feature-name}.md` (child feature PRD, if exists)
+- Load `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md` (parent feature spec, if exists)
+- Load `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md` (child feature spec, if exists)
+- Load `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md` (parent feature design, if exists)
+- Load `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md` (child feature design, required)
 
 **Note the difference in naming conventions**:
 
@@ -98,10 +92,8 @@ Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-n
 
 **Hierarchical structure input examples**:
 
-```
-/task-breakdown auth/user-login
-/task-breakdown auth/user-login TICKET-123
-```
+- `/task-breakdown auth/user-login`
+- `/task-breakdown auth/user-login TICKET-123`
 
 - If design document doesn't exist:
   - **CI Mode (`--ci`)**: Output error message and stop processing.
@@ -148,17 +140,7 @@ Extract the following information from design document:
 
 ### 5. Organize Dependencies
 
-Clarify dependencies between tasks:
-
-```mermaid
-graph LR
-    A[Foundation Task] --> B[Core Task 1]
-    A --> C[Core Task 2]
-    B --> D[Integration Task]
-    C --> D
-    D --> E[Testing Task]
-    E --> F[Finishing Task]
-```
+Clarify dependencies between tasks. See `references/task_dependency_diagram.md` for an example Mermaid dependency diagram.
 
 ## Output Format
 
@@ -251,16 +233,9 @@ The following verifications are automatically performed during generation:
 
 ### Verification Commands
 
-```bash
-# Confirm consistency with related design documents
-/check-spec {feature-name}
-
-# Verify any unclear points in specifications
-/clarify {feature-name}
-
-# Generate checklist to clarify quality criteria
-/checklist {feature-name} {ticket-number}
-```
+- `/check-spec {feature-name}` — Confirm consistency with related design documents
+- `/clarify {feature-name}` — Verify any unclear points in specifications
+- `/checklist {feature-name} {ticket-number}` — Generate checklist to clarify quality criteria
 
 ## Notes
 

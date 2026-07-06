@@ -42,30 +42,12 @@ $ARGUMENTS
 
 **Examples:**
 
-```
-/generate-prd A feature for users to manage tasks. Supports creation, editing, deletion.
-/generate-prd A feature for users to manage tasks. --ci
-```
+- `/generate-prd A feature for users to manage tasks. Supports creation, editing, deletion.`
+- `/generate-prd A feature for users to manage tasks. --ci`
 
 ## Progress Checklist
 
-Copy to track progress:
-
-```
-PRD Generation:
-- [ ] 1. Read prerequisites and templates
-- [ ] 2. Analyze input, extract feature-name
-- [ ] 3. Check existing PRD documents (confirm overwrite if needed)
-- [ ] 4. Generate Use Case Diagram (Mermaid flowchart)
-- [ ] 5. Analyze Requirements (extract UR/FR/NFR tables)
-- [ ] 6. Generate Requirements Diagram (SysML diagram)
-- [ ] 7. Integrate all sections into complete PRD
-- [ ] 8. Add YAML front matter
-- [ ] 9. Validate (Quality Checks)
-- [ ] 10. Save PRD file using Write tool
-- [ ] 11. prd-reviewer (Interactive only)
-- [ ] 12. front-matter-reviewer (Interactive only)
-```
+Use `templates/${SDD_LANG:-en}/progress_checklist.md` to track progress.
 
 ## Generation Flow
 
@@ -73,11 +55,8 @@ PRD Generation:
 
 ### Step 1: Prerequisites
 
-**Phase 1: Python Script** - Execute `prepare-prd.py` to pre-load templates and references:
-
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/generate-prd/scripts/prepare-prd.py"
-```
+**Phase 1: Python Script** - Execute `prepare-prd.py` to pre-load templates and references by running
+`python3 "${CLAUDE_PLUGIN_ROOT}/skills/generate-prd/scripts/prepare-prd.py"`.
 
 This script:
 1. Checks `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/PRD_TEMPLATE.md` (project template) first
@@ -197,23 +176,8 @@ Combine all generated sections following the PRD template structure:
 
 ### Step 8: Add YAML Front Matter
 
-Generate YAML front matter following `references/front_matter_prd.md` schema:
-
-```yaml
----
-id: "prd-{feature-name}"
-title: "{Feature Title}"
-type: "prd"
-status: "draft"
-created: "{YYYY-MM-DD}"
-updated: "{YYYY-MM-DD}"
-depends-on: []  # Parent PRD if hierarchical
-priority: "medium"  # or extract from requirements
-risk: "medium"  # or extract from requirements
-tags: ["{tag1}", "{tag2}"]
-category: "{category}"
----
-```
+Generate YAML front matter following `references/front_matter_prd.md` schema. See
+`templates/${SDD_LANG:-en}/front_matter_example.md` for a concrete example.
 
 ### Step 9: Validate
 

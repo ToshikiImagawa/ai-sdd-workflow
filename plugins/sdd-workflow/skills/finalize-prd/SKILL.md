@@ -65,20 +65,7 @@ $ARGUMENTS
 
 ### Input Format
 
-The skill receives structured text blocks from previous skills:
-
-```
-/finalize-prd task-management
-
-## Use Case Diagram
-{usecase diagram from generate-usecase-diagram}
-
-## Requirements Analysis
-{analysis from analyze-requirements}
-
-## Requirements Diagram
-{diagram from generate-requirements-diagram}
-```
+The skill receives structured text blocks from previous skills. See `references/input_format.md` for the exact shape.
 
 ## Integration Rules
 

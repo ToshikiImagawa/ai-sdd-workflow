@@ -50,12 +50,10 @@ $ARGUMENTS
 
 ### Input Examples
 
-```
-/check-spec user-auth              # Consistency check only (default)
-/check-spec task-management --full # Consistency check + quality review
-/check-spec --full                 # Comprehensive check for all specifications
-/check-spec                        # Without arguments, targets all specifications (consistency check only)
-```
+- `/check-spec user-auth` — Consistency check only (default)
+- `/check-spec task-management --full` — Consistency check + quality review
+- `/check-spec --full` — Comprehensive check for all specifications
+- `/check-spec` — Without arguments, targets all specifications (consistency check only)
 
 ### Scope Confirmation for No-Argument Execution
 
@@ -74,11 +72,7 @@ Replace placeholders with actual file names and counts.
 
 **Optimized Execution Flow**:
 
-**Phase 1: Shell Script** - Execute `find-design-docs.sh` to scan design documents:
-
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/skills/check-spec/scripts/find-design-docs.sh" [feature-name]
-```
+**Phase 1: Shell Script** - Execute `bash "${CLAUDE_PLUGIN_ROOT}/skills/check-spec/scripts/find-design-docs.sh" [feature-name]` to scan design documents.
 
 This script:
 1. Finds all design documents (`*_design.md`) in flat or hierarchical structure
@@ -97,22 +91,15 @@ Target design documents (`*_design.md`). Both flat and hierarchical structures a
 
 **For flat structure**:
 
-```
-With argument -> Target the following file:
-  - ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{argument}_design.md
-Without argument -> Target all *_design.md files under ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/ (recursively)
-```
+- With argument -> Target the following file: `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{argument}_design.md`
+- Without argument -> Target all `*_design.md` files under `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/` (recursively)
 
 **For hierarchical structure** (when argument contains `/`, or when specifying hierarchical path):
 
-```
-Argument in "{parent-feature}/{feature-name}" format -> Target the following file:
-  - ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md
-
-Argument is "{parent-feature}" only -> Target the following files:
-  - ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md (parent feature design)
-  - ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/*_design.md (child feature designs)
-```
+- Argument in `"{parent-feature}/{feature-name}"` format -> Target the following file: `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md`
+- Argument is `"{parent-feature}"` only -> Target the following files:
+    - `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md` (parent feature design)
+    - `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/*_design.md` (child feature designs)
 
 **Naming convention**:
 
@@ -120,10 +107,8 @@ Argument is "{parent-feature}" only -> Target the following files:
 
 **Hierarchical structure input examples**:
 
-```
-/check-spec auth/user-login     # Check user-login feature under auth domain
-/check-spec auth                # Check entire auth domain
-```
+- `/check-spec auth/user-login` — Check user-login feature under auth domain
+- `/check-spec auth` — Check entire auth domain
 
 ### 2. Load Design Documents
 
