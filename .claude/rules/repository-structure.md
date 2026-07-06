@@ -12,7 +12,11 @@ ai-sdd-workflow/
 │       │   ├── spec-reviewer.md   # 仕様書レビューエージェント
 │       │   ├── prd-reviewer.md    # PRDレビューエージェント
 │       │   ├── requirement-analyzer.md  # 要求仕様分析エージェント
-│       │   └── clarification-assistant.md  # 仕様明確化アシスタント
+│       │   ├── clarification-assistant.md  # 仕様明確化アシスタント
+│       │   ├── front-matter-reviewer.md  # front matter検証エージェント
+│       │   ├── examples/          # エージェント利用例
+│       │   ├── references/        # エージェント参照資料
+│       │   └── templates/{en,ja}/ # エージェント出力テンプレート
 │       ├── skills/                # 19スキル
 │       │   ├── analyze-requirements/       # 要求分析（UR/FR/NFR抽出）
 │       │   ├── check-spec/                 # 実装とdesignの整合性チェック
@@ -44,6 +48,7 @@ ai-sdd-workflow/
 │       │   ├── sdd-init/                   # AI-SDDワークフロー初期化
 │       │   │   └── templates/{en,ja}/
 │       │   ├── task-breakdown/             # タスク分解
+│       │   │   └── templates/{en,ja}/
 │       │   ├── task-cleanup/               # タスククリーンアップ
 │       │   │   └── templates/{en,ja}/
 │       │   └── vibe-detector/              # Vibe Coding検出

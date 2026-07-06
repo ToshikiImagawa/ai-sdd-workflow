@@ -75,10 +75,10 @@ Read the following files from `$GENERATE_PRD_REFERENCES`:
 | `prerequisites_directory_paths.md`    | Resolve `${SDD_*}` environment variables |
 | `prerequisites_principles.md`         | Load AI-SDD principles                   |
 | `prerequisites_plugin_update.md`      | Check plugin version compatibility       |
-| `../../../shared/references/usecase_diagram_guide.md` | Use case diagram notation |
-| `../../../shared/references/mermaid_notation_rules.md` | Mermaid syntax rules |
-| `../../../shared/references/requirements_diagram_components.md` | SysML requirements diagram components |
-| `../../../shared/references/front_matter_prd.md` | PRD front matter schema |
+| `usecase_diagram_guide.md`            | Use case diagram notation                |
+| `mermaid_notation_rules.md`           | Mermaid syntax rules                     |
+| `requirements_diagram_components.md`  | SysML requirements diagram components    |
+| `front_matter_prd.md`                 | PRD front matter schema                  |
 
 **Load PRD template** from `$GENERATE_PRD_TEMPLATE`
 
