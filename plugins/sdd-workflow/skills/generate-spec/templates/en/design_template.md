@@ -204,6 +204,36 @@ Modify the notation according to your project's programming language.
 
 ---
 
+# Pseudocode Completeness Rules
+
+Pseudocode in Design Docs (code examples for data models, interface definitions, processing flows, etc.)
+must remain **complete enough to be copied verbatim and still work**.
+When details diverge during transcription to implementation, they cause review findings and runtime errors.
+
+Select, adapt, and extend the following according to the languages used in your project
+(keep the structure extensible with sub-sections for TypeScript / Go / Rust, etc.).
+
+## Python (General)
+
+- Make all import statements explicit (including types referenced only in type annotations)
+- Be careful with `isinstance` checks and the BaseException hierarchy
+  (`asyncio.CancelledError` is not a subclass of `Exception` in Python 3.8+)
+- When `x` in `x if x else fallback` can be `""` / `[]` / `0`,
+  write `x if x is not None else fallback` explicitly
+
+## Pydantic v2
+
+- When reassigning inside `model_validator(mode='after')` on a model with `frozen=True`,
+  use `object.__setattr__(self, ...)`
+- `default_factory` is evaluated after `mode='before'` validators (mind the ordering)
+
+## SQLAlchemy / alembic
+
+- Keep alembic revision IDs ≤ 32 characters (`alembic_version.version_num` is `varchar(32)`)
+- Write CHECK constraints with conditions that do not block transitions (use auxiliary columns)
+
+---
+
 # Customization Guidelines for Projects
 
 When customizing this template for your project, update the following:
@@ -213,6 +243,7 @@ When customizing this template for your project, update the following:
 3. **Change history code examples**: Adjust to project's programming language
 4. **Module structure table columns**: Adjust to project's structure (package/module organization)
 5. **Technology stack table**: Adjust to technology areas used in the project
+6. **Pseudocode completeness rules**: Select and extend rules according to the pitfalls of the languages and frameworks used in the project
 
 ---
 

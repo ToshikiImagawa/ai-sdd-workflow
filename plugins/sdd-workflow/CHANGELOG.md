@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Verifies enum / CHECK constraint member-set completeness and requirement ID trace completeness
       (PRD <-> spec <-> design)
     - Added value drift sections to output templates (en/ja)
+- **`generate-spec`** - Added "Pseudocode Completeness Rules" section to design doc templates (`templates/{en,ja}/design_template.md`)
+    - Language-specific guidance (Python general / Pydantic v2 / SQLAlchemy & alembic) to keep design pseudocode copyable verbatim
+    - Extensible sub-section structure for additional languages (TypeScript / Go / Rust, etc.)
 
 ## [3.3.0] - 2026-03-02
 
