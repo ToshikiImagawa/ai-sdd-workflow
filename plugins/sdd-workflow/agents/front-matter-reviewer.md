@@ -1,7 +1,7 @@
 ---
 name: front-matter-reviewer
 description: "Validates YAML front matter in AI-SDD documents. Checks field formats, dependency direction, status values, type-specific fields, cross-reference integrity, and id uniqueness. Use after document generation or during consistency checks. Pass target document paths as arguments."
-model: sonnet
+model: haiku
 color: cyan
 allowed-tools: Read, Glob, Grep, AskUserQuestion
 skills: [ ]
@@ -68,6 +68,10 @@ Validate YAML front matter in AI-SDD documents from the following perspectives:
 3. **Cross-Reference Validation** (with `--cross-ref`): Dependency integrity, id uniqueness, status consistency
 
 ## Design Rationale
+
+**Model choice (`model: haiku`)**: This agent performs rule-based format validation defined by an explicit
+checklist (field presence, value patterns, allowed values). It does not require complex reasoning, so a
+lightweight model is sufficient for accuracy while reducing cost and latency.
 
 **This agent does NOT use the Task tool.**
 **This agent does NOT delegate to other sub-agents.**
