@@ -35,6 +35,8 @@ $ARGUMENTS
 | 2.3 | `templates/` に `en/` と `ja/` の両方が存在すること |
 | 2.4 | `templates/en/` と `templates/ja/` のファイルセットが一致すること |
 | 2.5 | サポートファイルの拡張子が `.md` であること（`scripts/` は対象外） |
+| 3.1 | スキル `SKILL.md` の `allowed-tools` に列挙されたツール名が実在すること |
+| 3.2 | `allowed-tools` にツール名の重複がないこと |
 
 ## Processing Flow
 
