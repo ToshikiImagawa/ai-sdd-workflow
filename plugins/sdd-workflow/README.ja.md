@@ -20,6 +20,7 @@ AI駆動仕様駆動開発（AI-SDD）ワークフローを支援する統合 Cl
 | Linux   |   ✅   | 完全サポート                    |
 | Windows |   ❌   | 非対応（下記の代替案を参照）            |
 | Python  | 3.7+  | session-start フックの実行に必要   |
+| Claude Code | 2.1.199+ | 名前付きスキル引数（`arguments` frontmatter / `$name` 置換）に必要。旧バージョンでは `$name` は置換されず、スキルは引数文字列全体の解釈にフォールバックする |
 
 ### Windows の制限事項
 

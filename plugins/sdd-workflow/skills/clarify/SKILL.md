@@ -2,6 +2,7 @@
 name: clarify
 description: "Analyze specifications and generate clarification questions to eliminate ambiguity before implementation"
 argument-hint: "<feature-name> [--interactive]"
+arguments: [feature-name]
 license: MIT
 user-invocable: true
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
@@ -37,7 +38,13 @@ The `SDD_LANG` environment variable determines the language (default: `en`).
 
 ## Input
 
-$ARGUMENTS
+- `feature-name`: $feature-name
+
+Full argument string: $ARGUMENTS
+
+> **Fallback**: If the value above is empty, remains a literal `$` placeholder, or starts with `--`
+> (a flag captured positionally), treat the argument as omitted and interpret the full argument
+> string instead. Ask the user interactively when a required argument is missing.
 
 | Argument        | Required | Description                                                        |
 |:----------------|:---------|:-------------------------------------------------------------------|
