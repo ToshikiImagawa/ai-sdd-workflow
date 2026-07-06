@@ -204,6 +204,36 @@ interface SomeRepository {
 
 ---
 
+# Pseudocode の完全性ルール
+
+Design Doc に記載する pseudocode（データモデル・インターフェース定義・処理フロー等のコード例）は、
+**verbatim でコピーしても動作する完全性**を維持してください。
+実装への転記段階で細部が乖離すると、レビュー指摘や実行時エラーの原因になります。
+
+以下はプロジェクトで使用する言語に合わせて取捨選択・追加してください（TypeScript / Go / Rust 等の
+sub-section を増やせる形を維持すること）。
+
+## Python 共通
+
+- すべての import 文を明示する（型注釈で参照する型も含む）
+- `isinstance` チェックは BaseException 階層に注意（`asyncio.CancelledError` は Python 3.8+ で
+  `Exception` のサブクラスではない）
+- `x if x else fallback` の `x` が `""` / `[]` / `0` を取りうる場合は
+  `x if x is not None else fallback` で明示する
+
+## Pydantic v2
+
+- `frozen=True` のモデルで `model_validator(mode='after')` 内に再代入する場合は
+  `object.__setattr__(self, ...)` を使用する
+- `default_factory` は `mode='before'` validator の後に評価される（順序に注意）
+
+## SQLAlchemy / alembic
+
+- alembic revision ID は 32 文字以下にする（`alembic_version.version_num` が `varchar(32)`）
+- CHECK 制約は遷移を妨げない条件で書く（補助カラムを併用）
+
+---
+
 # プロジェクトへのカスタマイズ指針
 
 このテンプレートをプロジェクト用にカスタマイズする際は、以下の項目を更新してください：
@@ -213,6 +243,7 @@ interface SomeRepository {
 3. **変更履歴のコード例**: プロジェクトのプログラミング言語に合わせる
 4. **モジュール分割表のカラム**: プロジェクトの構成（パッケージ/モジュール構造）に合わせる
 5. **技術スタック表**: プロジェクトで使用する技術領域に合わせる
+6. **Pseudocode の完全性ルール**: プロジェクトで使用する言語・フレームワークの落とし穴に合わせて取捨選択・追加する
 
 ---
 

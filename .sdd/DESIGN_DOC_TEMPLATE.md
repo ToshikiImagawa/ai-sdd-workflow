@@ -206,4 +206,28 @@ plugins/sdd-workflow/
 
 ---
 
+# Pseudocode の完全性ルール
+
+Design Doc に記載する pseudocode（データ構造・スクリプトの処理フロー等のコード例）は、
+**verbatim でコピーしても動作する完全性**を維持してください。
+実装への転記段階で細部が乖離すると、レビュー指摘や実行時エラーの原因になります。
+
+本リポジトリで使用する言語（Python / Bash）に合わせたルールを記載します。
+言語が増えた場合は sub-section を追加してください。
+
+## Python 共通
+
+- すべての import 文を明示する（型注釈で参照する型も含む）
+- `isinstance` チェックは BaseException 階層に注意（`asyncio.CancelledError` は Python 3.8+ で
+  `Exception` のサブクラスではない）
+- `x if x else fallback` の `x` が `""` / `[]` / `0` を取りうる場合は
+  `x if x is not None else fallback` で明示する
+
+## Bash / POSIX sh
+
+- shebang とオプション（`set -e` 等）を含めて記載し、POSIX 互換要件（macOS bash 3.2 / dash）を明示する
+- 外部コマンド（`jq` 等）への依存はコード例に含めて明示する
+
+---
+
 **この Design Docは、AIエージェントが実装（Implement）フェーズで参照する、具体的なコード生成のための指針となります。**
