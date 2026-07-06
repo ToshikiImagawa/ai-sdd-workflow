@@ -1,6 +1,9 @@
 ---
 name: review-plugin
 description: "Claude Codeプラグインの品質レビュー。Agents, Skills, Hooks, プラグイン構造を設計ガイドに基づいてチェックし、改善提案を提供します。"
+version: 1.0.0
+license: MIT
+user-invocable: true
 argument-hint: "[対象パス|--agents|--skills|--hooks|--all]"
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Workflow

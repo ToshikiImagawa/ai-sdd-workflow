@@ -1,6 +1,9 @@
 ---
 name: plugin-integration-test
 description: "sdd-workflow プラグインの統合テストを実行する。session-start.py、環境変数、/sdd-init を検証しログを記録する。"
+version: 1.0.0
+license: MIT
+argument-hint: "[none]"
 disable-model-invocation: true
 context: fork
 user-invocable: true
