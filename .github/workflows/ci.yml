@@ -40,7 +40,7 @@ jobs:
         run: bash scripts/plugin-lint.sh
 
   test:
-    name: Test session-start.py (${{ matrix.os }})
+    name: Test hook scripts (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -52,3 +52,5 @@ jobs:
           python-version: '3.x'
       - name: Run session-start regression tests
         run: bash scripts/test-session-start.sh
+      - name: Run hook scripts regression tests
+        run: bash scripts/test-hook-scripts.sh

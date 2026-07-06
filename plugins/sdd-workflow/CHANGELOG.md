@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Hooks
+
+- Expanded `hooks.json` beyond `SessionStart` ([#54](https://github.com/ToshikiImagawa/ai-sdd-workflow/issues/54))
+    - **`UserPromptSubmit`** (`scripts/user-prompt-submit.py`) - Detects Vibe Coding signals (vague instructions such
+      as "make it nice" / "いい感じに") in the user prompt and injects additional context prompting a vibe-detector
+      style clarification flow (detection only, never blocks)
+    - **`PreToolUse`** (`scripts/pre-tool-use.py`, matcher `Write|Edit|MultiEdit`) - Validates AI-SDD file naming
+      conventions before writing under `.sdd/` (requirement: no suffix, specification: `_spec.md` / `_design.md`
+      required) and blocks violating writes
+    - **`PostToolUse`** (`scripts/post-tool-use.py`, matcher `Write|Edit|MultiEdit`) - Detects potential document
+      update omissions: reminds to run consistency checks after `.sdd/` document edits, and reminds to sync the
+      design doc after editing a source file with a matching `*_design.md`
+    - Added `scripts/hook_common.py` (shared helpers) and `scripts/test-hook-scripts.sh` regression tests (CI `test` job)
+
 #### Agents
 
 - **`requirement-analyzer`** - Added ID numbering validation (`--validate-ids`, also runs as part of `--analyze`)
