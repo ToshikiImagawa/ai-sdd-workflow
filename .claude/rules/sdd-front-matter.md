@@ -24,4 +24,6 @@ prd ← spec (depends-on: prd) ← design (depends-on: spec) ← task (depends-o
 ```
 
 - 階層構造の場合: `id` にパスを含める（例: `"spec-auth-user-login"`）
+- feature 名自体が type プレフィックスで始まる場合（例: feature 名 `prd-generation`）は、二重接頭辞
+  （`"prd-prd-generation"`）とせず feature 名をそのまま `id` とする（例: `"prd-generation"`）
 - front matterなしの既存ドキュメントも引き続き有効（後方互換）

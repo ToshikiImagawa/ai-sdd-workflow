@@ -209,6 +209,7 @@ requirementDiagram
     NoCodeBlockInPrompt - traces -> CiValidation
     TemplateSetParity - traces -> I18nTemplates
     TemplateSetParity - traces -> BilingualParity
+    CrossPlatform - traces -> CiValidation
 ```
 
 ## 3.2. 主要サブシステム詳細図
@@ -389,6 +390,8 @@ marketplace.json / plugin.json は Claude Code のマーケットプレイス・
 
 - B-002 原則（多言語対応の一貫性）に従い、EN/JA の機能差を生む変更は認めない
 - T-002 原則（plugin.json 登録の徹底）に従い、新規スキル・エージェント追加時はマニフェスト登録を必須とする
+- T-003 原則（日本語出力の文字化け防止）に従い、ja テンプレート・日本語ドキュメントに文字化け
+  （U+FFFD・mojibake パターン・不完全なマルチバイト文字）を混入させないこと
 
 ---
 

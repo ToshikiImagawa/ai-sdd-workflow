@@ -51,6 +51,15 @@ SysML 要求図の記法（要求タイプ・リスクレベル・検証方法�
 | 検証方法   | `Analysis`（分析） / `Test`（テスト） / `Demonstration`（デモ） / `Inspection`（レビュー）                         |
 | 関係タイプ  | `contains`（包含） / `derives`（派生） / `satisfies`（満足） / `verifies`（検証） / `refines`（詳細化） / `traces`（トレース） |
 
+**本プロジェクトの記法規約**（レビュー時の解釈ブレを防ぐための統一ルール）:
+
+- 機能要求からユーザー要求への派生は `FR - derives -> UR` の方向で記載する
+- 制約・非機能要求（NFR / IR / DC）から対象要求への関連は `制約 - traces -> 要求` の方向で記載する
+  （制約を起点として「どの要求に効くか」を示す本プロジェクトの統一方向。SysML の厳密な traces 意味論より一貫性を優先する）
+- 非機能要求の ID プレフィックスは `NFR` に統一する（要求タイプは内容に応じて `requirement` / `performanceRequirement` 等を選択してよい）
+- Mermaid requirementDiagram に `nonfunctionalRequirement` タイプは存在しないため使用しない
+- 要求 ID（`UR_001` 等）のスコープは各 PRD ファイル内とする。PRD をまたいで参照する場合はファイル名と ID を併記する
+
 ---
 
 # 2. 要求一覧 `<MUST>`

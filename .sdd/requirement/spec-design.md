@@ -208,6 +208,7 @@ requirementDiagram
     RefactorPlanning - traces -> NamingTemplateCompliance
     AbstractionSeparation - traces -> SpecGeneration
     LanguageConsistency - traces -> SpecGeneration
+    LanguageConsistency - traces -> RefactorPlanning
     Clarification - traces -> ClarityThreshold
 ```
 
