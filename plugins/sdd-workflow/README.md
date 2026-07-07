@@ -111,6 +111,7 @@ This command automatically:
 | `requirement-analyzer`    | SysML requirements diagram-based analysis, requirement tracking and verification                                 |
 | `clarification-assistant` | Specification clarification support. Analyzes requirements across 9 categories and outputs integration proposals |
 | `front-matter-reviewer`   | Validates YAML front matter in AI-SDD documents. Checks field formats, dependency direction, and id uniqueness   |
+| `cross-prd-reviewer`      | Reviews consistency across multiple PRDs: category boundaries, terminology, style, and principle coverage        |
 
 ### Skills (User-Invocable)
 
@@ -544,6 +545,7 @@ sdd-workflow/
 │   ├── requirement-analyzer.md    # Requirement analysis agent
 │   ├── clarification-assistant.md # Specification clarification assistant
 │   ├── front-matter-reviewer.md   # YAML front matter validation agent
+│   ├── cross-prd-reviewer.md      # Cross-PRD consistency review agent
 │   ├── templates/{en,ja}/         # Agent output templates (language-specific)
 │   ├── references/                # Agent references (symlinks to shared)
 │   └── examples/                  # Agent usage examples

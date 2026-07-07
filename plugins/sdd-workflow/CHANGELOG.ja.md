@@ -9,6 +9,16 @@
 
 ## [Unreleased]
 
+### Added
+
+#### Agents
+
+- **`cross-prd-reviewer`** - 複数 PRD 間の整合性をレビューする新規エージェント
+    - カテゴリ境界の整合（スコープ外の相互参照）、用語集間の用語統一、構成・記法スタイルの一貫性、
+      CONSTITUTION.md 原則参照カバレッジ、front matter の付け方の整合を検査
+    - 指摘は [must]/[recommend]/[nits] で分類。単一 PRD の品質レビューは従来どおり prd-reviewer が担当
+    - 出力テンプレート `templates/{en,ja}/cross_prd_review_output.md` を追加
+
 ### Changed
 
 #### Hooks
