@@ -30,12 +30,14 @@ AI-SDD ワークフローでは、PRD（何を・なぜ）から抽象仕様書�
 - 仕様書・設計書の品質レビュー
 - 既存機能のリファクタリング計画（実装からの設計書逆算）
 
+本 PRD は階層構造で管理する。各機能要求の詳細は「2.2. 機能一覧」に示す子 PRD を参照。
+
 ---
 
 # 1. 要求図の読み方
 
 SysML 要求図の記法（要求タイプ・リスクレベル・検証方法・関係タイプ）の凡例は
-[PRD_TEMPLATE.md](../PRD_TEMPLATE.md) のセクション 1 を参照。
+[PRD_TEMPLATE.md](../../PRD_TEMPLATE.md) のセクション 1 を参照。
 
 ---
 
@@ -63,51 +65,24 @@ flowchart LR
     ReviewSpec -.->|"<<拡張>>生成後の品質確認"| GenerateSpec
 ```
 
-## 2.2. ユースケース図（詳細）
+## 2.2. 機能一覧
 
-### 仕様明確化フロー
+各機能の要求詳細（トリガー方式・サブ機能・検証方法）は以下の子 PRD で定義する。
 
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-flowchart LR
-    Developer((開発者))
-
-    subgraph Clarification["仕様明確化"]
-        AnalyzeSpec([仕様を9カテゴリで分析する])
-        GenerateQuestions([優先度付き質問を生成する])
-        ScoreClarity([明確度スコアを算出する])
-        IntegrateAnswers([回答を仕様書に統合する])
-    end
-
-    Developer --- AnalyzeSpec
-    GenerateQuestions -.->|"<<包含>>"| AnalyzeSpec
-    ScoreClarity -.->|"<<包含>>"| AnalyzeSpec
-    IntegrateAnswers -.->|"<<拡張>>回答後"| GenerateQuestions
-```
-
-## 2.3. 機能一覧（テキスト形式）
-
-- 仕様書・設計書生成
-    - 入力内容（PRD・要件記述）からの抽象仕様書（`*_spec.md`）生成
-    - 抽象仕様書からの技術設計書（`*_design.md`）生成
-    - 命名規則・テンプレート・front matter への準拠
-- 仕様明確化
-    - 9 カテゴリ（機能範囲・データモデル・フロー・非機能・統合・エッジケース・制約・用語・完了基準）での分析
-    - 優先度付き明確化質問の生成（最大 5 問）
-    - 明確度スコアの算出と実装可否判定
-    - ユーザー回答の仕様書への統合
-- 品質レビュー
-    - CONSTITUTION 準拠・曖昧表現・セクション欠落・トレーサビリティの検証
-    - 修正提案の生成
-- リファクタリング計画
-    - 既存実装の分析と設計書の作成・更新
-    - 対象範囲の指定（スコープ絞り込み）
+| 機能         | 子 PRD                                    | 概要                                     |
+|:-----------|:-----------------------------------------|:---------------------------------------|
+| 仕様書・設計書生成  | [generate-spec.md](generate-spec.md)     | 入力内容から抽象仕様書と技術設計書を生成する         |
+| 仕様明確化      | [clarify.md](clarify.md)                 | 仕様を 9 カテゴリで分析し優先度付き質問で明確化する    |
+| 仕様・設計レビュー  | [spec-review.md](spec-review.md)         | 仕様書・設計書の品質と原則準拠を検証し修正提案する      |
+| リファクタリング計画 | [plan-refactor.md](plan-refactor.md)     | 既存実装を分析し設計書とリファクタリング計画を作成する    |
 
 ---
 
 # 3. 要求図（SysML Requirements Diagram）
 
 ## 3.1. 全体要求図
+
+FR ノード（FR_001〜FR_004）の詳細説明・サブ機能分解は各子 PRD を参照。
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
@@ -212,57 +187,11 @@ requirementDiagram
     Clarification - traces -> ClarityThreshold
 ```
 
-## 3.2. 主要サブシステム詳細図
-
-### 仕様明確化
-
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-requirementDiagram
-    functionalRequirement Clarification {
-        id: FR_002
-        text: "仕様を9カテゴリで分析し優先度付き質問で明確化する"
-        risk: high
-        verifymethod: demonstration
-    }
-
-    functionalRequirement CategoryAnalysis {
-        id: FR_002_01
-        text: "9カテゴリの観点で曖昧点と未定義点を抽出する"
-        risk: medium
-        verifymethod: inspection
-    }
-
-    functionalRequirement QuestionGeneration {
-        id: FR_002_02
-        text: "優先度順に最大5問の明確化質問を生成する"
-        risk: medium
-        verifymethod: test
-    }
-
-    functionalRequirement ClarityScoring {
-        id: FR_002_03
-        text: "仕様の明確度スコアを算出し実装可否を判定する"
-        risk: medium
-        verifymethod: test
-    }
-
-    functionalRequirement AnswerIntegration {
-        id: FR_002_04
-        text: "ユーザー回答を仕様書へ統合し明確度を再評価する"
-        risk: medium
-        verifymethod: demonstration
-    }
-
-    Clarification - contains -> CategoryAnalysis
-    Clarification - contains -> QuestionGeneration
-    Clarification - contains -> ClarityScoring
-    Clarification - contains -> AnswerIntegration
-```
-
 ---
 
 # 4. 要求の詳細説明
+
+機能要求（FR_001〜FR_004）の詳細説明は各子 PRD に移設した。「2.2. 機能一覧」を参照。
 
 ## 4.1. ユーザー要求
 
@@ -294,51 +223,7 @@ requirementDiagram
 
 **検証方法:** デモンストレーションによる検証
 
-## 4.2. 機能要求
-
-### FR_001: 仕様書・設計書生成
-
-入力内容（PRD・要件記述）から抽象仕様書（`{feature-name}_spec.md`）と技術設計書
-（`{feature-name}_design.md`）を生成し、specification ディレクトリに保存する。UR_001 から派生。
-
-**トリガー方式:** 手動（開発者による `/generate-spec` スキル呼び出し）
-
-**検証方法:** デモンストレーションによる検証
-
-### FR_002: 仕様明確化
-
-対象仕様（またはユーザー要件）を分析し、曖昧点を質問により解消する。UR_002 から派生。
-
-**トリガー方式:** 手動（開発者による `/clarify` スキル呼び出し）。仕様生成前の事前明確化としても利用する
-
-**含まれる機能:**
-
-- FR_002_01: 9 カテゴリ（機能範囲・データモデル・フロー・非機能要求・統合・エッジケース・制約・用語・完了基準）での曖昧点抽出
-- FR_002_02: 優先度付き明確化質問の生成（最大 5 問）
-- FR_002_03: 明確度スコアの算出と実装可否判定
-- FR_002_04: ユーザー回答の仕様書への統合と再評価
-
-**検証方法:** デモンストレーションによる検証
-
-### FR_003: 仕様・設計レビュー
-
-仕様書・設計書に対し、CONSTITUTION 準拠・曖昧表現・必須セクションの欠落・SysML 記法の妥当性・
-PRD / 仕様 / 設計間のトレーサビリティを検証し、修正提案を生成する。UR_003 から派生。
-
-**トリガー方式:** 手動（レビュー依頼時）または仕様生成後の品質確認として自動実行
-
-**検証方法:** デモンストレーションによる検証
-
-### FR_004: リファクタリング計画
-
-既存機能の実装コードを分析し、技術設計書の作成・更新とリファクタリング計画の立案を行う。
-分析対象はディレクトリ指定で絞り込める。UR_004 から派生。
-
-**トリガー方式:** 手動（開発者による `/plan-refactor` スキル呼び出し）
-
-**検証方法:** デモンストレーションによる検証
-
-## 4.3. 非機能要求
+## 4.2. 非機能要求
 
 ### NFR_001: 明確度の判定基準
 
@@ -347,7 +232,7 @@ PRD / 仕様 / 設計間のトレーサビリティを検証し、修正提案�
 
 **検証方法:** テストによる検証
 
-## 4.4. インターフェース要求
+## 4.3. インターフェース要求
 
 ### IR_001: 命名規則・テンプレート・front matter への準拠
 
@@ -357,7 +242,7 @@ PRD / 仕様 / 設計間のトレーサビリティを検証し、修正提案�
 
 **検証方法:** インスペクションによる検証
 
-## 4.5. 設計制約
+## 4.4. 設計制約
 
 ### DC_001: 抽象度の分離
 

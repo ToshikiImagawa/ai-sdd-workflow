@@ -12,7 +12,7 @@ priority: "high"
 risk: "high"
 ---
 
-# タスク・実装 要求仕様書
+# タスク・実装 要求仕様書（親機能概要）
 
 ## 概要
 
@@ -31,12 +31,14 @@ AI-SDD ワークフローの Tasks / Implement & Review フェーズでは、技
 - チェックリストの自動検証（テスト・リンター・セキュリティ・整合性）
 - 実装完了後のタスクログ整理（設計知見の永続化）
 
+本 PRD は親機能概要であり、各機能要求（FR）の詳細は子 PRD に分割されている（「2.2. 機能一覧」参照）。
+
 ---
 
 # 1. 要求図の読み方
 
 SysML 要求図の記法（要求タイプ・リスクレベル・検証方法・関係タイプ）の凡例は
-[PRD_TEMPLATE.md](../PRD_TEMPLATE.md) のセクション 1 を参照。
+[PRD_TEMPLATE.md](../../PRD_TEMPLATE.md) のセクション 1 を参照。
 
 ---
 
@@ -67,49 +69,23 @@ flowchart LR
     CleanupTasks -.->|"<<拡張>>完了後"| ImplementTdd
 ```
 
-## 2.2. ユースケース図（詳細）
+## 2.2. 機能一覧（子 PRD）
 
-### TDD 実装フロー
-
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-flowchart LR
-    Developer((開発者))
-
-    subgraph TddFlow["TDD 実装"]
-        Setup([環境をセットアップする])
-        WriteTests([テストを先に書く])
-        ImplementCore([コア機能を実装する])
-        Integrate([統合する])
-        Polish([仕上げる])
-        UpdateProgress([チェックリスト進捗を更新する])
-    end
-
-    Developer --- Setup
-    Setup --> WriteTests --> ImplementCore --> Integrate --> Polish
-    UpdateProgress -.->|"<<包含>>各段階で"| ImplementCore
-```
-
-## 2.3. 機能一覧（テキスト形式）
-
-- タスク分解
-    - 技術設計書から独立テスト可能な小タスクの一覧を生成
-    - チケット番号に紐づく task ディレクトリへの保存
-- TDD 実装
-    - 5 段階（Setup → Tests → Core → Integration → Polish）の段階的実装
-    - tasks.md のチェックリスト進捗の逐次更新
-- 品質検証
-    - 仕様・計画からの品質チェックリスト生成（構造化 ID・カテゴリ付き）
-    - チェックリスト項目の自動検証（テスト・リンター・セキュリティスキャン・仕様整合性）
-- タスククリーンアップ
-    - 重要な設計決定の技術設計書への統合
-    - 統合後の task ディレクトリ削除
+| 機能 | 子 PRD | 概要 |
+|:---|:---|:---|
+| タスク分解 | [task-breakdown.md](task-breakdown.md) | 技術設計書から独立テスト可能な小タスク一覧（tasks.md）を生成し、task ディレクトリに保存する |
+| TDD 実装 | [implement.md](implement.md) | 5 段階（Setup → Tests → Core → Integration → Polish）の TDD で実装し、チェックリスト進捗を逐次更新する |
+| チェックリスト生成 | [checklist-generation.md](checklist-generation.md) | 仕様・計画から構造化 ID・カテゴリ付きの品質チェックリストを生成する |
+| チェックリスト自動検証 | [run-checklist.md](run-checklist.md) | チェックリスト項目をテスト・リンター・セキュリティスキャン・仕様整合性チェックで自動検証する |
+| タスククリーンアップ | [task-cleanup.md](task-cleanup.md) | 重要な設計決定を技術設計書へ統合したうえで task ディレクトリを削除する |
 
 ---
 
 # 3. 要求図（SysML Requirements Diagram）
 
 ## 3.1. 全体要求図
+
+各 FR ノード（FR_001〜FR_005）の詳細説明・サブ機能は、対応する子 PRD（「2.2. 機能一覧」参照）に記載する。
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
@@ -224,62 +200,6 @@ requirementDiagram
     ChecklistVerification - traces -> ChecklistGeneration
 ```
 
-## 3.2. 主要サブシステム詳細図
-
-### TDD 実装
-
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-requirementDiagram
-    functionalRequirement TddImplement {
-        id: FR_002
-        text: "5段階のTDDで実装しチェックリスト進捗を更新する"
-        risk: high
-        verifymethod: demonstration
-    }
-
-    functionalRequirement StageSetup {
-        id: FR_002_01
-        text: "実装環境と依存関係をセットアップする"
-        risk: low
-        verifymethod: test
-    }
-
-    functionalRequirement StageTests {
-        id: FR_002_02
-        text: "仕様に基づくテストを実装より先に作成する"
-        risk: high
-        verifymethod: inspection
-    }
-
-    functionalRequirement StageCore {
-        id: FR_002_03
-        text: "テストを通過するコア機能を実装する"
-        risk: high
-        verifymethod: test
-    }
-
-    functionalRequirement StageIntegration {
-        id: FR_002_04
-        text: "既存コードと統合し統合テストを通過させる"
-        risk: medium
-        verifymethod: test
-    }
-
-    functionalRequirement StagePolish {
-        id: FR_002_05
-        text: "リファクタリングとドキュメント整備で仕上げる"
-        risk: low
-        verifymethod: inspection
-    }
-
-    TddImplement - contains -> StageSetup
-    TddImplement - contains -> StageTests
-    TddImplement - contains -> StageCore
-    TddImplement - contains -> StageIntegration
-    TddImplement - contains -> StagePolish
-```
-
 ---
 
 # 4. 要求の詳細説明
@@ -314,61 +234,7 @@ requirementDiagram
 
 **検証方法:** インスペクションによる検証
 
-## 4.2. 機能要求
-
-### FR_001: タスク分解
-
-技術設計書（`*_design.md`）を分析し、独立してテスト可能な小タスクの一覧（tasks.md）を生成して、
-チケット番号に対応する task ディレクトリに保存する。UR_001 から派生。
-
-**トリガー方式:** 手動（開発者による `/task-breakdown` スキル呼び出し）
-
-**検証方法:** デモンストレーションによる検証
-
-### FR_002: TDD 実装
-
-tasks.md のタスクを、5 段階の TDD プロセスで実装し、各段階の完了に応じて
-チェックリストの進捗を逐次更新する。UR_002 から派生。
-
-**トリガー方式:** 手動（開発者による `/implement` スキル呼び出し）
-
-**含まれる機能:**
-
-- FR_002_01: Setup — 実装環境・依存関係のセットアップ
-- FR_002_02: Tests — 仕様に基づくテストの先行作成
-- FR_002_03: Core — テストを通過するコア機能の実装
-- FR_002_04: Integration — 既存コードとの統合と統合テスト
-- FR_002_05: Polish — リファクタリング・ドキュメント整備
-
-**検証方法:** デモンストレーションによる検証
-
-### FR_003: チェックリスト生成
-
-仕様書・計画から、構造化 ID とカテゴリを持つ品質保証チェックリストを生成する。UR_003 から派生。
-
-**トリガー方式:** 手動（開発者による `/checklist` スキル呼び出し）
-
-**検証方法:** デモンストレーションによる検証
-
-### FR_004: チェックリスト自動検証
-
-生成されたチェックリスト項目を、テスト実行・リンター・セキュリティスキャナー・
-仕様整合性チェックにより自動検証し、実装が品質基準を満たすか判定する。UR_003 から派生。
-
-**トリガー方式:** 手動（開発者による `/run-checklist` スキル呼び出し）
-
-**検証方法:** テストによる検証
-
-### FR_005: タスククリーンアップ
-
-実装完了後、タスクログ内の重要な設計決定を対応する技術設計書（`*_design.md`）へ統合したうえで、
-task ディレクトリを削除する。UR_004 から派生。
-
-**トリガー方式:** 手動（開発者による `/task-cleanup` スキル呼び出し）
-
-**検証方法:** デモンストレーションによる検証
-
-## 4.3. 非機能要求
+## 4.2. 非機能要求
 
 ### NFR_001: タスクの粒度
 
@@ -382,7 +248,7 @@ task ディレクトリを削除する。UR_004 から派生。
 
 **検証方法:** インスペクションによる検証
 
-## 4.4. インターフェース要求
+## 4.3. インターフェース要求
 
 ### IR_001: task ディレクトリのレイアウト
 
@@ -391,7 +257,7 @@ task ディレクトリを削除する。UR_004 から派生。
 
 **検証方法:** インスペクションによる検証
 
-## 4.5. 設計制約
+## 4.4. 設計制約
 
 ### DC_001: テストファースト
 
