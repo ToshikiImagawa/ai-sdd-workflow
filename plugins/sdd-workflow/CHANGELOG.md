@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### Agents
+
+- **`cross-prd-reviewer`** - New agent that reviews consistency across multiple PRDs
+    - Checks category boundary consistency (scope-out cross-references), terminology alignment across
+      glossaries, structure and notation style uniformity, CONSTITUTION.md principle reference coverage,
+      and front matter labeling consistency
+    - Findings are classified as [must]/[recommend]/[nits]; single-PRD quality remains prd-reviewer's role
+    - Adds `templates/{en,ja}/cross_prd_review_output.md` output templates
+
 ### Changed
 
 #### Hooks

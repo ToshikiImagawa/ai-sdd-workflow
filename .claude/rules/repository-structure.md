@@ -14,6 +14,7 @@ ai-sdd-workflow/
 │       │   ├── requirement-analyzer.md  # 要求仕様分析エージェント
 │       │   ├── clarification-assistant.md  # 仕様明確化アシスタント
 │       │   ├── front-matter-reviewer.md  # front matter検証エージェント
+│       │   ├── cross-prd-reviewer.md  # PRD横断整合レビューエージェント
 │       │   ├── examples/          # エージェント利用例
 │       │   ├── references/        # エージェント参照資料
 │       │   └── templates/{en,ja}/ # エージェント出力テンプレート

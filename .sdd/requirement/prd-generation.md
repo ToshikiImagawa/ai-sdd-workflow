@@ -4,7 +4,7 @@ title: "PRD 生成パイプライン"
 type: "prd"
 status: "draft"
 created: "2026-07-06"
-updated: "2026-07-06"
+updated: "2026-07-07"
 depends-on: []
 tags: ["prd-generation", "usecase-diagram", "requirements-analysis", "sysml", "traceability"]
 category: "prd-generation"
@@ -61,11 +61,13 @@ flowchart LR
         FinalizePrd([成果物を統合し PRD を完成する])
         ReviewPrd([PRD の品質をレビューする])
         AnalyzeTrace([要求トレーサビリティを分析する])
+        ReviewCrossPrd([複数 PRD の横断整合をレビューする])
     end
 
     Developer --- GeneratePrd
     Developer --- ReviewPrd
     Developer --- AnalyzeTrace
+    Developer --- ReviewCrossPrd
     CIRuntime --- GeneratePrd
     GeneratePrd -.->|"<<包含>>"| GenerateUsecase
     GeneratePrd -.->|"<<包含>>"| AnalyzeReq
@@ -113,6 +115,7 @@ flowchart LR
 - 生成後の品質保証
     - PRD 品質レビュー（CONSTITUTION 準拠・修正提案）
     - 要求トレーサビリティ分析（カバレッジ・依存関係・分類付き提案）
+    - PRD 横断整合レビュー（複数 PRD 間の境界・用語・スタイル・原則参照の整合）
 
 ---
 
@@ -200,6 +203,13 @@ requirementDiagram
         verifymethod: demonstration
     }
 
+    functionalRequirement CrossPrdReview {
+        id: FR_008
+        text: "複数PRD間の境界と用語とスタイルと原則参照の整合をレビューする"
+        risk: medium
+        verifymethod: demonstration
+    }
+
     interfaceRequirement TemplateCompliance {
         id: IR_001
         text: "生成PRDはPRDテンプレート構造とfront matterスキーマに準拠する"
@@ -252,6 +262,7 @@ requirementDiagram
     Orchestration - contains -> FinalizePrd
     RequirementsAnalysis - derives -> StructuredRequirements
     TraceabilityAnalysis - derives -> StructuredRequirements
+    CrossPrdReview - derives -> StructuredRequirements
     UsecaseDiagram - derives -> VisualRepresentation
     RequirementsDiagram - derives -> VisualRepresentation
     FinalizePrd - derives -> PrdGenerationPipeline
@@ -421,6 +432,38 @@ YAML front matter（id / type / status / priority / risk 等）を付与した�
 UR_002 から派生。
 
 **トリガー方式:** 手動（開発者による要求分析・影響分析の依頼時）
+
+**検証方法:** デモンストレーションによる検証
+
+### FR_008: PRD 横断整合レビュー
+
+複数の PRD を対象として、PRD 間の横方向の整合性をレビューし、重要度分類
+（must = 必須修正 / recommend = 推奨改善 / nits = 軽微）付きの指摘として報告する。UR_002 から派生。
+
+**トリガー方式:** 手動（開発者による複数 PRD レビューの依頼時、または PRD の追加・更新後の任意実行）。
+本機能は PRD 生成オーケストレーション（FR_001）から独立しており、複数 PRD が存在する状態での任意実行機能である。
+
+**入力:** requirement ディレクトリ配下の全 PRD ファイル（既定）、または開発者が指定した PRD ファイルのリスト。
+横断比較には 2 ファイル以上を要し、対象が 1 ファイル以下の場合は横断レビュー不能である旨を報告して
+単体レビュー（FR_006）を案内する。
+
+**出力形式:** 各レビュー観点の指摘を重要度分類付きで列挙し、原則参照カバレッジは原則 × PRD の
+マトリクスとして提示する。
+
+**レビュー観点:**
+
+- カテゴリ境界の整合 — 各 PRD の「スコープ外」セクションの相互参照に矛盾がないか
+  （他 PRD へ委譲した責務が実際にカバーされているか、双方がスコープ外にして宙に浮く機能や責務の重複がないか）
+- 用語の横断統一 — 用語集セクション間で同一概念の定義が食い違っていないか
+- 構成・記法スタイルの一貫性 — セクション構成、要求図における関係（derives / contains / traces）の
+  使い分け、トリガー方式の記載有無が PRD 間でばらついていないか
+- プロジェクト原則参照のカバレッジ — どの原則がどの PRD で参照されているかをマトリクスとして提示し、
+  関係するはずの PRD での参照漏れを検出する
+- front matter の横断整合 — id / category / tags の付け方の不統一を検出する
+  （形式・一意性・依存方向の検証自体は front matter 検証機能に委譲し、本機能は付け方の一貫性のみを扱う）
+
+**責務境界:** 単一 PRD の品質レビューは FR_006、単一機能の縦方向（PRD ↔ 仕様 ↔ 設計）の整合は
+quality-guardrails カテゴリのドキュメント間整合性チェックが担い、本機能は PRD ↔ PRD の横方向のみを対象とする。
 
 **検証方法:** デモンストレーションによる検証
 

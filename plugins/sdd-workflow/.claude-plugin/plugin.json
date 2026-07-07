@@ -9,6 +9,7 @@
   "license": "MIT",
   "agents": [
     "./agents/clarification-assistant.md",
+    "./agents/cross-prd-reviewer.md",
     "./agents/front-matter-reviewer.md",
     "./agents/prd-reviewer.md",
     "./agents/requirement-analyzer.md",
