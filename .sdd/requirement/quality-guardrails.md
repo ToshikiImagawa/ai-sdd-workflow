@@ -4,7 +4,7 @@ title: "品質ガードレール"
 type: "prd"
 status: "draft"
 created: "2026-07-06"
-updated: "2026-07-06"
+updated: "2026-07-07"
 depends-on: []
 tags: ["vibe-coding-prevention", "hooks", "consistency-check", "quality-gate"]
 category: "quality-guardrails"
@@ -76,7 +76,6 @@ flowchart LR
     HookRuntime -.->|"イベント発火"| EnforceNaming
     HookRuntime -.->|"イベント発火"| InjectPrinciples
     HookRuntime -.->|"イベント発火"| DetectStale
-    DetectVibe -.->|"<<包含>>"| CheckDocs
 ```
 
 ## 2.2. ユースケース図（詳細）
@@ -225,7 +224,7 @@ requirementDiagram
     }
 
     performanceRequirement HookLightweight {
-        id: PR_001
+        id: NFR_001
         text: "フック処理は軽量でプロンプト応答性を阻害しない"
         risk: medium
         verifymethod: test
@@ -269,18 +268,21 @@ requirementDiagram
     QualityGuardrails - contains -> AmbiguityPrevention
     QualityGuardrails - contains -> ConsistencyAssurance
     QualityGuardrails - contains -> PrincipleCompliance
-    AmbiguityPrevention - contains -> VibeDetection
-    PrincipleCompliance - contains -> NamingEnforcement
-    PrincipleCompliance - contains -> ConstitutionInjection
-    ConsistencyAssurance - contains -> StaleDocDetection
-    ConsistencyAssurance - contains -> ImplSpecCheck
-    ConsistencyAssurance - contains -> DocConsistencyCheck
-    ConsistencyAssurance - contains -> FrontMatterValidation
+    VibeDetection - derives -> AmbiguityPrevention
+    NamingEnforcement - derives -> PrincipleCompliance
+    ConstitutionInjection - derives -> PrincipleCompliance
+    StaleDocDetection - derives -> ConsistencyAssurance
+    ImplSpecCheck - derives -> ConsistencyAssurance
+    DocConsistencyCheck - derives -> ConsistencyAssurance
+    FrontMatterValidation - derives -> ConsistencyAssurance
     VibeDetection - traces -> HookEventCompliance
     NamingEnforcement - traces -> HookEventCompliance
     StaleDocDetection - traces -> HookEventCompliance
     ConstitutionInjection - traces -> HookEventCompliance
     HookLightweight - traces -> VibeDetection
+    HookLightweight - traces -> NamingEnforcement
+    HookLightweight - traces -> ConstitutionInjection
+    HookLightweight - traces -> StaleDocDetection
     MinimalBlocking - traces -> NamingEnforcement
     ContextBudget - traces -> ConstitutionInjection
     CostOptimization - traces -> FrontMatterValidation
@@ -367,6 +369,8 @@ CONSTITUTION.md に定義されたプロジェクト原則が、AI 実装者の�
 
 ユーザープロンプト送信時に曖昧表現を検知し、明確化を促す。UR_002 から派生。
 
+**トリガー方式:** 自動（プロンプト送信イベントのフック、および実装前の自動実行スキル）
+
 **含まれる機能:**
 
 - FR_001_01: 日英の曖昧表現パターン検知（例:「いい感じ」「よしなに」「なんとなく」「make it nice」「somehow」）
@@ -379,6 +383,8 @@ CONSTITUTION.md に定義されたプロジェクト原則が、AI 実装者の�
 
 `.sdd/` 配下へのファイル書き込み・編集時に命名規則を検証し、違反時は書き込みをブロックする。UR_004 から派生。
 
+**トリガー方式:** 自動（`.sdd/` 配下へのファイル書き込み・編集前のフック）
+
 - `requirement/` 配下: `_spec` / `_design` サフィックスの付与を禁止
 - `specification/` 配下: `_spec.md` または `_design.md` サフィックスを必須とする
 - 違反時は JSON Decision Control（`permissionDecision: deny`）により理由付きでブロックする
@@ -390,11 +396,15 @@ CONSTITUTION.md に定義されたプロジェクト原則が、AI 実装者の�
 実装ソースコードの編集時に、プロジェクトの CONSTITUTION.md の内容を追加コンテキストとして AI 実装者に注入する。
 UR_004 から派生。CONSTITUTION.md が存在しない場合は何もしない。
 
+**トリガー方式:** 自動（実装ソースコード編集前のフック）
+
 **検証方法:** テストによる検証
 
 ### FR_004: ドキュメント更新漏れ検知
 
 ファイル編集後に更新漏れの可能性を検知し、確認を促す。UR_003 から派生。
+
+**トリガー方式:** 自動（ファイル編集後のフック）
 
 - `.sdd/` ドキュメント編集後: PRD ↔ spec ↔ design の整合性確認を促す
 - ソースコード編集時: 対応する `{stem}_design.md` が存在する場合、設計書の同期を促す
@@ -427,11 +437,13 @@ PRD ↔ `*_spec.md` ↔ `*_design.md` 間の以下の不整合を検出する。
 AI-SDD ドキュメントの YAML front matter に対し、フィールド形式・値の妥当性・依存方向
 （`depends-on` は上流方向のみ）・ID 一意性を検証する。UR_003 から派生。
 
+**トリガー方式:** 自動（ドキュメント生成後・整合性チェック時のレビューとして実行）。手動呼び出しも可
+
 **検証方法:** テストによる検証
 
-## 4.3. パフォーマンス要求
+## 4.3. 非機能要求
 
-### PR_001: フック処理の軽量性
+### NFR_001: フック処理の軽量性
 
 フック処理（曖昧性検知・命名検証・原則注入・更新漏れ検知）は軽量に実装し、
 プロンプト送信やファイル編集の応答性を阻害しないこと。
@@ -529,7 +541,7 @@ macOS / Linux の両方で動作し、`SDD_LANG` 環境変数による日英の�
 
 | 用語                    | 定義                                                                       |
 |-----------------------|--------------------------------------------------------------------------|
-| Vibe Coding           | 曖昧な指示により AI が未定義の要求を推測して実装してしまう問題                                        |
+| Vibe Coding           | 曖昧な指示により AI が仕様を暗黙的に推測して実装してしまう問題（CONSTITUTION.md B-001 の定義に従う）        |
 | 品質ゲート                 | 開発ワークフローの特定タイミングで自動実行される検証・警告・ブロック処理                                     |
 | フック                   | Claude Code のイベント（SessionStart / UserPromptSubmit / PreToolUse / PostToolUse）に応じて実行されるスクリプト |
 | JSON Decision Control | フックがツール実行の許可・拒否を JSON 出力（`permissionDecision`）で制御する Claude Code の仕組み      |
