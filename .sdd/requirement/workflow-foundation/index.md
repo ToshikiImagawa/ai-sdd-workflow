@@ -36,7 +36,7 @@ AI-SDD ワークフロー（Specify → Plan → Tasks → Implement & Review）
 # 1. 要求図の読み方
 
 SysML 要求図の記法（要求タイプ・リスクレベル・検証方法・関係タイプ）の凡例は
-[PRD_TEMPLATE.md](../PRD_TEMPLATE.md) のセクション 1 を参照。
+[PRD_TEMPLATE.md](../../PRD_TEMPLATE.md) のセクション 1 を参照。
 
 ---
 
@@ -64,50 +64,24 @@ flowchart LR
     InitProject -.->|"<<包含>>"| ManagePrinciples
 ```
 
-## 2.2. ユースケース図（詳細）
+## 2.2. 機能一覧（子 PRD）
 
-### セッション設定ロード
+各機能の要求詳細は以下の子 PRD を参照。
 
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-flowchart LR
-    HookRuntime((フックランタイム))
-
-    subgraph SessionConfig["セッション設定ロード"]
-        ReadConfig([設定ファイルを読み込む])
-        GenerateConfig([設定ファイルを生成する])
-        SetEnv([環境変数を設定する])
-        UpdatePrinciples([原則ドキュメントを更新する])
-    end
-
-    HookRuntime --- ReadConfig
-    GenerateConfig -.->|"<<拡張>>設定が存在しない場合"| ReadConfig
-    SetEnv -.->|"<<包含>>"| ReadConfig
-    UpdatePrinciples -.->|"<<包含>>"| ReadConfig
-```
-
-## 2.3. 機能一覧（テキスト形式）
-
-- プロジェクト初期化
-    - `.sdd/` ディレクトリ構造の生成
-    - テンプレート（PRD / 仕様書 / 設計書）の配置
-    - CLAUDE.md への AI-SDD Instructions 設定
-- プロジェクト原則管理
-    - CONSTITUTION.md の作成・更新
-    - 他ドキュメントとの同期検証
-- セッション設定
-    - `.sdd-config.json` の読み込み（存在しない場合は生成）
-    - `SDD_ROOT` / `SDD_LANG` / ディレクトリパス系環境変数の設定
-    - AI-SDD 原則ドキュメントのバージョン追随更新
-- メタデータ整備
-    - 既存ドキュメントのスキャンと front matter 推奨
-    - 推奨内容の一括適用（`--apply`）
+| 機能 | 子 PRD | 元要求 ID |
+|:-----|:-------|:----------|
+| プロジェクト初期化 | [sdd-init.md](sdd-init.md) | FR_001 |
+| プロジェクト原則管理 | [constitution-management.md](constitution-management.md) | FR_002 |
+| セッション設定初期化 | [session-config.md](session-config.md) | FR_003（FR_003_01〜03） |
+| front matter 推奨 | [front-matter-recommend.md](front-matter-recommend.md) | FR_004 |
 
 ---
 
 # 3. 要求図（SysML Requirements Diagram）
 
 ## 3.1. 全体要求図
+
+FR ノード（FR_001〜FR_004）の詳細説明・トリガー方式・検証方法は各子 PRD を参照。
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
@@ -218,46 +192,6 @@ requirementDiagram
     LanguageSupport - traces -> SessionInit
 ```
 
-## 3.2. 主要サブシステム詳細図
-
-### セッション設定初期化
-
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-requirementDiagram
-    functionalRequirement SessionInit {
-        id: FR_003
-        text: "セッション開始時に設定をロードし環境変数を初期化する"
-        risk: high
-        verifymethod: test
-    }
-
-    functionalRequirement ConfigLoad {
-        id: FR_003_01
-        text: "設定ファイルを読み込み存在しない場合は生成する"
-        risk: medium
-        verifymethod: test
-    }
-
-    functionalRequirement EnvExport {
-        id: FR_003_02
-        text: "ルートと言語とディレクトリパスの環境変数を設定する"
-        risk: high
-        verifymethod: test
-    }
-
-    functionalRequirement PrinciplesSync {
-        id: FR_003_03
-        text: "AI-SDD原則ドキュメントをプラグインバージョンに追随更新する"
-        risk: medium
-        verifymethod: test
-    }
-
-    SessionInit - contains -> ConfigLoad
-    SessionInit - contains -> EnvExport
-    SessionInit - contains -> PrinciplesSync
-```
-
 ---
 
 # 4. 要求の詳細説明
@@ -292,50 +226,7 @@ requirementDiagram
 
 **検証方法:** インスペクションによる検証
 
-## 4.2. 機能要求
-
-### FR_001: プロジェクト初期化
-
-対象プロジェクトに `.sdd/` ディレクトリ構造（requirement / specification / task）とテンプレート
-（PRD / 抽象仕様書 / 技術設計書）を生成し、CLAUDE.md に AI-SDD Instructions を設定する。UR_001 から派生。
-
-**トリガー方式:** 手動（開発者による `/sdd-init` スキル呼び出し。`--ci` で確認省略）
-
-**検証方法:** デモンストレーションによる検証
-
-### FR_002: プロジェクト原則管理
-
-サブコマンドにより CONSTITUTION.md の作成・更新・参照を行い、原則と他ドキュメントの
-同期状態を検証する。UR_002 から派生。
-
-**トリガー方式:** 手動（開発者による `/constitution` スキル呼び出し）
-
-**検証方法:** デモンストレーションによる検証
-
-### FR_003: セッション設定初期化
-
-セッション開始時に自動実行され、以降の全機能が参照する設定を初期化する。UR_003 から派生。
-
-**トリガー方式:** 自動（セッション開始イベント）
-
-**含まれる機能:**
-
-- FR_003_01: 設定ファイル（`.sdd-config.json`）の読み込み。存在しない場合は既定値で生成する
-- FR_003_02: `SDD_ROOT` / `SDD_LANG` / requirement・specification・task の各ディレクトリ名とパスの環境変数設定
-- FR_003_03: AI-SDD 原則ドキュメント（AI-SDD-PRINCIPLES.md）のプラグインバージョンへの追随更新
-
-**検証方法:** テストによる検証（ユニットテストを CI で実行）
-
-### FR_004: front matter 推奨
-
-既存の AI-SDD ドキュメントをスキャンし、ドキュメント種別に応じた YAML front matter の付与を
-推奨する。`--apply` 指定時は推奨内容を一括適用する。UR_004 から派生。
-
-**トリガー方式:** 手動（開発者による `/recommend-front-matter` スキル呼び出し）
-
-**検証方法:** デモンストレーションによる検証
-
-## 4.3. 非機能要求
+## 4.2. 非機能要求
 
 ### NFR_001: 後方互換性
 
@@ -344,7 +235,7 @@ front matter を持たない既存ドキュメントも引き続き有効とし�
 
 **検証方法:** テストによる検証
 
-## 4.4. インターフェース要求
+## 4.3. インターフェース要求
 
 ### IR_001: 設定スキーマ・環境変数の共通契約
 
@@ -354,7 +245,7 @@ front matter を持たない既存ドキュメントも引き続き有効とし�
 
 **検証方法:** インスペクションによる検証
 
-## 4.5. 設計制約
+## 4.4. 設計制約
 
 ### DC_001: フラット構造と階層構造の両サポート
 

@@ -16,14 +16,15 @@ risk: "high"
 
 ## 概要
 
-本ドキュメントは、Claude Code プラグイン「sdd-workflow」の品質ガードレール機能群に対する要求仕様書である。
+本ドキュメントは、Claude Code プラグイン「sdd-workflow」の品質ガードレール機能群に対する要求仕様書（親 PRD）である。
+各機能の詳細要求は「機能一覧」に示す子 PRD で定義する。
 
 AI 駆動開発では、ユーザーの曖昧な指示（「いい感じに」「よしなに」等）により AI が未定義の要求を推測して実装する
 **Vibe Coding 問題**が発生し、仕様と実装の乖離・技術的負債・設計判断の不透明化を招く。
 本機能群は、開発ワークフローの各タイミング（プロンプト送信時・ファイル編集前・ファイル編集後・レビュー時）に
 自動的な品質ゲートを設け、曖昧性の検出、ドキュメント整合性の維持、プロジェクト原則の遵守を構造的に強制する。
 
-本 PRD は [CONSTITUTION.md](../CONSTITUTION.md) の最上位原則 B-001（Vibe Coding 防止）に直結する領域を対象とする。
+本 PRD は [CONSTITUTION.md](../../CONSTITUTION.md) の最上位原則 B-001（Vibe Coding 防止）に直結する領域を対象とする。
 
 **対象範囲:**
 
@@ -40,7 +41,7 @@ AI 駆動開発では、ユーザーの曖昧な指示（「いい感じに」�
 # 1. 要求図の読み方
 
 SysML 要求図の記法（要求タイプ・リスクレベル・検証方法・関係タイプ）の凡例は
-[PRD_TEMPLATE.md](../PRD_TEMPLATE.md) のセクション 1 を参照。
+[PRD_TEMPLATE.md](../../PRD_TEMPLATE.md) のセクション 1 を参照。
 
 ---
 
@@ -78,70 +79,28 @@ flowchart LR
     HookRuntime -.->|"イベント発火"| DetectStale
 ```
 
-## 2.2. ユースケース図（詳細）
+## 2.2. 機能一覧
 
-### 曖昧性検知フロー
+各機能の詳細要求（ユースケース詳細・機能要求の再採番・詳細説明）は以下の子 PRD を参照。
 
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-flowchart LR
-    Developer((開発者))
-
-    subgraph VibeDetection["Vibe Coding 兆候検知"]
-        SubmitPrompt([プロンプトを送信する])
-        DetectPattern([曖昧表現パターンを検知する])
-        InjectContext([明確化促進コンテキストを注入する])
-        AnalyzeInstruction([実装前に指示の曖昧性を分析する])
-    end
-
-    Developer --- SubmitPrompt
-    DetectPattern -.->|"<<拡張>>"| SubmitPrompt
-    InjectContext -.->|"<<包含>>"| DetectPattern
-    AnalyzeInstruction -.->|"<<拡張>>"| SubmitPrompt
-```
-
-### 編集時ガードフロー
-
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-flowchart LR
-    ClaudeCode((Claude Code))
-
-    subgraph EditGuards["編集時ガード"]
-        WriteFile([ファイルを書き込む])
-        ValidateNaming([命名規則を検証しブロックする])
-        InjectConstitution([CONSTITUTION 原則を注入する])
-        RemindConsistency([整合性確認を促す])
-        RemindDesignSync([design 同期を促す])
-    end
-
-    ClaudeCode --- WriteFile
-    ValidateNaming -.->|"<<拡張>>"| WriteFile
-    InjectConstitution -.->|"<<拡張>>"| WriteFile
-    RemindConsistency -.->|"<<拡張>>"| WriteFile
-    RemindDesignSync -.->|"<<拡張>>"| WriteFile
-```
-
-## 2.3. 機能一覧（テキスト形式）
-
-- Vibe Coding 兆候検知
-    - プロンプト曖昧表現パターン検知（日英対応）
-    - 非ブロッキングでの明確化促進コンテキスト注入
-    - 実装前の指示曖昧性分析（自動実行スキル）
-- 編集時ガード
-    - `.sdd/` ファイル命名規則の検証とブロック
-    - CONSTITUTION 原則のコンテキスト自動注入
-    - ドキュメント更新漏れ検知（編集後リマインド）
-- 整合性検証
-    - 実装コードと技術設計書（design）の整合性チェック
-    - PRD ↔ 抽象仕様書 ↔ 技術設計書間の整合性チェック
-    - YAML front matter の形式・依存関係検証
+| 機能                    | 子 PRD                                                    | 概要                                        |
+|-----------------------|----------------------------------------------------------|-------------------------------------------|
+| Vibe Coding 兆候検知      | [vibe-detection.md](vibe-detection.md)                   | プロンプト曖昧表現の検知と明確化促進コンテキストの注入               |
+| ファイル命名規則の強制           | [naming-enforcement.md](naming-enforcement.md)           | `.sdd/` 配下の命名規則違反の書き込みブロック                |
+| CONSTITUTION 原則の自動注入  | [constitution-injection.md](constitution-injection.md)   | ソースコード編集時のプロジェクト原則コンテキスト注入                |
+| ドキュメント更新漏れ検知          | [stale-doc-detection.md](stale-doc-detection.md)         | 編集後の整合性確認・design 同期の促し                    |
+| 実装と設計の整合性チェック         | [impl-spec-check.md](impl-spec-check.md)                 | 実装コードと技術設計書の乖離検出（`/check-spec`）           |
+| ドキュメント間整合性チェック        | [doc-consistency-check.md](doc-consistency-check.md)     | PRD ↔ spec ↔ design 間の不整合検出               |
+| front matter 検証       | [front-matter-validation.md](front-matter-validation.md) | YAML front matter の形式・依存方向・ID 一意性の検証      |
 
 ---
 
 # 3. 要求図（SysML Requirements Diagram）
 
 ## 3.1. 全体要求図
+
+FR ノード（FR_001〜FR_007）の詳細（サブ機能・トリガー方式・詳細説明）は各子 PRD を参照。
+子 PRD 内では要求 ID をファイル内スコープで FR_001 として再採番している。
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
@@ -289,46 +248,6 @@ requirementDiagram
     CrossPlatform - traces -> VibeDetection
 ```
 
-## 3.2. 主要サブシステム詳細図
-
-### Vibe Coding 兆候検知
-
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-requirementDiagram
-    functionalRequirement VibeDetection {
-        id: FR_001
-        text: "プロンプト中の曖昧表現を検知し明確化コンテキストを注入する"
-        risk: high
-        verifymethod: test
-    }
-
-    functionalRequirement PatternDetection {
-        id: FR_001_01
-        text: "日英の曖昧表現パターンを検知する"
-        risk: medium
-        verifymethod: test
-    }
-
-    functionalRequirement NonBlockingInjection {
-        id: FR_001_02
-        text: "ブロックせず明確化促進コンテキストを注入する"
-        risk: medium
-        verifymethod: test
-    }
-
-    functionalRequirement PreImplAnalysis {
-        id: FR_001_03
-        text: "実装前に指示の曖昧性を分析し明確化を促す"
-        risk: high
-        verifymethod: demonstration
-    }
-
-    VibeDetection - contains -> PatternDetection
-    VibeDetection - contains -> NonBlockingInjection
-    VibeDetection - contains -> PreImplAnalysis
-```
-
 ---
 
 # 4. 要求の詳細説明
@@ -363,85 +282,7 @@ CONSTITUTION.md に定義されたプロジェクト原則が、AI 実装者の�
 
 **検証方法:** インスペクションによる検証
 
-## 4.2. 機能要求
-
-### FR_001: Vibe Coding 兆候検知
-
-ユーザープロンプト送信時に曖昧表現を検知し、明確化を促す。UR_002 から派生。
-
-**トリガー方式:** 自動（プロンプト送信イベントのフック、および実装前の自動実行スキル）
-
-**含まれる機能:**
-
-- FR_001_01: 日英の曖昧表現パターン検知（例:「いい感じ」「よしなに」「なんとなく」「make it nice」「somehow」）
-- FR_001_02: 非ブロッキングでの明確化促進コンテキスト注入（プロンプト自体は拒否しない）
-- FR_001_03: 実装前の指示曖昧性分析（ユーザー呼び出し不可の自動実行スキルとして提供）
-
-**検証方法:** テストによる検証
-
-### FR_002: ファイル命名規則の強制
-
-`.sdd/` 配下へのファイル書き込み・編集時に命名規則を検証し、違反時は書き込みをブロックする。UR_004 から派生。
-
-**トリガー方式:** 自動（`.sdd/` 配下へのファイル書き込み・編集前のフック）
-
-- `requirement/` 配下: `_spec` / `_design` サフィックスの付与を禁止
-- `specification/` 配下: `_spec.md` または `_design.md` サフィックスを必須とする
-- 違反時は JSON Decision Control（`permissionDecision: deny`）により理由付きでブロックする
-
-**検証方法:** テストによる検証
-
-### FR_003: CONSTITUTION 原則の自動注入
-
-実装ソースコードの編集時に、プロジェクトの CONSTITUTION.md の内容を追加コンテキストとして AI 実装者に注入する。
-UR_004 から派生。CONSTITUTION.md が存在しない場合は何もしない。
-
-**トリガー方式:** 自動（実装ソースコード編集前のフック）
-
-**検証方法:** テストによる検証
-
-### FR_004: ドキュメント更新漏れ検知
-
-ファイル編集後に更新漏れの可能性を検知し、確認を促す。UR_003 から派生。
-
-**トリガー方式:** 自動（ファイル編集後のフック）
-
-- `.sdd/` ドキュメント編集後: PRD ↔ spec ↔ design の整合性確認を促す
-- ソースコード編集時: 対応する `{stem}_design.md` が存在する場合、設計書の同期を促す
-
-**検証方法:** テストによる検証
-
-### FR_005: 実装と設計の整合性チェック
-
-実装コードと技術設計書（`*_design.md`）を比較し、乖離を検出・報告する。UR_003 から派生。
-
-**トリガー方式:** 手動（開発者による `/check-spec` スキル呼び出し）
-
-**検証方法:** デモンストレーションによる検証
-
-### FR_006: ドキュメント間整合性チェック
-
-PRD ↔ `*_spec.md` ↔ `*_design.md` 間の以下の不整合を検出する。UR_003 から派生。
-
-**トリガー方式:** 自動（ドキュメント更新時・実装前に AI が自動実行する。ユーザー呼び出し不可）
-
-- 要求 ID（UR/FR/NFR 等）の参照欠落
-- データモデルの不一致
-- API 定義の齟齬
-- 用語の不統一
-
-**検証方法:** デモンストレーションによる検証
-
-### FR_007: front matter 検証
-
-AI-SDD ドキュメントの YAML front matter に対し、フィールド形式・値の妥当性・依存方向
-（`depends-on` は上流方向のみ）・ID 一意性を検証する。UR_003 から派生。
-
-**トリガー方式:** 自動（ドキュメント生成後・整合性チェック時のレビューとして実行）。手動呼び出しも可
-
-**検証方法:** テストによる検証
-
-## 4.3. 非機能要求
+## 4.2. 非機能要求
 
 ### NFR_001: フック処理の軽量性
 
@@ -455,7 +296,7 @@ AI-SDD ドキュメントの YAML front matter に対し、フィールド形式
 
 **検証方法:** テストによる検証
 
-## 4.4. インターフェース要求
+## 4.3. インターフェース要求
 
 ### IR_001: Claude Code フックイベント仕様への準拠
 
@@ -464,7 +305,7 @@ AI-SDD ドキュメントの YAML front matter に対し、フィールド形式
 
 **検証方法:** インスペクションによる検証
 
-## 4.5. 設計制約
+## 4.4. 設計制約
 
 ### DC_001: ブロッキングの最小化
 
