@@ -14,7 +14,7 @@
 └── .start-claude.sh     ← iTerm から呼ばれる起動 wrapper
 ```
 
-`.claude/skills/parallel-worktree/assets/default-prompt.md`（または `--prompt-template` で指定したファイル）の本文に対し `envsubst` でテンプレ変数を実値置換し、`.session-prompt.md` として配置する。Claude セッション起動時は短文 kickoff prompt のみが引数として渡され、起動後すぐに `.session-prompt.md` を Read で読み込むことで詳細指示を受け取る。
+`--prompt-template` で指定したテンプレ（必須）の本文に対し `envsubst` でテンプレ変数を実値置換し、`.session-prompt.md` として配置する。Claude セッション起動時は短文 kickoff prompt のみが引数として渡され、起動後すぐに `.session-prompt.md` を Read で読み込むことで詳細指示を受け取る。テンプレのサンプルは `examples/prompt-template/` を参照。
 
 ## 必要環境
 
@@ -47,7 +47,7 @@
 
 ```bash
 .claude/skills/parallel-worktree/scripts/spawn.sh \
-  --prompt-template .claude/skills/parallel-worktree/prompts/my-template.md \
+  --prompt-template .claude/skills/parallel-worktree/examples/prompt-template/generic.md \
   --branch-prefix feat \
   --base-branch main \
   42:fix-typo
@@ -55,7 +55,7 @@
 
 | オプション | デフォルト | 説明 |
 |---|---|---|
-| `--prompt-template <path>` | `.claude/skills/parallel-worktree/assets/default-prompt.md` | Claude が読む詳細指示テンプレ |
+| `--prompt-template <path>` | **必須 (デフォルトなし)** | Claude が読む詳細指示テンプレ。未指定はエラー。サンプルは `examples/prompt-template/` |
 | `--branch-prefix <prefix>` | `parallel` | branch 名 prefix。実 branch 名は `<prefix>/<issue_number>-<slug>` |
 | `--base-branch <branch>` | `main` (`BASE_BRANCH` 環境変数でも可) | worktree のベースブランチ |
 | `--dry-run` / `-n` | — | 実行せず内容のみ表示 |
@@ -73,13 +73,13 @@
 | `${BRANCH}` | 命名された branch | `feat/42-fix-typo` |
 | `${WORKTREE_PATH}` | worktree の絶対パス | `/path/to/repo/.claude/worktrees/42-fix-typo` |
 
-独自テンプレを作る場合は `.claude/skills/parallel-worktree/prompts/` に置く (gitignore 対象、個人/プロジェクト固有テンプレ置き場)。
+**プロンプトの中身はプロジェクト側で決める。** skill ディレクトリには特定プロジェクト向けの正式テンプレを置かず、`examples/prompt-template/` のサンプルをコピーして自プロジェクトの規約に合わせて編集し、プロジェクト管理下の任意の場所に配置して `--prompt-template` で渡す。設計原則の詳細は [examples/prompt-template/README.md](../examples/prompt-template/README.md) を参照。
 
 ```bash
-mkdir -p .claude/skills/parallel-worktree/prompts
-cp .claude/skills/parallel-worktree/assets/default-prompt.md .claude/skills/parallel-worktree/prompts/my-flow.md
-# my-flow.md を編集
-.claude/skills/parallel-worktree/scripts/spawn.sh --prompt-template .claude/skills/parallel-worktree/prompts/my-flow.md 42:slug
+# サンプルをプロジェクトの作業ディレクトリにコピーして編集
+cp .claude/skills/parallel-worktree/examples/prompt-template/generic.md /path/to/your/my-flow.md
+# my-flow.md を編集後、spawn 時に指定
+.claude/skills/parallel-worktree/scripts/spawn.sh --prompt-template /path/to/your/my-flow.md 42:slug
 ```
 
 ### 進捗観察
