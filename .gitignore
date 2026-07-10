@@ -1,6 +1,11 @@
 # OS
-.DS_Store
+*.DS_Store
 Thumbs.db
+
+# claude
+.claude/
+# codex
+.agents/
 
 # IDE
 .idea/
@@ -10,9 +15,17 @@ Thumbs.db
 
 # claude
 .claude/settings.local.json
+.claude/worktrees/
+.agents/worktrees/
+
+# Python
+__pycache__/
+.pytest_cache/
 
 # direnv
 .envrc
 
 # ghq worktree symlinks
 .ghq-worktree-symlinks
+# AI-SDD skill cache
+.sdd/.cache/
