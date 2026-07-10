@@ -68,7 +68,7 @@ ai-sdd-workflow/
 │       ├── CHANGELOG.md
 │       └── CHANGELOG.ja.md
 ├── CLAUDE.md
-├── AGENTS.md
+├── PLUGIN_AGENTS.md
 ├── PLUGIN.md
 └── README.md
 ```

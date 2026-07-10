@@ -582,7 +582,7 @@
     - MCP サーバー統合（外部ツール連携）
     - フック実装（イベント駆動の自動化）
     - マーケットプレイス公開プロセス（品質基準、配布モデル）
-- **CLAUDE.md** - PLUGIN.md への参照を追加（AGENTS.md と同様の構成）
+- **CLAUDE.md** - PLUGIN.md への参照を追加（PLUGIN_AGENTS.md と同様の構成）
 
 #### Skills
 
