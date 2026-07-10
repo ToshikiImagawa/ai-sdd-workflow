@@ -406,7 +406,7 @@ $ARGUMENTS
 5. **ツール制限**: `allowed-tools` で必要最小限のツールのみ許可
 6. **役割の明確化**: エージェントのペルソナと専門性を明示
 
-詳細なエージェント設計原則は [AGENTS.md](./AGENTS.md) を参照してください。
+詳細なエージェント設計原則は [PLUGIN_AGENTS.md](./PLUGIN_AGENTS.md) を参照してください。
 
 ---
 
@@ -994,7 +994,7 @@ claude --debug
 - [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) -
   公式プラグインリポジトリ
 - [Claude Code プラグイン公式ドキュメント](https://code.claude.com/docs/en/plugins)
-- [プラグイン設計ガイド](./AGENTS.md) - AI-SDD ワークフロープラグインのエージェント設計原則
+- [プラグイン設計ガイド](./PLUGIN_AGENTS.md) - AI-SDD ワークフロープラグインのエージェント設計原則
 - [プロジェクト概要](./CLAUDE.md) - AI-SDD ワークフローの全体像
 
 ---
