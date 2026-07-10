@@ -4,6 +4,8 @@
 ai-sdd-workflow/
 ├── .claude-plugin/
 │   └── marketplace.json           # マーケットプレイスメタデータ
+├── .agents/skills/                # Codex向け開発スキル
+├── .claude/skills/                # Claude Code向け開発スキル
 ├── plugins/
 │   └── sdd-workflow/              # 統合プラグイン（多言語対応）
 │       ├── .claude-plugin/
@@ -67,8 +69,9 @@ ai-sdd-workflow/
 │       ├── README.md
 │       ├── CHANGELOG.md
 │       └── CHANGELOG.ja.md
-├── CLAUDE.md
-├── PLUGIN_AGENTS.md
+├── AGENTS.md                       # 共通プロジェクト指示（正本）
+├── CLAUDE.md                       # AGENTS.md import + AI-SDD互換セクション
+├── PLUGIN_AGENTS.md                # プラグインエージェント設計ガイド
 ├── PLUGIN.md
 └── README.md
 ```

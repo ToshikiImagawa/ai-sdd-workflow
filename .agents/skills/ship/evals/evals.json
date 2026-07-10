@@ -1,0 +1,33 @@
+{
+  "skill_name": "ship",
+  "evals": [
+    {
+      "id": 1,
+      "name": "happy-path-clean-branch",
+      "prompt": "現在のブランチ `add/new-skill` を ship してください。plugins/sdd-workflow/skills/ 配下にスキルを 1 つ追加する変更を含み、CI は緑、レビューコメントは Copilot が `[recommend]` を 1 件、人間レビュアーが `[must]` を 1 件付けている想定です。実コマンドは実行せず、最終的に main がどう更新され、ローカルブランチがどう片付くまでの実行計画とコマンド系列を **時系列順に番号付き** で報告してください。途中で人間に確認を取るタイミングも明示してください。",
+      "expected_output": "Step 0 (validate-marketplace.sh / shellcheck / plugin-lint.sh / test-session-start.sh) → Step 1 (create-pr 委譲) → Step 2 (gh pr checks ポーリング) → Step 3 (review-pr 委譲) → Step 4 (merge 直前確認) → Step 5 (gh pr merge --squash --delete-branch) → Step 6 (cleanup 直前確認 + 実行) → Step 7 (完了レポート) の順で、各ステップで実行する具体的なコマンドと、merge / cleanup 直前で人間 go/no-go を取る箇所が明示されていること",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "dirty-working-tree-rejected",
+      "prompt": "ship お願いします。現在のブランチは `fix/session-start-bug`、未コミットの変更が `plugins/sdd-workflow/scripts/session-start.py` に 1 ファイルあります。実コマンドは実行せず、まず何を確認するかと、最初に何をするかを報告してください。",
+      "expected_output": "Step 0 の事前チェックで `git status --short` により未コミット変更を検出し、PR 作成に進まずに停止すること。ユーザーに commit / stash を促す案内を返し、自動で commit や stash を実行しない判断が見えること",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "ci-failure-no-auto-fix",
+      "prompt": "ship を実行してください。ブランチ `add/doc-update` で PR 作成は成功、CI 結果として shellcheck ジョブが 1 件警告で失敗し、test ジョブ (test-session-start.sh) が 1 件失敗しています。実コマンドは実行せず、本スキルがどう振る舞うか時系列で報告してください。",
+      "expected_output": "CI 失敗を検知した時点で停止し、失敗ログの要約 (`gh run view --log-failed`) を提示する。shellcheck 指摘を自動修正しない、test 失敗を勝手にスキップしない、ユーザーに修正判断を委ねる姿勢が明示されていること",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "review-round-trip",
+      "prompt": "ship を継続してください。PR #12 は CI 緑になったが、レビューで `[must]` 2 件、`[nits]` 1 件のコメントが付きました。実コマンドは実行せず、review-pr への委譲後の対応方針と、対応後に何をするかを時系列で報告してください。",
+      "expected_output": "review-pr skill にレビューコメント対応を委譲し、`[must]` は必ず対応、`[nits]` は判断に応じて対応する方針が示されること。対応後は Step 0 の検証コマンド群を再実行してから push し、Step 2 (CI 監視) に戻ることが明示されていること",
+      "files": []
+    }
+  ]
+}
