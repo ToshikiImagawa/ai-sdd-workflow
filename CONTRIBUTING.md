@@ -29,7 +29,7 @@ This document describes the contribution process and conventions (Japanese first
 5. 新規エージェント / スキルは `plugin.json` のコンポーネントパスに登録する
 
 プラグインとマーケットプレイスの詳細な構造は [PLUGIN.md](./PLUGIN.md) を、
-サブエージェントの設計原則は [AGENTS.md](./AGENTS.md) を参照してください。
+サブエージェントの設計原則は [PLUGIN_AGENTS.md](./PLUGIN_AGENTS.md) を参照してください。
 
 ## 検証
 
@@ -83,7 +83,7 @@ Markdown ドキュメントを変更した場合は、相対リンクが有効�
 ## English Summary
 
 - **Issues**: Report bugs and feature requests via GitHub Issues. For vulnerabilities, follow [SECURITY.md](./SECURITY.md) instead.
-- **Adding a plugin**: Create `plugins/{plugin-name}/` with a `.claude-plugin/plugin.json` manifest, add agents/skills/hooks as needed, and register the plugin in `.claude-plugin/marketplace.json`. See [PLUGIN.md](./PLUGIN.md) and [AGENTS.md](./AGENTS.md) for details.
+- **Adding a plugin**: Create `plugins/{plugin-name}/` with a `.claude-plugin/plugin.json` manifest, add agents/skills/hooks as needed, and register the plugin in `.claude-plugin/marketplace.json`. See [PLUGIN.md](./PLUGIN.md) and [PLUGIN_AGENTS.md](./PLUGIN_AGENTS.md) for details.
 - **Verification**: Before opening a PR, run the checks above (JSON syntax, `scripts/validate-marketplace.sh`, `scripts/plugin-lint.sh`, shellcheck, and hook script regression tests). The same checks run in CI.
 - **Commit messages**: Written in Japanese with a prefix such as `[add]`, `[update]`, `[fix]`, `[refactoring]`, `[remove]`, `[docs]`, or `[test]`.
 - **Pull requests**: Follow the PR template, link related issues with `Closes #<number>`, and make sure CI passes.

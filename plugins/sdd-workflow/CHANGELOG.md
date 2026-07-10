@@ -587,7 +587,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - MCP server integration (external tool integration)
     - Hooks implementation (event-driven automation)
     - Marketplace publishing process (quality standards, distribution model)
-- **CLAUDE.md** - Added reference to PLUGIN.md (similar to AGENTS.md structure)
+- **CLAUDE.md** - Added reference to PLUGIN.md (similar to PLUGIN_AGENTS.md structure)
 
 #### Skills
 
