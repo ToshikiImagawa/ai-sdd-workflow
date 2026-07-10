@@ -64,7 +64,7 @@ sdd-workflow:doc-consistency-checker  # PRD・spec・design間のトレーサビ
 
 ## 4. コミット
 
-AGENTS.md のコミット規約に従ってください。
+読み込まれたプロジェクト指示のコミット規約に従ってください。
 
 - 日本語 / プレフィックス（`[add]` 等）/ 簡潔に
 

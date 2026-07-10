@@ -4,7 +4,7 @@ description: |
   現在のブランチを PR 作成から merge・ローカルクリーンアップまで一気通貫で出荷するワークフロー。
   「ship」「PR 出して merge まで」「リリースしたい」「マージまで進めて」「PR の続きやって」
   といったユーザー指示で必ず使用する。
-  本プロジェクト (ai-sdd-workflow) の AGENTS.md と CI 設定 (.github/workflows/ci.yml) を
+  本プロジェクト (ai-sdd-workflow) の CLAUDE.md と CI 設定 (.github/workflows/ci.yml) を
   運用準拠の真実の源として扱い、グローバル skill `create-pr` とリポジトリ専用 skill
   `review-pr` (.agents/skills/review-pr、npm 非依存で本リポジトリの検証コマンドに対応) に
   作成・レビュー対応を委譲する。CI ポーリング・レビュー対応・squash-merge・
@@ -16,14 +16,14 @@ user-invocable: true
 
 # /ship — PR 出荷フルライフサイクル
 
-現在のブランチを「PR 作成 → CI 監視 → レビュー対応 → squash-merge → ローカルクリーンアップ」まで一気通貫で進める。AGENTS.md（コミットメッセージ規約）と `.github/workflows/ci.yml`（CI で実行されるコマンド）を真実の源として扱う。
+現在のブランチを「PR 作成 → CI 監視 → レビュー対応 → squash-merge → ローカルクリーンアップ」まで一気通貫で進める。CLAUDE.md（コミットメッセージ規約）と `.github/workflows/ci.yml`（CI で実行されるコマンド）を真実の源として扱う。
 
 ## 設計の前提
 
 - **既存スキルに委譲する**: PR 作成は `create-pr`、レビュー対応は `review-pr` を呼ぶ。本スキルはオーケストレーションに専念し、ロジックを重複させない。
 - **破壊的操作は人間の go/no-go を取る**: squash-merge とローカルブランチ削除の直前に確認プロンプトを出す。
 - **CI 失敗は自動修正しない**: 失敗ログを構造化して提示し、修正判断は人間に委ねる。
-- **コミットメッセージ規約に従う**: 日本語 + プレフィックス (`[add]` / `[update]` / `[fix]` / `[refactoring]` / `[remove]` / `[docs]` / `[test]`)。AGENTS.md「コミットメッセージ」セクション準拠。
+- **コミットメッセージ規約に従う**: 日本語 + プレフィックス (`[add]` / `[update]` / `[fix]` / `[refactoring]` / `[remove]` / `[docs]` / `[test]`)。
 
 ## 実行手順
 
@@ -166,6 +166,5 @@ git branch -d <出荷したブランチ名>     # -D ではなく -d で fully m
 - `create-pr` skill — Step 1 で委譲（git log / git diff から PR 本文を自動生成）
 - `review-pr` skill — Step 3 で委譲（レビューコメント取得・分析・返信）
 - `parallel-worktree` skill — 複数 issue の並列実装。本スキルとは別フロー（1 ブランチずつの出荷を担当）
-- AGENTS.md 「コミットメッセージ」セクション — Step 0 / Step 1 のコミット規約
 - `.github/workflows/ci.yml` — Step 0 検証コマンドの整合性確認元
 - `.github/PULL_REQUEST_TEMPLATE.md` — Step 1 で埋めるテンプレート

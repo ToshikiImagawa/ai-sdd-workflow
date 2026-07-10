@@ -52,11 +52,13 @@ For plugin details, see the README.
 
 ## リポジトリ構成 / Repository Structure
 
-Codex は `AGENTS.md` と `.agents/skills/`、Claude Code は `CLAUDE.md` と `.claude/skills/` を使用します。
-`CLAUDE.md` は `AGENTS.md` をimportし、共通のプロジェクト指示を共有します。
+Codex と Claude Code は共通のプロジェクト指示として `CLAUDE.md` を使用します。
+Codex では `~/.codex/config.toml` に `project_doc_fallback_filenames = ["CLAUDE.md"]` を設定してください。
+開発スキルは Codex が `.agents/skills/`、Claude Code が `.claude/skills/` を使用します。
 
-Codex uses `AGENTS.md` and `.agents/skills/`; Claude Code uses `CLAUDE.md` and `.claude/skills/`.
-`CLAUDE.md` imports `AGENTS.md` so both agents share the project guidance.
+Codex and Claude Code use `CLAUDE.md` as the shared project guidance.
+For Codex, set `project_doc_fallback_filenames = ["CLAUDE.md"]` in `~/.codex/config.toml`.
+Codex uses `.agents/skills/`, while Claude Code uses `.claude/skills/`.
 
 ```
 ai-sdd-workflow/
@@ -77,8 +79,7 @@ ai-sdd-workflow/
 │       ├── LICENSE
 │       ├── README.md
 │       └── README.ja.md
-├── AGENTS.md                       # 共通プロジェクト指示（正本）
-├── CLAUDE.md                       # AGENTS.md import + AI-SDD互換セクション
+├── CLAUDE.md                       # 共通プロジェクト指示（正本）
 ├── PLUGIN_AGENTS.md                # プラグインエージェント設計ガイド
 ├── LICENSE
 └── README.md

@@ -69,8 +69,7 @@ ai-sdd-workflow/
 │       ├── README.md
 │       ├── CHANGELOG.md
 │       └── CHANGELOG.ja.md
-├── AGENTS.md                       # 共通プロジェクト指示（正本）
-├── CLAUDE.md                       # AGENTS.md import + AI-SDD互換セクション
+├── CLAUDE.md                       # 共通プロジェクト指示（正本）
 ├── PLUGIN_AGENTS.md                # プラグインエージェント設計ガイド
 ├── PLUGIN.md
 └── README.md

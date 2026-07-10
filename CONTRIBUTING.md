@@ -31,8 +31,10 @@ This document describes the contribution process and conventions (Japanese first
 プラグインとマーケットプレイスの詳細な構造は [PLUGIN.md](./PLUGIN.md) を、
 サブエージェントの設計原則は [PLUGIN_AGENTS.md](./PLUGIN_AGENTS.md) を参照してください。
 
-Codexで開発する場合は `AGENTS.md` と `.agents/skills/`、Claude Codeで開発する場合は
-`CLAUDE.md` と `.claude/skills/` を使用します。
+CodexとClaude Codeは共通のプロジェクト指示として `CLAUDE.md` を使用します。
+Codexで開発する場合は `~/.codex/config.toml` に
+`project_doc_fallback_filenames = ["CLAUDE.md"]` を設定し、`.agents/skills/` を使用してください。
+Claude Codeでは `.claude/skills/` を使用します。
 
 ## 検証
 

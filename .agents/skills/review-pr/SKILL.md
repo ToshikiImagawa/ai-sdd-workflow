@@ -64,7 +64,7 @@ gh api repos/{owner}/{repo}/pulls/{number}/comments
   - `[must]` プレフィックスの指摘は原則このカテゴリ
 
 - **対応しない（説明を返す）**: 意図的な設計判断や、コンテキストを踏まえると不要な変更
-  - 既存の方針（AGENTS.md、`.claude/rules/`、`.sdd/AI-SDD-PRINCIPLES.md` 等）に基づく判断
+  - 既存の方針（CLAUDE.md、`.claude/rules/`、`.sdd/AI-SDD-PRINCIPLES.md` 等）に基づく判断
   - トレードオフがあり、現在の実装が合理的な理由がある場合
 
 - **判断保留（ユーザーに確認）**: 自分だけでは判断できないもの
@@ -116,7 +116,7 @@ bash scripts/test-session-start.sh
 
 フォーマッタは本リポジトリに存在しないため実行しない。Markdown を変更した場合は相対リンクの整合性を目視確認する。
 
-すべての修正が完了したらコミットする。コミットメッセージは AGENTS.md の規約に従い日本語 + プレフィックスを付ける:
+すべての修正が完了したらコミットする。コミットメッセージは読み込まれたプロジェクト指示に従い、日本語 + プレフィックスを付ける:
 ```
 [fix] PR レビュー指摘対応
 ```
@@ -134,7 +134,7 @@ gh api repos/{owner}/{repo}/pulls/{number}/comments/{comment_id}/replies \
 返信の書き方:
 - 丁寧な日本語で書く
 - 指摘への感謝を述べつつ、対応しない理由を具体的に説明する
-- 設計判断に基づく場合は、根拠となるドキュメント（AGENTS.md、`.claude/rules/`、`.sdd/AI-SDD-PRINCIPLES.md` 等）を参照する
+- 設計判断に基づく場合は、根拠となるドキュメント（CLAUDE.md、`.claude/rules/`、`.sdd/AI-SDD-PRINCIPLES.md` 等）を参照する
 - レビュアーが追加の意見を持っている場合に備え、議論の余地を残す書き方にする
 
 返信の末尾に以下を付ける:
@@ -158,6 +158,5 @@ git push
 
 - `ship` skill — 本スキルを Step 3 (レビュー対応) で呼び出す
 - `create-pr` skill — PR 作成時に使用（別スキル）
-- AGENTS.md 「コミットメッセージ」セクション — Step 5 のコミット規約
 - `.github/workflows/ci.yml` — Step 5 検証コマンドの整合性確認元
 - `.github/PULL_REQUEST_TEMPLATE.md` — `[must]`/`[recommend]`/`[nits]` 分類ルールの出典
