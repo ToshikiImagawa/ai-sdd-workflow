@@ -135,13 +135,13 @@ bash "${SCRIPT}" judge sdd-workflow-with-ja-config ja
 
 #### 5b: 言語内容の検証（LLM 判定）
 
-生成文書の**内容言語**はスクリプトでは判定できないため、以下を Read で読み取り、期待言語（sdd-workflow: 英語 / sdd-workflow-with-ja-config: 日本語）で記述されているかを判定する:
+生成文書の**内容言語**はスクリプトでは判定できないため、以下を読み取り、期待言語（sdd-workflow: 英語 / sdd-workflow-with-ja-config: 日本語）で記述されているかを判定する:
 
 1. **`/tmp/ai-sdd-plugin-test/logs/<test-case>/CONSTITUTION.md`** - CONSTITUTION.md の言語検証
 2. **`/tmp/ai-sdd-plugin-test/logs/<test-case>/prd-*.md`** - PRD の言語検証
 3. **`/tmp/ai-sdd-plugin-test/logs/<test-case>/spec-*.md`** - 仕様書の言語検証
 
-FAIL があった場合のみ、原因分析のため該当する実行ログ（`session-start.log`, `sdd-init.log`, `constitution-init.log`, `generate-prd.log`, `generate-spec.log`）を Read で読み取る。
+FAIL があった場合のみ、原因分析のため該当する実行ログ（`session-start.log`, `sdd-init.log`, `constitution-init.log`, `generate-prd.log`, `generate-spec.log`）を読み取る。
 
 #### プラグインと期待言語の対応
 

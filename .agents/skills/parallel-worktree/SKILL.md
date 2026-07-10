@@ -39,7 +39,7 @@ GitHub Issue を **並列に** 実装するためのオーケストレーショ�
 
 | オプション | デフォルト | 説明 |
 |---|---|---|
-| `--prompt-template <path>` | **必須 (デフォルトなし)** | Codex が起動直後に Read する詳細指示テンプレ。未指定はエラー。例は `examples/prompt-template/` を参照 |
+| `--prompt-template <path>` | **必須 (デフォルトなし)** | Codex が起動直後に読み込む詳細指示テンプレ。未指定はエラー。例は `examples/prompt-template/` を参照 |
 | `--branch-prefix <prefix>` | `parallel` | branch 命名 prefix。実 branch は `<prefix>/<issue_number>-<slug>` |
 | `--base-branch <branch>` | `main` | worktree のベースブランチ |
 | `--dry-run`, `-n` | — | 実行せず内容のみ表示 |
@@ -59,13 +59,13 @@ GitHub Issue を **並列に** 実装するためのオーケストレーショ�
 親セッションは spawn 前に以下を必ず確認する。**ユーザーが指定した issue 一覧だけを鵜呑みにせず、競合解析を行う**。
 
 1. **対象 issue を取得**: 各 `<ref>` を `gh issue view` で確認 (タイトル / 本文 / 対象ファイル)
-2. **競合検出**: issue 本文を Read で取得し、同一ファイル・同一プラグイン・同一スキルを複数 issue が触る組を検出
+2. **競合検出**: `gh issue view` で issue 本文を取得し、同一ファイル・同一プラグイン・同一スキルを複数 issue が触る組を検出
 3. **wave 設計**:
    - 競合なし → 同 wave (並列起動 OK)
    - 競合あり → 異 wave (順番に。merge 後に次を起動)
 4. **依存検出**: 一方が他方の変更を前提とする依存関係があれば直列化
 
-競合 / 依存が見つかった場合は AskUserQuestion で wave 構成を提案 → ユーザー承認 → 実行。
+競合 / 依存が見つかった場合は wave 構成をユーザーに提案 → 承認 → 実行。
 
 ### Step 2: 事前チェック
 

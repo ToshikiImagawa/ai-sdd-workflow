@@ -995,7 +995,7 @@ claude --debug
   公式プラグインリポジトリ
 - [Claude Code プラグイン公式ドキュメント](https://code.claude.com/docs/en/plugins)
 - [プラグイン設計ガイド](./PLUGIN_AGENTS.md) - AI-SDD ワークフロープラグインのエージェント設計原則
-- [プロジェクト概要](./CLAUDE.md) - AI-SDD ワークフローの全体像
+- [プロジェクト概要](./AGENTS.md) - AI-SDD ワークフローの全体像
 
 ---
 

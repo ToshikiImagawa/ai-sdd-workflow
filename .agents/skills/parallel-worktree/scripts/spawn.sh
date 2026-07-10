@@ -329,7 +329,7 @@ if ! $DRY_RUN; then
   cat >&2 <<HINT
 
 ==> Watch progress in iTerm2 tabs. Each session will:
-    1. Read .session-prompt.md (envsubst で展開済みの詳細指示)
+    1. Load .session-prompt.md (envsubst で展開済みの詳細指示)
     2. Implement according to the prompt
     3. Run lint/plugin-lint check
     4. Commit + push + create PR (prompt 次第)

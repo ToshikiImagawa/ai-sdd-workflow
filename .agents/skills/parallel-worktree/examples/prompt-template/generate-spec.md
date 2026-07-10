@@ -31,7 +31,7 @@ gh issue view ${ISSUE_NUMBER}
 
 issue 本文には、対象PRD・出力先パス・front matter の id/depends-on・既存実装の参照先・受け入れ基準が記載されています。**熟読してください**。
 
-続けて、issue 本文が指す以下を Read してください。
+続けて、issue 本文が指す以下を読み込んでください。
 
 - 対象の子PRD（issue 本文「対象PRD」節のパス）
 - 親PRD（同カテゴリの `index.md`）の UR・NFR・DC・IR
@@ -41,7 +41,7 @@ issue 本文には、対象PRD・出力先パス・front matter の id/depends-o
 
 ## 2. spec / design の生成
 
-`/sdd-workflow:generate-spec` skill を使い、対象の子PRD から抽象仕様書と技術設計書を生成してください。
+`sdd-workflow:generate-spec` skill を使い、対象の子PRD から抽象仕様書と技術設計書を生成してください。
 
 - 出力先は issue 本文の「出力先」節のパスに厳密に従う（階層構造: `.sdd/specification/<category>/` 配下）
 - front matter の id / depends-on は issue 本文の指定どおりに設定する
@@ -53,11 +53,11 @@ issue 本文には、対象PRD・出力先パス・front matter の id/depends-o
 
 ## 3. レビューと指摘適用
 
-生成後、以下のエージェントでレビューし、指摘を適用してください。
+生成後、以下のCodex skillでレビューし、指摘を適用してください。
 
 ```
-spec-reviewer          # spec/design の CONSTITUTION 準拠・曖昧記述・SysML妥当性・トレーサビリティ
-front-matter-reviewer  # front matter の形式・依存方向・id 一意性・相互参照整合
+sdd-workflow:check-spec               # 実装・仕様・設計の整合性
+sdd-workflow:doc-consistency-checker  # PRD・spec・design間のトレーサビリティと用語整合性
 ```
 
 対象は生成した `_spec.md` と `_design.md` の両方。[must] 指摘は必ず修正、[recommend]/[nits] は妥当なものを適用してください。
@@ -87,7 +87,7 @@ PR 作成後、user に以下を短く報告してください。
 
 - PR の URL
 - 生成した spec/design のパス
-- spec-reviewer / front-matter-reviewer の確認結果（残指摘があれば明示）
+- check-spec / doc-consistency-checker の確認結果（残指摘があれば明示）
 
 ---
 

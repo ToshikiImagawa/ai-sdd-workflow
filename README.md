@@ -52,10 +52,18 @@ For plugin details, see the README.
 
 ## リポジトリ構成 / Repository Structure
 
+Codex は `AGENTS.md` と `.agents/skills/`、Claude Code は `CLAUDE.md` と `.claude/skills/` を使用します。
+`CLAUDE.md` は `AGENTS.md` をimportし、共通のプロジェクト指示を共有します。
+
+Codex uses `AGENTS.md` and `.agents/skills/`; Claude Code uses `CLAUDE.md` and `.claude/skills/`.
+`CLAUDE.md` imports `AGENTS.md` so both agents share the project guidance.
+
 ```
 ai-sdd-workflow/
 ├── .claude-plugin/
 │   └── marketplace.json           # マーケットプレイスメタデータ
+├── .agents/skills/                # Codex向け開発スキル
+├── .claude/skills/                # Claude Code向け開発スキル
 ├── plugins/
 │   └── sdd-workflow/              # 統合プラグイン（多言語対応）/ Unified plugin (multilingual)
 │       ├── .claude-plugin/
@@ -69,7 +77,9 @@ ai-sdd-workflow/
 │       ├── LICENSE
 │       ├── README.md
 │       └── README.ja.md
-├── CLAUDE.md
+├── AGENTS.md                       # 共通プロジェクト指示（正本）
+├── CLAUDE.md                       # AGENTS.md import + AI-SDD互換セクション
+├── PLUGIN_AGENTS.md                # プラグインエージェント設計ガイド
 ├── LICENSE
 └── README.md
 ```
