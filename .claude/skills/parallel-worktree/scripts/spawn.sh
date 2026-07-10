@@ -17,8 +17,9 @@
 # <slug> は識別用の英小文字+数字+ハイフンの短い名前 (2〜40 字、worktree 名と branch 名末尾に使われる)。
 #
 # Options:
-#   --prompt-template <path>   起動時に Claude が読む詳細指示テンプレ
-#                              (default: .claude/skills/parallel-worktree/assets/default-prompt.md)
+#   --prompt-template <path>   起動時に Claude が読む詳細指示テンプレ (必須・デフォルトなし)
+#                              未指定はエラー。プロンプトはプロジェクト側で決めるため skill は既定値を持たない。
+#                              サンプルは .claude/skills/parallel-worktree/examples/prompt-template/ を参照。
 #                              テンプレ内で ${ISSUE_NUMBER} / ${ISSUE_ID} / ${ISSUE_TITLE} / ${BRANCH} / ${WORKTREE_PATH}
 #                              の 5 変数を envsubst で実値置換できる。
 #                              (ISSUE_ID は <ref> をそのまま渡す)
@@ -50,7 +51,8 @@ SKILL_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 REPO_ROOT="$(cd "${SKILL_DIR}/../../.." && pwd)"
 WORKTREE_BASE="${REPO_ROOT}/.claude/worktrees"
 ISSUES_INDEX="${WORKTREE_BASE}/.issues-index.json"
-PROMPT_TEMPLATE="${SKILL_DIR}/assets/default-prompt.md"
+# --prompt-template は必須 (デフォルトなし)。プロンプトはプロジェクト側で決めるため既定値を持たない。
+PROMPT_TEMPLATE=""
 BRANCH_PREFIX="parallel"
 BASE_BRANCH="${BASE_BRANCH:-main}"
 DRY_RUN=false
@@ -88,7 +90,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --help|-h)
-      sed -n '3,44p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '3,43p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     --*)
@@ -113,6 +115,12 @@ command -v gh >/dev/null || { echo "ERROR: gh CLI not found" >&2; exit 1; }
 command -v claude >/dev/null || { echo "ERROR: claude CLI not found" >&2; exit 1; }
 command -v jq >/dev/null || { echo "ERROR: jq not found" >&2; exit 1; }
 command -v envsubst >/dev/null || { echo "ERROR: envsubst not found (install gettext: brew install gettext)" >&2; exit 1; }
+if [[ -z "$PROMPT_TEMPLATE" ]]; then
+  echo "ERROR: --prompt-template is required (no default)." >&2
+  echo "       Copy and customize a sample from examples/prompt-template/ and pass it with --prompt-template <path>." >&2
+  echo "       See .claude/skills/parallel-worktree/examples/prompt-template/README.md" >&2
+  exit 2
+fi
 [[ -f "$PROMPT_TEMPLATE" ]] || { echo "ERROR: prompt template not found: $PROMPT_TEMPLATE" >&2; exit 1; }
 [[ "$OSTYPE" == "darwin"* ]] || { echo "ERROR: macOS + iTerm2 only" >&2; exit 1; }
 

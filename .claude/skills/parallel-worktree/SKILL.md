@@ -39,7 +39,7 @@ GitHub Issue を **並列に** 実装するためのオーケストレーショ�
 
 | オプション | デフォルト | 説明 |
 |---|---|---|
-| `--prompt-template <path>` | `.claude/skills/parallel-worktree/assets/default-prompt.md` | Claude が起動直後に Read する詳細指示テンプレ |
+| `--prompt-template <path>` | **必須 (デフォルトなし)** | Claude が起動直後に Read する詳細指示テンプレ。未指定はエラー。例は `examples/prompt-template/` を参照 |
 | `--branch-prefix <prefix>` | `parallel` | branch 命名 prefix。実 branch は `<prefix>/<issue_number>-<slug>` |
 | `--base-branch <branch>` | `main` | worktree のベースブランチ |
 | `--dry-run`, `-n` | — | 実行せず内容のみ表示 |
@@ -115,8 +115,11 @@ spawn 完了したら、ユーザーに以下を伝える:
 
 ## プロンプトテンプレートの書き方
 
-`assets/default-prompt.md` はこのリポジトリ (AI-SDD workflow プラグインリポジトリ) 向けの規約 (`CLAUDE.md` / `.claude/rules/` 準拠、コミット prefix、`/create-pr` skill 利用) を前提とした基本指示。
-別プロジェクトの流儀が必要な場合は `prompts/<flow-name>.md` に独自テンプレを置き、`--prompt-template` で指定する。
+**プロンプトの中身は skill 実行側 (＝各プロジェクト) で決まる。** 規約・lint・PR 手順・利用スキルはプロジェクトごとに異なるため、skill ディレクトリに特定プロジェクト向けの正式テンプレは置かない。`spawn.sh` はデフォルトのテンプレを持たず、`--prompt-template <path>` は**必須**である。
+
+- **skill が提供するのは「例」だけ**: `examples/prompt-template/` にサンプルを置く (汎用の [generic.md](examples/prompt-template/generic.md) と、本リポジトリの AI-SDD spec 生成向け [generate-spec.md](examples/prompt-template/generate-spec.md))。
+- **実際に使うテンプレはプロジェクト側に置く**: サンプルをコピーし自プロジェクトの規約に合わせて編集したものを、プロジェクト管理下の任意の場所に配置して `--prompt-template` で渡す。
+- 詳しい書き方と使い方は [examples/prompt-template/README.md](examples/prompt-template/README.md) を参照。
 
 テンプレ内では次の 5 変数が `envsubst` で実値置換される:
 
@@ -146,12 +149,16 @@ spawn 完了したら、ユーザーに以下を伝える:
 ├── SKILL.md                        ← 本ファイル (skill 定義)
 ├── scripts/
 │   └── spawn.sh                    ← 起動本体
-├── assets/
-│   └── default-prompt.md           ← 本リポジトリ向け汎用プロンプトテンプレ
-├── references/
-│   └── reference.md                ← 詳細仕様・トラブルシュート
-└── prompts/                        ← gitignored (個人/プロジェクト固有テンプレ用)
+├── examples/
+│   └── prompt-template/            ← プロンプトテンプレの例 (サンプル)
+│       ├── README.md               ← 設計原則・変数・使い方
+│       ├── generic.md              ← 汎用サンプル
+│       └── generate-spec.md        ← AI-SDD spec 生成向けサンプル
+└── references/
+    └── reference.md                ← 詳細仕様・トラブルシュート
 ```
+
+> プロジェクト固有の正式テンプレは skill 配下に置かず、プロジェクト管理下に配置して `--prompt-template` で渡す。
 
 ```
 .claude/worktrees/                  ← gitignored (spawn 生成物)
