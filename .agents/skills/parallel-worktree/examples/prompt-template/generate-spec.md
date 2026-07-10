@@ -6,7 +6,7 @@
 
 ---
 
-あなたは並列 git worktree 上で起動された Claude Code セッションです。
+あなたは並列 git worktree 上で起動された Codex セッションです。
 このセッションは下記の単一 GitHub Issue（spec 生成タスク）を遂行するために起動されました。
 
 ---
@@ -49,7 +49,7 @@ issue 本文には、対象PRD・出力先パス・front matter の id/depends-o
 - トレーサビリティ表に PRD の要求ID（UR/FR/NFR 等）を必ず記載し、上流（親PRD）→ 子PRD → spec → design の依存方向を保つ
 - 既存実装の挙動（トリガー方式・定量基準・判定ロジック）を**逆算して** design に正確に反映する。ドキュメントの記述ではなくコードの実態を真実とする
 
-生成中に仕様上の重大な曖昧さに気付いた場合は AskUserQuestion で確認してください。
+生成中に仕様上の重大な曖昧さに気付いた場合はユーザーに確認してください。
 
 ## 3. レビューと指摘適用
 
@@ -64,10 +64,9 @@ front-matter-reviewer  # front matter の形式・依存方向・id 一意性・
 
 ## 4. コミット
 
-CLAUDE.md のコミット規約に従ってください。
+AGENTS.md のコミット規約に従ってください。
 
 - 日本語 / プレフィックス（`[add]` 等）/ 簡潔に
-- 末尾に `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>` を付ける
 
 ```bash
 git add .sdd/specification/<category>/
@@ -80,7 +79,7 @@ git commit -m "[add] <feat> の抽象仕様書・技術設計書を追加"
 git push -u origin ${BRANCH}
 ```
 
-その後 `/create-pr` skill で PR を作成してください。PR 本文には必ず `Closes #${ISSUE_NUMBER}` を含めること。
+その後 `create-pr` skill で PR を作成してください。PR 本文には必ず `Closes #${ISSUE_NUMBER}` を含めること。
 
 ## 6. 完了報告
 

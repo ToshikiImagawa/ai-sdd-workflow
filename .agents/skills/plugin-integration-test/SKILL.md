@@ -26,14 +26,14 @@ sdd-workflow プラグインの統合テストを実行し、session-start.py �
 
 ## 前提条件
 
-- `Codex` CLI がインストール済み
+- `claude` CLI がインストール済み（CodexからClaude Codeプラグインの統合テストを実行する）
 - リポジトリルートに `plugins/sdd-workflow/` が存在すること
 
 ## パス定義
 
 ```
 REPO_ROOT = $(git rev-parse --show-toplevel)
-SCRIPT = ${REPO_ROOT}/.Codex/skills/plugin-integration-test/scripts/plugin-integration-test.sh
+SCRIPT = ${REPO_ROOT}/.agents/skills/plugin-integration-test/scripts/plugin-integration-test.sh
 PLUGINS_DIR = ${REPO_ROOT}/plugins
 TEST_BASE = /tmp/ai-sdd-plugin-test
 ```
@@ -52,7 +52,7 @@ TEST_BASE = /tmp/ai-sdd-plugin-test
 bash "${SCRIPT}" setup
 ```
 
-これにより `/tmp/ai-sdd-plugin-test/` 以下にプラグインごとのテストディレクトリが作成される（git init + 空 AGENTS.md のコミット済み）。
+これにより `/tmp/ai-sdd-plugin-test/` 以下にプラグインごとのテストディレクトリが作成される（git init + 空 CLAUDE.md のコミット済み）。
 
 **追加テストケース**: `sdd-workflow-with-ja-config` ディレクトリも作成され、事前に `lang: "ja"` の `.sdd-config.json` が配置される。このテストケースは、既存の設定ファイルの言語設定がスキルに正しく継承されるかを検証する。
 
@@ -67,7 +67,7 @@ bash "${SCRIPT}" run "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-ja-config
 
 `sdd-workflow-with-ja-config` は、既存の `.sdd-config.json` (lang: ja) がある状態で sdd-workflow プラグインを使うケース。
 
-内部で `Codex --plugin-dir <plugin_dir> --print -p` によるサブセッションを起動し、session-start フックを実行させる。
+内部で `claude --plugin-dir <plugin_dir> --print -p` によるサブセッションを起動し、session-start フックを実行させる。
 フックが生成する以下のファイルを直接検証する（環境変数は `CLAUDE_ENV_FILE` 経由で設定されるため、サブセッション内の `echo` では取得できない）:
 - `.sdd-config.json` の生成と `lang` フィールドの値（`SDD_LANG` の代替検証）
 - `.sdd/` ディレクトリと `AI-SDD-PRINCIPLES.md` の配置
@@ -87,10 +87,10 @@ bash "${SCRIPT}" sdd-init "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-ja-con
 - `.sdd/` ディレクトリ
 - `.sdd/AI-SDD-PRINCIPLES.md`
 
-内部で `Codex --plugin-dir <plugin_dir> --print -p "/sdd-init --ci"` を実行し、以下を検証する（`--ci` フラグで非対話モード実行）:
+内部で `claude --plugin-dir <plugin_dir> --print -p "/sdd-init --ci"` を実行し、以下を検証する（`--ci` フラグで非対話モード実行）:
 - `/sdd-init` スキルの正常実行
 - `.sdd/` 配下のディレクトリ構造生成
-- `AGENTS.md` への AI-SDD セクション追記
+- `CLAUDE.md` への AI-SDD セクション追記
 
 ### Phase 3b: 生成系スキルテスト
 
@@ -106,7 +106,7 @@ bash "${SCRIPT}" gen-skills "${PLUGINS_DIR}/sdd-workflow" sdd-workflow-with-ja-c
 - `/generate-prd --ci <ダミー要件>` - PRD ファイルの生成と言語検証（`--ci` フラグで非対話モード実行）
 - `/generate-spec --ci <ダミー要件>` - 仕様書ファイルの生成と言語検証（`--ci` フラグで非対話モード実行）
 
-`--ci` フラグにより、Vibe Coding リスク評価・上書き確認・レビューエージェント呼び出しがスキップされ、`Codex --print -p` での非対話実行が可能になる。
+`--ci` フラグにより、Vibe Coding リスク評価・上書き確認・レビューエージェント呼び出しがスキップされ、`claude --print -p` での非対話実行が可能になる。
 
 生成されたファイルはログディレクトリにコピーされる。
 
@@ -145,7 +145,7 @@ FAIL があった場合のみ、原因分析のため該当する実行ログ（
 
 #### プラグインと期待言語の対応
 
-| プラグイン | 期待 SDD_LANG | AGENTS.md 言語マーカー |
+| プラグイン | 期待 SDD_LANG | CLAUDE.md 言語マーカー |
 |-----------|-------------|---------------------|
 | sdd-workflow | `en` | `This project follows AI-SDD` |
 | sdd-workflow-with-ja-config | `ja` | `このプロジェクトは AI-SDD` |

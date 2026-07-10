@@ -25,7 +25,7 @@
 | `${ISSUE_ID}` | spawn 引数の `<ref>` をそのまま | `[bug]` or `42` |
 | `${ISSUE_TITLE}` | issue title | `[bug] リンク切れ修正` |
 | `${BRANCH}` | 命名された branch | `feat/42-fix-typo` |
-| `${WORKTREE_PATH}` | worktree の絶対パス | `/path/.claude/worktrees/42-fix-typo` |
+| `${WORKTREE_PATH}` | worktree の絶対パス | `/path/.agents/worktrees/42-fix-typo` |
 
 ## サンプル一覧
 
@@ -42,9 +42,9 @@
 
 ```bash
 # サンプルをプロジェクトの作業ディレクトリにコピーして編集
-cp .claude/skills/parallel-worktree/examples/prompt-template/generic.md /path/to/your/my-template.md
+cp .agents/skills/parallel-worktree/examples/prompt-template/generic.md /path/to/your/my-template.md
 # 編集後、spawn 時に指定
-.claude/skills/parallel-worktree/scripts/spawn.sh \
+.agents/skills/parallel-worktree/scripts/spawn.sh \
   --prompt-template /path/to/your/my-template.md \
   42:fix-typo 43:add-agent
 ```

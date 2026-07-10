@@ -45,9 +45,9 @@ $ARGUMENTS
 
 | ファイル | フィールド |
 |:---|:---|
-| `.Codex-plugin/marketplace.json` | `metadata.version` |
-| `.Codex-plugin/marketplace.json` | `plugins[].version`（全エントリ） |
-| `plugins/sdd-workflow/.Codex-plugin/plugin.json` | `version` |
+| `.claude-plugin/marketplace.json` | `metadata.version` |
+| `.claude-plugin/marketplace.json` | `plugins[].version`（全エントリ） |
+| `plugins/sdd-workflow/.claude-plugin/plugin.json` | `version` |
 
 ## Processing Flow
 
@@ -55,7 +55,7 @@ $ARGUMENTS
 
 `$ARGUMENTS` からバージョン番号をパースする。空の場合はエラーメッセージと使用例を表示して終了する。semver 形式の検証は Step 7 のスクリプトが行うため、CHANGELOG を編集する前に以下でチェックだけ先に実行してもよい:
 
-    python3 "$(git rev-parse --show-toplevel)/.Codex/skills/prepare-release/scripts/update_versions.py" <version>
+    python3 "$(git rev-parse --show-toplevel)/.agents/skills/prepare-release/scripts/update_versions.py" <version>
 
 （不正な形式なら終了コード 1 でファイルは変更されない）
 
@@ -103,7 +103,7 @@ git diff <previous-tag>..HEAD --stat
 - CI/CD ワークフロー（`.github/workflows/`）の追加・変更
 - 開発者向けスクリプト（`scripts/`）の追加・変更
 - テストコード・テストフィクスチャ（`tests/`）の追加・変更
-- `.Codex/skills/` 配下の開発者向けスキル
+- `.claude/skills/` または `.agents/skills/` 配下の開発者向けスキル
 - `.gitignore`、PR テンプレート等のリポジトリ管理ファイル
 - その他、プラグインをインストールしたユーザーに影響しない変更
 
@@ -149,13 +149,13 @@ git diff <previous-tag>..HEAD --stat
 
 バージョンマニフェストの一括更新はスクリプトで行う（Step 1 で未実行の場合）:
 
-    python3 "$(git rev-parse --show-toplevel)/.Codex/skills/prepare-release/scripts/update_versions.py" <version>
+    python3 "$(git rev-parse --show-toplevel)/.agents/skills/prepare-release/scripts/update_versions.py" <version>
 
 スクリプトは semver 形式検証の上、以下を新バージョンに更新し、旧→新の対応を JSON で出力する:
 
-1. `.Codex-plugin/marketplace.json` → `metadata.version`
-2. `.Codex-plugin/marketplace.json` → `plugins[].version`（全プラグイン）
-3. `plugins/*/.Codex-plugin/plugin.json` → `version`（全プラグイン）
+1. `.claude-plugin/marketplace.json` → `metadata.version`
+2. `.claude-plugin/marketplace.json` → `plugins[].version`（全プラグイン）
+3. `plugins/*/.claude-plugin/plugin.json` → `version`（全プラグイン）
 
 出力 JSON の `old`/`new` を Step 8 のサマリーに使用する。
 
@@ -188,8 +188,8 @@ git diff <previous-tag>..HEAD --stat
 
 - [ ] `plugins/sdd-workflow/CHANGELOG.md`
 - [ ] `plugins/sdd-workflow/CHANGELOG.ja.md`
-- [ ] `.Codex-plugin/marketplace.json`
-- [ ] `plugins/sdd-workflow/.Codex-plugin/plugin.json`
+- [ ] `.claude-plugin/marketplace.json`
+- [ ] `plugins/sdd-workflow/.claude-plugin/plugin.json`
 
 ### Next Steps
 

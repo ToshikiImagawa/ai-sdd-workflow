@@ -45,7 +45,7 @@ $ARGUMENTS
 
 Bash でスクリプトを実行する:
 
-    python3 "$(git rev-parse --show-toplevel)/.Codex/skills/plugin-lint/scripts/plugin_lint.py"
+    python3 "$(git rev-parse --show-toplevel)/.agents/skills/plugin-lint/scripts/plugin_lint.py"
 
 - 終了コード 0: 問題なし
 - 終了コード 1: 問題あり（stdout の JSON に findings が含まれる）

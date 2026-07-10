@@ -6,7 +6,7 @@ description: |
   といったユーザー指示で必ず使用する。
   本プロジェクト (ai-sdd-workflow) の AGENTS.md と CI 設定 (.github/workflows/ci.yml) を
   運用準拠の真実の源として扱い、グローバル skill `create-pr` とリポジトリ専用 skill
-  `review-pr` (.Codex/skills/review-pr、npm 非依存で本リポジトリの検証コマンドに対応) に
+  `review-pr` (.agents/skills/review-pr、npm 非依存で本リポジトリの検証コマンドに対応) に
   作成・レビュー対応を委譲する。CI ポーリング・レビュー対応・squash-merge・
   ローカルブランチ削除までを順序立てて実行する。
   破壊的操作 (merge / branch 削除) の直前で人間に確認を取り、CI 失敗時は状況レポートに

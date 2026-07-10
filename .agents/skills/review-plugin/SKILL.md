@@ -1,17 +1,16 @@
 ---
 name: review-plugin
-description: "Codexプラグインの品質レビュー。Agents, Skills, Hooks, プラグイン構造を設計ガイドに基づいてチェックし、改善提案を提供します。"
+description: "Claude CodeプラグインをCodexから品質レビューする。Agents, Skills, Hooks, プラグイン構造を設計ガイドに基づいてチェックし、改善提案を提供します。"
 version: 1.0.0
 license: MIT
 user-invocable: true
 argument-hint: "[対象パス|--agents|--skills|--hooks|--all]"
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Workflow
 ---
 
 # Review Plugin - プラグイン品質レビュー
 
-Codexプラグインの各コンポーネント（Agents, Skills, Hooks, 構造）をレビューし、改善提案を提供する。
+Claude Codeプラグインの各コンポーネント（Agents, Skills, Hooks, 構造）をCodexからレビューし、改善提案を提供する。
 
 ## 入力
 
@@ -47,7 +46,7 @@ $ARGUMENTS
 | `--all`    | 上記すべて + `plugin.json`                 |
 | 個別パス       | 指定パスをそのまま使用                           |
 
-Glob で対象ファイルの一覧を確定する。
+`rg --files` で対象ファイルの一覧を確定する。
 
 ### Step 2: レビュー実行
 
@@ -57,20 +56,20 @@ Glob で対象ファイルの一覧を確定する。
 
 #### 複数ファイル時（--agents / --skills / --hooks / --all）
 
-**Workflow ツール**でレビューを決定論的にファンアウトする:
+利用可能な場合はCodexのサブエージェント機能でレビューをファンアウトする。サブエージェントが利用できない場合は、同じ観点でメインエージェントが逐次レビューする:
 
-1. Step 1 で確定した対象ファイルの一覧を、種別（agent / skill / hooks / structure）付きで Workflow の `args` に渡す
-2. ワークフロースクリプトは `pipeline(args, ...)` で対象ごとにレビューエージェントを起動する
+1. Step 1 で確定した対象ファイルを、種別（agent / skill / hooks / structure）ごとに最大3グループへ分ける
+2. 各グループを独立したレビュー担当へ割り当てる
 3. 各エージェントの prompt には以下を含める:
    - 対象ファイルの絶対パス（skill の場合はディレクトリと SKILL.md）
    - 種別に対応するレビュー観点（エージェント: A1〜A7、スキル: S1〜S5、Hooks: H1〜H4、構造: P1〜P3）。本 SKILL.md の該当セクションのパスと観点IDを渡し、エージェント自身に読み込ませる
    - 種別に対応する参考リファレンスのファイルパス（下記テーブル参照）
-4. `schema` オプションで構造化出力を強制する。各観点につき `{id, rating: "green"|"yellow"|"red", issue, suggestion}` と、対象全体の `{file, overall, top_actions}` を返させる
-5. レビューエージェントは読み取り専用（ファイル修正はしない）。再委譲（エージェント内からの Agent/Workflow 呼び出し）は禁止と prompt に明記する
+4. 各観点につき `{id, rating: "green"|"yellow"|"red", issue, suggestion}` と、対象全体の `{file, overall, top_actions}` を返させる
+5. レビュー担当は読み取り専用（ファイル修正はしない）。再委譲は禁止と依頼文に明記する
 
 ### Step 3: 結果統合（複数ファイル時）
 
-Workflow の返り値（構造化された全レビュー結果）を [batch-review-output.md](templates/batch-review-output.md) の形式に整形し、評価サマリーテーブルと全体推奨アクションを統合出力する。
+構造化された全レビュー結果を [batch-review-output.md](templates/batch-review-output.md) の形式に整形し、評価サマリーテーブルと全体推奨アクションを統合出力する。
 
 ---
 
@@ -256,7 +255,7 @@ fi
 
 ### P1: ディレクトリ構成
 
-- `.Codex-plugin/plugin.json` が存在するか
+- `.claude-plugin/plugin.json` が存在するか
 - `agents/`, `skills/`, `hooks/` が適切に配置されているか
 - 不要なファイルが含まれていないか
 
@@ -285,10 +284,10 @@ fi
 | 参照ファイル                                                                                      | 用途                                     |
 |:--------------------------------------------------------------------------------------------|:---------------------------------------|
 | [plugin-agent-reviewer.md](references/plugin-agent-reviewer.md)                             | エージェント設計パターン、エージェント間連携、Hooks作成Tips     |
-| [Codex-best-practices-reviewer.md](references/Codex-best-practices-reviewer.md) | ベストプラクティス（検証方法、ワークフロー設計、失敗パターン）        |
-| [Codex-features-reviewer.md](references/Codex-features-reviewer.md)             | 拡張機能の比較（Skills vs Subagents、コンテキストコスト） |
-| [Codex-plugin-developer.md](references/Codex-plugin-developer.md)               | プラグイン構造、Hooks/LSP設定、デバッグ               |
-| [Codex-skills-guide.md](references/Codex-skills-guide.md)                       | Skill設計（フロントマター、呼び出し制御、サブエージェント実行）     |
+| [claude-code-best-practices-reviewer.md](references/claude-code-best-practices-reviewer.md) | ベストプラクティス（検証方法、ワークフロー設計、失敗パターン）        |
+| [claude-code-features-reviewer.md](references/claude-code-features-reviewer.md)             | 拡張機能の比較（Skills vs Subagents、コンテキストコスト） |
+| [claude-code-plugin-developer.md](references/claude-code-plugin-developer.md)               | プラグイン構造、Hooks/LSP設定、デバッグ               |
+| [claude-code-skills-guide.md](references/claude-code-skills-guide.md)                       | Skill設計（フロントマター、呼び出し制御、サブエージェント実行）     |
 
 ## 出力形式
 

@@ -64,7 +64,7 @@ gh api repos/{owner}/{repo}/pulls/{number}/comments
   - `[must]` プレフィックスの指摘は原則このカテゴリ
 
 - **対応しない（説明を返す）**: 意図的な設計判断や、コンテキストを踏まえると不要な変更
-  - 既存の方針（AGENTS.md、`.Codex/rules/`、`.sdd/AI-SDD-PRINCIPLES.md` 等）に基づく判断
+  - 既存の方針（AGENTS.md、`.claude/rules/`、`.sdd/AI-SDD-PRINCIPLES.md` 等）に基づく判断
   - トレードオフがあり、現在の実装が合理的な理由がある場合
 
 - **判断保留（ユーザーに確認）**: 自分だけでは判断できないもの
@@ -99,7 +99,7 @@ gh api repos/{owner}/{repo}/pulls/{number}/comments
 
 ```bash
 # プラグインJSON構文チェック (plugin.json / marketplace.json を変更した場合)
-cat plugins/*/.Codex-plugin/*.json | jq .
+cat plugins/*/.claude-plugin/*.json | jq .
 
 # マーケットプレイス/プラグイン構造の検証
 bash scripts/validate-marketplace.sh
@@ -134,7 +134,7 @@ gh api repos/{owner}/{repo}/pulls/{number}/comments/{comment_id}/replies \
 返信の書き方:
 - 丁寧な日本語で書く
 - 指摘への感謝を述べつつ、対応しない理由を具体的に説明する
-- 設計判断に基づく場合は、根拠となるドキュメント（AGENTS.md、`.Codex/rules/`、`.sdd/AI-SDD-PRINCIPLES.md` 等）を参照する
+- 設計判断に基づく場合は、根拠となるドキュメント（AGENTS.md、`.claude/rules/`、`.sdd/AI-SDD-PRINCIPLES.md` 等）を参照する
 - レビュアーが追加の意見を持っている場合に備え、議論の余地を残す書き方にする
 
 返信の末尾に以下を付ける:
