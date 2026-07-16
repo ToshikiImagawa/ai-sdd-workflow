@@ -177,8 +177,8 @@ Higher priority principles take precedence over lower priority principles.
 
 | Standard           | Requirement                            | Location              | Update Frequency      |
 |:-------------------|:---------------------------------------|:----------------------|:----------------------|
-| **Specifications** | All features have `*_spec.md`          | `.sdd/specification/` | Before implementation |
-| **Design Docs**    | All implementations have `*_design.md` | `.sdd/specification/` | During design phase   |
+| **Specifications** | All features have `*_spec.md`          | `${SDD_SPECIFICATION_PATH}/` | Before implementation |
+| **Design Docs**    | All implementations have `*_design.md` | `${SDD_SPECIFICATION_PATH}/` | During design phase   |
 | **API Docs**       | All public APIs documented             | In source files       | With code changes     |
 | **README**         | Up-to-date setup instructions          | Project root          | As needed             |
 
@@ -526,8 +526,8 @@ Review metrics monthly in team retrospective.
 
 | Document                         | How to Reference                                      |
 |:---------------------------------|:------------------------------------------------------|
-| `.sdd/SPECIFICATION_TEMPLATE.md` | Include section referencing principles                |
-| `.sdd/DESIGN_DOC_TEMPLATE.md`    | Include checklist for principle compliance            |
+| `${SDD_ROOT}/SPECIFICATION_TEMPLATE.md` | Include section referencing principles                |
+| `${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`    | Include checklist for principle compliance            |
 | `*_spec.md`                      | Describe design based on principles                   |
 | `*_design.md`                    | Clearly state that design decisions comply with principles |
 

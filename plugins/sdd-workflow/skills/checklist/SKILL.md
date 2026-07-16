@@ -2,7 +2,7 @@
 name: checklist
 description: "Generate quality assurance checklists from specifications and plans with structured IDs and categories"
 argument-hint: "<feature-name> [ticket-number]"
-version: 3.0.0
+arguments: [feature-name, ticket-number]
 license: MIT
 user-invocable: true
 allowed-tools: Read, Write, Edit, Glob, Grep
@@ -28,7 +28,14 @@ The `SDD_LANG` environment variable determines the language (default: `en`).
 
 ## Input
 
-$ARGUMENTS
+- `feature-name`: $feature-name
+- `ticket-number`: $ticket-number
+
+Full argument string: $ARGUMENTS
+
+> **Fallback**: If a value above is empty, remains a literal `$` placeholder, or starts with `--`
+> (a flag captured positionally), treat that argument as omitted and interpret the full argument
+> string instead. Ask the user interactively when a required argument is missing.
 
 | Argument        | Required | Description                                                        |
 |:----------------|:---------|:-------------------------------------------------------------------|
@@ -37,18 +44,16 @@ $ARGUMENTS
 
 ### Input Format
 
-```
-/checklist {feature-name} {ticket-number}
-/checklist {feature-name}  # Uses feature-name as ticket directory
-```
+Usage: `/checklist {feature-name} {ticket-number}`. If `{ticket-number}` is omitted, `{feature-name}` is used as the
+ticket directory.
 
 ### Input Examples
 
-```
-/checklist user-auth TICKET-123
-/checklist task-management
-/checklist auth/user-login TICKET-789  # For hierarchical structure
-```
+| Example                                | Description                     |
+|:----------------------------------------|:---------------------------------|
+| `/checklist user-auth TICKET-123`       | Standard usage                   |
+| `/checklist task-management`            | Uses feature-name as ticket dir  |
+| `/checklist auth/user-login TICKET-789` | For hierarchical structure       |
 
 ## Processing Flow
 
@@ -58,24 +63,24 @@ Both flat and hierarchical structures are supported.
 
 **For flat structure**:
 
-```
-Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md (PRD, if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md (required)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md (required)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/tasks.md (if exists)
-```
+| File                                                                     | Required   |
+|:--------------------------------------------------------------------------|:-----------|
+| `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md` (PRD)  | if exists  |
+| `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md` | required   |
+| `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md` | required |
+| `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/tasks.md`               | if exists  |
 
 **For hierarchical structure** (when argument contains `/`):
 
-```
-Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md (parent feature PRD, if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/{feature-name}.md (child feature PRD, if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md (parent feature spec, if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md (child feature spec, required)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md (parent feature design, if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md (child feature design, required)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/tasks.md (if exists)
-```
+| File                                                                                          | Required  |
+|:------------------------------------------------------------------------------------------------|:----------|
+| `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md` (parent feature PRD) | if exists |
+| `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/{feature-name}.md` (child feature PRD) | if exists |
+| `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md` (parent feature spec) | if exists |
+| `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md` (child feature spec) | required |
+| `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md` (parent feature design) | if exists |
+| `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md` (child feature design) | required |
+| `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/tasks.md`                                      | if exists |
 
 **Note the difference in naming conventions**:
 
@@ -124,13 +129,8 @@ From each document, extract checkable items:
 
 Transform extracted points into actionable checklist items:
 
-**ID Assignment Format**: `CHK-{category}{nn}`
-
-```
-CHK-101, CHK-102, ... (Category 1)
-CHK-201, CHK-202, ... (Category 2)
-CHK-301, CHK-302, ... (Category 3)
-```
+**ID Assignment Format**: `CHK-{category}{nn}` (e.g., `CHK-101`, `CHK-102`, ... for Category 1;
+`CHK-201`, `CHK-202`, ... for Category 2; `CHK-301`, `CHK-302`, ... for Category 3)
 
 | Category Number | Category Name         |
 |:----------------|:----------------------|
@@ -192,11 +192,7 @@ based on:
 
 ## Update Existing Checklist
 
-To update an existing checklist after spec changes:
-
-```
-/checklist user-auth TICKET-123 --update
-```
+To update an existing checklist after spec changes, run `/checklist user-auth TICKET-123 --update`.
 
 This will:
 
@@ -210,19 +206,12 @@ This will:
 
 ### GitHub Issues
 
-```
-/checklist user-auth TICKET-123 --export github-issues
-```
-
-Creates individual GitHub issues for P0 items.
+Run `/checklist user-auth TICKET-123 --export github-issues` to create individual GitHub issues for P0 items.
 
 ### Notion/Linear
 
-```
-/checklist user-auth TICKET-123 --export csv
-```
-
-Exports checklist as CSV for import to project management tools.
+Run `/checklist user-auth TICKET-123 --export csv` to export the checklist as CSV for import to project management
+tools.
 
 ## Best Practices
 
@@ -236,17 +225,9 @@ Exports checklist as CSV for import to project management tools.
 
 ## Integration with Other Commands
 
-```
-/generate-spec {feature}
-   |
-/task-breakdown {feature}
-   |
-/checklist {feature} {ticket}  <- Generate checklist
-   |
-/implement {feature} {ticket}  <- Use checklist during implementation
-   |
-Review against checklist before PR
-```
+The checklist fits into the overall workflow as follows: `/generate-spec {feature}` -> `/task-breakdown {feature}` ->
+`/checklist {feature} {ticket}` (generate checklist) -> `/implement {feature} {ticket}` (use checklist during
+implementation) -> review against checklist before PR.
 
 ## Notes
 

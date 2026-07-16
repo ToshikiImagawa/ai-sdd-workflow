@@ -6,8 +6,8 @@
 |:------------------|:-----------------------------------------|
 | Feature Name      | {Feature Name}                           |
 | Ticket Number     | {Ticket Number}                          |
-| Specification     | `.sdd/specification/{feature}_spec.md`   |
-| Design Document   | `.sdd/specification/{feature}_design.md` |
+| Specification     | `${SDD_SPECIFICATION_PATH}/{feature}_spec.md`   |
+| Design Document   | `${SDD_SPECIFICATION_PATH}/{feature}_design.md` |
 | Generated Date    | YYYY-MM-DD                               |
 | Checklist Version | 1.0                                      |
 
@@ -24,6 +24,7 @@
 | Security Review       | -           | -  | -  | -  | -  |
 | Performance Review    | -           | -  | -  | -  | -  |
 | Deployment Review     | -           | -  | -  | -  | -  |
+| Project Principles Review | -      | -  | -  | -  | -  |
 
 **Priority Levels**:
 
@@ -444,6 +445,32 @@
 
 ---
 
+## Project Principles Review
+
+### CHK029 [P0] - CONSTITUTION.md Compliance
+
+- [ ] The applicable principles from `CONSTITUTION.md` are stated in the Spec/Design doc
+- [ ] The implementation complies with the stated principles
+- [ ] Any deviation from a principle follows the exception process (justification, review approval)
+
+**Verification**:
+
+- Run `/constitution validate`
+- Review the "Principle Alignment" section of the Spec/Design doc
+
+---
+
+### CHK030 [P1] - Template Sync with Constitution
+
+- [ ] SPECIFICATION_TEMPLATE.md / DESIGN_DOC_TEMPLATE.md in use is aligned with the latest CONSTITUTION.md version
+- [ ] No missing updates due to `/constitution sync` not being run
+
+**Verification**:
+
+- Compare CONSTITUTION.md change history with each template's last update date
+
+---
+
 ## Completion Criteria
 
 ### Pre-PR Checklist
@@ -488,8 +515,8 @@ All items through P2 should be complete:
 
 ## Reference Documents
 
-- PRD: `.sdd/requirement/[{path}/]{name}.md` (if exists)
-- Abstract Specification: `.sdd/specification/[{path}/]{name}_spec.md`
-- Technical Design: `.sdd/specification/[{path}/]{name}_design.md`
+- PRD: `${SDD_REQUIREMENT_PATH}/[{path}/]{name}.md` (if exists)
+- Abstract Specification: `${SDD_SPECIFICATION_PATH}/[{path}/]{name}_spec.md`
+- Technical Design: `${SDD_SPECIFICATION_PATH}/[{path}/]{name}_design.md`
 
 ※ For hierarchical structure, parent features use `index.md`, `index_spec.md`, `index_design.md`

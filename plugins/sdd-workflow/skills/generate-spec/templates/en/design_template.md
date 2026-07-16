@@ -16,12 +16,12 @@ risk: "medium"
 
 # Technical Design Document Template (Design Doc)
 
-This document is a template for creating Technical Design Documents under `.sdd/specification/`.
+This document is a template for creating Technical Design Documents under `${SDD_SPECIFICATION_PATH}/`.
 The filename should be `{feature-name}_design.md`.
 
 > **Note**: This template is a fallback for the plugin.
 > When using in a project, customize it according to your programming language and project structure,
-> and save it as `.sdd/DESIGN_DOC_TEMPLATE.md`.
+> and save it as `${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`.
 
 ## Difference from Abstract Specification
 
@@ -171,6 +171,8 @@ Modify the notation according to your project's programming language.
 
 # Section Requirement Legend
 
+> **Note:** These markers are author-facing guides that indicate section requirement levels. Remove them from the generated document — they must not appear in the final output.
+
 | Marker          | Meaning     | Description                              |
 |-----------------|-------------|------------------------------------------|
 | `<MUST>`        | Required    | Must be included in all design documents |
@@ -204,6 +206,36 @@ Modify the notation according to your project's programming language.
 
 ---
 
+# Pseudocode Completeness Rules
+
+Pseudocode in Design Docs (code examples for data models, interface definitions, processing flows, etc.)
+must remain **complete enough to be copied verbatim and still work**.
+When details diverge during transcription to implementation, they cause review findings and runtime errors.
+
+Select, adapt, and extend the following according to the languages used in your project
+(keep the structure extensible with sub-sections for TypeScript / Go / Rust, etc.).
+
+## Python (General)
+
+- Make all import statements explicit (including types referenced only in type annotations)
+- Be careful with `isinstance` checks and the BaseException hierarchy
+  (`asyncio.CancelledError` is not a subclass of `Exception` in Python 3.8+)
+- When `x` in `x if x else fallback` can be `""` / `[]` / `0`,
+  write `x if x is not None else fallback` explicitly
+
+## Pydantic v2
+
+- When reassigning inside `model_validator(mode='after')` on a model with `frozen=True`,
+  use `object.__setattr__(self, ...)`
+- `default_factory` is evaluated after `mode='before'` validators (mind the ordering)
+
+## SQLAlchemy / alembic
+
+- Keep alembic revision IDs ≤ 32 characters (`alembic_version.version_num` is `varchar(32)`)
+- Write CHECK constraints with conditions that do not block transitions (use auxiliary columns)
+
+---
+
 # Customization Guidelines for Projects
 
 When customizing this template for your project, update the following:
@@ -213,6 +245,7 @@ When customizing this template for your project, update the following:
 3. **Change history code examples**: Adjust to project's programming language
 4. **Module structure table columns**: Adjust to project's structure (package/module organization)
 5. **Technology stack table**: Adjust to technology areas used in the project
+6. **Pseudocode completeness rules**: Select and extend rules according to the pitfalls of the languages and frameworks used in the project
 
 ---
 

@@ -2,12 +2,12 @@
 name: generate-usecase-diagram
 description: "Generate use case diagram in Mermaid format from business requirements. Use when user needs to visualize actors, use cases, and system boundaries for a feature or when PRD diagrams are requested."
 argument-hint: "<requirements-description> [--ci]"
-version: 3.0.1
 license: MIT
 user-invocable: true
 context: fork
-agent: sonnet
+agent: haiku
 allowed-tools: Read, Glob, Grep, AskUserQuestion
+disallowed-tools: Write, Edit, Bash
 ---
 
 # Generate Use Case Diagram
@@ -20,6 +20,7 @@ Generates a use case diagram in Mermaid flowchart format from business requireme
 
 - `references/usecase_diagram_guide.md` - Use case diagram notation and examples
 - `references/mermaid_notation_rules.md` - Mermaid flowchart syntax and styling
+- `references/output_format_example.md` - Exact markdown structure to return
 
 ## Hybrid Approach
 
@@ -43,23 +44,11 @@ $ARGUMENTS
 
 ### Input Examples
 
-**Feature name (looks up PRD):**
+**Feature name (looks up PRD):** `/generate-usecase-diagram user-authentication`
 
-```
-/generate-usecase-diagram user-authentication
-```
+**Requirements description:** `/generate-usecase-diagram Users can register, login, and reset passwords. Admin can manage user accounts.`
 
-**Requirements description:**
-
-```
-/generate-usecase-diagram Users can register, login, and reset passwords. Admin can manage user accounts.
-```
-
-**CI mode (called by generate-prd):**
-
-```
-/generate-usecase-diagram user-authentication --ci
-```
+**CI mode (called by generate-prd):** `/generate-usecase-diagram user-authentication --ci`
 
 ## Generation Flow
 
@@ -88,52 +77,7 @@ $ARGUMENTS
 
 **IMPORTANT**: This skill returns text only. It does NOT write files.
 
-Return the following markdown structure:
-
-```markdown
-## Use Case Diagram
-
-```mermaid
-%%{init: {'theme': 'dark'}}%%
-flowchart LR
-    User((User))
-    Admin((Admin))
-
-    subgraph SystemName [System Name]
-        UC1(["Use Case 1"])
-        UC2(["Use Case 2"])
-        UC3(["Use Case 3"])
-        UC4(["Common Function"])
-    end
-
-    User --- UC1
-    User --- UC2
-    Admin --- UC3
-    UC1 -.->|"&lt;&lt;include&gt;&gt;"| UC4
-
-    classDef actor fill:#4a148c,stroke:#ba68c8,color:#fff
-    classDef usecase fill:#bf360c,stroke:#ff8a65,color:#fff
-
-    class User,Admin actor
-    class UC1,UC2,UC3,UC4 usecase
-```
-
-## Actors
-
-| Actor | Description |
-|:------|:------------|
-| User  | Logged-in user who performs main operations |
-| Admin | Administrator with elevated privileges |
-
-## Use Cases
-
-| ID  | Use Case       | Description                        | Actor(s) |
-|:----|:---------------|:-----------------------------------|:---------|
-| UC1 | Use Case 1     | Brief description of use case 1    | User     |
-| UC2 | Use Case 2     | Brief description of use case 2    | User     |
-| UC3 | Use Case 3     | Brief description of use case 3    | Admin    |
-| UC4 | Common Function| Shared function included by others | -        |
-```
+See `references/output_format_example.md` for the exact markdown structure to return (diagram section, Actors table, Use Cases table).
 
 ## Quality Checks
 

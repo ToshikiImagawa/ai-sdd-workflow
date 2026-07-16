@@ -2,7 +2,7 @@
 
 ### 対象ドキュメント
 
-- `.sdd/specification/[{親機能名}/]{機能名}_spec.md`
+- `${SDD_SPECIFICATION_PATH}/[{親機能名}/]{機能名}_spec.md`
 
 ※ 階層構造の場合、親機能は `index_spec.md`
 

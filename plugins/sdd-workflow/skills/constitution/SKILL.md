@@ -2,7 +2,6 @@
 name: constitution
 description: "Define and manage non-negotiable project principles (Constitution) and verify synchronization with other documents"
 argument-hint: "<subcommand> [arguments]"
-version: 3.0.0
 license: MIT
 user-invocable: true
 disable-model-invocation: true
@@ -63,23 +62,19 @@ $ARGUMENTS
 
 ### Input Examples
 
-```
-/constitution init                      # Initialize constitution file (interactive)
-/constitution init "TypeScript/React Web application"  # Initialize with context (non-interactive)
-/constitution validate                  # Validate constitution compliance
-/constitution add "Library-First"       # Add new principle
-/constitution bump-version major        # Major version bump
-```
+| Example                                                 | Description                                |
+|:----------------------------------------------------------|:--------------------------------------------|
+| `/constitution init`                                       | Initialize constitution file (interactive)  |
+| `/constitution init "TypeScript/React Web application"`    | Initialize with context (non-interactive)   |
+| `/constitution validate`                                    | Validate constitution compliance            |
+| `/constitution add "Library-First"`                         | Add new principle                           |
+| `/constitution bump-version major`                          | Major version bump                          |
 
 ## Processing Flow
 
 ### 1. Initialize (init)
 
-Create a constitution file in the project:
-
-```bash
-/constitution init
-```
+Create a constitution file in the project by running `/constitution init`.
 
 **Generated File**: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md`
 
@@ -118,11 +113,7 @@ Create a constitution file in the project:
 
 ### 2. Add Principle (add)
 
-Add a new principle to a constitution:
-
-```bash
-/constitution add "Library-First"
-```
+Add a new principle to a constitution by running `/constitution add "Library-First"`.
 
 **Process**:
 
@@ -146,39 +137,7 @@ Add a new principle to a constitution:
 
 **Command**: `/constitution update`
 
-**Interactive Prompts**:
-
-```
-What type of change?
-1. Add new principle (MAJOR)
-2. Modify existing principle (MAJOR)
-3. Clarify existing principle (MINOR)
-4. Update enforcement methods (MINOR)
-
-> 1
-
-Describe the new principle:
-> ...
-
-Rationale:
-> ...
-
-How will it be enforced?
-> ...
-
-Are there exceptions?
-> ...
-
-Review proposed change:
-[Display formatted principle]
-
-Confirm (y/n)?
-> y
-
-Constitution updated
-  Version: 1.0.0 -> 2.0.0
-  Changes: Added principle P4
-```
+**Interactive Prompts**: See `examples/update_interactive_session.md` for an example interactive session.
 
 **Version Bump Rules**:
 
@@ -193,19 +152,12 @@ Constitution updated
 
 ### 5. Validate (validate)
 
-Verify all specifications and design documents comply with constitution:
-
-```bash
-/constitution validate
-```
+Verify all specifications and design documents comply with constitution by running `/constitution validate`.
 
 **Optimized Execution Flow**:
 
-**Phase 1: Shell Script** - Execute `validate-files.sh` to scan file structure:
-
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/skills/constitution/scripts/validate-files.sh"
-```
+**Phase 1: Shell Script** - Execute `python3 "${CLAUDE_PLUGIN_ROOT}/skills/constitution/scripts/validate-files.py"` to
+scan file structure.
 
 This script:
 
@@ -269,42 +221,12 @@ This script:
     - Update priorities
     - Sync quality gates
 
-**Output**:
-
-````markdown
-# Constitution Sync Report
-
-## Documents Updated
-
-- [x] `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/SPECIFICATION_TEMPLATE.md`
-    - Added P1 reference to API section
-    - Updated constraints to include P3
-
-- [x] `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`
-    - Added "Principle Compliance" section
-    - Updated decision framework to match constitution
-
-- [x] `skills/checklist/templates/checklist_template.md`
-    - Added principle verification items
-    - CHK-CONST-001: P1 verification
-    - CHK-CONST-002: P2 verification
-    - CHK-CONST-003: P3 verification
-
-## Sync Status
-
-All documents synchronized with Constitution v2.0.0
-
-````
+**Output**: See `examples/sync_report.md` for an example sync report.
 
 ### 7. Version Management (bump-version)
 
-Update constitution version:
-
-```bash
-/constitution bump-version major   # Major version bump (breaking change)
-/constitution bump-version minor   # Minor version bump (add principle)
-/constitution bump-version patch   # Patch version bump (typo fix)
-```
+Update constitution version by running `/constitution bump-version {major|minor|patch}` (e.g.
+`/constitution bump-version major` for a breaking change, `minor` to add a principle, `patch` for a typo fix).
 
 **Semantic Versioning**:
 
@@ -367,19 +289,8 @@ Running `/constitution validate` automatically verifies:
 
 ### Change Process
 
-```
-1. Propose change (discuss in Issue, etc.)
-   |
-2. Team approval
-   |
-3. Update constitution file
-   |
-4. Bump version
-   |
-5. Update affected documents
-   |
-6. Verify with /constitution validate
-```
+The change process follows these steps in order: propose change (discuss in Issue, etc.) -> team approval -> update
+constitution file -> bump version -> update affected documents -> verify with `/constitution validate`.
 
 ### Conditions for Major Version Bump
 
@@ -401,19 +312,9 @@ See `references/best_practices.md` for detailed guidance on:
 
 ## AI-SDD Workflow Integration
 
-```
-Constitution (Project-Level Principles)
-         |
-PRD (Business Requirements)
-         |
-Specification (Logical Design)
-         |
-Design Document (Technical Implementation)
-         |
-Implementation (Code)
-```
-
-Constitution principles are checked at each level.
+Constitution principles are checked at each level of the AI-SDD workflow, in this order: Constitution
+(Project-Level Principles) -> PRD (Business Requirements) -> Specification (Logical Design) -> Design Document
+(Technical Implementation) -> Implementation (Code).
 
 ## Notes
 

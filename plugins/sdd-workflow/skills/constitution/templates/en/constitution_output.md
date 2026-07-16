@@ -1,7 +1,7 @@
 ✓ Created project principles
 
 **Version**: 1.0.0
-**Location**: `.sdd/CONSTITUTION.md`
+**Location**: `${SDD_ROOT}/CONSTITUTION.md`
 
 ## Defined Principles
 
@@ -35,8 +35,8 @@ v1.2.0
 
 ### Verification Target
 
-- `.sdd/specification/**/*_spec.md` (15 files)
-- `.sdd/specification/**/*_design.md` (15 files)
+- `${SDD_SPECIFICATION_PATH}/**/*_spec.md` (15 files)
+- `${SDD_SPECIFICATION_PATH}/**/*_design.md` (15 files)
 - Template files (2 files)
 
 ### Verification Summary
@@ -53,7 +53,7 @@ v1.2.0
 
 #### Principle: A-001 Library-First
 
-**Violation Location**: `.sdd/specification/auth/user-login_design.md`
+**Violation Location**: `${SDD_SPECIFICATION_PATH}/auth/user-login_design.md`
 
 **Violation Content**:
 
@@ -76,7 +76,7 @@ Implement custom hashing algorithm.
 
 #### Principle: T-002 No Runtime Errors
 
-**Not Mentioned Location**: `.sdd/specification/payment/checkout_design.md`
+**Not Mentioned Location**: `${SDD_SPECIFICATION_PATH}/payment/checkout_design.md`
 
 **Issue**: No description of Error Boundary or type guards
 
@@ -102,8 +102,8 @@ Implement custom hashing algorithm.
 
 | Template                         | Principle Version | Sync Status               |
 |:---------------------------------|:------------------|:--------------------------|
-| `.sdd/SPECIFICATION_TEMPLATE.md` | v1.2.0            | ✅ Up to date              |
-| `.sdd/DESIGN_DOC_TEMPLATE.md`    | v1.1.0            | 🟡 Update needed (v1.2.0) |
+| `${SDD_ROOT}/SPECIFICATION_TEMPLATE.md` | v1.2.0            | ✅ Up to date              |
+| `${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`    | v1.1.0            | 🟡 Update needed (v1.2.0) |
 
 **Recommended Action**:
 
@@ -114,13 +114,13 @@ Implement custom hashing algorithm.
 ### Next Actions
 
 1. **Fix violations**:
-    - Fix `.sdd/specification/auth/user-login_design.md`
+    - Fix `${SDD_SPECIFICATION_PATH}/auth/user-login_design.md`
 
 2. **Add not mentioned items**:
-    - Add error handling strategy to `.sdd/specification/payment/checkout_design.md`
+    - Add error handling strategy to `${SDD_SPECIFICATION_PATH}/payment/checkout_design.md`
 
 3. **Update templates**:
-    - Update `.sdd/DESIGN_DOC_TEMPLATE.md` to v1.2.0
+    - Update `${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md` to v1.2.0
 
 4. **Re-verify**:
     - Re-run `/constitution validate` after fixes

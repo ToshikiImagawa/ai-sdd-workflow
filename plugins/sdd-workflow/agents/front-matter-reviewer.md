@@ -1,7 +1,7 @@
 ---
 name: front-matter-reviewer
 description: "Validates YAML front matter in AI-SDD documents. Checks field formats, dependency direction, status values, type-specific fields, cross-reference integrity, and id uniqueness. Use after document generation or during consistency checks. Pass target document paths as arguments."
-model: sonnet
+model: haiku
 color: cyan
 allowed-tools: Read, Glob, Grep, AskUserQuestion
 skills: [ ]
@@ -59,6 +59,14 @@ status transition rules, and missing front matter policy.
 2. Check `.sdd-config.json` if environment variables are not set
 3. Use default values if neither exists
 
+### Index Fast Path
+
+When `SDD_INDEX` is `on`, a pre-built compressed index exists at `${SDD_ROOT}/.cache/index.md`.
+Read it **once** and use its `Metadata` table to identify target files and their `doc_id` values.
+However, front matter format validation requires the raw YAML, so **always Read the target file's
+first 50 lines** for format checks. The index accelerates file discovery but cannot replace raw Read
+for this agent. When `SDD_INDEX` is unset or `off`, use the existing Glob/Grep/Read flow.
+
 ## Role
 
 Validate YAML front matter in AI-SDD documents from the following perspectives:
@@ -68,6 +76,10 @@ Validate YAML front matter in AI-SDD documents from the following perspectives:
 3. **Cross-Reference Validation** (with `--cross-ref`): Dependency integrity, id uniqueness, status consistency
 
 ## Design Rationale
+
+**Model choice (`model: haiku`)**: This agent performs rule-based format validation defined by an explicit
+checklist (field presence, value patterns, allowed values). It does not require complex reasoning, so a
+lightweight model is sufficient for accuracy while reducing cost and latency.
 
 **This agent does NOT use the Task tool.**
 **This agent does NOT delegate to other sub-agents.**

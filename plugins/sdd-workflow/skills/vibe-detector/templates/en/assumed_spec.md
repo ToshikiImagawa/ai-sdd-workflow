@@ -2,7 +2,7 @@
 
 This template is the format for recording inferred specifications when specifications are insufficient.
 
-**Save Location**: `.sdd/task/{ticket}/assumed-spec.md`
+**Save Location**: `${SDD_TASK_PATH}/{ticket}/assumed-spec.md`
 
 ---
 

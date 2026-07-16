@@ -1,10 +1,11 @@
 ---
 name: doc-consistency-checker
 description: "Automatically executed during document updates or before implementation to check consistency between PRD ↔ *_spec.md ↔ *_design.md. Detects missing requirement ID (UR/FR/NFR) references, data model mismatches, API definition discrepancies, terminology inconsistencies, and ensures traceability between documents."
-version: 3.0.0
+argument-hint: "[feature-name]"
 license: MIT
 user-invocable: false
 allowed-tools: Read, Glob, Grep
+disallowed-tools: Write, Edit, Bash
 ---
 
 # Doc Consistency Checker - Document Consistency Check
@@ -29,9 +30,20 @@ Understand AI-SDD principles, document structure, persistence rules, and Vibe Co
 
 See `references/prerequisites_directory_paths.md` for directory path resolution using `SDD_*` environment variables.
 
+### Index Fast Path
+
+When `SDD_INDEX` is `on`, a pre-built compressed index exists at `${SDD_ROOT}/.cache/index.md`.
+Read it **once** and use all its tables (`Metadata`, `Requirement IDs`, `SysML Relationships`,
+`Data Models`, `API Signatures`) for cross-document consistency checks. This replaces
+the need for multiple Glob/Grep/Read calls across `.sdd/`. Fall back to raw Read of a specific file
+only when cross-reference verification requires full section text. When `SDD_INDEX` is unset or `off`,
+use the existing Glob/Grep/Read flow.
+
 ## Input
 
-This skill is triggered automatically via hooks during document updates or before implementation. It scans documents based on feature context.
+This skill is triggered by an advisory hint from the `PostToolUse` hook (`scripts/post-tool-use.py`) when
+files under `${SDD_REQUIREMENT_PATH}` or `${SDD_SPECIFICATION_PATH}` are edited. It scans documents based on
+feature context.
 
 | Input Source       | Description                                                    |
 |:-------------------|:---------------------------------------------------------------|
@@ -46,38 +58,8 @@ See `references/document_dependencies.md` for the document dependency chain and 
 
 ## Directory Structure Support
 
-Both flat and hierarchical structures are supported.
-
-**Flat Structure**:
-
-```
-${SDD_ROOT}/
-├── CONSTITUTION.md                        # Project constitution (top-level)
-├── requirement/{feature-name}.md
-└── specification/
-    ├── {feature-name}_spec.md
-    └── {feature-name}_design.md
-```
-
-**Hierarchical Structure**:
-
-```
-${SDD_ROOT}/
-├── CONSTITUTION.md                        # Project constitution (top-level)
-├── requirement/
-│   ├── {feature-name}.md                  # Top-level feature
-│   └── {parent-feature}/
-│       ├── index.md                       # Parent feature overview and requirements list
-│       └── {child-feature}.md             # Child feature requirements
-└── specification/
-    ├── {feature-name}_spec.md             # Top-level feature
-    ├── {feature-name}_design.md
-    └── {parent-feature}/
-        ├── index_spec.md                  # Parent feature abstract specification
-        ├── index_design.md                # Parent feature technical design document
-        ├── {child-feature}_spec.md        # Child feature abstract specification
-        └── {child-feature}_design.md      # Child feature technical design document
-```
+Both flat and hierarchical structures are supported. See `references/directory_structure.md` for the
+flat and hierarchical directory layouts.
 
 **⚠️ Note the difference in naming conventions**:
 
@@ -114,13 +96,9 @@ This skill focuses on document content consistency only.
 | **Requirement Reflection in Design Decisions** | Are spec requirements reflected in design decisions? |
 | **Constraint Consideration**                   | Are spec constraints considered in design?           |
 
-### 3. design ↔ Implementation Consistency
-
-| Check Item                     | Description                                                    |
-|:-------------------------------|:---------------------------------------------------------------|
-| **Module Structure Match**     | Does design module structure match actual directory structure? |
-| **Interface Definition Match** | Do design definitions match implementation code?               |
-| **Technology Stack Match**     | Are libraries documented in design actually being used?        |
+**Note**: `design <-> Implementation` consistency (module structure, interface definitions, technology stack) is
+handled exclusively by `/check-spec` (the `impl-spec-check` feature), not by this skill. Checking it here as well
+would duplicate that responsibility.
 
 ## Automatic Detection Patterns
 
@@ -132,19 +110,7 @@ This skill focuses on document content consistency only.
 
 ### Detection Method
 
-```
-1. Load target documents
-   ↓
-2. Extract the following elements:
-   - Requirement IDs (PRD)
-   - API definitions (spec)
-   - Type definitions (spec, design)
-   - Module structure (design)
-   ↓
-3. Compare across documents
-   ↓
-4. Detect and classify inconsistencies
-```
+See `references/detection_method.md` for the step-by-step detection procedure.
 
 ## Output Format
 
@@ -152,13 +118,13 @@ Read `templates/${SDD_LANG:-en}/consistency_report.md` and use it for consistenc
 
 ## Check Execution Timing
 
-| Timing                        | Recommended Check                                  |
-|:------------------------------|:---------------------------------------------------|
-| **Task Start**                | Verify existing document existence and consistency |
-| **Plan Completion**           | spec ↔ design consistency                          |
-| **Implementation Completion** | design ↔ implementation consistency                |
-| **Review**                    | All inter-document consistency                     |
-| **Periodic Check**            | Prevent documentation obsolescence                 |
+| Timing                        | Recommended Check                                                |
+|:-------------------------------|:------------------------------------------------------------------|
+| **Task Start**                | Verify existing document existence and consistency               |
+| **Plan Completion**           | spec ↔ design consistency                                        |
+| **Implementation Completion** | design ↔ implementation consistency (use `/check-spec` instead) |
+| **Review**                    | All inter-document consistency                                   |
+| **Periodic Check**            | Prevent documentation obsolescence                               |
 
 ## Document Update Triggers
 

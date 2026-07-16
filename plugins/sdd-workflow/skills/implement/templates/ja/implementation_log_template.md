@@ -707,8 +707,8 @@ ghi789 - refactor: メール正規化ロジックを抽出
 
 ## 参照ドキュメント
 
-- 設計書: `.sdd/specification/[{path}/]{name}_design.md`
-- 抽象仕様書: `.sdd/specification/[{path}/]{name}_spec.md`
-- タスクリスト: `.sdd/task/{チケット番号}/tasks.md`
+- 設計書: `${SDD_SPECIFICATION_PATH}/[{path}/]{name}_design.md`
+- 抽象仕様書: `${SDD_SPECIFICATION_PATH}/[{path}/]{name}_spec.md`
+- タスクリスト: `${SDD_TASK_PATH}/{チケット番号}/tasks.md`
 
 ※ 階層構造の場合、親機能は `index_spec.md`、`index_design.md`

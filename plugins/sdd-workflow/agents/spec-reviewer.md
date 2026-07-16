@@ -34,7 +34,7 @@ traceability check results, fix proposal summary)
 
 **Before execution, you must read the AI-SDD principles document.**
 
-AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
+AI-SDD principles document path: `${SDD_ROOT}/AI-SDD-PRINCIPLES.md`
 
 **Note**: This file is automatically updated at the start of each session.
 
@@ -62,6 +62,14 @@ This agent performs specification reviews based on AI-SDD principles.
 
 The following documentation uses default values, but replace with custom values if environment variables or
 configuration file exists.
+
+### Index Fast Path
+
+When `SDD_INDEX` is `on`, a pre-built compressed index exists at `${SDD_ROOT}/.cache/index.md`.
+Read it **once** and use its `Metadata`, `Requirement IDs`, `Data Models`, and `API Signatures` tables
+for traceability and consistency checks between spec and design. Fall back to raw Read of a specific file
+only when full section text is needed for ambiguity analysis. When `SDD_INDEX` is unset or `off`, use the
+existing Glob/Grep/Read flow.
 
 ## Role
 
@@ -99,7 +107,7 @@ search outside this scope.
 
 ### Preparation
 
-Before starting review, **you must read `.sdd/CONSTITUTION.md` using the Read tool**.
+Before starting review, **you must read `${SDD_ROOT}/CONSTITUTION.md` using the Read tool**.
 
 ### If CONSTITUTION.md Does Not Exist
 
@@ -259,6 +267,7 @@ Specifications support both flat structure (`{feature-name}_spec.md`) and hierar
 | **No Technical Details**   | Are implementation details excluded?                                           |
 | **PRD Mapping**            | Is mapping to requirement IDs clear?                                           |
 | **Hierarchical Structure** | For hierarchical structure, does `index_spec.md` have parent feature overview? |
+| **No Marker Residue**      | Are section requirement markers (`<MUST>`/`<RECOMMENDED>`/`<OPTIONAL>`) removed from headings? |
 
 ### 2. Technical Design Document (`*_design.md`)
 
@@ -274,6 +283,7 @@ Design documents support both flat structure (`{feature-name}_design.md`) and hi
 | **Design Decisions**       | Are important decisions and rationale documented?                                       |
 | **Spec Consistency**       | Is it consistent with abstract specification?                                           |
 | **Hierarchical Structure** | For hierarchical structure, does `index_design.md` have parent feature design overview? |
+| **No Marker Residue**      | Are section requirement markers (`<MUST>`/`<RECOMMENDED>`/`<OPTIONAL>`) removed from headings? |
 
 ## Ambiguity Detection Patterns
 
@@ -302,6 +312,7 @@ When principle violations are detected, generate fix proposals with the followin
 | Incorrect architecture layer   | Propose moving to appropriate layer                   | High     |
 | Missing error handling         | Propose adding error handling according to principles | Medium   |
 | Missing test considerations    | Propose adding test strategy section                  | Low      |
+| Marker residue in headings     | Propose removing `<MUST>`/`<RECOMMENDED>`/`<OPTIONAL>` markers from headings | High     |
 
 ### Non-Proposable Fix Cases
 

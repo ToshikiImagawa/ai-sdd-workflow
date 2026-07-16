@@ -707,8 +707,8 @@ Chronological record of implementation.
 
 ## Reference Documents
 
-- Design Doc: `.sdd/specification/[{path}/]{name}_design.md`
-- Abstract Specification: `.sdd/specification/[{path}/]{name}_spec.md`
-- Task List: `.sdd/task/{Ticket Number}/tasks.md`
+- Design Doc: `${SDD_SPECIFICATION_PATH}/[{path}/]{name}_design.md`
+- Abstract Specification: `${SDD_SPECIFICATION_PATH}/[{path}/]{name}_spec.md`
+- Task List: `${SDD_TASK_PATH}/{Ticket Number}/tasks.md`
 
 ※ For hierarchical structure, parent features use `index_spec.md`, `index_design.md`

@@ -1,10 +1,11 @@
 ---
 name: sdd-init
 description: "Initialize AI-SDD workflow in the current project. Sets up CLAUDE.md and generates document templates."
-version: 3.0.0
+argument-hint: "[--ci]"
 license: MIT
 user-invocable: true
 disable-model-invocation: true
+agent: haiku
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
@@ -14,9 +15,11 @@ Initialize AI-SDD (AI-driven Specification-Driven Development) workflow in the c
 
 ## What This Command Does
 
-1. **CLAUDE.md Configuration**: Add AI-SDD instructions to project's `CLAUDE.md`
+1. **CLAUDE.md Configuration**: Add the minimal AI-SDD Instructions section (declaration + trigger conditions + a pointer to the detailed rule) to the project's `CLAUDE.md`
 2. **Project Constitution Generation**: Create `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md` (if not exist)
 3. **Template Generation**: Create document templates in `${SDD_ROOT}/` directory (if not exist)
+
+> **Note**: The detailed AI-SDD guide (directory structure, file naming, doc-link convention) lives in `.claude/rules/ai-sdd-instructions.md`, a path-scoped rule that loads only when working under `.sdd/`. That file is created and version-synced automatically by the SessionStart hook (`session-start.py`), not by this command, so the always-loaded `CLAUDE.md` stays minimal. It is a single English file (agent-facing guidance, not a human-facing document) regardless of `SDD_LANG`.
 
 ## Input
 
@@ -60,21 +63,11 @@ This command initializes the project following AI-SDD principles.
 
 ### Configuration File Management
 
-**Note**: Configuration file management is handled by `init-structure.sh` (Phase 1). The script automatically:
+**Note**: Configuration file management is handled by `init-structure.py` (Phase 1). The script automatically:
 
 1. Checks if `.sdd-config.json` exists at project root
-2. If not exists: Creates with the default configuration:
-   ```json
-   {
-     "root": ".sdd",
-     "lang": "en",
-     "directories": {
-       "requirement": "requirement",
-       "specification": "specification",
-       "task": "task"
-     }
-   }
-   ```
+2. If not exists: Creates it with the default configuration. See `references/sdd_config_default.md` for the exact
+   content.
 
 **Note**: The `lang` field determines the language for templates (`en` or `ja`).
 
@@ -98,9 +91,9 @@ The `SDD_LANG` environment variable determines the language (default: `en`).
 
 **Optimized 2-Phase Execution** (reduces tool calls by 60-70%):
 
-### Phase 1: Shell Script (Static Operations)
+### Phase 1: Python Script (Static Operations)
 
-Execute `${CLAUDE_PLUGIN_ROOT}/skills/sdd-init/scripts/init-structure.sh` to perform static file operations.
+Execute `${CLAUDE_PLUGIN_ROOT}/skills/sdd-init/scripts/init-structure.py` to perform static file operations.
 
 **What the script does:**
 
@@ -124,18 +117,14 @@ Execute `${CLAUDE_PLUGIN_ROOT}/skills/sdd-init/scripts/init-structure.sh` to per
 5. **Export Environment Variables** to `$CLAUDE_ENV_FILE`:
     - `SDD_ROOT`, `SDD_LANG`, `SDD_*_DIR`, `SDD_*_PATH`
 
-**Script execution:**
-
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/skills/sdd-init/scripts/init-structure.sh"
-```
+**Script execution:** `python3 "${CLAUDE_PLUGIN_ROOT}/skills/sdd-init/scripts/init-structure.py"`
 
 **Note**: The script reads configuration from `.sdd-config.json`
 and uses `$CLAUDE_ENV_FILE` to export variables for Claude's prompt context.
 
 ### Phase 2: Update CLAUDE.md
 
-Execute `${CLAUDE_PLUGIN_ROOT}/skills/sdd-init/scripts/update-claude-md.sh` to automatically update CLAUDE.md.
+Execute `${CLAUDE_PLUGIN_ROOT}/skills/sdd-init/scripts/update-claude-md.py` to automatically update CLAUDE.md.
 
 **What the script does:**
 
@@ -147,11 +136,7 @@ Execute `${CLAUDE_PLUGIN_ROOT}/skills/sdd-init/scripts/update-claude-md.sh` to a
     - If exists with old version: Update section with new version
     - If exists with current version: Skip (already up to date)
 
-**Script execution:**
-
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/skills/sdd-init/scripts/update-claude-md.sh"
-```
+**Script execution:** `python3 "${CLAUDE_PLUGIN_ROOT}/skills/sdd-init/scripts/update-claude-md.py"`
 
 **Note**: The script automatically detects the current state and performs the appropriate operation.
 
@@ -228,7 +213,7 @@ Use `/constitution` command to manage the constitution:
 
 ## Template Generation
 
-**Note**: Template generation is handled by `init-structure.sh` (Phase 1).
+**Note**: Template generation is handled by `init-structure.py` (Phase 1).
 All templates are copied from skill directories if they don't already exist.
 
 ### Templates to Generate
@@ -256,7 +241,7 @@ users can manually edit templates after initialization.
 After Phase 1 and Phase 2 complete:
 
 1. **CLAUDE.md**: Verify update script output (created/appended/updated/skipped)
-2. **Templates**: Verify init-structure.sh output (created templates)
+2. **Templates**: Verify init-structure.py output (created templates)
 3. **Configuration**: Verify `.sdd-config.json` exists
 4. **Front Matter Recommendation**: If existing documents without YAML front matter are found under `${SDD_ROOT}/`, recommend running `/recommend-front-matter` to add structured metadata
 
@@ -266,7 +251,7 @@ After Phase 1 and Phase 2 complete:
 
 ## Cleanup
 
-**Note**: Cleanup is handled by `init-structure.sh` (Phase 1).
+**Note**: Cleanup is handled by `init-structure.py` (Phase 1).
 
 The script automatically deletes `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/UPDATE_REQUIRED.md` if it exists. This file is created by the `session-start`
 hook when version mismatch is detected, and becomes unnecessary after initialization.

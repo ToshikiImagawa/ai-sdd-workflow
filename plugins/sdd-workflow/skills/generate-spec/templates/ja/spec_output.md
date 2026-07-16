@@ -2,8 +2,8 @@
 
 ### 生成されたファイル
 
-- [x] `.sdd/specification/[{親機能名}/]{機能名}_spec.md`（抽象仕様書）
-- [x] `.sdd/specification/[{親機能名}/]{機能名}_design.md`（技術設計書）
+- [x] `${SDD_SPECIFICATION_PATH}/[{親機能名}/]{機能名}_spec.md`（抽象仕様書）
+- [x] `${SDD_SPECIFICATION_PATH}/[{親機能名}/]{機能名}_design.md`（技術設計書）
 
 ※ 階層構造の場合、親機能は `index_spec.md`、`index_design.md`
 

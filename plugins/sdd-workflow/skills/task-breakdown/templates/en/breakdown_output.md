@@ -75,8 +75,8 @@ graph TD
 
 ## Reference Documents
 
-- Abstract Specification: `.sdd/specification/[{parent}/]{feature}_spec.md`
-- Technical Design: `.sdd/specification/[{parent}/]{feature}_design.md`
+- Abstract Specification: `${SDD_SPECIFICATION_PATH}/[{parent}/]{feature}_spec.md`
+- Technical Design: `${SDD_SPECIFICATION_PATH}/[{parent}/]{feature}_design.md`
 
 ※ For hierarchical structure, parent features use `index_spec.md`, `index_design.md`
 

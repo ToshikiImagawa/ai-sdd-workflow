@@ -2,7 +2,7 @@
 
 このテンプレートは仕様不足時に推測した仕様を記録するためのフォーマットです。
 
-**保存先**: `.sdd/task/{ticket}/assumed-spec.md`
+**保存先**: `${SDD_TASK_PATH}/{ticket}/assumed-spec.md`
 
 ---
 

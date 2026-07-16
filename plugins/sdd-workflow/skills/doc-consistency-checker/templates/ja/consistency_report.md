@@ -10,9 +10,9 @@
 
 | ドキュメント | パス                                   | 最終更新日      |
 |:-------|:-------------------------------------|:-----------|
-| PRD    | `.sdd/requirement/{機能名}.md`          | YYYY-MM-DD |
-| spec   | `.sdd/specification/{機能名}_spec.md`   | YYYY-MM-DD |
-| design | `.sdd/specification/{機能名}_design.md` | YYYY-MM-DD |
+| PRD    | `${SDD_REQUIREMENT_PATH}/{機能名}.md`          | YYYY-MM-DD |
+| spec   | `${SDD_SPECIFICATION_PATH}/{機能名}_spec.md`   | YYYY-MM-DD |
+| design | `${SDD_SPECIFICATION_PATH}/{機能名}_design.md` | YYYY-MM-DD |
 
 ### チェック結果サマリー
 
@@ -20,7 +20,6 @@
 |:--------------|:---------------|:------|
 | PRD ↔ spec    | 🟢 整合 / 🔴 不整合 | {n} 件 |
 | spec ↔ design | 🟢 整合 / 🔴 不整合 | {n} 件 |
-| design ↔ 実装   | 🟢 整合 / 🔴 不整合 | {n} 件 |
 
 ---
 
@@ -76,30 +75,8 @@
 
 ---
 
-#### design ↔ 実装
-
-##### 1. {不整合のタイトル}
-
-**種別**: 欠落 / 矛盾 / 陳腐化
-
-**designの記載**:
-
-```
-{designの該当箇所}
-```
-
-**実装**:
-
-```
-{実際のファイル構造・コード}
-```
-
-**推奨アクション**:
-
-- [ ] designを実装に合わせて更新
-- [ ] 実装をdesignに合わせて修正
-
----
+> **注記**: design ↔ 実装の整合性チェックは本スキルのスコープ外です。design ↔ 実装のチェックには
+> `/check-spec`（impl-spec-check）を使用してください。
 
 ### 🟢 整合確認済み項目
 

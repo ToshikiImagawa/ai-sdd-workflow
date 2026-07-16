@@ -2,9 +2,10 @@
 name: task-cleanup
 description: "Clean up task/ directory after implementation completion, integrating important design decisions into *_design.md before deletion"
 argument-hint: "[ticket-number]"
-version: 3.0.0
+arguments: [ticket-number]
 license: MIT
 user-invocable: true
+agent: haiku
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 
@@ -35,7 +36,12 @@ The `SDD_LANG` environment variable determines the language (default: `en`).
 
 ## Input
 
-$ARGUMENTS
+- `ticket-number`: $ticket-number
+
+Full argument string: $ARGUMENTS
+
+> **Fallback**: If the value above is empty or remains a literal `$` placeholder, treat the
+> argument as omitted and follow the no-argument flow (scope confirmation below).
 
 | Argument | Required | Description |
 |:--|:--|:--|
@@ -43,11 +49,9 @@ $ARGUMENTS
 
 ### Input Examples
 
-```
-/task-cleanup TICKET-123
-/task-cleanup feature/task-management
-/task-cleanup  # Without arguments, targets entire task/
-```
+- `/task-cleanup TICKET-123`
+- `/task-cleanup feature/task-management`
+- `/task-cleanup` (without arguments, targets entire task/)
 
 ### Scope Confirmation for No-Argument Execution
 
@@ -65,20 +69,12 @@ Replace placeholders with actual directory/file names, types, dates, and counts.
 
 ### 1. Identify Target Directory
 
-```
-With argument -> Target ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{argument}/
-Without argument -> Target entire ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/
-```
+- With argument -> Target `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{argument}/`
+- Without argument -> Target entire `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/`
 
 ### 2. Check Target Files
 
-```bash
-# Get file list in target directory
-ls -la ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{target}/
-
-# Check last update date for each file
-git log -1 --format="%ci" -- <file_path>
-```
+Get the file list in the target directory with `ls -la ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{target}/`, then check the last update date for each file with `git log -1 --format="%ci" -- <file_path>`.
 
 ### 3. Analyze and Classify Content
 
@@ -108,12 +104,10 @@ Review content of each file and classify as follows:
 
 When there is information to integrate, determine appropriate integration target:
 
-```
-1. Find existing *_design.md most related to content
+1. Find existing `*_design.md` most related to content
 2. If no appropriate existing file:
-   - If related *_spec.md exists -> Create new corresponding *_design.md
-   - If no related *_spec.md -> Skip integration (delete information)
-```
+   - If related `*_spec.md` exists -> Create new corresponding `*_design.md`
+   - If no related `*_spec.md` -> Skip integration (delete information)
 
 ### 5. Integrate Information
 
@@ -135,13 +129,7 @@ Before deleting task files, update front matter in related documents if they hav
 
 ### 7. Delete Files/Directories
 
-```bash
-# Delete files
-git rm ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{target}/{file}
-
-# Delete entire directory (after all files processed)
-git rm -r ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{target}/
-```
+Delete individual files with `git rm ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{target}/{file}`, or delete the entire directory after all files are processed with `git rm -r ${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{target}/`.
 
 ## Output
 

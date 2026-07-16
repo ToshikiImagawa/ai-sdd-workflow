@@ -2,8 +2,8 @@
 
 ### Generated Files
 
-- [x] `.sdd/specification/[{parent}/]{feature}_spec.md` (Abstract Specification)
-- [x] `.sdd/specification/[{parent}/]{feature}_design.md` (Technical Design Doc)
+- [x] `${SDD_SPECIFICATION_PATH}/[{parent}/]{feature}_spec.md` (Abstract Specification)
+- [x] `${SDD_SPECIFICATION_PATH}/[{parent}/]{feature}_design.md` (Technical Design Doc)
 
 ※ For hierarchical structure, parent features use `index_spec.md`, `index_design.md`
 

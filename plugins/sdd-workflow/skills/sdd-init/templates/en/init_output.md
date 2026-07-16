@@ -12,7 +12,7 @@
 
 1. **Review Configuration**: Check `.sdd-config.json` for directory paths and language settings
 2. **Create Constitution**: Run `/constitution init` to generate a customized CONSTITUTION.md
-3. **Customize Templates**: Review and customize templates in `.sdd/` as needed
+3. **Customize Templates**: Review and customize templates in `${SDD_ROOT}/` as needed
 4. **Add Front Matter**: Run `/recommend-front-matter` to add YAML front matter to existing documents (enables structured search, dependency tracking, and cross-reference validation)
 5. **Start Development**:
    - Use `/generate-prd` to create your first PRD

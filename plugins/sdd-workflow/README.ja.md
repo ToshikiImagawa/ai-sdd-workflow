@@ -20,6 +20,7 @@ AI駆動仕様駆動開発（AI-SDD）ワークフローを支援する統合 Cl
 | Linux   |   ✅   | 完全サポート                    |
 | Windows |   ❌   | 非対応（下記の代替案を参照）            |
 | Python  | 3.7+  | session-start フックの実行に必要   |
+| Claude Code | 2.1.199+ | 名前付きスキル引数（`arguments` frontmatter / `$name` 置換）に必要。旧バージョンでは `$name` は置換されず、スキルは引数文字列全体の解釈にフォールバックする |
 
 ### Windows の制限事項
 
@@ -504,17 +505,19 @@ CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実
     "requirement": "requirement",
     "specification": "specification",
     "task": "task"
-  }
+  },
+  "index": true
 }
 ```
 
-| 設定                          | デフォルト           | 説明                |
-|:----------------------------|:----------------|:------------------|
-| `root`                      | `.sdd`          | ルートディレクトリ         |
-| `lang`                      | `ja`            | 言語（`en` または `ja`） |
-| `directories.requirement`   | `requirement`   | PRD（要求仕様書）ディレクトリ  |
-| `directories.specification` | `specification` | 仕様書/設計書ディレクトリ     |
-| `directories.task`          | `task`          | 一時タスクログディレクトリ     |
+| 設定                          | デフォルト           | 説明                                                                          |
+|:----------------------------|:----------------|:----------------------------------------------------------------------------|
+| `root`                      | `.sdd`          | ルートディレクトリ                                                                   |
+| `lang`                      | `ja`            | 言語（`en` または `ja`）                                                           |
+| `directories.requirement`   | `requirement`   | PRD（要求仕様書）ディレクトリ                                                            |
+| `directories.specification` | `specification` | 仕様書/設計書ディレクトリ                                                               |
+| `directories.task`          | `task`          | 一時タスクログディレクトリ                                                               |
+| `index`                     | `true`          | 真偽値。セッション開始時に `.sdd` ドキュメントの圧縮インデックス（SQLite → `index.md`）を構築しトークンを削減する。`false` で無効化。 |
 
 **注**:
 
@@ -524,27 +527,32 @@ CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実
 ## プラグイン構造
 
 ```
-sdd-workflow-ja/
+sdd-workflow/
 ├── .claude-plugin/
 │   └── plugin.json                # プラグインマニフェスト
-├── agents -> ../sdd-workflow/agents  # sdd-workflow へのシンボリックリンク
-├── skills -> ../sdd-workflow/skills  # sdd-workflow へのシンボリックリンク
+├── agents/
+│   ├── prd-reviewer.md            # PRDレビュー・CONSTITUTION準拠チェックエージェント
+│   ├── spec-reviewer.md           # 仕様書レビューエージェント
+│   ├── requirement-analyzer.md    # 要求分析エージェント
+│   ├── clarification-assistant.md # 仕様明確化アシスタント
+│   ├── front-matter-reviewer.md   # YAML front matter検証エージェント
+│   ├── templates/{en,ja}/         # エージェント出力テンプレート（言語別）
+│   ├── references/                # エージェント参照（sharedへのsymlink）
+│   └── examples/                  # エージェント使用例
+├── shared/
+│   └── references/                # 共通参照ドキュメント
+├── skills/                        # 各種スキル（SKILL.md + templates/{en,ja}/ 等）
 ├── hooks/
 │   └── hooks.json                 # フック設定
-├── scripts -> ../sdd-workflow/scripts  # sdd-workflow へのシンボリックリンク
-├── AI-SDD-PRINCIPLES.source.md -> ../sdd-workflow/AI-SDD-PRINCIPLES.source.md
-├── LICENSE -> ../sdd-workflow/LICENSE
+├── scripts/
+│   └── session-start.py           # セッション開始時の初期化スクリプト
+├── AI-SDD-PRINCIPLES.source.md
+├── LICENSE
 ├── README.md
-└── CHANGELOG.md
+├── README.ja.md
+├── CHANGELOG.md
+└── CHANGELOG.ja.md
 ```
-
-### sdd-workflow との違い
-
-| 項目                          | sdd-workflow | sdd-workflow-ja           |
-|:----------------------------|:-------------|:--------------------------|
-| `SDD_LANG` デフォルト            | `en`         | `ja`                      |
-| `.sdd-config.json` 自動生成時の言語 | `en`         | `ja`                      |
-| エージェント・スキル                  | 独自           | sdd-workflow を参照（symlink） |
 
 ## ライセンス
 

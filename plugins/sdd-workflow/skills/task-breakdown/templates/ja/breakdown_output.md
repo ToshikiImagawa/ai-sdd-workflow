@@ -75,8 +75,8 @@ T1_2 --> T2_2
 
 ## 参照ドキュメント
 
-- 抽象仕様書: `.sdd/specification/[{親機能名}/]{機能名}_spec.md`
-- 技術設計書: `.sdd/specification/[{親機能名}/]{機能名}_design.md`
+- 抽象仕様書: `${SDD_SPECIFICATION_PATH}/[{親機能名}/]{機能名}_spec.md`
+- 技術設計書: `${SDD_SPECIFICATION_PATH}/[{親機能名}/]{機能名}_design.md`
 
 ※ 階層構造の場合、親機能は `index_spec.md`、`index_design.md`
 

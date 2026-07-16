@@ -1,7 +1,7 @@
 ✓ プロジェクト原則を作成しました
 
 **バージョン**: 1.0.0
-**場所**: `.sdd/CONSTITUTION.md`
+**場所**: `${SDD_ROOT}/CONSTITUTION.md`
 
 ## 定義された原則
 
@@ -35,8 +35,8 @@ v1.2.0
 
 ### 検証対象
 
-- `.sdd/specification/**/*_spec.md` (15 files)
-- `.sdd/specification/**/*_design.md` (15 files)
+- `${SDD_SPECIFICATION_PATH}/**/*_spec.md` (15 files)
+- `${SDD_SPECIFICATION_PATH}/**/*_design.md` (15 files)
 - テンプレートファイル (2 files)
 
 ### 検証サマリー
@@ -53,7 +53,7 @@ v1.2.0
 
 #### 原則: A-001 Library-First
 
-**違反箇所**: `.sdd/specification/auth/user-login_design.md`
+**違反箇所**: `${SDD_SPECIFICATION_PATH}/auth/user-login_design.md`
 
 **違反内容**:
 
@@ -76,7 +76,7 @@ v1.2.0
 
 #### 原則: T-002 No Runtime Errors
 
-**未言及箇所**: `.sdd/specification/payment/checkout_design.md`
+**未言及箇所**: `${SDD_SPECIFICATION_PATH}/payment/checkout_design.md`
 
 **問題**: Error Boundary や型ガードについての記述がない
 
@@ -102,8 +102,8 @@ v1.2.0
 
 | テンプレート                           | 原則バージョン | 同期状態           |
 |:---------------------------------|:--------|:---------------|
-| `.sdd/SPECIFICATION_TEMPLATE.md` | v1.2.0  | ✅ 最新           |
-| `.sdd/DESIGN_DOC_TEMPLATE.md`    | v1.1.0  | 🟡 要更新（v1.2.0） |
+| `${SDD_ROOT}/SPECIFICATION_TEMPLATE.md` | v1.2.0  | ✅ 最新           |
+| `${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`    | v1.1.0  | 🟡 要更新（v1.2.0） |
 
 **推奨アクション**:
 
@@ -114,13 +114,13 @@ v1.2.0
 ### 次のアクション
 
 1. **違反項目の修正**:
-    - `.sdd/specification/auth/user-login_design.md` を修正
+    - `${SDD_SPECIFICATION_PATH}/auth/user-login_design.md` を修正
 
 2. **未言及項目の追記**:
-    - `.sdd/specification/payment/checkout_design.md` にエラーハンドリング戦略を追記
+    - `${SDD_SPECIFICATION_PATH}/payment/checkout_design.md` にエラーハンドリング戦略を追記
 
 3. **テンプレートの更新**:
-    - `.sdd/DESIGN_DOC_TEMPLATE.md` を v1.2.0 に更新
+    - `${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md` を v1.2.0 に更新
 
 4. **再検証**:
     - 修正後、`/constitution validate` を再実行

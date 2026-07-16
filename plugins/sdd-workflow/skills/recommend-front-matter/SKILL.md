@@ -2,9 +2,9 @@
 name: recommend-front-matter
 description: "Scan existing AI-SDD documents and recommend YAML front matter additions"
 argument-hint: "[--apply]"
-version: 3.2.0
 license: MIT
 user-invocable: true
+agent: haiku
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 
@@ -45,10 +45,8 @@ $ARGUMENTS
 
 ### Input Examples
 
-```
-/recommend-front-matter          # Generate recommendation report only
-/recommend-front-matter --apply  # Apply front matter after confirmation
-```
+- `/recommend-front-matter` — Generate recommendation report only
+- `/recommend-front-matter --apply` — Apply front matter after confirmation
 
 ## Processing Flow
 
@@ -56,11 +54,7 @@ $ARGUMENTS
 
 ### Phase 1: Shell Script - Scan Documents
 
-Execute `scan-documents.sh` to scan AI-SDD documents:
-
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/skills/recommend-front-matter/scripts/scan-documents.sh"
-```
+Execute `python3 "${CLAUDE_PLUGIN_ROOT}/skills/recommend-front-matter/scripts/scan-documents.py"` to scan AI-SDD documents.
 
 This script:
 1. Loads `.sdd-config.json` to resolve directory paths
@@ -68,33 +62,13 @@ This script:
 3. Detects Front Matter presence (checks for opening/closing `---`)
 4. Determines document type from file path and naming convention
 5. Extracts title from first `#` heading
-6. Generates JSON report (`.sdd/.cache/recommend-front-matter/scan_result.json`)
+6. Generates JSON report (`${SDD_ROOT}/.cache/recommend-front-matter/scan_result.json`)
 7. Exports environment variables to `$CLAUDE_ENV_FILE`:
    - `RECOMMEND_FM_CACHE_DIR` - Cache directory
    - `RECOMMEND_FM_SCAN_RESULT` - JSON scan result file path
    - `SDD_LANG` - Language configuration
 
-**Scan Result JSON Schema**:
-
-```json
-{
-  "scan_timestamp": "2026-02-24T12:00:00Z",
-  "total_documents": 15,
-  "documents_with_front_matter": 5,
-  "documents_without_front_matter": 10,
-  "documents": [
-    {
-      "path": "/absolute/path/.sdd/requirement/user-login.md",
-      "relative_path": "requirement/user-login.md",
-      "basename": "user-login",
-      "type": "prd",
-      "has_front_matter": false,
-      "title_line": "User Login Feature"
-    },
-    ...
-  ]
-}
-```
+**Scan Result JSON Schema**: See `references/scan_result_schema.md` for the full schema and an example.
 
 ### Phase 2: Claude - Generate Front Matter Recommendations
 
@@ -152,38 +126,7 @@ For flat structures (e.g., `specification/user-login_design.md`):
 
 #### 3. Infer Type-Specific Fields
 
-Based on the `type` field:
-
-**PRD** (`type: "prd"`):
-```yaml
-priority: "medium"
-risk: "medium"
-```
-
-**Spec** (`type: "spec"`):
-```yaml
-sdd-phase: "specify"
-```
-
-**Design** (`type: "design"`):
-```yaml
-sdd-phase: "plan"
-impl-status: "not-implemented"
-```
-
-**Task** (`type: "task"`):
-```yaml
-sdd-phase: "tasks"
-ticket: ""
-```
-
-**Implementation Log** (`type: "implementation-log"`):
-```yaml
-sdd-phase: "implement"
-ticket: ""
-completed: ""
-implementer: ""
-```
+Based on the `type` field, add the type-specific fields listed in `templates/${SDD_LANG}/type_specific_fields.md` (PRD / Spec / Design / Task / Implementation Log).
 
 ### Phase 3: Generate Recommendation Report
 

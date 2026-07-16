@@ -46,15 +46,11 @@ Common principle templates you can adapt:
 
 ### Constitution as Code
 
-Export constitution to machine-readable format:
-
-```
-/constitution export --format json
-```
+Export constitution to machine-readable format by running `/constitution export --format json`.
 
 Output: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/constitution.json`
 
-For an example JSON format, see: `examples/constitution_as_code.json`
+For an example JSON format, see: `examples/constitution_as_code.md`
 
 Use in CI/CD pipelines for automated validation.
 

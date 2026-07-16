@@ -2,7 +2,7 @@
 
 ### 生成されたファイル
 
-- [x] `.sdd/requirement/[{親機能名}/]{機能名}.md`
+- [x] `${SDD_REQUIREMENT_PATH}/[{親機能名}/]{機能名}.md`
 
 ※ 階層構造の場合、親機能は `index.md`
 

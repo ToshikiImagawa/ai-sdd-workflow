@@ -33,7 +33,7 @@ PRD review result report (evaluation summary, items requiring fixes, recommended
 
 **Before execution, you must read the AI-SDD principles document.**
 
-AI-SDD principles document path: `.sdd/AI-SDD-PRINCIPLES.md`
+AI-SDD principles document path: `${SDD_ROOT}/AI-SDD-PRINCIPLES.md`
 
 **Note**: This file is automatically updated at the start of each session.
 
@@ -61,6 +61,14 @@ This agent performs PRD reviews based on AI-SDD principles.
 
 The following documentation uses default values, but replace with custom values if environment variables or
 configuration file exists.
+
+### Index Fast Path
+
+When `SDD_INDEX` is `on`, a pre-built compressed index exists at `${SDD_ROOT}/.cache/index.md`.
+Read it **once** and use its `Metadata`, `Requirement IDs`, and `SysML Relationships` tables for
+traceability and completeness checks. Fall back to raw Read of a specific file only when full section
+text is needed for completeness verification. When `SDD_INDEX` is unset or `off`, use the existing
+Glob/Grep/Read flow.
 
 ## Role
 
@@ -97,7 +105,7 @@ search outside this scope.
 
 ### Preparation
 
-Before starting review, **you must read `.sdd/CONSTITUTION.md` using the Read tool**.
+Before starting review, **you must read `${SDD_ROOT}/CONSTITUTION.md` using the Read tool**.
 
 ### If CONSTITUTION.md Does Not Exist
 
@@ -166,6 +174,7 @@ If front matter is absent, note in report: "Front matter not found. Consider add
 | **Non-Functional Requirements** |          | Are performance, security, etc. defined?       |
 | **Constraints**                 |          | Are business/technical constraints documented? |
 | **Priority**                    |          | Is MoSCoW method used for classification?      |
+| **No Marker Residue**           | Yes      | Are section requirement markers (`<MUST>`/`<RECOMMENDED>`/`<OPTIONAL>`) removed from headings? |
 
 ### 2. SysML Requirements Diagram Format Verification
 
@@ -199,6 +208,7 @@ When principle violations are detected, generate fix proposals with the followin
 | SysML attribute uppercase   | Propose converting to lowercase                         | High     |
 | Missing principle reference | Propose adding principle to "Constraints" section       | Medium   |
 | verifymethod not set        | Propose setting default value based on requirement type | Low      |
+| Marker residue in headings  | Propose removing `<MUST>`/`<RECOMMENDED>`/`<OPTIONAL>` markers from headings | High     |
 
 ### Non-Proposable Fix Cases
 

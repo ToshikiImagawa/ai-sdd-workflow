@@ -2,7 +2,7 @@
 
 ### Target Document
 
-- `.sdd/specification/[{parent}/]{feature}_spec.md`
+- `${SDD_SPECIFICATION_PATH}/[{parent}/]{feature}_spec.md`
 
 ※ For hierarchical structure, parent features use `index_spec.md`
 
@@ -125,7 +125,7 @@
 
 ### Answer Integration Destination
 
-Answers will be integrated into `.sdd/specification/[{parent}/]{feature}_spec.md` in the following sections:
+Answers will be integrated into `${SDD_SPECIFICATION_PATH}/[{parent}/]{feature}_spec.md` in the following sections:
 
 - Data Model related → `## Data Model` section
 - Flow related → `## Behavior` section

@@ -10,9 +10,9 @@ This template is the output format for document consistency check results.
 
 | Document | Path                                          | Last Updated |
 |:---------|:----------------------------------------------|:-------------|
-| PRD      | `.sdd/requirement/{feature-name}.md`          | YYYY-MM-DD   |
-| spec     | `.sdd/specification/{feature-name}_spec.md`   | YYYY-MM-DD   |
-| design   | `.sdd/specification/{feature-name}_design.md` | YYYY-MM-DD   |
+| PRD      | `${SDD_REQUIREMENT_PATH}/{feature-name}.md`          | YYYY-MM-DD   |
+| spec     | `${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md`   | YYYY-MM-DD   |
+| design   | `${SDD_SPECIFICATION_PATH}/{feature-name}_design.md` | YYYY-MM-DD   |
 
 ### Check Results Summary
 
@@ -20,7 +20,6 @@ This template is the output format for document consistency check results.
 |:------------------------|:--------------------------|:----------|
 | PRD ↔ spec              | Consistent / Inconsistent | {n} items |
 | spec ↔ design           | Consistent / Inconsistent | {n} items |
-| design ↔ Implementation | Consistent / Inconsistent | {n} items |
 
 ---
 
@@ -76,30 +75,8 @@ This template is the output format for document consistency check results.
 
 ---
 
-#### design ↔ Implementation
-
-##### 1. {Inconsistency Title}
-
-**Type**: Missing / Contradiction / Obsolescence
-
-**design States**:
-
-```
-{design content}
-```
-
-**Implementation**:
-
-```
-{Actual file structure/code}
-```
-
-**Recommended Action**:
-
-- [ ] Update design to match implementation
-- [ ] Fix implementation to match design
-
----
+> **Note**: `design ↔ Implementation` consistency is out of scope for this skill. Use `/check-spec`
+> (the `impl-spec-check` feature) for design ↔ implementation checks.
 
 ### Verified Consistent Items
 

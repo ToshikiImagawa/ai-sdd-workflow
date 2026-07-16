@@ -2,7 +2,7 @@
 name: implement
 description: "Execute TDD-based implementation and progressively complete checklist in tasks.md"
 argument-hint: "<feature-name> [ticket-number]"
-version: 3.0.0
+arguments: [feature-name, ticket-number]
 license: MIT
 user-invocable: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, TaskCreate, TaskUpdate, TaskList, TaskGet
@@ -35,7 +35,14 @@ Verify the following exist before execution:
 
 ## Input
 
-$ARGUMENTS
+- `feature-name`: $feature-name
+- `ticket-number`: $ticket-number
+
+Full argument string: $ARGUMENTS
+
+> **Fallback**: If a value above is empty, remains a literal `$` placeholder, or starts with `--`
+> (a flag captured positionally), treat that argument as omitted and interpret the full argument
+> string instead. Ask the user interactively when a required argument is missing.
 
 | Argument | Required | Description |
 |:--|:--|:--|

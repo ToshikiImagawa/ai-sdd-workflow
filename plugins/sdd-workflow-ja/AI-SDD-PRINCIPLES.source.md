@@ -1,1 +1,0 @@
-../sdd-workflow/AI-SDD-PRINCIPLES.source.md

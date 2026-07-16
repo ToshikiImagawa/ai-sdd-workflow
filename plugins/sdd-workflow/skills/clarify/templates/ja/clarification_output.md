@@ -2,7 +2,7 @@
 
 ### 対象ドキュメント
 
-- `.sdd/specification/[{親機能名}/]{機能名}_spec.md`
+- `${SDD_SPECIFICATION_PATH}/[{親機能名}/]{機能名}_spec.md`
 
 ※ 階層構造の場合、親機能は `index_spec.md`
 
@@ -125,7 +125,7 @@
 
 ### 回答の統合先
 
-回答は `.sdd/specification/[{親機能名}/]{機能名}_spec.md` に以下のセクションに統合します：
+回答は `${SDD_SPECIFICATION_PATH}/[{親機能名}/]{機能名}_spec.md` に以下のセクションに統合します：
 
 - データモデル関連 → `## データモデル` セクション
 - フロー関連 → `## 振る舞い` セクション

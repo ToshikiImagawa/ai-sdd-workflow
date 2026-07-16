@@ -7,7 +7,7 @@
 ### CONSTITUTION.md Compliance Check
 
 **Principle Version**: v{X.Y.Z}
-**Principle File**: `.sdd/CONSTITUTION.md`
+**Principle File**: `${SDD_ROOT}/CONSTITUTION.md`
 
 | Principle Category        | Principle ID | Principle Name   | Compliance Status                      |
 |:--------------------------|:-------------|:-----------------|:---------------------------------------|

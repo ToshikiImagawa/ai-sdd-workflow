@@ -2,12 +2,12 @@
 name: analyze-requirements
 description: "Analyze and extract requirements from use case diagram. Use when extracting UR/FR/NFR from use cases or when called by generate-prd."
 argument-hint: "<input-text> [--ci]"
-version: 3.0.1
 license: MIT
 user-invocable: true
 context: fork
 agent: sonnet
 allowed-tools: Read, Glob, Grep, AskUserQuestion
+disallowed-tools: Write, Edit, Bash
 ---
 
 # Analyze Requirements
@@ -54,12 +54,7 @@ $ARGUMENTS
 
 See `examples/usecase_diagram_input.md` for detailed input formats with Mermaid diagrams.
 
-**Quick examples:**
-
-```
-/analyze-requirements task-management
-/analyze-requirements task-management --ci
-```
+**Quick examples:** `/analyze-requirements task-management`, `/analyze-requirements task-management --ci`. See `examples/usecase_diagram_input.md` for more.
 
 When a feature name is provided, look for:
 - `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md` - Existing PRD
@@ -130,42 +125,7 @@ Check Quality Checks items before returning output.
 
 **IMPORTANT**: This skill returns text only. It does NOT write files.
 
-Return the following markdown structure:
-
-```markdown
-## User Requirements (UR)
-
-| ID     | Requirement                                | Priority | Risk   |
-|:-------|:-------------------------------------------|:---------|:-------|
-| UR-001 | Users can efficiently manage tasks         | Must     | High   |
-| UR-002 | System provides intuitive task operations  | Should   | Medium |
-
-## Functional Requirements (FR)
-
-| ID     | Requirement                           | Derived From | Priority | Risk   | Verification |
-|:-------|:--------------------------------------|:-------------|:---------|:-------|:-------------|
-| FR-001 | User can create new tasks             | UR-001       | Must     | High   | Test         |
-| FR-002 | User can edit existing tasks          | UR-001       | Must     | Medium | Test         |
-| FR-003 | User can delete tasks                 | UR-001       | Must     | Medium | Test         |
-| FR-004 | User can mark tasks as complete       | UR-001       | Must     | Low    | Test         |
-
-## Non-Functional Requirements (NFR)
-
-| ID      | Requirement                          | Category    | Priority | Risk   | Verification   |
-|:--------|:-------------------------------------|:------------|:---------|:-------|:---------------|
-| NFR-001 | Response time under 1 second         | Performance | Should   | Medium | Demonstration  |
-| NFR-002 | System available 99.9% uptime        | Reliability | Should   | High   | Analysis       |
-| NFR-003 | User actions logged for audit        | Security    | Could    | Low    | Inspection     |
-
-## Requirements Summary
-
-| Category | Count | Must | Should | Could |
-|:---------|------:|-----:|-------:|------:|
-| UR       |     2 |    1 |      1 |     0 |
-| FR       |     4 |    4 |      0 |     0 |
-| NFR      |     3 |    0 |      2 |     1 |
-| **Total**|   **9**| **5**|  **3** | **1** |
-```
+Return the markdown structure defined in `references/output_format.md` (UR/FR/NFR tables plus a Requirements Summary table).
 
 The caller (generate-prd or user) is responsible for saving the output to a file if needed.
 

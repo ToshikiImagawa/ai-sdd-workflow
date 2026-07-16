@@ -1,10 +1,20 @@
 {
   "name": "sdd-workflow",
   "description": "A unified plugin supporting AI-driven Specification-Driven Development (AI-SDD) workflow. Prevents Vibe Coding problems and achieves high-quality implementations using specifications as the source of truth. Supports multiple languages via SDD_LANG configuration.",
-  "version": "3.3.0",
+  "version": "4.0.0",
   "author": {
     "name": "toshiki.imagawa",
     "url": "https://github.com/ToshikiImagawa"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "agents": [
+    "./agents/clarification-assistant.md",
+    "./agents/cross-prd-reviewer.md",
+    "./agents/front-matter-reviewer.md",
+    "./agents/prd-reviewer.md",
+    "./agents/requirement-analyzer.md",
+    "./agents/spec-reviewer.md"
+  ],
+  "skills": "./skills",
+  "hooks": "./hooks/hooks.json"
 }

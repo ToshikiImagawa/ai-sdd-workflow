@@ -2,12 +2,12 @@
 name: finalize-prd
 description: "Finalize and integrate PRD from all artifacts. Use when combining use case diagrams, requirements analysis, and requirements diagrams into a complete PRD, or when called by generate-prd."
 argument-hint: "<feature-name> [--ci]"
-version: 3.0.1
 license: MIT
 user-invocable: true
 context: fork
 agent: sonnet
 allowed-tools: Read, Glob, Grep, AskUserQuestion
+disallowed-tools: Write, Edit, Bash
 ---
 
 # Finalize PRD
@@ -40,7 +40,7 @@ This skill operates in two modes:
 
 | File                                                    | Purpose                                  |
 |:--------------------------------------------------------|:-----------------------------------------|
-| `../shared/references/prerequisites_directory_paths.md` | Resolve `${SDD_*}` environment variables |
+| `references/prerequisites_directory_paths.md`           | Resolve `${SDD_*}` environment variables |
 
 **Load PRD template** (in order):
 
@@ -65,20 +65,7 @@ $ARGUMENTS
 
 ### Input Format
 
-The skill receives structured text blocks from previous skills:
-
-```
-/finalize-prd task-management
-
-## Use Case Diagram
-{usecase diagram from generate-usecase-diagram}
-
-## Requirements Analysis
-{analysis from analyze-requirements}
-
-## Requirements Diagram
-{diagram from generate-requirements-diagram}
-```
+The skill receives structured text blocks from previous skills. See `references/input_format.md` for the exact shape.
 
 ## Integration Rules
 

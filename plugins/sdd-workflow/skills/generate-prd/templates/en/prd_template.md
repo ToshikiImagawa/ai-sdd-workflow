@@ -14,12 +14,12 @@ risk: "medium"
 
 # PRD (Product Requirements Document) Template
 
-This document is a template for creating PRD (Product Requirements Document) under `.sdd/requirement/`.
+This document is a template for creating PRD (Product Requirements Document) under `${SDD_REQUIREMENT_PATH}/`.
 The filename should be `{feature-name}.md`.
 
 > **Note**: This template is a fallback for the plugin.
 > When using in a project, customize it according to your project structure and
-> save it as `.sdd/PRD_TEMPLATE.md`.
+> save it as `${SDD_ROOT}/PRD_TEMPLATE.md`.
 
 ## Difference from Spec / Design Doc
 
@@ -359,6 +359,17 @@ The following are out of scope for this PRD:
 - ❌ Technology stack selection
 - ❌ API definitions and type definitions
 - ❌ Database schema
+
+## Downstream Propagation Checklist for New Requirement IDs
+
+When adding or renaming requirement IDs (FR/PR/IR/DC, etc.), ensure all of the following:
+
+- [ ] IDs within the PRD remain in ascending order (`XX_001`, `XX_002`, ...)
+- [ ] Added corresponding rows to the traceability table in the spec
+- [ ] Added corresponding rows to the traceability table in the design
+- [ ] IDs follow the naming convention defined by the project (e.g., `FR_001`)
+- [ ] Ran the requirement-analyzer agent to verify consistency
+- [ ] Trace rows across all 3 layers (PRD / spec / design) are included in the same PR
 
 ---
 

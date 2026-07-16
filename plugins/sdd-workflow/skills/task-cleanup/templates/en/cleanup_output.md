@@ -2,7 +2,7 @@
 
 ### Target
 
-- Directory: `.sdd/task/{target}/`
+- Directory: `${SDD_TASK_PATH}/{target}/`
 
 ### Analysis Results
 
@@ -17,9 +17,9 @@
 
 #### Files to Delete
 
-- [ ] `.sdd/task/{target}/implementation_log_{id}.md`
-- [ ] `.sdd/task/{target}/implementation_log_{id}.md`
-- [ ] `.sdd/task/{target}/tasks.md`
+- [ ] `${SDD_TASK_PATH}/{target}/implementation_log_{id}.md`
+- [ ] `${SDD_TASK_PATH}/{target}/implementation_log_{id}.md`
+- [ ] `${SDD_TASK_PATH}/{target}/tasks.md`
 
 ### Next Actions
 
@@ -28,6 +28,6 @@
     - Add {decision} to `{design.md}` {section} section
 
 2. **Delete processed files**:
-    - Delete `.sdd/task/{target}/` directory
+    - Delete `${SDD_TASK_PATH}/{target}/` directory
 
 Would you like to proceed with cleanup?

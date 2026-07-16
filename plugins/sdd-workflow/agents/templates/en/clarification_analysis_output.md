@@ -2,7 +2,7 @@
 
 ### Target Document
 
-- `.sdd/specification/[{parent}/]{feature}_spec.md`
+- `${SDD_SPECIFICATION_PATH}/[{parent}/]{feature}_spec.md`
 
 * For hierarchical structure, parent features use `index_spec.md`
 

@@ -20,7 +20,8 @@ as the source of truth. Supports multiple languages via `SDD_LANG` configuration
 | macOS       |    ✅    | Fully supported                        |
 | Linux       |    ✅    | Fully supported                        |
 | Windows     |    ❌    | Not supported (see alternatives below) |
-| Python      |  3.7+   | Required for session-start hook        |
+| Python      |  3.7+   | Required for hook scripts              |
+| Claude Code | 2.1.199+ | Required for named skill arguments (`arguments` frontmatter / `$name` substitution). On older versions, `$name` placeholders are not substituted and skills fall back to interpreting the raw argument string |
 
 ### Windows Limitations
 
@@ -110,6 +111,7 @@ This command automatically:
 | `requirement-analyzer`    | SysML requirements diagram-based analysis, requirement tracking and verification                                 |
 | `clarification-assistant` | Specification clarification support. Analyzes requirements across 9 categories and outputs integration proposals |
 | `front-matter-reviewer`   | Validates YAML front matter in AI-SDD documents. Checks field formats, dependency direction, and id uniqueness   |
+| `cross-prd-reviewer`      | Reviews consistency across multiple PRDs: category boundaries, terminology, style, and principle coverage        |
 
 ### Skills (User-Invocable)
 
@@ -145,6 +147,9 @@ This command automatically:
 | Hook            | Trigger      | Description                                                                         |
 |:----------------|:-------------|:------------------------------------------------------------------------------------|
 | `session-start` | SessionStart | Loads settings from `.sdd-config.json` and sets environment variables automatically |
+| `user-prompt-submit` | UserPromptSubmit | Detects Vibe Coding signals (vague instructions) in the user prompt and injects a clarification reminder |
+| `pre-tool-use`  | PreToolUse (Write/Edit) | Denies writes to `.sdd/` documents that violate file naming conventions, and injects `CONSTITUTION.md` principles when editing implementation source code (once per session) |
+| `post-tool-use` | PostToolUse (Write/Edit) | Reminds about document consistency checks after editing `.sdd/` docs or source files with a matching design doc |
 
 **Note**: Hooks are automatically enabled when the plugin is installed. No additional configuration is required.
 
@@ -355,6 +360,9 @@ This plugin automatically loads `.sdd-config.json` and sets environment variable
 | Hook            | Trigger      | Description                                                           |
 |:----------------|:-------------|:----------------------------------------------------------------------|
 | `session-start` | SessionStart | Loads settings from `.sdd-config.json` and sets environment variables |
+| `user-prompt-submit` | UserPromptSubmit | Detects Vibe Coding signals (vague instructions) in the user prompt and injects a clarification reminder |
+| `pre-tool-use`  | PreToolUse (Write/Edit) | Denies writes to `.sdd/` documents that violate file naming conventions, and injects `CONSTITUTION.md` principles when editing implementation source code (once per session) |
+| `post-tool-use` | PostToolUse (Write/Edit) | Reminds about document consistency checks after editing `.sdd/` docs or source files with a matching design doc |
 
 ### Environment Variables Set
 
@@ -508,17 +516,19 @@ Place a `.sdd-config.json` file in your project root to customize directory name
     "requirement": "requirement",
     "specification": "specification",
     "task": "task"
-  }
+  },
+  "index": true
 }
 ```
 
-| Setting                     | Default         | Description                                |
-|:----------------------------|:----------------|:-------------------------------------------|
-| `root`                      | `.sdd`          | Root directory                             |
-| `lang`                      | `en`            | Language (`en` or `ja`)                    |
-| `directories.requirement`   | `requirement`   | PRD (Requirements Specification) directory |
-| `directories.specification` | `specification` | Specification/design document directory    |
-| `directories.task`          | `task`          | Temporary task logs directory              |
+| Setting                     | Default         | Description                                                                                       |
+|:----------------------------|:----------------|:--------------------------------------------------------------------------------------------------|
+| `root`                      | `.sdd`          | Root directory                                                                                    |
+| `lang`                      | `en`            | Language (`en` or `ja`)                                                                           |
+| `directories.requirement`   | `requirement`   | PRD (Requirements Specification) directory                                                        |
+| `directories.specification` | `specification` | Specification/design document directory                                                           |
+| `directories.task`          | `task`          | Temporary task logs directory                                                                     |
+| `index`                     | `true`          | Boolean. Build a compressed `.sdd` document index (SQLite → `index.md`) at session start for token reduction. Set to `false` to disable. |
 
 **Notes**:
 
@@ -537,6 +547,7 @@ sdd-workflow/
 │   ├── requirement-analyzer.md    # Requirement analysis agent
 │   ├── clarification-assistant.md # Specification clarification assistant
 │   ├── front-matter-reviewer.md   # YAML front matter validation agent
+│   ├── cross-prd-reviewer.md      # Cross-PRD consistency review agent
 │   ├── templates/{en,ja}/         # Agent output templates (language-specific)
 │   ├── references/                # Agent references (symlinks to shared)
 │   └── examples/                  # Agent usage examples
@@ -576,11 +587,16 @@ sdd-workflow/
 ├── hooks/
 │   └── hooks.json                 # Hooks configuration
 ├── scripts/
-│   └── session-start.py           # Session start initialization script
+│   ├── session-start.py           # Session start initialization script
+│   ├── hook_common.py             # Shared helpers for hook scripts
+│   ├── user-prompt-submit.py      # Vibe Coding signal detection
+│   ├── pre-tool-use.py            # .sdd/ file naming validation
+│   └── post-tool-use.py           # Document update omission detection
 ├── AI-SDD-PRINCIPLES.source.md
 ├── LICENSE
 ├── README.md
-└── CHANGELOG.md
+├── CHANGELOG.md
+└── CHANGELOG.ja.md
 ```
 
 ## License

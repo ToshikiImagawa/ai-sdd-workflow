@@ -3,10 +3,10 @@
 ## Load and Verify Documents
 
 ```
-1. Load task breakdown: .sdd/task/{ticket}/tasks.md
-2. Load design document: .sdd/specification/[{path}/]{feature}_design.md
-3. Load abstract spec: .sdd/specification/[{path}/]{feature}_spec.md
-4. Load PRD (if exists): .sdd/requirement/[{path}/]{feature}.md
+1. Load task breakdown: ${SDD_TASK_PATH}/{ticket}/tasks.md
+2. Load design document: ${SDD_SPECIFICATION_PATH}/[{path}/]{feature}_design.md
+3. Load abstract spec: ${SDD_SPECIFICATION_PATH}/[{path}/]{feature}_spec.md
+4. Load PRD (if exists): ${SDD_REQUIREMENT_PATH}/[{path}/]{feature}.md
 ```
 
 **Note the difference in naming conventions**:

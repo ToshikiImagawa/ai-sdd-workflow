@@ -2,7 +2,7 @@
 
 ### Generated Files
 
-- [x] `.sdd/requirement/[{parent}/]{feature}.md`
+- [x] `${SDD_REQUIREMENT_PATH}/[{parent}/]{feature}.md`
 
 ※ For hierarchical structure, parent features use `index.md`
 

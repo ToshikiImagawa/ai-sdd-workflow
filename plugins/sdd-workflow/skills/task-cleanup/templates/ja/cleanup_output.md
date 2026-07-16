@@ -2,7 +2,7 @@
 
 ### 対象ディレクトリ
 
-`.sdd/task/{対象}/`
+`${SDD_TASK_PATH}/{対象}/`
 
 ### ファイル一覧
 
@@ -13,7 +13,7 @@
 ### 統合すべき内容（→ `*_design.md` へ）
 
 - [ ] **{設計判断1}**: {概要}
-    - 統合先: `.sdd/specification/{name}_design.md`
+    - 統合先: `${SDD_SPECIFICATION_PATH}/{name}_design.md`
     - 該当セクション: 設計判断 / 技術スタック / その他
 - [ ] **{設計判断2}**: {概要}
     - 統合先: ...

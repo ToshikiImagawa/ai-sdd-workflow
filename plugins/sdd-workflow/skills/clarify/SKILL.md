@@ -2,10 +2,11 @@
 name: clarify
 description: "Analyze specifications and generate clarification questions to eliminate ambiguity before implementation"
 argument-hint: "<feature-name> [--interactive]"
-version: 3.0.0
+arguments: [feature-name]
 license: MIT
 user-invocable: true
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
+disallowed-tools: Bash
 ---
 
 # Clarify - Specification Clarification
@@ -37,7 +38,13 @@ The `SDD_LANG` environment variable determines the language (default: `en`).
 
 ## Input
 
-$ARGUMENTS
+- `feature-name`: $feature-name
+
+Full argument string: $ARGUMENTS
+
+> **Fallback**: If the value above is empty, remains a literal `$` placeholder, or starts with `--`
+> (a flag captured positionally), treat the argument as omitted and interpret the full argument
+> string instead. Ask the user interactively when a required argument is missing.
 
 | Argument        | Required | Description                                                        |
 |:----------------|:---------|:-------------------------------------------------------------------|
@@ -46,11 +53,7 @@ $ARGUMENTS
 
 ### Input Examples
 
-```
-/clarify user-auth
-/clarify task-management
-/clarify auth/user-login  # For hierarchical structure
-```
+**Reference**: `references/command_examples.md`
 
 ## Processing Flow
 
@@ -58,24 +61,7 @@ $ARGUMENTS
 
 Both flat and hierarchical structures are supported.
 
-**For flat structure**:
-
-```
-Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md (PRD, if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md (if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md (if exists)
-```
-
-**For hierarchical structure** (when argument contains `/`):
-
-```
-Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/index.md (parent feature PRD, if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{parent-feature}/{feature-name}.md (child feature PRD, if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md (parent feature spec, if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md (child feature spec, if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md (parent feature design, if exists)
-Load ${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md (child feature design, if exists)
-```
+See `references/target_specification_loading.md` for the list of paths to load for flat and hierarchical structures.
 
 **Note the difference in naming conventions**:
 
@@ -114,11 +100,7 @@ Use the `templates/${SDD_LANG:-en}/clarification_output.md` template for output 
 
 ## Integration Mode
 
-When user provides answers, use `--integrate` flag:
-
-```
-/clarify user-auth --integrate
-```
+When user provides answers, use the `--integrate` flag (e.g. `/clarify user-auth --integrate`).
 
 This will:
 
@@ -139,31 +121,23 @@ This will:
 
 ### Complementary Commands
 
-```
-/clarify {feature}           # Identify ambiguities
-|
-(Update specs with answers)
-|
-/check-spec {feature}        # Verify consistency
-|
-/task-breakdown {feature}    # Generate tasks
-```
+See `references/complementary_commands.md` for the recommended command sequence around `/clarify`.
 
 ## Advanced Options
 
 ### Focus on Specific Categories
 
-```
-/clarify user-auth --categories flow,integrations,edge-cases
-```
+Use `--categories` with a comma-separated list, e.g. `/clarify user-auth --categories flow,integrations,edge-cases`.
 
 ### Specify Output Detail Level
 
-```
-/clarify user-auth --detail minimal    # Top 3 questions only
-/clarify user-auth --detail standard   # Top 5 questions (default)
-/clarify user-auth --detail comprehensive  # All identified issues
-```
+Use `--detail` with one of the following values:
+
+| Value           | Effect                        |
+|:-----------------|:------------------------------|
+| `minimal`        | Top 3 questions only          |
+| `standard`       | Top 5 questions (default)     |
+| `comprehensive`  | All identified issues         |
 
 ## Post-Clarification Verification
 
@@ -177,13 +151,7 @@ The following verifications are automatically performed during clarification:
 
 ### Verification Commands
 
-```bash
-# Re-scan to verify clarity improvements
-/clarify {feature-name}
-
-# Consistency check (verify updated specifications)
-/check-spec {feature-name} --full
-```
+**Reference**: `references/verification_commands.md`
 
 ### Implementation Readiness Criteria
 

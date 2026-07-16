@@ -6,8 +6,8 @@
 |:-------------|:-----------------------------------------------|
 | 機能名          | {機能名}                                          |
 | チケット番号       | {チケット番号}                                       |
-| 対象仕様書        | `.sdd/specification/[{path}/]{name}_spec.md`   |
-| 対象設計書        | `.sdd/specification/[{path}/]{name}_design.md` |
+| 対象仕様書        | `${SDD_SPECIFICATION_PATH}/[{path}/]{name}_spec.md`   |
+| 対象設計書        | `${SDD_SPECIFICATION_PATH}/[{path}/]{name}_design.md` |
 | 生成日          | YYYY-MM-DD                                     |
 | チェックリストバージョン | 1.0                                            |
 
@@ -26,6 +26,7 @@
 | セキュリティレビュー  | -    | -  | -  | -  | -  |
 | パフォーマンスレビュー | -    | -  | -  | -  | -  |
 | デプロイレビュー    | -    | -  | -  | -  | -  |
+| プロジェクト原則レビュー | -    | -  | -  | -  | -  |
 
 **優先度レベル**:
 
@@ -446,6 +447,32 @@
 
 ---
 
+## 10. プロジェクト原則レビュー
+
+### CHK029 [P0] - CONSTITUTION.md への準拠
+
+- [ ] `CONSTITUTION.md` の該当原則がSpec/Design docに明記されている
+- [ ] 実装が明記された原則に準拠している
+- [ ] 原則からの逸脱がある場合、例外プロセス（正当化・レビュー承認）に従っている
+
+**検証方法**:
+
+- `/constitution validate` を実行
+- Spec/Design doc の「原則との整合性」セクションを確認
+
+---
+
+### CHK030 [P1] - 原則テンプレートとの同期
+
+- [ ] 使用しているSPECIFICATION_TEMPLATE.md / DESIGN_DOC_TEMPLATE.md が最新のCONSTITUTION.mdバージョンと整合している
+- [ ] `/constitution sync` 未実施による記載漏れがない
+
+**検証方法**:
+
+- CONSTITUTION.mdの変更履歴と各テンプレートの更新日を比較
+
+---
+
 ## 完了基準
 
 ### PR作成前チェックリスト
@@ -490,8 +517,8 @@ P2までのすべての項目が完了している必要があります:
 
 ## 参照ドキュメント
 
-- PRD: `.sdd/requirement/[{path}/]{name}.md`（存在する場合）
-- 抽象仕様書: `.sdd/specification/[{path}/]{name}_spec.md`
-- 技術設計書: `.sdd/specification/[{path}/]{name}_design.md`
+- PRD: `${SDD_REQUIREMENT_PATH}/[{path}/]{name}.md`（存在する場合）
+- 抽象仕様書: `${SDD_SPECIFICATION_PATH}/[{path}/]{name}_spec.md`
+- 技術設計書: `${SDD_SPECIFICATION_PATH}/[{path}/]{name}_design.md`
 
 ※ 階層構造の場合、親機能は `index.md`、`index_spec.md`、`index_design.md`
