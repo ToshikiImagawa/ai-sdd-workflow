@@ -5,7 +5,7 @@ argument-hint: "[feature-name] [--full]"
 arguments: [feature-name]
 license: MIT
 user-invocable: true
-allowed-tools: Read, Glob, Grep, AskUserQuestion, Bash
+allowed-tools: Read, Glob, Grep, AskUserQuestion, Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/check-spec/scripts/find-design-docs.py" *)
 disallowed-tools: Write, Edit
 ---
 

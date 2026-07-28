@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""post-tool-use.py - PostToolUse hook script (Write|Edit|MultiEdit).
+"""post-tool-use.py - PostToolUse hook script (Write|Edit).
 
 Detects potential document update omissions after a file edit:
 - .sdd document edited: reminds to check PRD <-> spec <-> design consistency
@@ -31,7 +31,11 @@ def try_update_index(project_root: str, rel_path: str) -> None:
 
 
 def _extract_file_paths(payload: dict) -> list:
-    """Extract file paths from Write, Edit, or MultiEdit tool_input."""
+    """Extract file paths from a Write/Edit tool_input.
+
+    Falls back to a batch-edit payload shape (tool_input["edits"][].file_path)
+    so a future batch-write tool needs no change here.
+    """
     tool_input = payload.get("tool_input", {})
     file_path = tool_input.get("file_path", "")
     if file_path:

@@ -4,7 +4,7 @@ description: "Generates complete PRD document from business requirements. Create
 argument-hint: "<requirements-description> [--ci]"
 license: MIT
 user-invocable: true
-allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash
+allowed-tools: Read, Glob, Grep, AskUserQuestion, Edit(.sdd/**), Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/generate-prd/scripts/prepare-prd.py" *)
 ---
 
 # Generate PRD

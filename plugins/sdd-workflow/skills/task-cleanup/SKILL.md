@@ -5,8 +5,8 @@ argument-hint: "[ticket-number]"
 arguments: [ticket-number]
 license: MIT
 user-invocable: true
-agent: haiku
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
+model: haiku
+allowed-tools: Read, Glob, Grep, AskUserQuestion, Edit(.sdd/**)
 ---
 
 # Task Cleanup - Task Log Cleanup

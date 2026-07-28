@@ -9,6 +9,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.1] - 2026-07-28
+
+### Changed
+
+#### Permissions
+
+- **Write access is no longer pre-approved wholesale** - A skill's `allowed-tools` grants tools *without
+  asking*; it is a pre-approval, not a restriction. Eleven skills listed a bare `Write` / `Edit`, which
+  pre-approved writing to any path. Writes are now scoped with the `Edit(<path>)` rule form -
+  `Edit(.sdd/**)` plus `Edit(CLAUDE.md)`, `Edit(.sdd-config.json)` and `Edit(.claude/rules/**)` where a
+  skill legitimately needs them. Writing outside those paths now asks for confirmation.
+  Note that `Write(<path>)` is not a valid rule form; `Edit(<path>)` covers every file-editing tool
+- **Shell access is limited to the plugin's own scripts** - Ten skills listed a bare `Bash`, which
+  pre-approved any command. The seven skills that only run a bundled helper now name it explicitly, e.g.
+  `Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/check-spec/scripts/find-design-docs.py" *)`
+- **`Bash` removed from three skills** - `implement` and `run-checklist` run arbitrary project test,
+  lint and scanner commands, and `task-cleanup` runs `git rm` / `git rm -r`. None of those should be
+  pre-approved, so they now ask before running a command
+- Projects that set a custom `root` in `.sdd-config.json` will be asked to confirm writes, because
+  `${SDD_ROOT}` is not expanded in `allowed-tools`. See the README for a settings snippet that
+  pre-approves a custom root
+
+#### Plugin Layout
+
+- **Agent support files moved out of `agents/`** - `agents/references/`, `agents/examples/` and
+  `agents/templates/{en,ja}/` now live under `shared/` (`shared/references/`, `shared/examples/`,
+  `shared/templates/{en,ja}/`), leaving `agents/` with nothing but the six agent definitions.
+  `claude plugin validate --strict` scans `agents/**` recursively and ignores the manifest's `agents`
+  array, so every support file parked there was reported as an agent without front matter
+- **Agent reference paths are now absolute** - The 33 reference, example and template paths in the agent
+  prompts use `${CLAUDE_PLUGIN_ROOT}/shared/...` instead of a bare relative path. The previous form
+  depended on the reader resolving the path relative to the agent file; the placeholder resolves
+  anywhere in agent content, so the target is now unambiguous
+- Five symlinks under `agents/references/` that pointed into `shared/references/` are gone; the agents
+  reference those files directly
+
+### Fixed
+
+#### Agents
+
+- **Tool restrictions were not applied** - All six agents declared their tool allowlist with
+  `allowed-tools:`, which is a skill-only front matter key. Subagents recognize `tools:` /
+  `disallowedTools:`, so the declaration was silently ignored and every agent inherited **all** tools,
+  including `Write` / `Edit` / `Bash`. Renamed the key to `tools:`, restoring the intended read-only
+  scope (`Read`, `Glob`, `Grep`, `AskUserQuestion`)
+
+#### Skills
+
+- **Model selection was not applied** - Eight skills selected a model with `agent: sonnet` / `agent:
+  haiku`. The `agent` field names a *subagent type* and only applies when `context: fork` is set, so a
+  model alias there was silently ignored and fell back to `general-purpose`. Switched to the `model:`
+  field, which applies whether or not the skill forks
+
+#### Hooks
+
+- **Hooks failed when the install path contained a space** - `${CLAUDE_PLUGIN_ROOT}` was unquoted in all
+  four hook commands, so the path was word-split and every hook failed to start under such paths (for
+  example a `$HOME` containing a space). The variable is now quoted
+- **Stale tool name in matchers** - `PreToolUse` / `PostToolUse` matched `Write|Edit|MultiEdit`, but
+  `MultiEdit` is no longer a Claude Code tool. Narrowed the matchers to `Write|Edit`
+
+#### Plugin Manifest
+
+- **Duplicate hooks load** - Removed the `"hooks": "./hooks/hooks.json"` declaration from `plugin.json`.
+  Claude Code auto-detects `hooks/hooks.json` at the plugin root, and a manifest path supplements the
+  default path rather than replacing it, so declaring the standard path loaded the same file twice and
+  surfaced a `Duplicate hooks file detected` error on plugin load. Hook behavior itself is unchanged
+- **Redundant skills declaration** - Removed `"skills": "./skills"`. The default `skills/` directory is
+  always scanned and the `skills` field only *adds* to that scan, so declaring the standard path had no
+  effect. All 19 skills continue to load
+
+#### Documentation
+
+- **Japanese README was out of sync with the English one** - `README.ja.md` listed 5 agents (6 exist) and
+  1 hook (4 exist), documented `ja` as the default for `SDD_LANG` and `.sdd-config.json` `lang` (the
+  default is `en`), and listed 1 of the 10 files under `scripts/`. Both READMEs are now aligned
+
 ## [4.0.0] - 2026-07-16
 
 ### Added

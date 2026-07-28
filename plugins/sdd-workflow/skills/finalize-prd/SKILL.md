@@ -5,7 +5,7 @@ argument-hint: "<feature-name> [--ci]"
 license: MIT
 user-invocable: true
 context: fork
-agent: sonnet
+model: sonnet
 allowed-tools: Read, Glob, Grep, AskUserQuestion
 disallowed-tools: Write, Edit, Bash
 ---

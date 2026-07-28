@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/session-start.py --default-lang en"
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/session-start.py\" --default-lang en"
           }
         ]
       }
@@ -15,29 +15,29 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/user-prompt-submit.py"
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/user-prompt-submit.py\""
           }
         ]
       }
     ],
     "PreToolUse": [
       {
-        "matcher": "Write|Edit|MultiEdit",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/pre-tool-use.py"
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/pre-tool-use.py\""
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Write|Edit|MultiEdit",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/post-tool-use.py"
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/post-tool-use.py\""
           }
         ]
       }

@@ -4,7 +4,7 @@ description: "Generate Abstract Specification and Technical Design Document from
 argument-hint: "<requirements-description>"
 license: MIT
 user-invocable: true
-allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash
+allowed-tools: Read, Glob, Grep, AskUserQuestion, Edit(.sdd/**), Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/generate-spec/scripts/prepare-spec.py" *)
 ---
 
 # Specification & Design Doc Generator

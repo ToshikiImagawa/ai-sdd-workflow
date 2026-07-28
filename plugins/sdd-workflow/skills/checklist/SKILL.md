@@ -5,7 +5,7 @@ argument-hint: "<feature-name> [ticket-number]"
 arguments: [feature-name, ticket-number]
 license: MIT
 user-invocable: true
-allowed-tools: Read, Write, Edit, Glob, Grep
+allowed-tools: Read, Glob, Grep, Edit(.sdd/**)
 ---
 
 # Checklist - Quality Checklist Generation

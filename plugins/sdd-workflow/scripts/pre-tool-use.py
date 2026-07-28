@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""pre-tool-use.py - PreToolUse hook script (Write|Edit|MultiEdit).
+"""pre-tool-use.py - PreToolUse hook script (Write|Edit).
 
 Validates AI-SDD file naming conventions before writing to .sdd/ documents:
 - requirement/: no _spec/_design suffix allowed

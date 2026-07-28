@@ -3,7 +3,7 @@ name: requirement-analyzer
 description: "Use this agent when requirement analysis is needed, when users say 'analyze requirements', 'check requirements diagram', 'verify traceability', or 'impact analysis', or before/after running /generate-spec or /generate-prd commands when requirement validation is needed. Analyzes .sdd/requirement/*.md SysML requirements diagrams for coverage gaps, dependency conflicts, implementation traceability, and ID numbering (naming convention, ordering, gaps). Generates actionable reports with traceability status and classified proposals ([must]=critical issues, [recommend]=improvements, [nits]=minor suggestions). Requires the requirement file path or feature name to analyze."
 model: sonnet
 color: blue
-allowed-tools: Read, Glob, Grep, AskUserQuestion
+tools: Read, Glob, Grep, AskUserQuestion
 skills: [ ]
 ---
 
@@ -27,7 +27,7 @@ $ARGUMENTS
 
 ### Input Examples
 
-**Reference**: `examples/requirement_analyzer_usage.md`
+**Reference**: `${CLAUDE_PLUGIN_ROOT}/shared/examples/requirement_analyzer_usage.md`
 
 ## Output
 
@@ -43,7 +43,7 @@ Requirement analysis result report (requirement validity assessment, detected is
 - Using Task tool for recursive exploration risks context explosion
 - Prioritizes context efficiency by using Read, Glob, Grep tools to efficiently identify and read necessary files
 
-**allowed-tools Design**:
+**tools Design**:
 
 - `Read`: Read AI-SDD principles, PRDs, specifications, design documents
 - `Glob`: Search for requirement files, related documents
@@ -97,11 +97,11 @@ When `SDD_INDEX` is unset or `off`, use the existing Glob/Grep/Read flow.
 
 ## SysML Requirements Diagram Theory
 
-Read `references/sysml_requirements_theory.md` for the theoretical background of SysML requirements diagrams.
+Read `${CLAUDE_PLUGIN_ROOT}/shared/references/sysml_requirements_theory.md` for the theoretical background of SysML requirements diagrams.
 
 ## Requirements Diagram Components
 
-Read `references/requirements_diagram_components.md` for requirement types, attributes, relationships, and SysML
+Read `${CLAUDE_PLUGIN_ROOT}/shared/references/requirements_diagram_components.md` for requirement types, attributes, relationships, and SysML
 standard
 relationships.
 
@@ -181,7 +181,7 @@ of `--analyze`, or standalone via `--validate-ids`.
 Validate each requirement ID against the expected pattern.
 
 - If `.sdd-config.json` has an `id_conventions` section, use its regex patterns as the convention. See
-  `references/id_conventions_config.md` for an example configuration.
+  `${CLAUDE_PLUGIN_ROOT}/shared/references/id_conventions_config.md` for an example configuration.
 - If `id_conventions` is not configured, infer the dominant ID pattern from existing IDs in the target document and
   report IDs deviating from it
 - For refined IDs (e.g., `FR-AI-002'` refining `FR_AI_002`), verify the numeric part matches the refined source
@@ -202,7 +202,7 @@ out-of-order sequence with a concrete move suggestion.
 **Severity mapping:** naming convention violation = `[must]`, non-ascending order = `[recommend]`, unexplained gap =
 `[recommend]`.
 
-**Output example:** See `examples/requirement_analyzer_usage.md` ("ID Numbering Validation Output Example" section).
+**Output example:** See `${CLAUDE_PLUGIN_ROOT}/shared/examples/requirement_analyzer_usage.md` ("ID Numbering Validation Output Example" section).
 
 ### 5. Impact Analysis
 
@@ -214,7 +214,7 @@ Analyze scope of impact when requirements change:
 
 ## Review/Analysis Format
 
-Read `templates/${SDD_LANG:-en}/requirement_analysis_output.md` and use it for output formatting.
+Read `${CLAUDE_PLUGIN_ROOT}/shared/templates/${SDD_LANG:-en}/requirement_analysis_output.md` and use it for output formatting.
 
 ## Work Procedures
 
@@ -255,7 +255,7 @@ Read `templates/${SDD_LANG:-en}/requirement_analysis_output.md` and use it for o
 
 ## Creating Requirement Diagrams in Mermaid Notation
 
-Read `references/mermaid_notation_rules.md` for Mermaid syntax, attribute value notation rules, examples, and common
+Read `${CLAUDE_PLUGIN_ROOT}/shared/references/mermaid_notation_rules.md` for Mermaid syntax, attribute value notation rules, examples, and common
 mistakes.
 
 ## Communication Style
@@ -285,7 +285,7 @@ For configuration file details, refer to the AI-SDD principles document (`${SDD_
 
 Requirement diagrams support both flat and hierarchical structures:
 
-**Reference**: `references/directory_structure.md`
+**Reference**: `${CLAUDE_PLUGIN_ROOT}/shared/references/directory_structure.md`
 
 Reference appropriate documents according to the analyzed project. For hierarchical structure, `index.md` contains
 overall requirements overview and references to child requirements for the parent feature.

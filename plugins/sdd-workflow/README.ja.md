@@ -19,7 +19,7 @@ AI駆動仕様駆動開発（AI-SDD）ワークフローを支援する統合 Cl
 | macOS   |   ✅   | 完全サポート                    |
 | Linux   |   ✅   | 完全サポート                    |
 | Windows |   ❌   | 非対応（下記の代替案を参照）            |
-| Python  | 3.7+  | session-start フックの実行に必要   |
+| Python  | 3.7+  | フックスクリプトの実行に必要            |
 | Claude Code | 2.1.199+ | 名前付きスキル引数（`arguments` frontmatter / `$name` 置換）に必要。旧バージョンでは `$name` は置換されず、スキルは引数文字列全体の解釈にフォールバックする |
 
 ### Windows の制限事項
@@ -110,6 +110,7 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 | `requirement-analyzer`    | SysML 要件図ベースの分析、要件のトレーサビリティと検証                                |
 | `clarification-assistant` | 仕様明確化支援。9つのカテゴリで要件を分析し、統合提案を出力                                |
 | `front-matter-reviewer`   | AI-SDD ドキュメントの YAML front matter を検証。フィールド形式、依存方向、ID 一意性をチェック |
+| `cross-prd-reviewer`      | 複数 PRD 間の整合性をレビュー。カテゴリ境界、用語、スタイル、原則参照網羅性をチェック                 |
 
 ### スキル（ユーザー起動可能）
 
@@ -145,6 +146,9 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 | フック             | トリガー         | 説明                                     |
 |:----------------|:-------------|:---------------------------------------|
 | `session-start` | SessionStart | `.sdd-config.json` から設定を読み込み、環境変数を自動設定 |
+| `user-prompt-submit` | UserPromptSubmit | ユーザープロンプト内の Vibe Coding 兆候（曖昧な指示）を検知し、明確化リマインダーを注入 |
+| `pre-tool-use`  | PreToolUse (Write/Edit) | ファイル命名規則に違反する `.sdd/` ドキュメントへの書き込みを拒否し、実装ソースコード編集時に `CONSTITUTION.md` の原則を注入（セッションごとに1回） |
+| `post-tool-use` | PostToolUse (Write/Edit) | `.sdd/` ドキュメントや対応する設計書を持つソースファイルを編集した後、ドキュメント整合性チェックを促す |
 
 **注**: フックはプラグインインストール時に自動的に有効化されます。追加の設定は不要です。
 
@@ -353,6 +357,9 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 | フック             | トリガー         | 説明                                   |
 |:----------------|:-------------|:-------------------------------------|
 | `session-start` | SessionStart | `.sdd-config.json` から設定を読み込み、環境変数を設定 |
+| `user-prompt-submit` | UserPromptSubmit | ユーザープロンプト内の Vibe Coding 兆候（曖昧な指示）を検知し、明確化リマインダーを注入 |
+| `pre-tool-use`  | PreToolUse (Write/Edit) | ファイル命名規則に違反する `.sdd/` ドキュメントへの書き込みを拒否し、実装ソースコード編集時に `CONSTITUTION.md` の原則を注入（セッションごとに1回） |
+| `post-tool-use` | PostToolUse (Write/Edit) | `.sdd/` ドキュメントや対応する設計書を持つソースファイルを編集した後、ドキュメント整合性チェックを促す |
 
 ### 設定される環境変数
 
@@ -361,7 +368,7 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 | 環境変数                     | デフォルト                | 説明            |
 |:-------------------------|:---------------------|:--------------|
 | `SDD_ROOT`               | `.sdd`               | ルートディレクトリ     |
-| `SDD_LANG`               | `ja`                 | 言語設定          |
+| `SDD_LANG`               | `en`                 | 言語設定          |
 | `SDD_REQUIREMENT_DIR`    | `requirement`        | 要求仕様書ディレクトリ   |
 | `SDD_SPECIFICATION_DIR`  | `specification`      | 仕様書/設計書ディレクトリ |
 | `SDD_TASK_DIR`           | `task`               | タスクログディレクトリ   |
@@ -375,6 +382,62 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 
 ```bash
 claude --debug
+```
+
+## ツール権限
+
+このプラグインの各スキルは front matter に `allowed-tools` を宣言しています。このフィールドは
+**ツール権限の事前承認**、つまり「スキルがユーザーに尋ねずに実行できるツール呼び出し」の宣言です。**制限ではありません** —
+すべてのツールは引き続き呼び出し可能で、事前承認されていない操作は通常の権限確認にフォールバックするだけです。
+
+このプラグインは事前承認の範囲を意図的に狭く保っており、ドキュメント以外への書き込みや任意のシェルコマンド実行を無確認で行うことはありません:
+
+| 操作                                                                             | 事前承認される範囲                                                          | 挙動                       |
+|:---------------------------------------------------------------------------------|:----------------------------------------------------------------------------|:---------------------------|
+| AI-SDD ドキュメントへの書き込み                                                  | `Edit(.sdd/**)`                                                             | 確認なしで適用             |
+| `/sdd-init` / `/constitution` / `/recommend-front-matter` のセットアップファイル | `Edit(CLAUDE.md)`, `Edit(.sdd-config.json)`, `Edit(.claude/rules/**)`       | 確認なしで適用             |
+| 同梱ヘルパースクリプトの実行                                                     | `Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/<name>/scripts/<script>.py" *)` | 確認なしで適用             |
+| それ以外すべて                                                                   | 事前承認しない                                                              | Claude Code が確認を求める |
+
+「それ以外すべて」には、上記パス外への書き込み、任意のシェルコマンド、`git rm`、プロジェクト固有のテスト・リンターが含まれます。
+特に `/implement` / `/run-checklist` / `/task-cleanup` は `Bash` を**一切事前承認していません**。実行するコマンドがプロジェクト側のものであるため、
+各コマンドの実行前に確認が入ります。
+
+### 権限確認を減らす
+
+確認を減らしたい場合は、プロジェクトの `.claude/settings.json`（またはユーザーの `~/.claude/settings.json`）で
+自分で権限を付与してください:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Edit(.sdd/**)",
+      "Bash(npm test:*)",
+      "Bash(git rm:*)"
+    ]
+  }
+}
+```
+
+**`Write(<path>)` ではなく `Edit(<path>)` を使ってください。** `Write(<path>)` はファイル権限チェックにマッチしません。
+`Edit(<path>)` ルールは Write を含む**すべてのファイル編集ツール**をカバーします。
+
+### カスタム SDD root の場合
+
+`.sdd-config.json` の `root` を `.sdd` 以外に設定している場合、プラグインの `Edit(.sdd/**)`
+事前承認はドキュメントにマッチしないため、書き込みのたびに権限確認が入ります。`allowed-tools` では `${SDD_ROOT}`
+を参照できないため（展開されるのは `${CLAUDE_PLUGIN_ROOT}` / `${CLAUDE_SKILL_DIR}` / `${CLAUDE_PROJECT_DIR}` のみ）、
+自分の root に合わせたルールを `.claude/settings.json` に追加してください:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Edit(docs/sdd/**)"
+    ]
+  }
+}
 ```
 
 ## Serena MCP 連携（オプション）
@@ -500,7 +563,7 @@ CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実
 ```json
 {
   "root": ".sdd",
-  "lang": "ja",
+  "lang": "en",
   "directories": {
     "requirement": "requirement",
     "specification": "specification",
@@ -513,7 +576,7 @@ CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実
 | 設定                          | デフォルト           | 説明                                                                          |
 |:----------------------------|:----------------|:----------------------------------------------------------------------------|
 | `root`                      | `.sdd`          | ルートディレクトリ                                                                   |
-| `lang`                      | `ja`            | 言語（`en` または `ja`）                                                           |
+| `lang`                      | `en`            | 言語（`en` または `ja`）                                                           |
 | `directories.requirement`   | `requirement`   | PRD（要求仕様書）ディレクトリ                                                            |
 | `directories.specification` | `specification` | 仕様書/設計書ディレクトリ                                                               |
 | `directories.task`          | `task`          | 一時タスクログディレクトリ                                                               |
@@ -536,16 +599,55 @@ sdd-workflow/
 │   ├── requirement-analyzer.md    # 要求分析エージェント
 │   ├── clarification-assistant.md # 仕様明確化アシスタント
 │   ├── front-matter-reviewer.md   # YAML front matter検証エージェント
-│   ├── templates/{en,ja}/         # エージェント出力テンプレート（言語別）
-│   ├── references/                # エージェント参照（sharedへのsymlink）
-│   └── examples/                  # エージェント使用例
-├── shared/
-│   └── references/                # 共通参照ドキュメント
-├── skills/                        # 各種スキル（SKILL.md + templates/{en,ja}/ 等）
+│   └── cross-prd-reviewer.md      # PRD横断整合レビューエージェント
+├── shared/                        # スキル・エージェント共通のサポートファイル
+│   ├── references/                # 共通参照ドキュメント
+│   │   ├── mermaid_notation_rules.md          # Mermaid記法ガイド
+│   │   ├── usecase_diagram_guide.md           # ユースケース図ガイド
+│   │   ├── requirements_diagram_components.md # SysML要求図
+│   │   ├── document_dependencies.md           # ドキュメント依存関係チェーン
+│   │   ├── front_matter_*.md                  # YAML front matter 参照資料
+│   │   └── prerequisites_*.md                 # 前提条件参照資料
+│   ├── examples/                  # エージェント使用例
+│   └── templates/{en,ja}/         # エージェント出力テンプレート（言語別）
+├── skills/
+│   ├── sdd-init/                  # AI-SDDワークフロー初期化
+│   ├── constitution/              # プロジェクト憲章管理
+│   ├── generate-spec/             # 仕様書/設計書生成
+│   ├── generate-prd/              # PRD生成
+│   ├── check-spec/                # 整合性チェック
+│   ├── task-breakdown/            # タスク分解
+│   ├── implement/                 # TDDベース実装の実行
+│   ├── clarify/                   # 仕様明確化
+│   ├── task-cleanup/              # タスククリーンアップ
+│   ├── checklist/                 # 品質チェックリスト生成
+│   ├── run-checklist/             # チェックリスト自動検証
+│   ├── recommend-front-matter/    # YAML front matter推奨
+│   ├── plan-refactor/             # リファクタリング計画
+│   ├── generate-usecase-diagram/  # ユースケース図生成（サブスキル）
+│   ├── analyze-requirements/      # 要求分析（サブスキル）
+│   ├── generate-requirements-diagram/ # 要求図生成（サブスキル）
+│   ├── finalize-prd/              # PRD統合・完成（サブスキル）
+│   ├── vibe-detector/             # Vibe Coding検出スキル
+│   └── doc-consistency-checker/   # ドキュメント整合性チェッカー
+│   # 各スキルの構成:
+│   # ├── SKILL.md                 # スキル定義
+│   # ├── templates/{en,ja}/       # 言語別テンプレート
+│   # ├── references/              # shared参照へのsymlink
+│   # └── examples/                # 使用例（オプション）
 ├── hooks/
 │   └── hooks.json                 # フック設定
 ├── scripts/
-│   └── session-start.py           # セッション開始時の初期化スクリプト
+│   ├── session-start.py           # セッション開始時の初期化スクリプト
+│   ├── user-prompt-submit.py      # Vibe Coding兆候検知
+│   ├── pre-tool-use.py            # .sdd/ ファイル命名規則検証・CONSTITUTION原則注入
+│   ├── post-tool-use.py           # ドキュメント更新漏れ検知
+│   ├── sdd_index.py               # .sdd/ ドキュメントの構造化インデックス生成
+│   ├── hook_common.py             # 共有: stdin/stdout・パス解決・.sdd-config読込
+│   ├── fm_parser.py               # 共有: front matter 検出・パース
+│   ├── naming.py                  # 共有: 命名規則検証・ドキュメント種別判定
+│   ├── doc_walker.py              # 共有: 対象ドキュメント走査・design doc探索
+│   └── env_export.py              # 共有: CLAUDE_ENV_FILE への export 書き出し
 ├── AI-SDD-PRINCIPLES.source.md
 ├── LICENSE
 ├── README.md

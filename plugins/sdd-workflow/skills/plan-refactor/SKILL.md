@@ -5,7 +5,7 @@ argument-hint: "<feature-name> [context] [--scope=<dir>] [--ci]"
 arguments: [feature-name]
 license: MIT
 user-invocable: true
-allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash
+allowed-tools: Read, Glob, Grep, AskUserQuestion, Edit(.sdd/**), Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/scripts/scan-existing-docs.py" *), Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/scripts/find-implementation-files.py" *)
 ---
 
 # Plan Refactoring

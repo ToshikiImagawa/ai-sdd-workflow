@@ -4,8 +4,8 @@ description: "Scan existing AI-SDD documents and recommend YAML front matter add
 argument-hint: "[--apply]"
 license: MIT
 user-invocable: true
-agent: haiku
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
+model: haiku
+allowed-tools: Read, Glob, Grep, AskUserQuestion, Edit(.sdd/**), Edit(.sdd-config.json), Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/recommend-front-matter/scripts/scan-documents.py" *)
 ---
 
 # Recommend Front Matter - Add YAML Metadata to Existing Documents

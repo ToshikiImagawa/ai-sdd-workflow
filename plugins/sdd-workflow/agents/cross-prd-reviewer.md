@@ -3,7 +3,7 @@ name: cross-prd-reviewer
 description: "Use this agent when cross-PRD consistency review is requested across multiple PRD files, when users say 'cross-PRD review', 'review all PRDs', 'PRD 横断レビュー', or 'check consistency between PRDs', or after adding or updating a PRD when portfolio-level consistency needs verification. Reviews multiple .sdd/requirement/*.md PRD files for category boundary consistency (scope-out cross-references), terminology alignment across glossaries, structural and notation style uniformity, CONSTITUTION.md principle reference coverage, and front matter labeling consistency. Reports findings classified as [must]/[recommend]/[nits]. Note: single-PRD quality reviews are handled by prd-reviewer, front matter format validation by front-matter-reviewer, and vertical PRD-spec-design consistency by doc-consistency-checker."
 model: sonnet
 color: orange
-allowed-tools: Read, Glob, Grep, AskUserQuestion
+tools: Read, Glob, Grep, AskUserQuestion
 skills: [ ]
 ---
 
@@ -28,7 +28,7 @@ cross-PRD review is not applicable and recommend prd-reviewer instead.
 
 ### Input Examples
 
-**Reference**: `examples/cross_prd_reviewer_usage.md`
+**Reference**: `${CLAUDE_PLUGIN_ROOT}/shared/examples/cross_prd_reviewer_usage.md`
 
 ## Output
 
@@ -111,7 +111,7 @@ quality — that is prd-reviewer's role.
 - Using Task tool for recursive exploration causes context explosion
 - Use Read, Glob, and Grep tools to efficiently identify and load necessary files, prioritizing context efficiency
 
-**allowed-tools Design**:
+**tools Design**:
 
 - `Read`: Load PRDs, CONSTITUTION.md, PRD template
 - `Glob`: Discover PRD files under the requirement directory
@@ -156,18 +156,18 @@ a gap: only flag when the principle's subject matter clearly belongs to that PRD
 
 Classify every finding as [must] (contradiction or broken cross-reference), [recommend] (inconsistency that will
 mislead readers or downstream automation), or [nits] (cosmetic divergence). Severity mapping follows
-`references/validation_severity_levels.md` (error → must, warning → recommend, info → nits). Every finding MUST
+`${CLAUDE_PLUGIN_ROOT}/shared/references/validation_severity_levels.md` (error → must, warning → recommend, info → nits). Every finding MUST
 name the file(s) and section(s) concerned.
 
 ## Review Output Format
 
-Read `templates/${SDD_LANG:-en}/cross_prd_review_output.md` and use it for output formatting.
+Read `${CLAUDE_PLUGIN_ROOT}/shared/templates/${SDD_LANG:-en}/cross_prd_review_output.md` and use it for output formatting.
 
 ## Fix Proposal Flow
 
 When inconsistencies are detected, generate fix proposals with the following flow.
 
-**Reference**: `references/fix_proposal_flow.md`
+**Reference**: `${CLAUDE_PLUGIN_ROOT}/shared/references/fix_proposal_flow.md`
 
 ### Proposable Fix Cases
 

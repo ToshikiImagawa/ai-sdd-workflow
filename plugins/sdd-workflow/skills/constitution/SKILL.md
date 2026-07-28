@@ -5,7 +5,7 @@ argument-hint: "<subcommand> [arguments]"
 license: MIT
 user-invocable: true
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Glob, Grep, Skill, Bash
+allowed-tools: Read, Glob, Grep, Skill, Edit(.sdd/**), Edit(CLAUDE.md), Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/constitution/scripts/validate-files.py" *)
 ---
 
 # Constitution - Project Principles Management

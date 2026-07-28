@@ -387,6 +387,63 @@ To check hook registration status:
 claude --debug
 ```
 
+## Tool Permissions
+
+Every skill in this plugin declares `allowed-tools` in its front matter. That field is a **pre-approval of tool
+permissions** — the tool calls a skill may make without asking you. It is *not* a restriction: every tool stays
+callable, and anything that is not pre-approved simply falls back to the normal confirmation prompt.
+
+This plugin keeps that pre-approval deliberately narrow, so the skills never write outside your documents or run
+arbitrary shell commands without asking:
+
+| Operation                                                               | Pre-approved scope                                                          | Behavior                        |
+|:------------------------------------------------------------------------|:----------------------------------------------------------------------------|:--------------------------------|
+| AI-SDD document writes                                                  | `Edit(.sdd/**)`                                                             | Applied without a prompt        |
+| Setup files for `/sdd-init`, `/constitution`, `/recommend-front-matter` | `Edit(CLAUDE.md)`, `Edit(.sdd-config.json)`, `Edit(.claude/rules/**)`       | Applied without a prompt        |
+| Bundled helper scripts                                                  | `Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/<name>/scripts/<script>.py" *)` | Applied without a prompt        |
+| Everything else                                                         | Not pre-approved                                                            | Claude Code asks you to confirm |
+
+"Everything else" covers writes outside the paths above, arbitrary shell commands, `git rm`, and your project's own tests
+and linters. In particular, `/implement`, `/run-checklist`, and `/task-cleanup` pre-approve **no** `Bash` at all, because
+the commands they run belong to your project. You are asked before each of those commands.
+
+### Reducing Confirmation Prompts
+
+If you would rather not be asked, grant the permissions yourself in your project's `.claude/settings.json` (or your user
+`~/.claude/settings.json`):
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Edit(.sdd/**)",
+      "Bash(npm test:*)",
+      "Bash(git rm:*)"
+    ]
+  }
+}
+```
+
+**Use `Edit(<path>)`, not `Write(<path>)`.** `Write(<path>)` is not matched by file permission checks; an
+`Edit(<path>)` rule covers *all* file-editing tools, including Write.
+
+### Custom SDD Root
+
+If `.sdd-config.json` sets `root` to something other than `.sdd`, the plugin's `Edit(.sdd/**)` pre-approval no longer
+matches your documents, so document writes fall back to a confirmation prompt. `allowed-tools` cannot reference
+`${SDD_ROOT}` (only `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_SKILL_DIR}`, and `${CLAUDE_PROJECT_DIR}` are expanded there), so
+add a rule for your own root to `.claude/settings.json`:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Edit(docs/sdd/**)"
+    ]
+  }
+}
+```
+
 ## Serena MCP Integration (Optional)
 
 Configure [Serena](https://github.com/oraios/serena) MCP to enable enhanced functionality through semantic code
@@ -547,18 +604,17 @@ sdd-workflow/
 │   ├── requirement-analyzer.md    # Requirement analysis agent
 │   ├── clarification-assistant.md # Specification clarification assistant
 │   ├── front-matter-reviewer.md   # YAML front matter validation agent
-│   ├── cross-prd-reviewer.md      # Cross-PRD consistency review agent
-│   ├── templates/{en,ja}/         # Agent output templates (language-specific)
-│   ├── references/                # Agent references (symlinks to shared)
-│   └── examples/                  # Agent usage examples
-├── shared/
-│   └── references/                # Centralized reference documentation
-│       ├── mermaid_notation_rules.md          # Mermaid syntax guide
-│       ├── usecase_diagram_guide.md           # Use case diagram guide
-│       ├── requirements_diagram_components.md # SysML requirements diagram
-│       ├── document_dependencies.md           # Document dependency chain
-│       ├── front_matter_*.md                  # YAML front matter references
-│       └── prerequisites_*.md                 # Prerequisite references
+│   └── cross-prd-reviewer.md      # Cross-PRD consistency review agent
+├── shared/                        # Support files shared by skills and agents
+│   ├── references/                # Centralized reference documentation
+│   │   ├── mermaid_notation_rules.md          # Mermaid syntax guide
+│   │   ├── usecase_diagram_guide.md           # Use case diagram guide
+│   │   ├── requirements_diagram_components.md # SysML requirements diagram
+│   │   ├── document_dependencies.md           # Document dependency chain
+│   │   ├── front_matter_*.md                  # YAML front matter references
+│   │   └── prerequisites_*.md                 # Prerequisite references
+│   ├── examples/                  # Agent usage examples
+│   └── templates/{en,ja}/         # Agent output templates (language-specific)
 ├── skills/
 │   ├── sdd-init/                  # AI-SDD workflow initialization
 │   ├── constitution/              # Project constitution management
@@ -588,13 +644,19 @@ sdd-workflow/
 │   └── hooks.json                 # Hooks configuration
 ├── scripts/
 │   ├── session-start.py           # Session start initialization script
-│   ├── hook_common.py             # Shared helpers for hook scripts
 │   ├── user-prompt-submit.py      # Vibe Coding signal detection
-│   ├── pre-tool-use.py            # .sdd/ file naming validation
-│   └── post-tool-use.py           # Document update omission detection
+│   ├── pre-tool-use.py            # .sdd/ file naming validation, CONSTITUTION injection
+│   ├── post-tool-use.py           # Document update omission detection
+│   ├── sdd_index.py               # Structured index generation for .sdd/ documents
+│   ├── hook_common.py             # Shared: stdin/stdout, path resolution, .sdd-config loading
+│   ├── fm_parser.py               # Shared: front matter detection and parsing
+│   ├── naming.py                  # Shared: naming convention validation, document type detection
+│   ├── doc_walker.py              # Shared: target document traversal, design doc lookup
+│   └── env_export.py              # Shared: export writing to CLAUDE_ENV_FILE
 ├── AI-SDD-PRINCIPLES.source.md
 ├── LICENSE
 ├── README.md
+├── README.ja.md
 ├── CHANGELOG.md
 └── CHANGELOG.ja.md
 ```

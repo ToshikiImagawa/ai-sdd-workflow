@@ -5,7 +5,7 @@ argument-hint: "<feature-name> [--interactive]"
 arguments: [feature-name]
 license: MIT
 user-invocable: true
-allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
+allowed-tools: Read, Glob, Grep, AskUserQuestion, Edit(.sdd/**)
 disallowed-tools: Bash
 ---
 

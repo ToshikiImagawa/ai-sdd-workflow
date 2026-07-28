@@ -9,6 +9,82 @@
 
 ## [Unreleased]
 
+## [4.0.1] - 2026-07-28
+
+### Changed
+
+#### Permissions
+
+- **書き込みを無制限に事前承認しないようにした** - スキルの `allowed-tools` は「*確認を尋ねずに*
+  使えるツール」を与えるもので、制限ではなく事前承認である。11スキルがベアな `Write` / `Edit` を
+  列挙しており、任意のパスへの書き込みが無確認で通る状態だった。書き込み先を `Edit(<path>)` 形式で
+  限定し、`Edit(.sdd/**)` を基本に、必要なスキルにのみ `Edit(CLAUDE.md)` /
+  `Edit(.sdd-config.json)` / `Edit(.claude/rules/**)` を与えた。範囲外への書き込みは確認が入る。
+  なお `Write(<path>)` は有効な形式ではなく、`Edit(<path>)` が全ファイル編集ツールをカバーする
+- **シェル実行を同梱スクリプトに限定した** - 10スキルがベアな `Bash` を列挙し、任意のコマンドが
+  無確認で通る状態だった。同梱ヘルパーのみを実行する7スキルは対象を明示する形にした。例:
+  `Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/check-spec/scripts/find-design-docs.py" *)`
+- **3スキルから `Bash` を外した** - `implement` と `run-checklist` はプロジェクトの任意のテスト・
+  リンター・スキャナを実行し、`task-cleanup` は `git rm` / `git rm -r` を実行する。いずれも
+  事前承認すべきではないため、コマンド実行前に確認が入るようにした
+- `.sdd-config.json` でカスタム `root` を設定しているプロジェクトでは書き込み時に確認が入る。
+  `${SDD_ROOT}` は `allowed-tools` では展開されないため。カスタム root を事前承認する設定例は
+  README を参照
+
+#### Plugin Layout
+
+- **エージェントのサポートファイルを `agents/` 外へ移動** - `agents/references/`・`agents/examples/`・
+  `agents/templates/{en,ja}/` を `shared/` 配下（`shared/references/`・`shared/examples/`・
+  `shared/templates/{en,ja}/`）に移し、`agents/` にはエージェント定義6件のみを残した。
+  `claude plugin validate --strict` は `agents/**` を再帰走査してマニフェストの `agents` 配列を無視するため、
+  そこに置かれたサポートファイルはすべて「front matter の無いエージェント」として報告されていた
+- **エージェントの参照パスを絶対パス化** - エージェントプロンプト内の参照資料・利用例・テンプレートへの
+  33箇所を、ベアな相対パスから `${CLAUDE_PLUGIN_ROOT}/shared/...` 形式に変更した。従来の形式は
+  エージェント定義ファイルからの相対解決に依存していたが、このプレースホルダは agent content の
+  どこでも展開されるため参照先が一意に定まる
+- `agents/references/` にあった `shared/references/` を指す symlink 5本を削除。エージェントは
+  実ファイルを直接参照する
+
+### Fixed
+
+#### Agents
+
+- **ツール制限が効いていなかった** - 6つのエージェントすべてが許可ツールを `allowed-tools:` で宣言していたが、
+  これはスキル専用の front matter キーである。サブエージェントが解釈するのは `tools:` / `disallowedTools:` の
+  ため宣言は警告なく無視され、全エージェントが `Write` / `Edit` / `Bash` を含む**すべてのツール**を継承していた。
+  キーを `tools:` に修正し、意図していた読み取り専用の範囲（`Read`, `Glob`, `Grep`, `AskUserQuestion`）を回復した
+
+#### Skills
+
+- **モデル指定が効いていなかった** - 8つのスキルが `agent: sonnet` / `agent: haiku` でモデルを指定していた。
+  `agent` フィールドは*サブエージェント型名*の指定で `context: fork` 設定時のみ有効なため、モデル名を書いても
+  警告なく無視され `general-purpose` にフォールバックしていた。fork の有無に関わらず有効な `model:`
+  フィールドに変更した
+
+#### Hooks
+
+- **インストールパスに空白があるとフックが起動しなかった** - 4つのフックコマンドすべてで
+  `${CLAUDE_PLUGIN_ROOT}` が未クォートだったため、パスが単語分割され（`$HOME` に空白を含む環境などで）
+  全フックが起動に失敗していた。変数をクォートした
+- **matcher の陳腐化したツール名** - `PreToolUse` / `PostToolUse` の matcher が `Write|Edit|MultiEdit`
+  だったが、`MultiEdit` は現在の Claude Code のツールではない。`Write|Edit` に絞った
+
+#### Plugin Manifest
+
+- **フックの二重ロード** - `plugin.json` から `"hooks": "./hooks/hooks.json"` の宣言を削除。Claude Code は
+  プラグインルート直下の `hooks/hooks.json` を自動検出し、manifest のパスは既定パスを上書きせず補完するため、
+  標準パスを明示すると同一ファイルが二重にロードされ、プラグイン読み込み時に `Duplicate hooks file detected`
+  エラーが表示されていた。フック自体の動作は変わらない
+- **冗長な skills 宣言** - `"skills": "./skills"` を削除。既定の `skills/` ディレクトリは常に走査され、
+  `skills` フィールドはその走査に*加算*するだけなので、標準パスの宣言は無意味だった。19スキルはすべて
+  引き続き読み込まれる
+
+#### Documentation
+
+- **日本語 README が英語版と乖離していた** - `README.ja.md` はエージェントを5件（実際は6件）、フックを1件
+  （実際は4件）と記載し、`SDD_LANG` と `.sdd-config.json` の `lang` のデフォルトを `ja`（実際は `en`）と
+  記述し、`scripts/` 配下10ファイルのうち1件しか載せていなかった。両 README を同期した
+
 ## [4.0.0] - 2026-07-16
 
 ### Added

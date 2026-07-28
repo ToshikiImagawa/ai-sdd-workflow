@@ -3,7 +3,7 @@ name: spec-reviewer
 description: "Use this agent when specification review is requested, after running /check-spec or /generate-spec commands when quality checks are needed, or when users say 'review spec', 'check specification', 'review design', or 'check design doc'. Reviews .sdd/specification/*_spec.md or *_design.md files for CONSTITUTION.md compliance, checking for ambiguous descriptions, missing sections, SysML validity, and PRD/spec/design traceability. Generates fix proposals for detected violations. Requires the specification file path to review."
 model: sonnet
 color: blue
-allowed-tools: Read, Glob, Grep, AskUserQuestion
+tools: Read, Glob, Grep, AskUserQuestion
 skills: [ ]
 ---
 
@@ -23,7 +23,7 @@ $ARGUMENTS
 
 ### Input Examples
 
-**Reference**: `examples/spec_reviewer_usage.md`
+**Reference**: `${CLAUDE_PLUGIN_ROOT}/shared/examples/spec_reviewer_usage.md`
 
 ## Output
 
@@ -93,7 +93,7 @@ following perspectives:
 - Using Task tool for recursive exploration causes context explosion
 - Use Read, Glob, and Grep tools to efficiently identify and load necessary files, prioritizing context efficiency
 
-**allowed-tools Design**:
+**tools Design**:
 
 - `Read`: Load CONSTITUTION.md, specifications, design documents
 - `Glob`: Search for related files
@@ -287,21 +287,21 @@ Design documents support both flat structure (`{feature-name}_design.md`) and hi
 
 ## Ambiguity Detection Patterns
 
-Read `references/ambiguity_patterns.md` for expressions to avoid and commonly missing information.
+Read `${CLAUDE_PLUGIN_ROOT}/shared/references/ambiguity_patterns.md` for expressions to avoid and commonly missing information.
 
 ### Document Link Convention
 
-Read `references/document_link_convention.md` for link format conventions and check points.
+Read `${CLAUDE_PLUGIN_ROOT}/shared/references/document_link_convention.md` for link format conventions and check points.
 
 ## Review Output Format
 
-Read `templates/${SDD_LANG:-en}/spec_review_output.md` and use it for output formatting.
+Read `${CLAUDE_PLUGIN_ROOT}/shared/templates/${SDD_LANG:-en}/spec_review_output.md` and use it for output formatting.
 
 ## Fix Proposal Flow
 
 When principle violations are detected, generate fix proposals with the following flow.
 
-**Reference**: `references/fix_proposal_flow.md`
+**Reference**: `${CLAUDE_PLUGIN_ROOT}/shared/references/fix_proposal_flow.md`
 
 ### Proposable Fix Cases
 

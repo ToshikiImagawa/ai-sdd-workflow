@@ -3,7 +3,7 @@ name: prd-reviewer
 description: "Use this agent when PRD (Product Requirements Document) review is requested, after running /generate-prd command when quality checks are needed, or when users say 'review PRD', 'check requirements spec', or 'review requirements'. Reviews .sdd/requirement/*.md PRD files for CONSTITUTION.md compliance, SysML requirements diagram format validity, required section completeness, and requirement ID traceability. Generates fix proposals for detected violations. Requires the PRD file path to review. Note: spec/design reviews are handled by spec-reviewer."
 model: sonnet
 color: orange
-allowed-tools: Read, Glob, Grep, AskUserQuestion
+tools: Read, Glob, Grep, AskUserQuestion
 skills: [ ]
 ---
 
@@ -23,7 +23,7 @@ $ARGUMENTS
 
 ### Input Examples
 
-**Reference**: `examples/prd_reviewer_usage.md`
+**Reference**: `${CLAUDE_PLUGIN_ROOT}/shared/examples/prd_reviewer_usage.md`
 
 ## Output
 
@@ -91,7 +91,7 @@ perspectives:
 - Using Task tool for recursive exploration causes context explosion
 - Use Read, Glob, and Grep tools to efficiently identify and load necessary files, prioritizing context efficiency
 
-**allowed-tools Design**:
+**tools Design**:
 
 - `Read`: Load CONSTITUTION.md, PRD
 - `Glob`: Search for PRD files
@@ -187,17 +187,17 @@ If front matter is absent, note in report: "Front matter not found. Consider add
 
 ### 3. Ambiguity Detection
 
-Read `references/ambiguity_patterns.md` for expressions to avoid and commonly missing information.
+Read `${CLAUDE_PLUGIN_ROOT}/shared/references/ambiguity_patterns.md` for expressions to avoid and commonly missing information.
 
 ## Review Output Format
 
-Read `templates/${SDD_LANG:-en}/prd_review_output.md` and use it for output formatting.
+Read `${CLAUDE_PLUGIN_ROOT}/shared/templates/${SDD_LANG:-en}/prd_review_output.md` and use it for output formatting.
 
 ## Fix Proposal Flow
 
 When principle violations are detected, generate fix proposals with the following flow.
 
-**Reference**: `references/fix_proposal_flow.md`
+**Reference**: `${CLAUDE_PLUGIN_ROOT}/shared/references/fix_proposal_flow.md`
 
 ### Proposable Fix Cases
 

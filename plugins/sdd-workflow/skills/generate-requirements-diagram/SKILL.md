@@ -5,7 +5,7 @@ argument-hint: "<requirements-text> [--ci]"
 license: MIT
 user-invocable: true
 context: fork
-agent: haiku
+model: haiku
 allowed-tools: Read, Glob, Grep, AskUserQuestion
 disallowed-tools: Write, Edit, Bash
 ---
