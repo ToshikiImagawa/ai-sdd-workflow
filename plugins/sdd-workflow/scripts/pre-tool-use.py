@@ -26,6 +26,7 @@ from hook_common import (  # noqa: E402
     emit_additional_context,
     emit_permission_deny,
     get_project_root,
+    load_naming_ignore_patterns,
     load_sdd_paths,
     read_stdin_json,
     relative_to_project,
@@ -97,7 +98,8 @@ def main() -> None:
     requirement_prefix = str(Path(sdd_root) / requirement_dir)
     specification_prefix = str(Path(sdd_root) / specification_dir)
 
-    error = validate_naming(rel_path, requirement_prefix, specification_prefix)
+    ignore_patterns = load_naming_ignore_patterns(project_root)
+    error = validate_naming(rel_path, requirement_prefix, specification_prefix, ignore_patterns)
     if error:
         emit_permission_deny("PreToolUse", error)
         return

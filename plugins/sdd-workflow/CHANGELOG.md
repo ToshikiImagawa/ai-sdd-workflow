@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-08-19
+
+### Added
+
+#### Configuration
+
+- **`naming.ignore_patterns` in `.sdd-config.json`** - Glob patterns (e.g. `"*_test.md"`) matched
+  against a file's basename to exempt it from the `requirement`/`specification` naming convention
+  check, so intentionally non-conforming files (test fixtures, etc.) no longer get blocked
+
 ## [4.0.1] - 2026-07-28
 
 ### Changed

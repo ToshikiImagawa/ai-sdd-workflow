@@ -107,6 +107,25 @@ The `id_conventions` section defines regex patterns for requirement ID naming co
 Keys are free-form: define one entry per ID family used in the project (e.g., `prd_interface`, `design_constraint`).
 If `id_conventions` is not configured, agents infer the dominant pattern from existing IDs.
 
+### Naming Ignore Patterns (Optional)
+
+The `naming.ignore_patterns` array defines glob patterns for file names that are exempt from the
+`requirement/` / `specification/` naming convention check performed by the `pre-tool-use` hook
+(e.g., test fixture files such as `xxx_spec_test.md` that intentionally don't follow the
+`_spec`/`_design` suffix rule).
+
+```json
+{
+  "naming": {
+    "ignore_patterns": ["*_test.md"]
+  }
+}
+```
+
+Patterns use `fnmatch` (shell-style glob) syntax and are matched against the file's basename only.
+A file whose name matches any pattern skips the naming check entirely, in both `requirement/` and
+`specification/`. If `naming.ignore_patterns` is not configured, no files are exempted.
+
 ### Configuration File Loading Rules
 
 1. Check if `.sdd-config.json` exists at project root

@@ -74,6 +74,25 @@ def load_sdd_paths(project_root: str) -> Tuple[str, str, str]:
     return root, requirement_dir, specification_dir
 
 
+def load_naming_ignore_patterns(project_root: str) -> Tuple[str, ...]:
+    """Return the naming.ignore_patterns glob list from .sdd-config.json, or () if absent.
+
+    Patterns are ``fnmatch`` globs (e.g. ``"*_test.md"``) matched against a
+    file's basename by ``naming.validate_naming``.
+    """
+    config_path = Path(project_root) / ".sdd-config.json"
+    if not config_path.is_file():
+        return ()
+    try:
+        raw = json.loads(config_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return ()
+    patterns = raw.get("naming", {}).get("ignore_patterns", [])
+    if not isinstance(patterns, list):
+        return ()
+    return tuple(p for p in patterns if isinstance(p, str))
+
+
 SOURCE_EXTENSIONS = (
     ".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs", ".java",
     ".kt", ".swift", ".cs", ".rb", ".php", ".c", ".cc", ".cpp", ".h",

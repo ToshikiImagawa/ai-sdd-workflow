@@ -9,6 +9,7 @@ and the recommend-front-matter skill (document classification via
 ``determine_type``), so the rule is defined exactly once.
 """
 
+import fnmatch
 from pathlib import Path
 
 SPEC_SUFFIXES = ("_spec", "_design")
@@ -19,14 +20,23 @@ def has_spec_suffix(stem: str) -> bool:
     return stem.endswith(SPEC_SUFFIXES)
 
 
-def validate_naming(rel_path: str, requirement_prefix: str, specification_prefix: str) -> str:
+def validate_naming(
+    rel_path: str,
+    requirement_prefix: str,
+    specification_prefix: str,
+    ignore_patterns=(),
+) -> str:
     """Return an error message if rel_path violates naming conventions, else ''.
 
     ``requirement_prefix`` / ``specification_prefix`` are project-relative
-    directory paths (e.g. ``.sdd/requirement``).
+    directory paths (e.g. ``.sdd/requirement``). ``ignore_patterns`` are
+    ``fnmatch`` glob patterns (e.g. ``"*_test.md"``) matched against the
+    file's basename; a match skips the naming check entirely.
     """
     rel = Path(rel_path)
     if rel.suffix != ".md":
+        return ""
+    if any(fnmatch.fnmatch(rel.name, pat) for pat in ignore_patterns):
         return ""
     stem = rel.stem
 
