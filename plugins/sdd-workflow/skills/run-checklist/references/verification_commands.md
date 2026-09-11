@@ -1,5 +1,27 @@
 # Verification Commands Reference
 
+## Running Verifications
+
+The skill's `allowed-tools` pre-approves exactly one scoped command — `scripts/run-verification.py` — instead of
+bare `Bash`, so every verification goes through that script. Run it from the project root, once per category:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/run-checklist/scripts/run-verification.py" test
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/run-checklist/scripts/run-verification.py" lint
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/run-checklist/scripts/run-verification.py" typecheck
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/run-checklist/scripts/run-verification.py" security
+```
+
+The script owns detection and execution; it implements the "Detection Priority" order below and the
+test / lint / type-check / security rows of the tables that follow. It prints a JSON result
+(`PASS` / `FAIL` / `SKIPPED` / `TOOL_NOT_FOUND` / `TIMEOUT`) on stdout — see SKILL.md for how each status maps
+to a checklist outcome.
+
+**Categories the script does not cover**: the formatter row (CHK-4xx), Design Review (CHK-3xx), and
+Documentation Review (CHK-6xx) commands listed below are *not* implemented by the script, and bare `Bash` is
+deliberately not granted — so those items cannot be verified automatically by this skill. Record them as manual
+review items rather than reporting them as failures.
+
 ## Project Type Detection
 
 | Project Type | Detection File         | Package Manager |

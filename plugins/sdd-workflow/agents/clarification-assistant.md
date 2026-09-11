@@ -194,13 +194,13 @@ use the existing Glob/Grep/Read flow.
 
 ## File Naming Convention (Important)
 
-**⚠️ The presence of suffixes differs between requirement and specification. Do not confuse them.**
+**⚠️ `requirement/` forbids a `_spec`/`_design` suffix. `specification/` is a single-type directory, so its
+suffix is optional. Do not confuse them.**
 
 | Directory         | File Type        | Naming Pattern                                 | Example                                   |
 |:------------------|:-----------------|:-----------------------------------------------|:------------------------------------------|
-| **requirement**   | All files        | `{name}.md` (no suffix)                        | `user-login.md`, `index.md`               |
-| **specification** | Abstract spec    | `{name}_spec.md` (`_spec` suffix required)     | `user-login_spec.md`, `index_spec.md`     |
-| **specification** | Technical design | `{name}_design.md` (`_design` suffix required) | `user-login_design.md`, `index_design.md` |
+| **requirement**   | All files        | `{name}.md` (no suffix — required)             | `user-login.md`, `index.md`               |
+| **specification** | Abstract spec    | `{name}.md` or `{name}_spec.md` (`_spec` optional) | `user-login.md`, `user-login_spec.md` |
 
 ## Question Template
 

@@ -76,9 +76,10 @@ graph TD
 ## Reference Documents
 
 - Abstract Specification: `${SDD_SPECIFICATION_PATH}/[{parent}/]{feature}_spec.md`
-- Technical Design: `${SDD_SPECIFICATION_PATH}/[{parent}/]{feature}_design.md`
+- Technical Design Draft: `${SDD_TASK_PATH}/{ticket_number}/design-draft.md`
 
-※ For hierarchical structure, parent features use `index_spec.md`, `index_design.md`
+※ For hierarchical structure, parent features use `index_spec.md`. The design draft is ticket-scoped, so
+its path is the same in both structures
 
 ## Recommended Manual Verification
 
@@ -91,7 +92,7 @@ graph TD
 
 ```bash
 # Verify consistency with related design docs
-/check_spec {feature}
+/check-spec {feature}
 
 # Check for unclear specification points
 /clarify {feature}

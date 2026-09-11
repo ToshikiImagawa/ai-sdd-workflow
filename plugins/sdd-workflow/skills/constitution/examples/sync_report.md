@@ -15,6 +15,10 @@ Example output for `/constitution sync`:
     - Added "Principle Compliance" section
     - Updated decision framework to match constitution
 
+- [x] `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/ADR_TEMPLATE.md`
+    - Added principle reference to the entry format
+    - Kept the required entry items (Decision / Rationale / Rejected alternatives)
+
 - [x] `skills/checklist/templates/checklist_template.md`
     - Added principle verification items
     - CHK-CONST-001: P1 verification

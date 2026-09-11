@@ -9,12 +9,13 @@ and cross-reference validation.
 
 | Field        | Type   | Required | Description                                           |
 |:-------------|:-------|:---------|:------------------------------------------------------|
-| `id`         | string | Yes      | Unique identifier. Pattern: `"{type}-{feature-name}"` |
+| `id`         | string | Yes      | Unique identifier. Pattern: `"{type}-{feature-name}"` (design: `"design-{ticket-number}"` — see Design section) |
 | `title`      | string | Yes      | Human-readable title                                  |
 | `type`       | string | Yes      | Document type (see per-type tables below)             |
 | `status`     | string | Yes      | Current status                                        |
 | `created`    | string | Yes      | Creation date (YYYY-MM-DD)                            |
 | `updated`    | string | Yes      | Last update date (YYYY-MM-DD)                         |
+| `sdd-version` | string | No      | sdd-workflow plugin version at generation time (e.g., `"5.0.0"`), read from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`. Absent in documents generated before this field was introduced |
 | `depends-on` | list   | No       | IDs of upstream documents                             |
 | `tags`       | list   | No       | Keywords for search/filtering                         |
 | `category`   | string | No       | Feature category                                      |
@@ -27,22 +28,36 @@ and cross-reference validation.
 | `type`       | `"spec"`                                    |                                        |
 | `status`     | `draft`, `review`, `approved`, `deprecated` |                                        |
 | `sdd-phase`  | `"specify"`                                 | Always `"specify"`                     |
+| `impl-status` | `not-implemented`, `in-progress`, `implemented` | Whether this spec's described behavior is reflected in the implementation. Independent of `status` — see "`status` vs `impl-status`" below |
 | `priority`   | `critical`, `high`, `medium`, `low`         | Inherit from PRD if available          |
 | `risk`       | `high`, `medium`, `low`                     | Inherit from PRD if available          |
 | `depends-on` | `["prd-*"]`                                 | References PRD                         |
 
-### Design (`type: "design"`)
+##### `status` vs `impl-status`
+
+`status` tracks the document's **approval lifecycle** (`draft` → `review` → `approved` → `deprecated`): has this
+spec been reviewed and agreed on as the source of truth? `impl-status` tracks a completely independent axis —
+**whether the implementation currently matches what the spec describes**. A spec can be `approved` and still
+`not-implemented` (an agreed-upon plan not yet built), or `draft` and `implemented` (a quick implementation whose
+spec hasn't been formally reviewed yet). Neither field can be derived from the other.
+
+### Design (`type: "design"`) — temporary draft under `task/{ticket-number}/design-draft.md`
+
+**Note**: Unlike spec, the Design Doc is a temporary draft, not a persistent knowledge asset — see
+`AI-SDD-PRINCIPLES.md`'s Document Persistence Rules. Front matter is still included while the draft exists, so
+that `spec-reviewer` / `front-matter-reviewer` can validate it before deletion.
 
 | Field         | Valid Values / Pattern                          | Notes                                    |
 |:--------------|:------------------------------------------------|:-----------------------------------------|
-| `id`          | `"design-{name}"`                               | Hierarchical: `"design-{parent}-{name}"` |
+| `id`          | `"design-{ticket-number}"`                      | Ticket-scoped, not feature-scoped        |
 | `type`        | `"design"`                                      |                                          |
 | `status`      | `draft`, `review`, `approved`, `deprecated`     |                                          |
 | `sdd-phase`   | `"plan"`                                        | Always `"plan"`                          |
-| `impl-status` | `not-implemented`, `in-progress`, `implemented` | Design-specific field                    |
+| `impl-status` | `not-implemented`, `in-progress`, `implemented` | Same meaning as the spec's `impl-status` field (see Spec section above), scoped to this ticket's draft |
 | `priority`    | `critical`, `high`, `medium`, `low`             | Inherit from spec                        |
 | `risk`        | `high`, `medium`, `low`                         | Inherit from spec                        |
 | `depends-on`  | `["spec-*"]`                                    | References spec                          |
+| `ticket`      | string                                          | External ticket reference (e.g., `"TICKET-123"`). Optional -- relevant for a persistent design doc (e.g. a project layout without an `adr/` concept, or one where `task-cleanup` found nothing to integrate into `adr/`). Set it when no `adr` entry exists to carry the link and no ticket tracker was reachable to record completion -- it becomes the only durable link from a ticket back to this feature once `task/{ticket-number}/` is deleted |
 
 ## Dependency Direction Rules
 
@@ -63,7 +78,7 @@ prd ← spec (depends-on: ["prd-*"]) ← design (depends-on: ["spec-*"])
 | Check Item                  | Description                                                                                      | Importance |
 |:----------------------------|:-------------------------------------------------------------------------------------------------|:-----------|
 | **`id` format**             | Matches expected pattern for type (`spec-*`, `design-*`)                                         | Medium     |
-| **`type` correctness**      | Matches document location (`"spec"`/`"design"` for `specification/`)                             | Medium     |
+| **`type` correctness**      | Matches document location (`"spec"` for `specification/`, `"design"` for `task/{ticket-number}/design-draft.md`) | Medium     |
 | **`depends-on` references** | All referenced IDs exist in actual documents                                                     | High       |
 | **`depends-on` direction**  | Dependencies point upstream only (spec→prd, design→spec)                                         | High       |
 | **`status` validity**       | Value is one of the allowed values for the document type                                         | Low        |
@@ -74,6 +89,7 @@ prd ← spec (depends-on: ["prd-*"]) ← design (depends-on: ["spec-*"])
 | Document Type | Additional Check            | Description                         | Importance |
 |:--------------|:----------------------------|:------------------------------------|:-----------|
 | Spec          | **`sdd-phase` correctness** | Must be `"specify"`                 | Low        |
+| Spec          | **`impl-status` accuracy**  | Matches actual implementation state (see `check-spec`'s Critical/Info/Warning branching) | Medium |
 | Design        | **`sdd-phase` correctness** | Must be `"plan"`                    | Low        |
 | Design        | **`impl-status` accuracy**  | Matches actual implementation state | Medium     |
 
@@ -98,6 +114,22 @@ draft → review → approved → deprecated
 ```
 not-implemented → in-progress → implemented
 ```
+
+### Spec `impl-status` Transitions
+
+```
+not-implemented → in-progress → implemented
+```
+
+Unlike `status`, which a human reviews and advances, `impl-status` is updated mechanically by the skill that
+observes the implementation state:
+
+| Transition                        | Updated By                          | When                                                              |
+|:-----------------------------------|:-------------------------------------|:--------------------------------------------------------------------|
+| (new spec) → `not-implemented`     | `generate-spec`                      | On spec creation                                                     |
+| `not-implemented` → `in-progress`  | `implement`                          | When implementation for the spec starts                             |
+| `in-progress` → `implemented`      | `implement`                          | When implementation completes (all tasks done, verification passes) |
+| → `implemented` (safety net)       | `task-cleanup`                       | If `implement` did not set it (e.g. work resumed from a different session) |
 
 ## Missing Front Matter Policy
 

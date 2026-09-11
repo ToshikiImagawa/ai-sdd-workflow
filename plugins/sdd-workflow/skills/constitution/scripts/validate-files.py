@@ -14,6 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 from hook_common import resolve_project_root  # noqa: E402
 from env_export import rewrite_exports  # noqa: E402
+from fm_parser import parse_front_matter, split_front_matter  # noqa: E402
 
 
 def log(message: str) -> None:
@@ -27,7 +28,16 @@ def get_project_root() -> Path:
 
 
 def read_config(project_root: Path) -> dict:
-    """Read .sdd-config.json (paths only)"""
+    """Read .sdd-config.json (paths only).
+
+    Deliberately hard-fails when the file is absent, unlike
+    hook_common.resolve_lang_and_root's lenient fallback (used by e.g.
+    generate-prd/generate-spec's prepare-*.py). Those commands proceed with a
+    working default layout when the config is missing; this one exists
+    specifically to validate that the project's setup is correct, so silently
+    assuming defaults here would hide the very misconfiguration `/constitution
+    validate` is meant to surface.
+    """
     config_file = project_root / ".sdd-config.json"
     if not config_file.exists():
         print("ERROR: .sdd-config.json not found", file=sys.stderr)
@@ -49,6 +59,18 @@ def sorted_matches(base: Path, pattern: str) -> list:
     matches = [str(p) for p in base.rglob(pattern) if p.is_file()]
     matches.sort()
     return matches
+
+
+def read_front_matter(path: Path) -> dict:
+    """Parse a document's front matter, tolerating unreadable files."""
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return {}
+    fm_text, _ = split_front_matter(text)
+    if not fm_text:
+        return {}
+    return parse_front_matter(fm_text)
 
 
 def write_lines(path: Path, lines: list) -> None:
@@ -94,8 +116,30 @@ def main() -> None:
         spec_count = 0
         design_count = 0
         if specification_path.is_dir():
-            spec_matches = sorted_matches(specification_path, "*_spec.md")
-            design_matches = sorted_matches(specification_path, "*_design.md")
+            # The `_spec` suffix is optional under specification/, so every
+            # .md there is an abstract spec except a v4.x persistent design
+            # doc (`*_design.md`), which is listed separately below. But that
+            # filename heuristic alone cannot tell a legacy design doc apart
+            # from a legitimately named *new* spec whose own stem happens to
+            # end in `_design` (e.g. `api_design.md`) -- a file's own front
+            # matter `type` overrides the heuristic when declared (`type:
+            # spec` keeps it out of design_matches; `type: design` keeps a
+            # non-`_design`-named file in it). Files without a declared `type`
+            # (the common case for legacy v4.x docs, predating this field)
+            # fall back to the filename heuristic below.
+            all_md = sorted_matches(specification_path, "*.md")
+            design_set = set()
+            for m in sorted_matches(specification_path, "*_design.md"):
+                declared_type = read_front_matter(Path(m)).get("type", "")
+                if declared_type != "spec":
+                    design_set.add(m)
+            for m in all_md:
+                if m in design_set:
+                    continue
+                if read_front_matter(Path(m)).get("type", "") == "design":
+                    design_set.add(m)
+            design_matches = sorted(design_set)
+            spec_matches = [m for m in all_md if m not in design_set]
             write_lines(spec_files, spec_matches)
             write_lines(design_files, design_matches)
             spec_count = len(spec_matches)

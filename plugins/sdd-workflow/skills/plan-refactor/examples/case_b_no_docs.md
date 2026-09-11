@@ -1,6 +1,6 @@
-# Example: Case B (No Existing Documents)
+# Example: Case B (No Spec)
 
-This example demonstrates `/plan-refactor` usage when no PRD, spec, or design documents exist yet.
+This example demonstrates `/plan-refactor` usage when no PRD or spec exists yet.
 
 ## Scenario
 
@@ -11,7 +11,7 @@ This example demonstrates `/plan-refactor` usage when no PRD, spec, or design do
 ## Command
 
 ```bash
-/plan-refactor user-profile
+/plan-refactor user-profile --ticket=72
 ```
 
 ## Expected Behavior
@@ -22,10 +22,14 @@ This example demonstrates `/plan-refactor` usage when no PRD, spec, or design do
 [plan-refactor] Running document scan...
 [scan-existing-docs] Scanning for: user-profile
 [scan-existing-docs] Structure: none
-[scan-existing-docs] PRD: false, Spec: false, Design: false
+[scan-existing-docs] PRD: false, Spec: false, DesignDraft: false, LegacyDesign: false
+[scan-existing-docs] Case: B (No spec, reverse-engineering needed)
 
-Detected: Case B (No existing documents)
+Detected: Case B (No spec)
 ```
+
+Case B is reached because **no spec** was found — this is the one path that turns undocumented code into a spec.
+A missing design document alone never triggers it.
 
 ### Phase 2: Implementation Discovery
 
@@ -131,14 +135,26 @@ table User {
 ```
 ```
 
-#### Step 3.2: Generate Design
+#### Step 3.2: Generate the Design Draft
 
-Claude creates `.sdd/specification/user-profile_design.md`:
+Claude creates `.sdd/task/72/design-draft.md` — a **temporary draft**, not a document under `specification/`:
 
 ```markdown
-# user-profile - Technical Design Document (Reverse Engineered)
+---
+id: "design-72"
+title: "user-profile"
+type: "design"
+status: "review"
+sdd-phase: "plan"
+impl-status: "implemented"
+depends-on: ["spec-user-profile"]
+tags: ["reverse-engineered"]
+---
 
-> **⚠️ Note**: This design document was reverse-engineered from existing implementation on 2026-02-15.
+# user-profile - Technical Design Draft (Reverse Engineered)
+
+> **⚠️ Note**: This design draft was reverse-engineered from existing implementation on 2026-02-15.
+> It is deleted after implementation, once its settled decisions have been appended to `.sdd/adr/user-profile.md`.
 
 ## Design Overview
 
@@ -215,7 +231,7 @@ src/utils/
 
 #### Step 3.3: Add Refactoring Plan
 
-Claude appends Refactoring Plan section to the design doc:
+Claude appends the Refactoring Plan section to the design draft:
 
 ```markdown
 ## Refactoring Plan
@@ -315,9 +331,9 @@ The user profile module lacks proper documentation and has technical debt that m
 ### Phase 4: Validation
 
 ```
-✅ Reverse-engineered spec generated: .sdd/specification/user-profile_spec.md
-✅ Reverse-engineered design generated: .sdd/specification/user-profile_design.md
-✅ Refactoring plan added to design doc
+✅ Reverse-engineered spec generated (persistent): .sdd/specification/user-profile_spec.md
+✅ Reverse-engineered design draft generated (temporary): .sdd/task/72/design-draft.md
+✅ Refactoring plan added to the design draft
 ```
 
 ### Phase 5: Next Steps
@@ -325,18 +341,23 @@ The user profile module lacks proper documentation and has technical debt that m
 ```
 Next steps:
 1. Review generated documents:
-   - .sdd/specification/user-profile_spec.md
-   - .sdd/specification/user-profile_design.md
+   - .sdd/specification/user-profile_spec.md (persistent)
+   - .sdd/task/72/design-draft.md (temporary draft)
 
 2. Update documents to reflect true original intent (if known)
 
-3. Run `/task-breakdown user-profile` to break down refactoring
+3. Run `/task-breakdown user-profile 72` to break down refactoring
 
 4. Execute with `/implement user-profile`
+
+5. After implementation, run `/task-cleanup user-profile` to append the settled decisions to
+   .sdd/adr/user-profile.md and delete .sdd/task/72/
 ```
 
 ## Notes
 
-- In Case B, Claude generates spec and design from scratch by analyzing code
-- The reverse-engineered docs serve as a baseline for refactoring
+- In Case B, Claude generates the spec and the design draft from scratch by analyzing code
+- The two artifacts have different lifetimes: the spec is persistent, the design draft is deleted after
+  implementation once its decisions have been appended to `adr/user-profile.md`
+- Nothing is written to `specification/{feature}_design.md` — that path is no longer a persistent document
 - Users should review and correct any misunderstandings before proceeding

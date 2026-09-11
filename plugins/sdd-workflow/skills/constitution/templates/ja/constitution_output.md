@@ -35,8 +35,8 @@ v1.2.0
 
 ### 検証対象
 
-- `${SDD_SPECIFICATION_PATH}/**/*_spec.md` (15 files)
-- `${SDD_SPECIFICATION_PATH}/**/*_design.md` (15 files)
+- `${SDD_SPECIFICATION_PATH}/**/*.md` - 抽象仕様書（`_spec` サフィックスは任意）(15 files)
+- `${SDD_SPECIFICATION_PATH}/**/*_design.md` - v4.x の永続設計書（存在する場合）(15 files)
 - テンプレートファイル (2 files)
 
 ### 検証サマリー

@@ -3,7 +3,7 @@
 
 Validates AI-SDD file naming conventions before writing to .sdd/ documents:
 - requirement/: no _spec/_design suffix allowed
-- specification/: _spec.md or _design.md suffix required
+- specification/ / adr/: suffix optional (not validated)
 
 Blocks the tool call via JSON Decision Control (permissionDecision: "deny")
 on violation.
@@ -28,6 +28,7 @@ from hook_common import (  # noqa: E402
     get_project_root,
     load_naming_ignore_patterns,
     load_sdd_paths,
+    read_sdd_config_json,
     read_stdin_json,
     relative_to_project,
 )
@@ -94,18 +95,24 @@ def main() -> None:
     if not rel_path:
         return
 
-    sdd_root, requirement_dir, specification_dir = load_sdd_paths(project_root)
-    requirement_prefix = str(Path(sdd_root) / requirement_dir)
-    specification_prefix = str(Path(sdd_root) / specification_dir)
+    # Read .sdd-config.json once and share it, rather than letting each of
+    # load_sdd_paths / load_naming_ignore_patterns re-read and re-parse the
+    # same file on every single Write/Edit tool call.
+    raw_config = read_sdd_config_json(project_root)
+    paths = load_sdd_paths(project_root, raw_config)
 
-    ignore_patterns = load_naming_ignore_patterns(project_root)
-    error = validate_naming(rel_path, requirement_prefix, specification_prefix, ignore_patterns)
+    ignore_patterns = load_naming_ignore_patterns(project_root, raw_config)
+    error = validate_naming(
+        rel_path, paths.requirement_prefix, ignore_patterns
+    )
     if error:
         emit_permission_deny("PreToolUse", error)
         return
 
-    if not Path(rel_path).is_relative_to(sdd_root):
-        maybe_inject_constitution(rel_path, project_root, sdd_root, payload.get("session_id", ""))
+    if not Path(rel_path).is_relative_to(paths.root):
+        maybe_inject_constitution(
+            rel_path, project_root, paths.root, payload.get("session_id", ""),
+        )
 
 
 if __name__ == "__main__":

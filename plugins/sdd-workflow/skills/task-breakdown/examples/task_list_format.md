@@ -5,8 +5,8 @@
 | Item | Content |
 |:---|:---|
 | Feature Name | {Feature Name} |
-| Ticket Number | {Ticket Number} (if specified) |
-| Design Document | `.sdd/specification/{feature-name}_design.md` |
+| Ticket Number | {Ticket Number} |
+| Design Draft | `.sdd/task/{ticket-number}/design-draft.md` |
 | Created Date | YYYY-MM-DD |
 
 ## Task List
@@ -70,6 +70,7 @@ graph TD
 ## Reference Documents
 
 - Abstract Specification: `.sdd/specification/[{parent-feature}/]{feature-name}_spec.md`
-- Technical Design Document: `.sdd/specification/[{parent-feature}/]{feature-name}_design.md`
+- Technical Design Draft: `.sdd/task/{ticket-number}/design-draft.md`
 
-For hierarchical structure, parent feature uses `index_spec.md`, `index_design.md`
+For hierarchical structure, parent feature uses `index_spec.md`. The design draft is ticket-scoped, so its
+path is the same in both structures

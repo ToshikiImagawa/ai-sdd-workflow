@@ -11,7 +11,7 @@ No argument was specified, so the following directories/files will be targeted f
 
 **Total: {n} items**
 
-**Warning**: Cleanup involves deletion. Important design decisions will be integrated into `*_design.md`, but content deemed unnecessary for integration will be deleted.
+**Warning**: Cleanup involves deletion. Design decisions and rejected alternatives will be appended to `adr/{feature}.md`, but content deemed unnecessary for integration will be deleted.
 
 Do you want to proceed with this scope?
 - To target a specific directory only, re-run with a ticket number specified

@@ -6,6 +6,16 @@
 
 ※ For hierarchical structure, parent features use `index_spec.md`
 
+### Category Analysis Summary
+
+Classification and basis for all 9 categories, including the ones that produced no question below.
+
+| # | Category      | Classification | Basis                                          |
+|:--|:--------------|:----------------|:------------------------------------------------|
+| 1 | Scope         | Partial          | spec §2 lists happy path only, no edge cases   |
+| 2 | Data Model    | Missing          | session expiration not mentioned anywhere       |
+| ... (all 9 rows) |
+
 ### Clarity Score
 
 | Category      | Clear  | Partial | Missing | Score   |
@@ -152,5 +162,5 @@ Answers will be integrated into `${SDD_SPECIFICATION_PATH}/[{parent}/]{feature}_
 /clarify {feature}
 
 # Verify consistency (updated specification)
-/check_spec {feature}
+/check-spec {feature}
 ```

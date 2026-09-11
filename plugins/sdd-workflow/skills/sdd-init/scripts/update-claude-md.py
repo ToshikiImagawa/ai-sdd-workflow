@@ -17,7 +17,7 @@ from pathlib import Path
 
 # Shared modules live in plugins/sdd-workflow/scripts (three levels up + scripts).
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
-from hook_common import resolve_project_root  # noqa: E402
+from hook_common import resolve_lang_and_root, resolve_project_root  # noqa: E402
 
 SECTION_HEADING = "## AI-SDD Instructions"
 
@@ -44,29 +44,6 @@ def get_plugin_root() -> Path:
     # Go up 3 levels: scripts -> sdd-init -> skills -> sdd-workflow
     script_dir = Path(__file__).parent.resolve()
     return script_dir.parent.parent.parent
-
-
-def resolve_lang_and_root(project_root: Path) -> tuple:
-    """Read SDD_LANG and SDD_ROOT from .sdd-config.json (priority over environment variable).
-
-    This ensures consistency with init-structure.py.
-    """
-    config_file = project_root / ".sdd-config.json"
-    config_lang = ""
-    config_root = ""
-    if config_file.is_file():
-        try:
-            with open(config_file, "r", encoding="utf-8") as f:
-                config = json.load(f)
-            config_lang = config.get("lang") or ""
-            config_root = config.get("root") or ""
-        except (json.JSONDecodeError, OSError):
-            config_lang = ""
-            config_root = ""
-
-    sdd_lang = config_lang or os.environ.get("SDD_LANG") or "en"
-    sdd_root = config_root or os.environ.get("SDD_ROOT") or ".sdd"
-    return sdd_lang, sdd_root
 
 
 def extract_current_version(claude_md: str) -> str:

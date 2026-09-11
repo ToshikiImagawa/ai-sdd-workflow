@@ -1,7 +1,7 @@
 ---
 name: generate-spec
 description: "Generate Abstract Specification and Technical Design Document from input content"
-argument-hint: "<requirements-description>"
+argument-hint: "<requirements-description> [--ticket <number>] [--ci] [--amend]"
 license: MIT
 user-invocable: true
 allowed-tools: Read, Glob, Grep, AskUserQuestion, Edit(.sdd/**), Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/generate-spec/scripts/prepare-spec.py" *)
@@ -11,8 +11,8 @@ allowed-tools: Read, Glob, Grep, AskUserQuestion, Edit(.sdd/**), Bash(python3 "$
 
 Generates the following documents from input content according to the AI-SDD workflow:
 
-1. `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md` - Abstract Specification (Specify Phase)
-2. `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md` - Technical Design Document (Plan Phase)
+1. `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md` - Abstract Specification (Specify Phase, persistent). Path follows flat/hierarchical structure (see below)
+2. `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket-number}/design-draft.md` - Technical Design Document Draft (Plan Phase, temporary — deleted after implementation). Path is ticket-scoped and fixed, independent of the spec's flat/hierarchical structure
 
 ## Prerequisites
 
@@ -56,7 +56,24 @@ $ARGUMENTS
 | Argument                   | Required | Description                                                                                                                  |
 |:---------------------------|:---------|:-----------------------------------------------------------------------------------------------------------------------------|
 | `requirements-description` | Yes      | Feature description text. Feature name is extracted from description                                                         |
+| `--ticket <number>`        | -        | Ticket number (GitHub issue number, JIRA key, etc.) that identifies the Design Doc draft location `task/{ticket-number}/design-draft.md`. If omitted in interactive mode, resolved during Missing Information Confirmation (step 3, before the existing-document check). Required in `--ci` mode (see "Ticket Number Resolution" below) |
 | `--ci`                     | -        | CI/non-interactive mode. Skips Vibe Coding check, auto-approves overwrites, skips spec-reviewer, always generates Design Doc |
+| `--amend`                  | -        | Amend mode: append only the new content to the existing spec instead of regenerating it (requires an existing spec; error if none exists). Applies to the Abstract Specification only — the Design Doc draft is always regenerated fresh per ticket |
+
+### Ticket Number Resolution
+
+Both flag spellings — `--ticket <number>` and `--ticket=<number>` — are accepted and mean the same thing.
+
+The Design Doc draft path is ticket-scoped, so the ticket number must be resolved before the draft is written:
+
+- Take it from `--ticket` when given
+- Interactive mode, flag omitted: ask for it during Missing Information Confirmation (step 3), before the
+  existing-document check
+- `--ci` mode, flag omitted: **abort with an error instead of asking.** Report
+  `--ci requires --ticket <number>` together with the invocation to retry (e.g.
+  `/generate-spec "<requirements-description>" --ci --ticket 123`), and write no files. Never invent a
+  placeholder ticket number or a fallback directory such as `task/unknown/` — that silently separates the
+  draft from the ticket it belongs to
 
 ## Input Examples
 
@@ -115,17 +132,27 @@ If important items cannot be determined from input, **confirm with user before g
 - Required extraction items cannot be inferred from input
 - No technology stack specified (confirm whether to follow existing patterns)
 - Ambiguous business rules or edge cases
+- Ticket number unclear (needed for the Design Doc draft path `task/{ticket-number}/design-draft.md`) — skip this check in `--ci` mode, where `--ticket` is required instead
 
 ### 4. Existing Document Check
 
-Check the following before generation. Both flat and hierarchical structures are supported.
+Check the following before generation. Both flat and hierarchical structures are supported for the spec (see structure note above).
 
-See `references/existing_document_check.md` for the list of paths to check for flat and hierarchical structures.
+See `references/existing_document_check.md` for the list of paths to check for flat and hierarchical structures,
+including the v4.x legacy design doc paths.
+
+**Legacy persistent design docs are supplementary input**: a project that started on AI-SDD v4.x may still carry
+`${SDD_SPECIFICATION_PATH}/{feature-name}_design.md` (or `{parent-feature}/index_design.md`). When one exists,
+**read it as supplementary input** — technology stack, module structure, and design decisions already in force —
+so the generated draft does not contradict it. **Treat its absence as normal.** It is never a write target (new
+technical design always goes to `task/{ticket-number}/design-draft.md`), and is never reported as a naming
+violation or proposed for deletion.
 
 **Note the difference in naming conventions**:
 
 - **Under requirement**: No suffix (`index.md`, `{feature-name}.md`)
-- **Under specification**: `_spec` or `_design` suffix required (`index_spec.md`, `{feature-name}_spec.md`)
+- **Under specification**: `_spec` suffix optional (`index_spec.md`, `{feature-name}_spec.md`, or no suffix)
+- **Under task**: Design Doc draft uses the fixed filename `design-draft.md` (`task/{ticket-number}/design-draft.md`)
 
 **Hierarchical structure usage decision**:
 
@@ -139,10 +166,13 @@ See `references/existing_document_check.md` for the list of paths to check for f
 - Ensure generated spec covers PRD requirements
 - Reference PRD requirement IDs in spec's "Functional Requirements" section
 
-**If spec/design exists**:
+**If spec exists**:
 
-- **CI Mode (`--ci`)**: Overwrite without confirmation.
-- **Interactive**: Confirm with user whether to overwrite.
+| Mode                    | Action                                                                                  |
+|:------------------------|:------------------------------------------------------------------------------------------|
+| CI Mode (`--ci`)        | Overwrite without confirmation                                                          |
+| `--amend`               | Append only the new content (see "Amend Mode" under Phase 1 below); error if no spec exists |
+| Interactive (default)   | Confirm with user whether to overwrite (suggest `--amend` if the change is additive)    |
 
 ## Output Format
 
@@ -163,12 +193,30 @@ Follow these steps to prepare the template:
 - Sections with `<MUST>` markers are required, `<RECOMMENDED>` are recommended, `<OPTIONAL>` are optional
 - Remove section requirement markers (`<MUST>`/`<RECOMMENDED>`/`<OPTIONAL>`) from headings in the final output — they are author-facing guides only and must not appear in the generated document
 - Reference PRD requirement IDs (UR-xxx, FR-xxx, NFR-xxx) in functional requirements
+- If a functional/non-functional requirement's content cannot be directly derived from the PRD requirement ID it
+  cites (i.e., it is an inference or assumption filling a gap the PRD left open), disclose that inference in the
+  spec itself next to the requirement (e.g., append "（推測・要確認）" / "(inferred — needs confirmation)").
+  Disclosing it only in a separate design doc or user notes is not enough — the spec is the document treated as
+  ground truth downstream.
 
 **Save Location**:
 
 - Flat structure: `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md`
 - Hierarchical structure (parent feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md`
 - Hierarchical structure (child feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md`
+
+#### Amend Mode (`--amend`)
+
+Skip full regeneration. Instead:
+
+1. Read the existing spec in full — this is the base; do not rewrite its existing prose or tables.
+2. Extract existing functional/non-functional requirement IDs (`FR-xxx`, `NFR-xxx`) from §3 and determine the
+   highest numeric suffix per prefix.
+3. Generate only the new functional/non-functional requirements introduced by this invocation's input, numbered
+   continuing from the existing maximum.
+4. Append the new rows to the existing tables in §3, and append any new content (e.g. new API entries, new data
+   model fields) only to the relevant existing sections — never rewrite sections unrelated to the new content.
+5. Front matter: keep all existing fields except `updated` (today) and `sdd-version` (current plugin version).
 
 ### Phase 2: Technical Design Document (Plan Phase)
 
@@ -189,12 +237,11 @@ Follow these steps to prepare the template:
 - Design Goals, Technology Stack, Architecture, and Design Decisions are required sections
 - Remove section requirement markers (`<MUST>`/`<RECOMMENDED>`/`<OPTIONAL>`) from headings in the final output — they are author-facing guides only and must not appear in the generated document
 - Ensure consistency with spec
+- This file is a **temporary draft**: it is deleted after implementation, once its key decisions are integrated into `adr/{feature-name}.md` (see `task-cleanup` skill)
 
 **Save Location**:
 
-- Flat structure: `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md`
-- Hierarchical structure (parent feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md`
-- Hierarchical structure (child feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md`
+- `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket-number}/design-draft.md`
 
 ### Skip Design Doc Generation
 
@@ -212,12 +259,23 @@ Generated specs and design docs must include YAML front matter at the top of the
 
 See `references/front_matter_spec_design.md` for full schema definition, dependency direction rules, and validation checklist.
 
+### Common Field Rule
+
+| Field | Rule |
+|:------|:-----|
+| `sdd-version` | Set to the sdd-workflow plugin's current version — read `version` from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` |
+
+> **Amend Mode (`--amend`)**: Do not regenerate `id`, `created`, `depends-on`, `priority`, `risk`, or `impl-status`
+> on the spec — keep them as-is. Only `updated` and `sdd-version` refresh. Appending new requirements does not
+> change whether the spec's existing content is implemented.
+
 ### Spec-Specific Field Rules
 
 | Field | Rule |
 |:------|:-----|
 | `id` | `"spec-{feature-name}"`. For hierarchical: `"spec-{parent}-{feature-name}"` |
 | `status` | `"draft"` for new specs |
+| `impl-status` | `"not-implemented"` for new specs |
 | `depends-on` | PRD ID (e.g., `["prd-user-auth"]`) |
 | `priority` | Inherit from PRD if exists, otherwise `"medium"` |
 | `risk` | Inherit from PRD if exists, otherwise `"medium"` |
@@ -226,7 +284,7 @@ See `references/front_matter_spec_design.md` for full schema definition, depende
 
 | Field | Rule |
 |:------|:-----|
-| `id` | `"design-{feature-name}"`. For hierarchical: `"design-{parent}-{feature-name}"` |
+| `id` | `"design-{ticket-number}"` (matches the ticket-scoped draft path, not the feature name) |
 | `status` | `"draft"` for new design docs |
 | `impl-status` | `"not-implemented"` for new design docs |
 | `depends-on` | Spec ID (e.g., `["spec-user-auth"]`) |
@@ -269,15 +327,18 @@ For hierarchical structure, parent feature PRD is `${CLAUDE_PROJECT_DIR}/${SDD_R
 ## Post-Generation Actions
 
 1. **Save Files**:
-    - Flat structure: `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md`, `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_design.md`
-    - Hierarchical structure (parent feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md`,
-      `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_design.md`
-    - Hierarchical structure (child feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md`,
-      `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_design.md`
+    - Flat structure: `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md`
+    - Hierarchical structure (parent feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/index_spec.md`
+    - Hierarchical structure (child feature): `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{parent-feature}/{feature-name}_spec.md`
+    - Design Doc draft: `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket-number}/design-draft.md`
 
 2. **Consistency Check**:
     - If PRD exists: Verify and reflect PRD <-> spec consistency
-    - Verify spec <-> design consistency
+    - Verify spec <-> design consistency: concretely, re-read spec's Public API section and design's Interface
+      Definition section side by side and confirm every member (name, parameters, return type, sync vs. async)
+      matches. If design intentionally restructures an interface from what spec declares (e.g., splitting a
+      method into a separate interface, or changing sync to async), record that change and its rationale in
+      Design Decisions — do not let the two documents drift silently out of sync
 
 ## Output
 
@@ -291,6 +352,9 @@ The following verifications are automatically performed during generation:
 
 - [x] **Principle Compliance Check via spec-reviewer**: Verify compliance with CONSTITUTION.md
 - [x] **PRD Consistency Check**: Confirm requirement ID references and functional requirement coverage
+- [x] **Spec-Design API Consistency Check**: Confirm every member of spec's Public API section appears in
+  design's Interface Definition section with a matching signature; any intentional restructuring is recorded
+  in Design Decisions (see "Consistency Check" under Post-Generation Actions above)
 - [x] **Template Compliance Check**: Verify presence of required sections
 - [x] **No Marker Residue Check**: Confirm `<MUST>`/`<RECOMMENDED>`/`<OPTIONAL>` markers are removed from headings
 
@@ -348,7 +412,7 @@ After loading CONSTITUTION.md, understand the following principles and ensure sp
 | Development Principles (D-xxx)  | Testability, modularity, requirement traceability         |
 | Business Principles (B-xxx)     | Business logic reflection, domain model                   |
 
-**For Technical Design Document (*_design.md)**:
+**For Technical Design Document (`task/{ticket-number}/design-draft.md`)**:
 
 | Principle Category              | Impact on Design                                    |
 |:--------------------------------|:----------------------------------------------------|

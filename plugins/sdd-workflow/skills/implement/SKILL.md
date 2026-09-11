@@ -26,12 +26,22 @@ Verify the following exist before execution:
 
 | Prerequisite         | Verification                                    | Command to Generate          |
 |:---------------------|:------------------------------------------------|:-----------------------------|
-| **Task Breakdown**   | `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/tasks.md` exists            | `/task-breakdown {feature}`  |
-| **Technical Design** | `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature}_design.md` exists | `/generate-spec {feature}`   |
-| **Abstract Spec**    | `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature}_spec.md` exists   | `/generate-spec {feature}`   |
+| **Task Breakdown**   | `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/tasks.md` exists                | `/task-breakdown {feature} {ticket}` |
+| **Technical Design** | `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/design-draft.md` exists — **or**, in a project carried over from v4.x, `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/[{path}/]{feature}_design.md` exists | `/generate-spec {description} --ticket {ticket}` |
+| **Abstract Spec**    | `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/{feature}.md` **or** `{feature}_spec.md` exists | `/generate-spec {description} --ticket {ticket}` |
 
-* For hierarchical structure: Add `[{path}/]` prefix (e.g., `auth/user-login_spec.md`).
-* For parent features, use `index_spec.md`
+* The design draft is **ticket-scoped with a fixed filename**, so its path does not vary with the spec's
+  flat/hierarchical structure.
+* **v4.x persistent design docs (`specification/*_design.md`)**: a project that started on AI-SDD v4.x may
+  still contain these. They **remain valid** — read them as **supplementary input, and treat their absence as
+  normal**. Do not create new ones (new technical design goes to `task/{ticket-number}/design-draft.md`), and
+  never report an existing one as a naming violation or propose deleting it; it may stay until its decisions
+  have been migrated to `adr/{feature}.md`. When `design-draft.md` is absent but such a file exists, it
+  satisfies the Technical Design prerequisite for this run — read it instead of asking for a fresh draft.
+* The `_spec` suffix is optional under `specification/`, so either `{feature}.md` or `{feature}_spec.md`
+  satisfies the Abstract Spec prerequisite.
+* For hierarchical structure: Add `[{path}/]` prefix to the spec path (e.g., `auth/user-login_spec.md`).
+* For parent features, use `index.md` or `index_spec.md`
 
 ## Input
 
@@ -47,7 +57,18 @@ Full argument string: $ARGUMENTS
 | Argument | Required | Description |
 |:--|:--|:--|
 | `feature-name` | Yes | Target feature name or path (e.g., `user-auth`, `auth/user-login`) |
-| `ticket-number` | - | Task directory name. Uses feature-name if omitted |
+| `ticket-number` | - | Task directory name, holding both `tasks.md` and `design-draft.md`. Uses feature-name if omitted |
+
+`ticket-number` may be passed positionally (`/implement {feature-name} {ticket-number}`) or as a flag; both
+flag spellings — `--ticket {number}` and `--ticket={number}` — are accepted and mean the same thing.
+
+**When `ticket-number` is omitted**, `feature-name` becomes the task directory name: this skill reads
+`${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{feature-name}/tasks.md`, **not** `task/{ticket-number}/tasks.md`.
+State the resolved task directory in the output before loading from it, so the user can see which one was
+used. If `tasks.md` is not found there, report the resolved path, name the omitted `ticket-number` as the
+likely cause, and give both remedies — re-run as `/implement {feature-name} {ticket-number}` if the breakdown
+lives under a ticket directory, or run `/task-breakdown {feature-name} {ticket-number}` if it was never
+generated. Never silently search other task directories, and never start implementing without `tasks.md`.
 
 Read `examples/input_format.md` for input format and usage examples.
 
@@ -63,9 +84,9 @@ See `references/front_matter_impl.md` for full schema definition, dependency dir
 |:------|:-----|
 | `id` | `"impl-{feature-name}"`. For hierarchical: `"impl-{parent}-{feature-name}"` |
 | `status` | `"in-progress"` when implementation starts |
-| `depends-on` | Design doc ID (e.g., `["design-user-auth"]`) |
+| `depends-on` | Design draft ID, which is ticket-scoped (e.g., `["design-TICKET-123"]`) |
 | `ticket` | Ticket number from input argument (if provided) |
-| `tags` | Inherit from task/design doc |
+| `tags` | Inherit from task/design draft |
 | `completed` | Empty string when starting. Set to `"YYYY-MM-DD"` when implementation completes |
 | `implementer` | Name of the implementer (if known) |
 
@@ -73,6 +94,20 @@ See `references/front_matter_impl.md` for full schema definition, dependency dir
 
 When resuming implementation (continue mode), update the `updated` field to the current date.
 When implementation completes, set `status` to `"completed"` and `completed` to the completion date.
+
+### Updating the Spec's `impl-status`
+
+The implementation log tracks this implementation run; the spec's own `impl-status` field tracks whether the
+spec's described behavior is reflected in the codebase, independent of `status` (the spec's approval lifecycle).
+Update it on the corresponding spec (found via the Abstract Spec prerequisite path) alongside the implementation
+log:
+
+| Timing                          | `impl-status` | `updated`             |
+|:---------------------------------|:---------------|:-----------------------|
+| Implementation starts (Phase 1)  | `"in-progress"` (unless already `"implemented"` from a prior increment) | Current date |
+| Implementation completes (Phase 5, after Completion Verification passes) | `"implemented"` | Current date |
+
+If the spec has no front matter, skip this update (see Missing Front Matter Policy in `references/front_matter_impl.md`).
 
 ## TDD Implementation Flow
 
@@ -186,21 +221,24 @@ Read `templates/${SDD_LANG:-en}/output_format.md` for output format reference ta
 
 ## Implementation Options
 
+These three modes are alternatives to the default single-pass flow above. Skip this entire section for a
+normal single-pass run — read the relevant example only when the input actually requests that mode.
+
 ### Continue Mode
 
-Resume interrupted implementation:
+Resume interrupted implementation. Only when this mode is requested:
 
 Read `examples/option_continue.md` for continue mode usage.
 
 ### Phase Skip Mode
 
-Skip to specific phase (use with caution):
+Skip to specific phase (use with caution). Only when this mode is requested:
 
 Read `examples/option_phase_skip.md` for phase skip mode usage.
 
 ### Dry Run Mode
 
-Simulate implementation without changes:
+Simulate implementation without changes. Only when this mode is requested:
 
 Read `examples/option_dry_run.md` for dry run mode usage.
 

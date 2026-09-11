@@ -1,7 +1,7 @@
 ---
 name: plan-refactor
-description: "Plan refactoring for existing features. Analyzes current implementation and creates/updates design documents with refactoring plan."
-argument-hint: "<feature-name> [context] [--scope=<dir>] [--ci]"
+description: "Plan refactoring for existing features. Analyzes current implementation and records the refactoring plan in the ticket-scoped design draft."
+argument-hint: "<feature-name> [context] [--scope=<dir>] [--ticket <number>] [--ci]"
 arguments: [feature-name]
 license: MIT
 user-invocable: true
@@ -10,13 +10,19 @@ allowed-tools: Read, Glob, Grep, AskUserQuestion, Edit(.sdd/**), Bash(python3 "$
 
 # Plan Refactoring
 
-Plans refactoring for existing features by analyzing current implementation and creating/updating design documents with
-a comprehensive refactoring plan.
+Plans refactoring for existing features by analyzing current implementation and writing a comprehensive refactoring
+plan into the ticket-scoped Design Doc draft (`task/{ticket-number}/design-draft.md`).
 
-This skill supports two scenarios:
+This skill supports two scenarios, decided by whether a **spec** exists:
 
-- **Case A**: Existing documents (PRD/spec/design) → Analyze gaps and add refactoring plan
-- **Case B**: No documents → Reverse-engineer spec/design from code, then add refactoring plan
+- **Case A**: Spec exists → Analyze gaps against spec/implementation and add the refactoring plan to the design draft
+- **Case B**: No spec → Reverse-engineer the spec from code (persisted under `specification/`) and the design into the
+  design draft, then add the refactoring plan
+
+**Never decide the case from a design document.** Technical Design Documents are not persistent: they live at
+`task/{ticket-number}/design-draft.md` and are deleted after implementation, so their absence is the normal state.
+A leftover `specification/{feature-name}_design.md` from v4.x is read-only context, never a case signal and never
+a write target.
 
 ## Prerequisites
 
@@ -25,6 +31,17 @@ This skill supports two scenarios:
 - `references/prerequisites_plugin_update.md` - Check for plugin updates
 - `references/prerequisites_principles.md` - Read AI-SDD principles document
 - `references/prerequisites_directory_paths.md` - Resolve directory paths using `SDD_*` environment variables
+
+**PRD is read-only context**: Although `allowed-tools` grants `Edit(.sdd/**)`, this skill only writes to
+`${SDD_TASK_PATH}/{ticket-number}/design-draft.md` and — in Case B only — a reverse-engineered spec under
+`specification/`. The PRD loaded in Step 3A.1 is reference context for the refactoring plan — never write to
+`requirement/**`. If the analysis surfaces a PRD/implementation contradiction, record it in the plan for human
+review; do not resolve it by editing the PRD. See AI-SDD-PRINCIPLES.md § Document Update Triggers
+("Updating `requirement/` (PRD) — Never Automated").
+
+**`adr/` is not written by this skill either**: the decisions the plan settles on are integrated into
+`${SDD_ADR_PATH}/{feature-name}.md` by `task-cleanup` once implementation completes — see "Decision Log Hand-off"
+below.
 
 ### Language Configuration
 
@@ -43,12 +60,23 @@ Full argument string: $ARGUMENTS
 > `context` is free-form text and flags — extract them from the full argument string
 > (everything after `feature-name`).
 
-| Argument        | Required | Description                                                          |
-|:----------------|:---------|:---------------------------------------------------------------------|
-| `feature-name`  | Yes      | Target feature name or path (supports flat/hierarchical structure)   |
-| `context`       | No       | Refactoring goal or improvement intent (e.g., "無限スクロール化", "依存性注入導入") |
-| `--scope=<dir>` | No       | Limit implementation file search scope (e.g., `src/`, `lib/`)        |
-| `--ci`          | No       | CI/non-interactive mode (auto-confirm, no user prompts)              |
+| Argument            | Required | Description                                                                                                                                                                             |
+|:--------------------|:---------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `feature-name`      | Yes      | Target feature name or path (supports flat/hierarchical structure)                                                                                                                      |
+| `context`           | No       | Refactoring goal or improvement intent (e.g., "無限スクロール化", "依存性注入導入")                                                                                                                    |
+| `--scope=<dir>`     | No       | Limit implementation file search scope (e.g., `src/`, `lib/`)                                                                                                                           |
+| `--ticket <number>` | No       | Ticket number (GitHub issue number, JIRA key, etc.) that locates the Design Doc draft `task/{ticket-number}/design-draft.md`. **Both `--ticket <number>` and `--ticket=<number>` are accepted.** Resolved interactively when omitted; required in `--ci` mode |
+| `--ci`              | No       | CI/non-interactive mode (auto-confirm, no user prompts)                                                                                                                                 |
+
+**Ticket argument forms**: write it with a space or an equals sign — `--ticket 123` and `--ticket=123` are
+equivalent; strip the `--ticket`/`--ticket=` prefix before using the value.
+
+**When the ticket number is missing**:
+
+- **Interactive**: Step 1.0 asks for it with `AskUserQuestion` before any script runs or any file is written
+- **`--ci` mode**: abort immediately with an error naming the missing flag and the fix
+  (`/plan-refactor {feature-name} --ticket=<number>`). Nothing is created under `task/`, no reverse-engineered
+  spec is written, and no cache file is produced
 
 ## Input Examples
 
@@ -56,8 +84,8 @@ See `examples/cli_usage.md` for example invocations.
 
 ## Front Matter Generation Rules
 
-When generating reverse-engineered spec/design documents (Case B), include YAML front matter.
-When updating existing design documents (Case A), preserve existing front matter and update relevant fields.
+When generating a reverse-engineered spec or a new design draft, include YAML front matter.
+When updating an existing design draft, preserve existing front matter and update relevant fields.
 
 See `references/front_matter_spec_design.md` for full schema definition, dependency direction rules, and validation checklist.
 
@@ -65,22 +93,31 @@ See `references/front_matter_spec_design.md` for full schema definition, depende
 
 | Field | Rule |
 |:------|:-----|
+| `id` | `"spec-{feature-name}"`. For hierarchical: `"spec-{parent}-{feature-name}"` |
 | `status` | `"review"` (reverse-engineered documents require review) |
 | `depends-on` | PRD ID if PRD exists (e.g., `["prd-auth"]`). Empty if no PRD |
 | `tags` | Always include `"reverse-engineered"`, plus keywords from code analysis |
 
-### Case B: Reverse-Engineered Design Doc Rules
+**No PRD found**: This skill never writes to `requirement/**` (see "PRD is read-only context" above). When
+`depends-on` is left empty because no PRD exists for `feature-name`, do not stop at the empty field — include a
+proposal in the refactoring plan output recommending a human-approved, reverse-engineered draft PRD
+(`status: "draft"`, `tags` including `"reverse-engineered"`), per AI-SDD-PRINCIPLES.md § Workflow Management
+Guidelines ("Never Automated" governs rewriting, not drafting a new PRD from scratch). The proposal is a
+recommendation only — never draft or write the PRD file itself.
+
+### Reverse-Engineered Design Draft Rules
 
 | Field | Rule |
 |:------|:-----|
+| `id` | `"design-{ticket-number}"` (matches the ticket-scoped draft path, not the feature name) |
 | `status` | `"review"` (reverse-engineered documents require review) |
 | `impl-status` | `"implemented"` (already implemented since reverse-engineered) |
 | `depends-on` | Spec ID (e.g., `["spec-auth"]`) |
 | `tags` | Always include `"reverse-engineered"`, plus keywords from code analysis |
 
-### Case A: Updating Existing Front Matter
+### Updating an Existing Design Draft
 
-When adding a refactoring plan to an existing design doc:
+When adding a refactoring plan to a design draft that already exists:
 
 1. Preserve all existing front matter fields
 2. Update `updated` to current date
@@ -90,15 +127,29 @@ When adding a refactoring plan to an existing design doc:
 
 ### Phase 1: Pre-flight Checks
 
+**Step 1.0: Resolve the Ticket Number**
+
+The Design Doc draft path is ticket-scoped, so a ticket number is required before anything can be written.
+
+- Take it from the `--ticket` flag when given — accept **both** `--ticket <number>` and `--ticket=<number>`
+- Otherwise ask the user with `AskUserQuestion` (offer the branch name / current issue as a hint)
+- In `--ci` mode, `--ticket` is required: abort here with an error naming the flag and the fix
+  (`--ticket=<number>`), before Step 1.1 runs — never fall back to a guessed ticket number
+
+Set `TICKET_NUMBER` from the resolved value.
+
 **Step 1.1: Scan for Existing Documents**
 
-Run the document scanning script: `python3 "${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/scripts/scan-existing-docs.py" "${FEATURE_NAME}"`
+Run the document scanning script: `python3 "${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/scripts/scan-existing-docs.py" "${FEATURE_NAME}" "${TICKET_NUMBER}"`
 
 This script:
 
-1. Checks for PRD, spec, and design documents in both flat and hierarchical structures
-2. Exports results to `${SDD_ROOT}/.cache/plan-refactor/existing-docs.json`
-3. Determines Case A (documents exist) or Case B (no documents)
+1. Checks for the PRD and the spec in both flat and hierarchical structures. The spec is matched with **and** without
+   the `_spec` suffix (`{feature-name}_spec.md`, then `{feature-name}.md`), because the suffix is optional under
+   `specification/`
+2. Checks for the ticket-scoped design draft `${SDD_TASK_PATH}/{ticket-number}/design-draft.md`
+3. Also reports a legacy `specification/{feature-name}_design.md` (v4.x) as `legacy_design_*` — reading context only
+4. Exports results to `${SDD_ROOT}/.cache/plan-refactor/existing-docs.json`, including a resolved `case` field
 
 **Step 1.2: Read Scan Results**
 
@@ -108,8 +159,18 @@ See `examples/cache_json_outputs.md` for an example of this file's content.
 
 **Step 1.3: Determine Processing Case**
 
-- If `design_exists` is `true` → **Case A** (existing documents)
-- If `design_exists` is `false` → **Case B** (no documents, reverse-engineering needed)
+- If `spec_exists` is `true` (`case` is `"A"`) → **Case A** (spec exists)
+- If `spec_exists` is `false` (`case` is `"B"`) → **Case B** (no spec, reverse-engineering needed)
+
+`design_draft_exists` and `legacy_design_exists` never affect this decision — they only add reading context in
+Step 3A.1.
+
+**If `legacy_design_exists` is `true`**, tell the user that the file is read as supplementary input but not
+updated, and that it **remains valid** where it is. Its decisions may eventually move to `adr/{feature}.md`
+— the steps are in `${CLAUDE_PLUGIN_ROOT}/README.md`, section "Extracting Existing `*_design.md` Files into
+`adr/`" under "Migration from v4.x" (`README.ja.md` next to it holds the Japanese version) — but that is a
+human judgment call: do not migrate it yourself, and never report it as a naming violation or a deletion
+candidate.
 
 ---
 
@@ -183,22 +244,23 @@ Then read the actual implementation files (prioritize key files):
 
 ### Phase 3: Process Branching
 
-#### Case A: Existing Documents
+#### Case A: Spec Exists
 
 **Step 3A.1: Load Existing Documents**
 
 Read the following files (paths from scan results):
 
 - PRD: `{prd_path}` (if exists)
-- Spec: `{spec_path}` (if exists)
-- Design: `{design_path}` (required for Case A)
+- Spec: `{spec_path}` (required for Case A)
+- Design draft: `{design_draft_path}` (if exists — supplementary input: an in-progress plan for this ticket)
+- Legacy design doc: `{legacy_design_path}` (if exists — supplementary input only, from v4.x; do not edit it)
 
 **Step 3A.2: Analyze Implementation vs. Specification**
 
-Compare implementation with design document:
+Compare implementation with the spec (and with the design draft's component descriptions, if present):
 
-1. Identify components described in design doc
-2. Check if implementation matches design
+1. Identify the behavior and components the spec requires
+2. Check if implementation matches them
 3. Identify deviations, technical debt, or areas needing refactoring
 
 **Step 3A.3: Identify Refactoring Opportunities**
@@ -208,6 +270,9 @@ Based on analysis, identify:
 - **Problems**: Tight coupling, code duplication, poor testability, etc.
 - **Gaps**: Missing functionality, incomplete implementation
 - **Technical Debt**: Hard-coded values, lack of error handling, etc.
+
+Assign each debt item a persistent destination as you record it — see "Technical Debt Observations — Where They
+Persist" below. The design draft is deleted at cleanup, so an item with no destination does not survive.
 
 **If `context` was provided (from Phase 1.5):**
 
@@ -234,22 +299,29 @@ Fill in the template with:
     - **If approach specified in context**: Use it (e.g., "Strangler Figパターン", "react-window使用")
 - Migration plan (phased tasks)
 - Impact analysis (breaking changes, affected components, rollback plan)
+    - **If this refactoring breaks backward compatibility**: compare at least 2 concrete alternative approaches
+      (e.g., immediate breaking change / phased deprecation with a migration window / dual old-new shim). Do not
+      implement any of them — present the comparison and leave the choice for human review.
 - Testing strategy
 - Success criteria
 - Risks and mitigations
 - Timeline and milestones
 
-**Step 3A.5: Update Design Document**
+**Step 3A.5: Write the Plan into the Design Draft**
 
-Edit the existing design document: `Edit {design_path}`.
+Target: `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket-number}/design-draft.md`.
 
-Append the "## Refactoring Plan" section at the end of the document.
+- If the draft already exists (`design_draft_exists` is `true`), append the "## Refactoring Plan" section at the end
+  (replace it if a section with that heading is already there)
+- If it does not exist, create it from `templates/${SDD_LANG}/reverse_design_template.md` — filled in from the spec and
+  the implementation analysis — and then append the "## Refactoring Plan" section
+- Never write the plan into `specification/**`; a persisted design doc there is not a valid target
 
 See `references/design_doc_integration.md` for guidelines on integration.
 
 ---
 
-#### Case B: No Documents (Reverse Engineering)
+#### Case B: No Spec (Reverse Engineering)
 
 **Step 3B.1: Reverse-Engineer Specification**
 
@@ -257,18 +329,25 @@ Analyze implementation files and extract:
 
 - Functional requirements (what the feature does)
 - Non-functional requirements (performance, security, etc.)
-- Interface specifications (APIs, function signatures)
+- Interface specifications (APIs, function signatures, and the internal module boundaries other code depends on)
 - Dependencies
 - Data model
+- Externally observable data flow (entry points, external calls and side effects, results returned)
 
 Use template: read `${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/templates/${SDD_LANG}/reverse_spec_template.md`.
 
+This spec is the **only persistent** output of the reverse-engineering, so anything extracted in Step 3B.3
+that belongs here must land here — see "Reverse-Engineered Analysis — What Persists and What Does Not".
+
 **Step 3B.2: Write Specification Document**
 
-Determine path based on structure:
+The reverse-engineered spec is a **persistent** document. Determine path based on structure:
 
 - Flat: `${SDD_SPECIFICATION_PATH}/{feature-name}_spec.md`
 - Hierarchical: `${SDD_SPECIFICATION_PATH}/{parent-feature}/{child-feature}_spec.md`
+
+The `_spec` suffix is optional under `specification/`; keep it for new files unless the project's existing files
+consistently omit it.
 
 `Write {spec_path}`.
 
@@ -276,7 +355,7 @@ Mark the document as reverse-engineered:
 > **⚠️ Note**: This specification was reverse-engineered from existing implementation on {DATE}.
 > It may not reflect the original design intent. Please review and update as needed.
 
-**Step 3B.3: Reverse-Engineer Design Document**
+**Step 3B.3: Reverse-Engineer the Design Draft**
 
 Analyze implementation files and extract:
 
@@ -287,18 +366,27 @@ Analyze implementation files and extract:
 - API design
 - Database schema
 - Testing strategy
-- Technical debt observations
+- Technical debt observations (each with a persistent destination — see "Technical Debt Observations — Where
+  They Persist")
 
 Use template: read `${CLAUDE_PLUGIN_ROOT}/skills/plan-refactor/templates/${SDD_LANG}/reverse_design_template.md`.
 
-**Step 3B.4: Write Design Document**
+Most of this list does **not** survive the draft's deletion, and only part of it belongs in the spec written
+in Step 3B.2. Before writing the draft, settle each item against the mapping in "Reverse-Engineered Analysis
+— What Persists and What Does Not". The spec-bound parts must not be left here only: the spec was already
+written in Step 3B.2, so go back and add them to it (its `updated` field moves to the current date).
 
-Determine path based on structure:
+**Step 3B.4: Write the Design Draft**
 
-- Flat: `${SDD_SPECIFICATION_PATH}/{feature-name}_design.md`
-- Hierarchical: `${SDD_SPECIFICATION_PATH}/{parent-feature}/{child-feature}_design.md`
+The path is ticket-scoped and fixed, independent of the spec's flat/hierarchical structure:
 
-`Write {design_path}`.
+- `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket-number}/design-draft.md`
+
+`Write {design_draft_path}`.
+
+This file is a **temporary draft**: it is deleted after implementation, once its key decisions are integrated into
+`${SDD_ADR_PATH}/{feature-name}.md` (see `task-cleanup` skill). Do not write a design document under
+`specification/`.
 
 **Step 3B.5: Generate Refactoring Plan**
 
@@ -306,7 +394,7 @@ Follow the same process as Case A Step 3A.4-3A.5:
 
 1. Read refactoring plan template
 2. Fill in the template
-3. Append "## Refactoring Plan" section to the newly created design document
+3. Append "## Refactoring Plan" section to the newly created design draft
 
 ---
 
@@ -326,6 +414,11 @@ Verify the refactoring plan includes all required sections:
 - [ ] Risks and Mitigations
 - [ ] Timeline and Milestones (optional but recommended)
 - [ ] References (to PRD, spec, patterns)
+- [ ] Every Technical Debt Observation names a persistent destination (`adr/` entry at cleanup / tracker item /
+      spec update proposal) — see "Technical Debt Observations — Where They Persist"
+- [ ] Case B only: every spec-bound item extracted in Step 3B.3 is present in the reverse-engineered spec
+      (Public API / Internal Interfaces / Data Model / Behavior and Data Flow / Architecture Pattern) — see
+      "Reverse-Engineered Analysis — What Persists and What Does Not"
 
 If any required section is missing, add it before proceeding.
 
@@ -334,12 +427,92 @@ If any required section is missing, add it before proceeding.
 Output a summary and recommend next steps. See `templates/${SDD_LANG:-en}/completion_output.md` for the "Next Steps
 Summary" format.
 
+Always include the Decision Log Hand-off below in the recommended next steps, and — in Case B — the persistence
+boundary from "Reverse-Engineered Analysis — What Persists and What Does Not".
+
+### Decision Log Hand-off (`adr/`)
+
+The design draft — and with it the refactoring plan — is deleted once implementation completes, so the decisions the
+plan settles on must be persisted elsewhere:
+
+1. The plan records the chosen strategy, the rejected alternatives, and the trade-offs (the "Refactoring Strategy" and
+   "Impact Analysis" sections are written with that in mind)
+2. After implementation, `/task-cleanup` integrates those decisions and their rationale into
+   `${SDD_ADR_PATH}/{feature-name}.md` (append-only) and then deletes `task/{ticket-number}/`
+3. This skill does **not** write to `adr/` itself: the plan is a proposal, and implementation may change it. Only
+   settled decisions belong in the append-only log
+
+Tell the user this explicitly in the completion output, so the plan is not left as the only record.
+
+### Reverse-Engineered Analysis — What Persists and What Does Not
+
+Step 3B.3 extracts more from the code than a spec is allowed to hold, and the design draft that receives it is
+deleted at `/task-cleanup`. Each extracted item therefore has exactly one of two fates: it goes into the
+persistent reverse-engineered spec (Step 3B.2), or it is knowingly discarded with the draft. The mapping is
+fixed:
+
+| Extracted item                                                                    | Persistent home                                                                                                                       |
+|:----------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------|
+| API design (public functions, classes, endpoints, signatures)                     | Spec § "Interface Specifications" → "Public API"                                                                                       |
+| Module boundaries other code depends on                                            | Spec § "Interface Specifications" → "Internal Interfaces" — the boundary and its contract, not the components behind it                |
+| Database schema, data structures                                                   | Spec § "Data Model"                                                                                                                    |
+| Data flow, **externally observable part only** (entry points, external calls and side effects, results returned) | Spec § "Behavior and Data Flow"                                                                        |
+| Architecture overview, **pattern name only** (e.g. layered, MVC, event-driven)      | Spec § "Implementation Notes" → "Architecture Pattern"                                                                                 |
+| Component structure (component inventory, per-component responsibilities and dependencies, directory layout) | **None — discarded with the draft, by design**                                                              |
+| Data flow between private components (internal call sequence)                       | **None — discarded with the draft, by design**                                                                                         |
+| Key algorithms, state management internals, error-handling patterns, current test coverage figures | **None — discarded with the draft, by design**                                                                        |
+
+The "None" rows are a deliberate limit, not a gap to be fixed:
+
+- They are **derived information**: re-running this skill re-derives them from the code, and a persisted copy
+  starts drifting from the code the moment the code changes
+- `adr/` is not the answer: it records **decisions**, not know-how or structure descriptions
+  (`AI-SDD-PRINCIPLES.md` § Knowledge Asset Persistence Management). Only a *decision about* the structure
+  ("split the fetch layer out of the view component, because ...") persists, and `/task-cleanup` appends that
+  as an `adr/{feature-name}.md` entry
+- The spec is not the answer either: `generate-spec`'s `spec_template.md` § "What NOT to Include" routes
+  "Architecture and module structure", "Directory structure and file placement" and "Test strategy and
+  coverage goals" **away** from the spec. Writing them there would contradict the spec template and create a
+  second, stale description of the code's structure
+- Do not invent a new document for them
+
+In Case A the spec already exists and this skill never rewrites it. The same boundary applies to the draft's
+analysis sections; when the implementation contradicts the behavior the spec describes, propose a spec
+correction for human approval instead (see "Technical Debt Observations — Where They Persist").
+
+State this in the Phase 5 output: name the spec sections the reverse-engineering wrote to, and say plainly
+that the draft's component structure and internal flow go away with the draft.
+
+### Technical Debt Observations — Where They Persist
+
+The "Technical Debt Observations" list (Step 3B.3 / the "Problems Identified" and "Technical Debt" analysis in
+Step 3A.3) lives in the design draft, which is deleted at `/task-cleanup`. **Every observation must therefore
+name a persistent destination in the plan**, chosen from the three below. An observation whose only record is
+the draft is lost at cleanup — that is a plan defect, not an acceptable outcome.
+
+| Observation                                                                 | Persistent destination                                                                                                                                     | Who records it                                     |
+|:----------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------|
+| Debt this refactoring resolves                                              | The `adr/{feature-name}.md` entry for the refactoring decision — the debt is the constraint written under **Rationale**                                     | `/task-cleanup`, after implementation              |
+| Debt consciously deferred or accepted (out of scope for this ticket)         | A tracker item (GitHub Issue / JIRA). Recommend creating it and record the resulting ticket id next to the observation. When the deferral was itself a decision ("accept this debt for now, because ..."), it also earns its own `adr/` entry at cleanup | Human creates the ticket; `/task-cleanup` the entry |
+| Debt that means the implementation contradicts the behavior the spec describes | The spec (`*_spec.md`) — propose the correction for human approval, per "Post-Refactoring Cleanup" below                                                    | Human-approved spec update                          |
+
+Rules:
+
+- Do **not** invent a new document for debt: v5 has no standing debt list, and `adr/` records decisions, not
+  know-how (`AI-SDD-PRINCIPLES.md` § Knowledge Asset Persistence Management). A debt observation reaches `adr/`
+  only as the rationale of a decision that is being recorded anyway
+- This skill never creates the tracker item or edits the spec itself — it names the destination in the plan and
+  recommends the action in the completion output (Phase 5)
+- Repeat the destination assignment in the Phase 5 summary, listing any observation still without one
+
 ## Output
 
-- **Case A**: Updated design document with new "Refactoring Plan" section
+- **Case A**: Design draft (`task/{ticket-number}/design-draft.md`) created or updated with a "Refactoring Plan" section
 - **Case B**:
-    - New specification document (reverse-engineered)
-    - New design document (reverse-engineered with refactoring plan)
+    - New specification document under `specification/` (reverse-engineered, persistent) — the only lasting
+      record of the analysis; what it does and does not carry is fixed by "Reverse-Engineered Analysis — What
+      Persists and What Does Not"
+    - New design draft under `task/{ticket-number}/` (reverse-engineered, temporary, with the refactoring plan)
 
 Output format: see the "Output Format" section in `templates/${SDD_LANG:-en}/completion_output.md`.
 
@@ -403,8 +576,9 @@ Document the prioritization in "Purpose and Background".
 
 ### Document Integration
 
-- Refactoring plans are integrated into existing design documents, not separate files
-- This maintains traceability and keeps all design information in one place
+- Refactoring plans are integrated into the ticket's design draft, not separate files
+- This keeps the plan next to the technical design it depends on, and lets both be discarded together once the
+  decisions have been moved into `adr/`
 - See `references/design_doc_integration.md` for detailed integration guidelines
 
 ### Refactoring Patterns
@@ -416,16 +590,22 @@ Document the prioritization in "Purpose and Background".
 
 **IMPORTANT:** Follow the established naming conventions:
 
-| Directory        | File Type | Naming Pattern                                         |
-|:-----------------|:----------|:-------------------------------------------------------|
-| `requirement/`   | PRD       | `{feature-name}.md` (no suffix)                        |
-| `specification/` | Spec      | `{feature-name}_spec.md` (`_spec` suffix required)     |
-| `specification/` | Design    | `{feature-name}_design.md` (`_design` suffix required) |
+| Directory        | File Type    | Naming Pattern                                                |
+|:-----------------|:-------------|:--------------------------------------------------------------|
+| `requirement/`   | PRD          | `{feature-name}.md` (no suffix)                               |
+| `specification/` | Spec         | `{feature-name}_spec.md` (`_spec` suffix optional)            |
+| `task/`          | Design draft | `{ticket-number}/design-draft.md` (fixed filename, temporary) |
+| `adr/`           | Decision log | `{feature-name}.md` (`-decisions` suffix optional)            |
+
+New design documents are no longer written under `specification/`. A `{feature-name}_design.md` left there by
+v4.x remains valid: read it as supplementary input (its absence is normal), never write to it, and never treat
+it as a naming violation.
 
 ### Hierarchical Structure Support
 
-Both flat and hierarchical structures are supported. See the "Hierarchical Structure Support" section in
-`references/design_doc_integration.md` for the flat / hierarchical-parent / hierarchical-child directory layouts.
+Both flat and hierarchical structures are supported **for the spec**; the design draft path is always ticket-scoped.
+See the "Hierarchical Structure Support" section in `references/design_doc_integration.md` for the flat /
+hierarchical-parent / hierarchical-child directory layouts.
 
 ### Examples
 
@@ -436,9 +616,9 @@ Both flat and hierarchical structures are supported. See the "Hierarchical Struc
 
 When refactoring affects multiple features:
 
-1. Add refactoring plan to each feature's design doc
-2. Add cross-references between affected features
-3. Or create a parent feature to centralize the plan
+1. Keep one refactoring plan per ticket in that ticket's design draft
+2. Name every affected feature in the plan's "Affected Components" table
+3. When the ticket's decisions are integrated into `adr/`, append them to each affected feature's decision log
 
 See `references/design_doc_integration.md` for guidance.
 
@@ -446,10 +626,11 @@ See `references/design_doc_integration.md` for guidance.
 
 After refactoring is complete:
 
-1. Update the Refactoring Plan section status to "Completed"
-2. Update main sections of design doc to reflect new architecture
-3. Clean up task logs (`task/` directory) after implementation
-4. Archive the refactoring plan (collapse into `<details>` tag) if desired
+1. Update the Refactoring Plan section status to "Completed" in the design draft
+2. Update the spec if the refactoring changed the feature's abstract behavior (see `task-cleanup`'s
+   "When to Update `*_spec.md`" criteria)
+3. Run `/task-cleanup` to integrate the settled decisions into `${SDD_ADR_PATH}/{feature-name}.md` and delete
+   `task/{ticket-number}/`
 
 ---
 

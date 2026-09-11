@@ -8,6 +8,7 @@ Example output of `${SDD_ROOT}/.cache/recommend-front-matter/scan_result.json` g
   "total_documents": 15,
   "documents_with_front_matter": 5,
   "documents_without_front_matter": 10,
+  "specs_missing_impl_status": 2,
   "documents": [
     {
       "path": "/absolute/path/.sdd/requirement/user-login.md",
@@ -15,9 +16,24 @@ Example output of `${SDD_ROOT}/.cache/recommend-front-matter/scan_result.json` g
       "basename": "user-login",
       "type": "prd",
       "has_front_matter": false,
+      "missing_impl_status": false,
       "title_line": "User Login Feature"
+    },
+    {
+      "path": "/absolute/path/.sdd/specification/user-login_spec.md",
+      "relative_path": "specification/user-login_spec.md",
+      "basename": "user-login_spec",
+      "type": "spec",
+      "has_front_matter": true,
+      "missing_impl_status": true,
+      "title_line": "User Login"
     },
     ...
   ]
 }
 ```
+
+`missing_impl_status` is `true` only for a `type: "spec"` document that **already has** front matter but whose
+front matter lacks the `impl-status` key. It is always `false` for other types, and for specs without front
+matter at all — those get the field via the full front-matter recommendation instead (see
+`templates/${SDD_LANG}/type_specific_fields.md`).

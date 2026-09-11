@@ -6,7 +6,7 @@ arguments: [feature-name, ticket-number]
 license: MIT
 user-invocable: true
 model: haiku
-allowed-tools: Read, Glob, Grep, Edit(.sdd/**), TaskCreate, TaskUpdate, TaskList, TaskGet
+allowed-tools: Read, Glob, Grep, Edit(.sdd/**), Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/run-checklist/scripts/run-verification.py" *), TaskCreate, TaskUpdate, TaskList, TaskGet
 ---
 
 # Run Checklist - Automated Quality Verification
@@ -57,6 +57,18 @@ Full argument string: $ARGUMENTS
 - `/run-checklist {feature-name} {ticket-number} --category testing`
 - `/run-checklist {feature-name} {ticket-number} --priority P1`
 
+`ticket-number` may also be passed as a flag; both spellings — `--ticket {number}` and `--ticket={number}` —
+are accepted and mean the same thing.
+
+**When `ticket-number` is omitted**, `feature-name` becomes the ticket directory name: this skill reads
+`${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{feature-name}/checklist.md` and writes the report next to it —
+**not** under `task/{ticket-number}/`. State the resolved ticket directory in the output before loading from
+it. If `checklist.md` is not found there, report the resolved path, name the omitted `ticket-number` as the
+likely cause, and give both remedies — re-run as `/run-checklist {feature-name} {ticket-number}` if the
+checklist lives under a ticket directory, or run `/checklist {feature-name} {ticket-number}` if it was never
+generated. Never silently search other task directories, and never report verification results for a
+checklist that was not loaded.
+
 ## Processing Flow
 
 ### 1. Load Checklist
@@ -66,8 +78,11 @@ Load the checklist file from `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/ch
 Parse each checklist item:
 - Extract CHK-ID (e.g., CHK-501)
 - Extract priority level (P1, P2, P3)
-- Extract verification commands from code blocks
 - Identify category from ID prefix (CHK-1xx = Requirements, CHK-5xx = Testing, etc.)
+- Extract any verification command written in the item's code blocks. This skill **cannot execute** them —
+  `allowed-tools` grants only `scripts/run-verification.py`, deliberately not bare `Bash`, so arbitrary
+  commands read out of a checklist file are never run. Record each one verbatim as a manual-verification
+  instruction for the reader. The categories that *can* be automated are handled by step 3 instead
 
 ### 2. Detect Project Environment
 
@@ -83,21 +98,42 @@ Detect project type and available tools:
 
 ### 3. Execute Automated Verifications
 
-Read `references/verification_commands.md` for the verification command mapping table.
+This skill's `allowed-tools` only pre-approves a single scoped script — `scripts/run-verification.py` — rather
+than bare `Bash`, so run verifications through it instead of invoking test/lint/security commands directly.
+
+Invoke it once per category as
+`python3 "${CLAUDE_PLUGIN_ROOT}/skills/run-checklist/scripts/run-verification.py" <category>`, where
+`<category>` is `test`, `lint`, `typecheck`, or `security`. Read `references/verification_commands.md` for the
+exact invocations, the project-type detection priority, and the full command mapping table the script
+implements.
+
+Run it from the project root. It returns a JSON result on stdout — read that JSON to determine the checklist
+item's outcome:
+
+| Status           | Meaning                                                        | Checklist outcome     |
+|:-----------------|:---------------------------------------------------------------|:----------------------|
+| `PASS`           | The tool ran and reported success                              | Item passes           |
+| `FAIL`           | The tool ran and reported a real failure                       | Item fails            |
+| `SKIPPED`        | Nothing to verify (no tool configured, or nothing collected)   | Not a failure         |
+| `TOOL_NOT_FOUND` | No candidate tool for this category is installed               | Not a failure         |
+| `TIMEOUT`        | The tool exceeded the script's time limit                      | Needs manual review   |
+
+Only `FAIL` marks a checklist item as failed. `SKIPPED` and `TOOL_NOT_FOUND` carry a `reason` field — record it
+verbatim rather than treating the item as failed.
 
 #### Verification Categories
 
-| Category (CHK-xxx)         | Auto-Verifiable | Verification Method                        |
-|:---------------------------|:----------------|:-------------------------------------------|
-| Requirements (1xx)         | Partial         | `/check-spec` for spec consistency         |
-| Specification (2xx)        | Partial         | Type checking, API signature validation    |
-| Design (3xx)               | Partial         | Dependency analysis, architecture checks   |
-| Implementation (4xx)       | Yes             | Linter, static analysis                    |
-| Testing (5xx)              | Yes             | Test execution, coverage measurement       |
-| Documentation (6xx)        | Partial         | Doc coverage tools                         |
-| Security (7xx)             | Yes             | Security scanners, audit commands          |
-| Performance (8xx)          | Partial         | Benchmark tools (if configured)            |
-| Deployment (9xx)           | Partial         | Config validation                          |
+| Category (CHK-xxx)         | Auto-Verifiable | Verification Method                                            |
+|:---------------------------|:----------------|:-----------------------------------------------------------------|
+| Requirements (1xx)         | Partial         | `/check-spec` for spec consistency                              |
+| Specification (2xx)        | Partial         | `run-verification.py typecheck`, API signature validation       |
+| Design (3xx)               | Partial         | Dependency analysis, architecture checks                        |
+| Implementation (4xx)       | Yes             | `run-verification.py lint`                                      |
+| Testing (5xx)              | Yes             | `run-verification.py test`                                      |
+| Documentation (6xx)        | Partial         | Doc coverage tools                                               |
+| Security (7xx)             | Yes             | `run-verification.py security`                                  |
+| Performance (8xx)          | Partial         | Benchmark tools (if configured)                                  |
+| Deployment (9xx)           | Partial         | Config validation                                                |
 
 ### 4. Record Results
 
@@ -136,6 +172,14 @@ Read `templates/${SDD_LANG:-en}/tasklist_patterns.md` for TaskList usage pattern
 
 ## Error Handling
 
+### Checklist Not Found
+
+Stop before step 2 and report: the resolved path
+(`${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/checklist.md`), how `{ticket}` was resolved (from
+`ticket-number`, or from `feature-name` because `ticket-number` was omitted), and the two remedies from the
+Input Format section — re-run with the ticket number, or generate the checklist with
+`/checklist {feature} {ticket}`. Do not run verifications with nothing to record them against.
+
 ### Test Failure
 
 When tests fail, record the failure details and continue with other verifications. See the "Failure Details Format" section in `templates/${SDD_LANG:-en}/result_format.md`.
@@ -155,8 +199,8 @@ When a verification tool is not configured, record `Status: SKIPPED` with the re
 
 ## Integration with Other Commands
 
-1. `/generate-spec {feature}`
-2. `/task-breakdown {feature}`
+1. `/generate-spec {description} --ticket {ticket}`
+2. `/task-breakdown {feature} {ticket}`
 3. `/checklist {feature} {ticket}` - Generate checklist
 4. `/implement {feature} {ticket}` - Implement feature
 5. `/run-checklist {feature} {ticket}` - Verify implementation

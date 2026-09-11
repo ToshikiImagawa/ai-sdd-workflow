@@ -38,6 +38,12 @@ This skill operates in two modes:
 
 - `references/mermaid_notation_rules.md` - Mermaid notation rules for requirements diagrams
 - `references/requirements_diagram_components.md` - SysML requirements diagram component definitions
+- `${CLAUDE_PLUGIN_ROOT}/shared/references/id_conventions_config.md` - PRD-level ID format resolution
+  algorithm and defaults, used in Generation Rules Step 0
+
+**Read project configuration if available:**
+
+- `${CLAUDE_PROJECT_DIR}/.sdd-config.json` - provides `id_conventions`, used in Generation Rules Step 0
 
 ## Input
 
@@ -60,6 +66,18 @@ When a feature name is provided, look for:
 
 ## Generation Rules
 
+### 0. Resolve ID Conventions
+
+Determine the ID format for UR/FR/NFR before reading the input, per
+`${CLAUDE_PLUGIN_ROOT}/shared/references/id_conventions_config.md` § PRD-Level ID Format Resolution
+(default `UR_xxx`, `FR_xxx`, `NFR_xxx`). Match requirement entries in the input against the resolved
+format instead of assuming one notation, and carry each requirement's own ID through to the diagram
+unchanged — never renumber or reformat an ID that the PRD already assigned.
+
+PRD-level IDs use underscores, which is also what Mermaid's `requirementDiagram` accepts (see Step 3
+rule 1). If a project has configured a format whose IDs cannot be used as Mermaid node IDs, report that
+instead of silently rewriting the IDs.
+
 ### 1. Input Parsing
 
 > **CI Mode**: Skip clarifying questions. Make reasonable assumptions for ambiguous items.
@@ -68,9 +86,9 @@ Extract requirements information:
 
 | Item                            | Source                            |
 |:--------------------------------|:----------------------------------|
-| **User Requirements**           | UR-xxx entries from tables        |
-| **Functional Requirements**     | FR-xxx entries with traceability  |
-| **Non-Functional Requirements** | NFR-xxx entries                   |
+| **User Requirements**           | UR entries from tables            |
+| **Functional Requirements**     | FR entries with traceability      |
+| **Non-Functional Requirements** | NFR entries                       |
 | **Relationships**               | Derived from, traces to, contains |
 
 ### 2. Diagram Generation
@@ -97,7 +115,8 @@ Follow these rules when generating the requirements diagram:
 
 **CRITICAL: Follow these Mermaid requirementDiagram syntax rules:**
 
-1. **ID naming**: Use underscores, NOT hyphens
+1. **ID naming**: Mermaid node IDs use underscores, NOT hyphens (the PRD-level format resolved in Step 0
+   already satisfies this — this rule is about Mermaid syntax, not about renaming a PRD's IDs)
     - ❌ `id: FR-001`
     - ✅ `id: FR_001`
 
@@ -126,6 +145,11 @@ Check Quality Checks items before returning output.
 ## Output Format
 
 **IMPORTANT**: This skill returns text only. It does NOT write files.
+
+This holds even when the target document is missing the diagram section entirely (removed, or it never
+had one): do not "helpfully" fill the gap by editing the document yourself with `Write` or `Edit` — those
+tools are in `disallowed-tools` for exactly this reason. Return the diagram as text regardless, and leave
+the decision of whether and where to write it to the caller.
 
 Return a markdown structure with a `## Requirements Diagram (SysML)` section (containing the Mermaid
 `requirementDiagram`), a `## Diagram Structure` section, and a `## Relationship Summary` table. See
@@ -163,6 +187,13 @@ Before returning output, verify:
 - Use consistent naming conventions throughout
 - Ensure all functional requirements derive from user requirements
 - Non-functional requirements should trace to affected functional requirements
+
+**When completeness and readability conflict** (e.g. a requirement has many sub-requirements that would
+push a diagram past the 10-15 guideline): completeness wins. Prefer splitting into a per-subsystem
+diagram first. When splitting is not applicable (the sub-requirements are all branches of one requirement,
+not a separate subsystem), it is acceptable to represent them as a single compressed node with a note —
+but the output must say explicitly which sub-requirements were compressed and why, so the caller can tell
+"omitted" from "combined."
 
 ### Integration
 

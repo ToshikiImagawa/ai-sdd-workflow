@@ -146,8 +146,9 @@ Higher priority principles take precedence over lower priority principles.
 
 **Validation Method**:
 
-- [ ] `*_spec.md` exists
-- [ ] `*_design.md` exists
+- [ ] The abstract spec exists under `specification/` (`{feature-name}.md` or `{feature-name}_spec.md`)
+- [ ] The technical design exists as `task/{ticket-number}/design-draft.md` while the ticket is open
+- [ ] The decisions are recorded in `adr/{feature-name}.md` at cleanup
 - [ ] Specifications are up-to-date (updated before implementation)
 
 **Violation Examples**:
@@ -177,8 +178,9 @@ Higher priority principles take precedence over lower priority principles.
 
 | Standard           | Requirement                            | Location              | Update Frequency      |
 |:-------------------|:---------------------------------------|:----------------------|:----------------------|
-| **Specifications** | All features have `*_spec.md`          | `${SDD_SPECIFICATION_PATH}/` | Before implementation |
-| **Design Docs**    | All implementations have `*_design.md` | `${SDD_SPECIFICATION_PATH}/` | During design phase   |
+| **Specifications** | Every feature has an abstract spec (`_spec` suffix optional) | `${SDD_SPECIFICATION_PATH}/` | Before implementation |
+| **Design Drafts**  | Every ticket under work has `design-draft.md` (temporary) | `${SDD_TASK_PATH}/{ticket-number}/` | During design phase |
+| **Decision Logs**  | Every settled decision is an entry in the feature's log | `${SDD_ADR_PATH}/` | At task cleanup |
 | **API Docs**       | All public APIs documented             | In source files       | With code changes     |
 | **README**         | Up-to-date setup instructions          | Project root          | As needed             |
 
@@ -274,7 +276,7 @@ When facing technical trade-offs, prioritize in this order:
 
 - [ ] All tests pass
 - [ ] Coverage ≥ 80%
-- [ ] Spec consistency verified (`/check_spec`)
+- [ ] Spec consistency verified (`/check-spec`)
 - [ ] Design doc updated
 
 ### Pre-Merge
@@ -528,8 +530,9 @@ Review metrics monthly in team retrospective.
 |:---------------------------------|:------------------------------------------------------|
 | `${SDD_ROOT}/SPECIFICATION_TEMPLATE.md` | Include section referencing principles                |
 | `${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`    | Include checklist for principle compliance            |
-| `*_spec.md`                      | Describe design based on principles                   |
-| `*_design.md`                    | Clearly state that design decisions comply with principles |
+| Abstract spec under `specification/` | Describe design based on principles               |
+| `task/{ticket-number}/design-draft.md` | Clearly state that design decisions comply with principles |
+| `adr/{feature-name}.md`          | Name the principle a decision rests on in its `Rationale` |
 
 ### Validating Constitution Compliance
 

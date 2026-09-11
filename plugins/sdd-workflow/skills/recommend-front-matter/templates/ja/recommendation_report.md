@@ -5,6 +5,7 @@
 - **スキャンした総ドキュメント数**: {total_count}
 - **Front Matter あり**: {with_fm_count}
 - **Front Matter なし**: {without_fm_count}
+- **`impl-status` が欠落した spec**: {specs_missing_impl_status_count} 件（手動対応。自動適用はしない）
 
 {recommendations_section}
 
@@ -12,7 +13,7 @@
 
 ### オプション A: 自動適用
 
-以下のコマンドを実行して、すべてのドキュメントに Front Matter を自動追加します：
+以下のコマンドを実行して、Front Matter が無いドキュメントに Front Matter を自動追加します：
 
 ```
 /recommend-front-matter --apply
@@ -20,11 +21,17 @@
 
 **注意**: ファイルを直接変更します。適用前に Git コミットを推奨します。
 
+`--apply` が追加するのは Front Matter が無いドキュメントへのブロックのみです。既に Front Matter を持つ
+ドキュメントは変更しないため、「`impl-status` が欠落した spec」はオプション B の手動対応が常に必要です。
+このスキルは実装を確認しないため、その値を推測しません。
+
 ### オプション B: 手動適用
 
 1. 上記の推奨内容を確認
 2. 推奨された YAML ブロックをドキュメントにコピー＆ペースト
 3. 必要に応じてメタデータを調整（特に `depends-on`, `tags`, `category`）
+4. `impl-status` が欠落した spec は、実装が spec に一致しているかを確認した上で `sdd-phase` の行の後に
+   `impl-status: "implemented"` / `"in-progress"` / `"not-implemented"` のいずれかを追加
 
 ## Front Matter のメリット
 

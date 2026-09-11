@@ -7,11 +7,12 @@
 | Feature Name | {Feature Name} |
 | Ticket Number | {Ticket Number} |
 | Specification | `.sdd/specification/[{path}/]{feature}_spec.md` |
-| Design Document | `.sdd/specification/[{path}/]{feature}_design.md` |
+| Design Draft | `.sdd/task/{ticket}/design-draft.md` (omit if already deleted) |
 | Generated Date | YYYY-MM-DD |
 | Checklist Version | 1.0 |
 
-For hierarchical structure, parent feature uses `index_spec.md`, `index_design.md`
+For hierarchical structure, parent feature uses `index_spec.md`. The design draft is ticket-scoped, so its
+path is the same in both structures
 
 ## Checklist Summary
 
@@ -148,7 +149,7 @@ grep -r "export function" src/ | compare with spec
 - Review import statements
 - Check for circular dependencies
 
-**Reference**: `.sdd/specification/[{path}/]{feature}_design.md` - Architecture
+**Reference**: `.sdd/task/{ticket}/design-draft.md` - Architecture
 
 ---
 
@@ -164,7 +165,7 @@ grep -r "export function" src/ | compare with spec
 cat package.json | grep dependencies
 ```
 
-**Reference**: `.sdd/specification/[{path}/]{feature}_design.md` - Technology Stack
+**Reference**: `.sdd/task/{ticket}/design-draft.md` - Technology Stack
 
 ---
 
@@ -324,7 +325,7 @@ npm test -- --coverage
 - [ ] Change history is maintained
 
 **Verification**:
-- Review `.sdd/specification/[{path}/]{feature}_design.md`
+- Review `.sdd/task/{ticket}/design-draft.md`
 - Compare with implementation
 - Check last update date
 

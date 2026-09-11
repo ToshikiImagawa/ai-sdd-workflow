@@ -82,6 +82,26 @@ It receives user input context for analysis.
 | **Medium** | Specs exist + some ambiguity     | Clarify ambiguous points before implementation           |
 | **Low**    | Specs exist + clear requirements | Can start implementation                                 |
 
+## Task Type Determination
+
+Independently of the ambiguity/risk assessment above, classify the request against the **Task Type
+Determination** table in `AI-SDD-PRINCIPLES.md` § Workflow Management Guidelines and report the starting
+phase that type requires — the first phase listed in that table's "Required Phases" column for the matched
+row (e.g. Breaking Change and New Feature both start at Specify; Bug Fix and Technical Investigation start
+at Tasks; Refactoring starts at Plan). Match by signal in the request:
+
+| Signal in the request                                                              | Task Type               |
+|:-------------------------------------------------------------------------------------|:-------------------------|
+| Removes/changes existing public API or behavior; existing consumers must adapt       | Breaking Change          |
+| No existing spec covers the request; new business domain or cross-feature scope      | New Feature (Large)      |
+| No existing spec covers the request; contained to an existing feature/module         | New Feature (Small)      |
+| Corrects a deviation from an existing spec; no spec change needed                    | Bug Fix                  |
+| Restructures existing code with no behavior change                                   | Refactoring               |
+| Pure investigation/analysis, no code change implied                                  | Technical Investigation  |
+
+When signals are mixed or unclear, report the closest match and note the ambiguity rather than guessing
+silently — this determination feeds the risk report's "Recommended Starting Phase" field below.
+
 ## Detection Response Flow
 
 See `references/detection_response_flow.md` for the step-by-step response flow.
@@ -98,12 +118,16 @@ Even when user refuses specification creation, ensure minimum guardrails:
 
 ### 1. Document Inferred Specifications
 
-Read `templates/${SDD_LANG:-en}/assumed_spec.md` and use it for creating inferred specification documents.
+Read `templates/${SDD_LANG:-en}/assumed_spec.md` and use it to draft the inferred specification content.
 
 **If template does not exist**: Use `templates/${SDD_LANG:-en}/assumed_spec_fallback.md` as the document
 structure.
 
-**Save Location**: `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/assumed-spec.md`
+This skill's `allowed-tools` deliberately excludes `Write`/`Edit`/`Bash` — it fires automatically before every
+implementation, so it must stay a read-only detector and never persist files on its own. Include the fully
+drafted document content in this skill's own output (under the risk report) and instruct the calling session
+to save it to `${CLAUDE_PROJECT_DIR}/${SDD_TASK_PATH}/{ticket}/assumed-spec.md`. The calling session (which
+invoked this skill and holds normal write access) performs the actual save.
 
 ### 2. Set Verification Points
 
@@ -125,5 +149,6 @@ Explicitly state potential issues due to specification gaps:
 
 - This skill **detects and warns** but does not block implementation
 - Final judgment is left to the user
-- If proceeding despite warnings, always record inferred specifications
+- If proceeding despite warnings, always include the inferred specification in the output so the calling
+  session can record it (this skill cannot write files itself)
 - Reference existing project specifications to improve detection accuracy

@@ -32,7 +32,7 @@ from fm_parser import (  # noqa: E402,F401
 )
 from doc_walker import iter_target_files  # noqa: E402,F401
 
-SCHEMA_VERSION = "1"
+SCHEMA_VERSION = "2"
 
 
 # --- path helpers ---------------------------------------------------------
@@ -107,6 +107,7 @@ def init_schema(conn: sqlite3.Connection) -> None:
             status       TEXT,
             sdd_phase    TEXT,
             impl_status  TEXT,
+            sdd_version  TEXT,
             priority     TEXT,
             risk         TEXT,
             created      TEXT,
@@ -440,6 +441,7 @@ def scan_document(abs_path: str, project_root: str, sdd_root: str,
         "status": fm.get("status", ""),
         "sdd_phase": fm.get("sdd-phase", ""),
         "impl_status": fm.get("impl-status", ""),
+        "sdd_version": fm.get("sdd-version", ""),
         "priority": fm.get("priority", ""),
         "risk": fm.get("risk", ""),
         "created": fm.get("created", ""),
@@ -456,11 +458,12 @@ def upsert_document(conn: sqlite3.Connection, rec: Dict[str, Any]) -> None:
     conn.execute("DELETE FROM documents WHERE path = ?", (path,))
     conn.execute(
         "INSERT INTO documents (path, content_hash, doc_id, title, type, category, "
-        "status, sdd_phase, impl_status, priority, risk, created, updated, mtime) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "status, sdd_phase, impl_status, sdd_version, priority, risk, created, updated, mtime) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (path, rec["content_hash"], rec["doc_id"], rec["title"], rec["type"],
          rec["category"], rec["status"], rec["sdd_phase"], rec["impl_status"],
-         rec["priority"], rec["risk"], rec["created"], rec["updated"], rec["mtime"]),
+         rec["sdd_version"], rec["priority"], rec["risk"], rec["created"], rec["updated"],
+         rec["mtime"]),
     )
     for dep in rec["depends_on"]:
         conn.execute(
@@ -510,7 +513,9 @@ def upsert_document(conn: sqlite3.Connection, rec: Dict[str, Any]) -> None:
 
 
 def rebuild_all(project_root: str) -> None:
-    sdd_root, req_dir, spec_dir = load_sdd_paths(project_root)
+    paths = load_sdd_paths(project_root)
+    sdd_root = paths.root
+    req_dir, spec_dir, adr_dir = paths.requirement_dir, paths.specification_dir, paths.adr_dir
     conn = connect(db_path(project_root, sdd_root))
     try:
         init_schema(conn)
@@ -521,7 +526,7 @@ def rebuild_all(project_root: str) -> None:
         except sqlite3.OperationalError:
             pass
 
-        target_files = iter_target_files(project_root, sdd_root, req_dir, spec_dir)
+        target_files = iter_target_files(project_root, sdd_root, req_dir, spec_dir, adr_dir)
         current_paths = set()
         changed = False
 
@@ -553,7 +558,7 @@ def rebuild_all(project_root: str) -> None:
 
 
 def update_one(project_root: str, rel_path: str) -> None:
-    sdd_root, _req_dir, _spec_dir = load_sdd_paths(project_root)
+    sdd_root = load_sdd_paths(project_root).root
     db_file = db_path(project_root, sdd_root)
     if not Path(db_file).is_file():
         return
@@ -620,18 +625,18 @@ def derive_index(conn: sqlite3.Connection, project_root: str, sdd_root: str) -> 
 
     # -- Metadata table --
     out.append("## Metadata")
-    out.append("| doc_id | type | path | status | impl-status | depends-on | category |")
-    out.append("|--------|------|------|--------|-------------|------------|----------|")
+    out.append("| doc_id | type | path | status | impl-status | sdd-version | depends-on | category |")
+    out.append("|--------|------|------|--------|-------------|-------------|------------|----------|")
     rows = conn.execute(
-        "SELECT path, doc_id, type, status, impl_status, category "
+        "SELECT path, doc_id, type, status, impl_status, sdd_version, category "
         "FROM documents ORDER BY path"
     ).fetchall()
-    for path, doc_id, dtype, status, impl_st, category in rows:
+    for path, doc_id, dtype, status, impl_st, sdd_ver, category in rows:
         label = doc_id if doc_id else f"({path})"
         deps = ", ".join(deps_by_path.get(path, []))
         out.append(
             f"| {label} | {dtype or ''} | {path} | {status or ''} "
-            f"| {impl_st or ''} | {deps} | {category or ''} |"
+            f"| {impl_st or ''} | {sdd_ver or ''} | {deps} | {category or ''} |"
         )
     out.append("")
 
@@ -733,10 +738,11 @@ def derive_index(conn: sqlite3.Connection, project_root: str, sdd_root: str) -> 
 
     # -- JSON form --
     docs_json = []
-    for path, doc_id, dtype, status, impl_st, category in rows:
+    for path, doc_id, dtype, status, impl_st, sdd_ver, category in rows:
         d: Dict[str, Any] = {
             "path": path, "doc_id": doc_id or "", "type": dtype or "",
             "status": status or "", "impl_status": impl_st or "",
+            "sdd_version": sdd_ver or "",
             "category": category or "",
         }
         d["depends_on"] = deps_by_path.get(path, [])

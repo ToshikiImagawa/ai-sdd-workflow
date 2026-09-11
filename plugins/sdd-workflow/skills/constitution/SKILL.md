@@ -141,14 +141,27 @@ Add a new principle to a constitution by running `/constitution add "Library-Fir
 
 **Version Bump Rules**:
 
-| Change Type        | Version Impact | Example        |
-|:-------------------|:---------------|:---------------|
-| Add principle      | MAJOR (X.y.z)  | 1.0.0 -> 2.0.0 |
-| Modify principle   | MAJOR (X.y.z)  | 1.0.0 -> 2.0.0 |
-| Remove principle   | MAJOR (X.y.z)  | 1.0.0 -> 2.0.0 |
-| Clarify principle  | MINOR (x.Y.z)  | 1.0.0 -> 1.1.0 |
-| Update enforcement | MINOR (x.Y.z)  | 1.0.0 -> 1.1.0 |
-| Fix typo           | PATCH (x.y.Z)  | 1.0.0 -> 1.0.1 |
+| Change Type                | Version Impact | Example        |
+|:---------------------------|:---------------|:---------------|
+| Add principle              | MINOR (x.Y.z)  | 1.0.0 -> 1.1.0 |
+| Modify principle           | MAJOR (X.y.z)  | 1.0.0 -> 2.0.0 |
+| Remove principle           | MAJOR (X.y.z)  | 1.0.0 -> 2.0.0 |
+| Change principle priority  | MAJOR (X.y.z)  | 1.0.0 -> 2.0.0 |
+| Update enforcement         | MINOR (x.Y.z)  | 1.0.0 -> 1.1.0 |
+| Clarify principle          | PATCH (x.y.Z)  | 1.0.0 -> 1.0.1 |
+| Fix typo                   | PATCH (x.y.Z)  | 1.0.0 -> 1.0.1 |
+
+This table enumerates the same change types as the "Semantic Versioning" table in §7 (Version Management),
+and the two must agree row for row. The split follows one rule: **does the change alter what an existing
+principle demands?**
+
+- **MAJOR** — an existing principle's meaning, presence, or priority changes, so specs and designs that
+  already comply may stop complying. This is the breaking case (§7's "Conditions for Major Version Bump").
+- **MINOR** — something is added without changing an existing demand: a new principle (see the "Add
+  Principle (add)" flow in §2, which also bumps minor), or a new/updated enforcement mechanism for a
+  principle whose wording is unchanged.
+- **PATCH** — only the expression changes, not the demand. Clarifying a principle's wording *is* fixing its
+  expression, which is why it sits here alongside typo fixes rather than under MINOR.
 
 ### 5. Validate (validate)
 
@@ -162,8 +175,9 @@ scan file structure.
 This script:
 
 1. Scans all requirement files (`${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/**/*.md`)
-2. Scans all specification files (`*_spec.md`)
-3. Scans all design files (`*_design.md`)
+2. Scans all specification files (every `.md` under `${SDD_SPECIFICATION_PATH}` except `*_design.md` — the
+   `_spec` suffix is optional there)
+3. Scans v4.x persistent design docs (`*_design.md`) separately, where a project still has them
 4. Generates file lists and summary JSON
 5. Exports environment variables to `$CLAUDE_ENV_FILE`:
     - `CONSTITUTION_REQUIREMENT_FILES` - List of requirement files
@@ -175,12 +189,17 @@ This script:
 
 **Validation Targets**:
 
-- `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/**/*.md`
-- `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/**/*_spec.md`
-- `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/**/*_design.md`
+- `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/**/*.md` (PRDs)
+- `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/**/*.md` (abstract specs, suffix optional)
+- `${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/**/*_design.md` (v4.x persistent design docs, when present)
 - `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/PRD_TEMPLATE.md`
 - `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/SPECIFICATION_TEMPLATE.md`
 - `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`
+- `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/ADR_TEMPLATE.md`
+
+Not scanned by this skill: `${SDD_TASK_PATH}/{ticket-number}/design-draft.md` (temporary, deleted after
+implementation) and `${SDD_ADR_PATH}/**/*.md`. Principle compliance for those is reviewed while the ticket is
+open, not by this validation pass.
 
 **Validation Items**:
 
@@ -211,12 +230,21 @@ This script:
     - Update decision framework
     - Sync architectural constraints
 
-3. **Update Task Templates**:
+3. **Update ADR Template** (`${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/ADR_TEMPLATE.md`):
+    - Add a principle reference to the entry format, so an entry's `Rationale` states the principle the
+      decision rests on
+    - Sync terminology
+    - Keep the required entry items (`Decision` / `Rationale` / `Rejected alternatives`) intact — skills read
+      them mechanically
+    - Sync touches the **template only**. Recorded entries in `${SDD_ADR_PATH}/{feature-name}.md` are
+      append-only and are never rewritten by a sync
+
+4. **Update Task Templates**:
     - Add compliance verification tasks
     - Update completion criteria
     - Reference relevant principles
 
-4. **Update Checklist Template**:
+5. **Update Checklist Template**:
     - Add principle verification items
     - Update priorities
     - Sync quality gates
@@ -230,11 +258,14 @@ Update constitution version by running `/constitution bump-version {major|minor|
 
 **Semantic Versioning**:
 
-| Version Type | Use Case                                                  | Example        |
-|:-------------|:----------------------------------------------------------|:---------------|
-| Major        | Remove/significantly change existing principle (breaking) | 1.0.0 -> 2.0.0 |
-| Minor        | Add new principle                                         | 1.0.0 -> 1.1.0 |
-| Patch        | Fix expression of principle, typo fix                     | 1.0.0 -> 1.0.1 |
+| Version Type | Use Case                                                                    | Example        |
+|:-------------|:----------------------------------------------------------------------------|:---------------|
+| Major        | Remove/significantly change existing principle, or change its priority (breaking) | 1.0.0 -> 2.0.0 |
+| Minor        | Add new principle, or add/update an enforcement mechanism                    | 1.0.0 -> 1.1.0 |
+| Patch        | Clarify the expression of a principle, typo fix                             | 1.0.0 -> 1.0.1 |
+
+This mirrors the "Version Bump Rules" table in §4 (Update Constitution); keep the two in sync when either
+changes.
 
 ## Constitution File Structure
 
@@ -264,8 +295,10 @@ Depending on sub command, use the `templates/${SDD_LANG:-en}/constitution_output
 |:--------------------------------------------------------------|:--------------------------------------|
 | `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/SPECIFICATION_TEMPLATE.md` | Add principle reference sections      |
 | `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`    | Add principle compliance checklist    |
-| `*_spec.md`                                                   | Design based on principles            |
-| `*_design.md`                                                 | Explicitly state principle compliance |
+| `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/ADR_TEMPLATE.md`           | Add principle reference to the entry format |
+| Abstract specs under `specification/` (suffix optional)       | Design based on principles            |
+| `task/{ticket-number}/design-draft.md`                        | Explicitly state principle compliance |
+| `adr/{feature-name}.md`                                       | State the principle a decision rests on in its `Rationale` |
 
 ### Sync Verification
 

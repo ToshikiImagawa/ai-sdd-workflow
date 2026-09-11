@@ -1,6 +1,6 @@
-# Example: Case A (Existing Documents)
+# Example: Case A (Spec Exists)
 
-This example demonstrates `/plan-refactor` usage when PRD, spec, and design documents already exist.
+This example demonstrates `/plan-refactor` usage when the PRD and spec already exist.
 
 ## Scenario
 
@@ -8,13 +8,14 @@ This example demonstrates `/plan-refactor` usage when PRD, spec, and design docu
 **Problem:** Current implementation has tight coupling between auth and session management, making it hard to test and extend.
 **Existing Docs:**
 - `.sdd/requirement/auth.md` (PRD exists)
-- `.sdd/specification/auth_spec.md` (Spec exists)
-- `.sdd/specification/auth_design.md` (Design exists)
+- `.sdd/specification/auth_spec.md` (Spec exists → Case A)
+- No design document — that is the normal state; the design lives at `.sdd/task/{ticket-number}/design-draft.md`
+  and is deleted after implementation
 
 ## Command
 
 ```bash
-/plan-refactor auth
+/plan-refactor auth --ticket=68
 ```
 
 ## Expected Behavior
@@ -25,10 +26,15 @@ This example demonstrates `/plan-refactor` usage when PRD, spec, and design docu
 [plan-refactor] Running document scan...
 [scan-existing-docs] Scanning for: auth
 [scan-existing-docs] Structure: flat
-[scan-existing-docs] PRD: true, Spec: true, Design: true
+[scan-existing-docs] PRD: true, Spec: true, DesignDraft: false, LegacyDesign: false
+[scan-existing-docs] Case: A (Spec exists)
 
-Detected: Case A (Existing documents found)
+Detected: Case A (Spec found)
 ```
+
+The case comes from `spec_exists`. Had `.sdd/specification/auth_design.md` still been lying around from v4.x, it
+would have been reported as `legacy_design_path` and read as context — it would not change the case, and it would
+not be written to.
 
 ### Phase 2: Implementation Discovery
 
@@ -46,18 +52,18 @@ Detected: Case A (Existing documents found)
 
 Claude reads:
 1. `.sdd/requirement/auth.md` - Understands original requirements
-2. `.sdd/specification/auth_spec.md` - Reviews functional specs
-3. `.sdd/specification/auth_design.md` - Analyzes current design
-4. Implementation files (`src/auth/*.ts`) - Compares with design
+2. `.sdd/specification/auth_spec.md` - Reviews the abstract spec
+3. `.sdd/task/68/design-draft.md` - If a draft already exists for this ticket, reads it as supplementary input
+4. Implementation files (`src/auth/*.ts`) - Compares with the spec
 
 Claude identifies:
 - **Gap 1:** Session management is tightly coupled to auth logic
 - **Gap 2:** Hard to mock for unit testing
 - **Gap 3:** Violates Single Responsibility Principle
 
-### Phase 4: Design Doc Update
+### Phase 4: Design Draft Update
 
-Claude edits `.sdd/specification/auth_design.md` and appends:
+Claude creates `.sdd/task/68/design-draft.md` (or appends to it if it already exists):
 
 ```markdown
 ## Refactoring Plan
@@ -202,16 +208,20 @@ The current authentication module tightly couples session management with auth l
 ### Phase 5: Next Steps
 
 ```
-✅ Refactoring plan added to auth_design.md
+✅ Refactoring plan added to .sdd/task/68/design-draft.md
 
 Next steps:
-1. Review the plan at: .sdd/specification/auth_design.md
-2. Run `/task-breakdown auth` to create actionable tasks
+1. Review the plan at: .sdd/task/68/design-draft.md
+2. Run `/task-breakdown auth 68` to create actionable tasks
 3. Execute tasks with `/implement auth`
+4. After implementation, run `/task-cleanup auth` to append the settled decisions to .sdd/adr/auth.md —
+   the draft (and this plan) is deleted at that point
 ```
 
 ## Notes
 
-- In Case A, existing documents provide context for better refactoring plans
-- Claude understands original intent from PRD and compares with current implementation
-- Refactoring plan is integrated into existing design doc, maintaining traceability
+- In Case A, the PRD and spec provide context for a better refactoring plan
+- Claude understands original intent from the PRD and compares it with the current implementation
+- The refactoring plan is integrated into the ticket's design draft, so the plan and the technical design it depends
+  on are discarded together once the decisions have moved into `adr/`
+- Nothing is written under `specification/` in Case A

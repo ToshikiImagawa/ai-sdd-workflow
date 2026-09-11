@@ -154,12 +154,50 @@ Warning: Coverage is below 80% (displayed only when coverage is below 80%)
 1. [ ] Unify definition between spec and design
 2. [ ] Verify validity of change
 
+#### spec - adr Consistency (spec files only)
+
+**Decision log source**: `{adr path}` / none — spec - adr **not applicable**
+
+| adr Entry                            | Current Decision            | spec Statement                       | Status |
+|:-------------------------------------|:----------------------------|:-------------------------------------|:-------|
+| `## {YYYY-MM-DD} {decision title}`   | {what was decided}          | {corresponding spec description}     | 🟢 Consistent / 🔴 Contradicts spec |
+| `## {YYYY-MM-DD} {decision title}`   | Superseded by a later entry | {spec description still relying on it} | ⚪ History / 🔴 spec relies on a superseded decision |
+| {spec-driving decision, e.g. storage choice} | Not recorded in adr | {spec description lacking a recorded rationale} | 🟡 Not recorded |
+
+**Criteria**:
+- 🟢 **Consistent**: The current (latest, non-superseded) decision agrees with what the spec states
+- 🔴 **Contradicts spec**: The current decision and the spec state different things
+- ⚪ **History**: An entry named by a later entry's `Supersedes` item — read as history, never as the decision in force
+- 🟡 **Not recorded**: The spec states behavior whose design decision no entry records
+
+When no decision log resolved for the feature, write **Not applicable** — never "Consistent". An unrecorded
+decision log is the normal state for a feature whose decisions have not been recorded yet.
+
+##### 🔴 Contradictions / 🟡 Unrecorded Decisions ({n} items)
+
+###### {decision title or spec element}
+
+**adr entry**: `## {YYYY-MM-DD} {decision title}` in `{adr path}`
+
+**adr states**: {the decision as recorded}
+
+**spec states**: {the spec description}
+
+**Disagreement**: {specific difference, or "no entry records this decision"}
+
+**Recommended Actions**:
+1. [ ] Update the spec, when the recorded decision is the current one
+2. [ ] Or **append a new entry** at the end of the same adr file with a `Supersedes` item linking the entry it
+   replaces, when the decision itself has moved on — `adr/` is append-only, so never edit or delete the
+   superseded entry, and never record the reversal in the file's front matter
+
 #### Consistency Check Summary
 
 | Check Target        | Result                      | Details                                      |
 |:--------------------|:----------------------------|:---------------------------------------------|
 | PRD - spec          | 🟢 Consistent / 🔴 Inconsistent | Coverage: {X}%, Not Covered: {n} items       |
 | spec - design       | 🟢 Consistent / 🔴 Inconsistent | Inconsistencies: {n} items                   |
+| spec - adr          | 🟢 Consistent / 🔴 Inconsistent / ⚪ Not applicable | Contradictions: {n} items, Unrecorded decisions: {n} items, or no decision log |
 | CONSTITUTION - docs | 🟢 Compliant / 🔴 Violation / No Principles | Violations: {n} items, Partial Violations: {n} items |
 
 ### Fix Proposal Summary
@@ -211,6 +249,18 @@ Warning: Coverage is below 80% (displayed only when coverage is below 80%)
 | API Definition | `{API name}({args})` | {Detailed implementation approach} | 🟢 Consistent / 🔴 Inconsistent |
 | Data Model | `{Type name}` | {Detailed type definition} | 🟢 Consistent / 🔴 Inconsistent |
 | Constraints | {Constraint content} | {How constraint is considered} | 🟢 Considered / 🔴 Not Considered |
+
+##### spec - adr Consistency (spec files only)
+
+**Decision log source**: `{adr path}` / none — **not applicable**
+
+| adr Entry | Current Decision | spec Statement | Status |
+|:---|:---|:---|:---|
+| `## {YYYY-MM-DD} {decision title}` | {what was decided} | {corresponding spec description} | 🟢 Consistent / 🔴 Contradicts spec |
+| `## {YYYY-MM-DD} {decision title}` | Superseded by a later entry | {spec description still relying on it} | ⚪ History / 🔴 spec relies on a superseded decision |
+| {spec-driving decision} | Not recorded in adr | {spec description lacking a recorded rationale} | 🟡 Not recorded |
+
+Write **not applicable** when no decision log resolved for the feature — never "Consistent".
 
 #### Detected Issues
 

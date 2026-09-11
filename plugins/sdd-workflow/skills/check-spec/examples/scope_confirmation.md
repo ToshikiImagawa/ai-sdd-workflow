@@ -2,13 +2,15 @@
 
 No argument was specified, so the following files will be checked:
 
-| File                 | Path                                    |
-|:---------------------|:----------------------------------------|
-| {feature1}_design.md | .sdd/specification/{feature1}_design.md |
-| {feature2}_design.md | .sdd/specification/{feature2}_design.md |
-| ...                  | ...                                     |
+| File               | Path                                  |
+|:-------------------|:--------------------------------------|
+| {feature1}_spec.md | .sdd/specification/{feature1}_spec.md |
+| {feature2}.md      | .sdd/specification/{feature2}.md      |
+| ...                | ...                                   |
 
-**Total: {n} files**
+**Total: {n} spec files**
+
+Design drafts found (auxiliary input, listed only if present): {n} — e.g. `.sdd/task/{ticket-number}/design-draft.md`
 
 Do you want to proceed with this scope?
 

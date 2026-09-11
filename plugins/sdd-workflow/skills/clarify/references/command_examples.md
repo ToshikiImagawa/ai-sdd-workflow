@@ -2,6 +2,7 @@
 
 ```
 /clarify user-auth
-/clarify task-management
-/clarify auth/user-login  # For hierarchical structure
+/clarify user-auth TICKET-123      # Also analyze task/TICKET-123/design-draft.md
+/clarify auth/user-login           # For hierarchical structure
+/clarify auth/user-login TICKET-123
 ```

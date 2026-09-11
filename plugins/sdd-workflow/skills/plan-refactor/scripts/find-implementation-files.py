@@ -56,18 +56,34 @@ def log(message: str) -> None:
     print(f"[find-implementation-files] {message}", file=sys.stderr)
 
 
+def _hyphen_underscore_variants(name: str) -> tuple:
+    """Return (name, alternate) with hyphens/underscores swapped.
+
+    Feature names are conventionally kebab-case (e.g. "notification-badge") but
+    source modules conventionally use snake_case (e.g. "notification_badge.py"),
+    so a literal substring match on the untouched feature name silently finds
+    nothing.
+    """
+    if "-" in name:
+        return name, name.replace("-", "_")
+    if "_" in name:
+        return name, name.replace("_", "-")
+    return name, name
+
+
 def find_by_name(search_dir: str, feature_name: str, name_exclude_substrings) -> list:
     """Step 1: match files whose name contains the feature name.
 
     Equivalent to `find <search_dir> -type f -name "*<feature>*"` with the
     excluded-path predicates applied.
     """
+    primary, alternate = _hyphen_underscore_variants(feature_name)
     results = []
     for dirpath, dirnames, filenames in os.walk(search_dir):
         # Prune excluded directories in-place for efficiency.
         dirnames[:] = [d for d in dirnames if d not in NAME_EXCLUDE_SEGMENTS]
         for filename in filenames:
-            if feature_name not in filename:
+            if primary not in filename and alternate not in filename:
                 continue
             full_path = os.path.join(dirpath, filename)
             if any(sub in full_path for sub in name_exclude_substrings):
@@ -83,6 +99,7 @@ def find_by_content(content_dir: str, feature_lower: str) -> list:
     --exclude-dir / --exclude options applied. Matching is a case-insensitive
     literal substring search.
     """
+    primary, alternate = _hyphen_underscore_variants(feature_lower)
     results = []
     for dirpath, dirnames, filenames in os.walk(content_dir):
         dirnames[:] = [d for d in dirnames if d not in CONTENT_EXCLUDE_DIRS]
@@ -95,7 +112,8 @@ def find_by_content(content_dir: str, feature_lower: str) -> list:
                     content = f.read()
             except OSError:
                 continue
-            if feature_lower in content.lower():
+            content_lower = content.lower()
+            if primary in content_lower or alternate in content_lower:
                 results.append(full_path)
     return results
 

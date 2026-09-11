@@ -7,13 +7,12 @@ Reduces Claude's Read tool calls by pre-loading necessary files
 
 import os
 import sys
-import json
 import shutil
 from pathlib import Path
 
 # Shared modules live in plugins/sdd-workflow/scripts (three levels up + scripts).
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
-from hook_common import resolve_project_root  # noqa: E402
+from hook_common import resolve_lang_and_root, resolve_project_root  # noqa: E402
 from env_export import rewrite_exports  # noqa: E402
 
 
@@ -28,19 +27,9 @@ def get_project_root() -> Path:
 
 
 def read_config(project_root: Path) -> dict:
-    """Read .sdd-config.json"""
-    config_file = project_root / ".sdd-config.json"
-    if not config_file.exists():
-        log(f"ERROR: .sdd-config.json not found at {config_file}")
-        sys.exit(1)
-
-    with open(config_file, "r", encoding="utf-8") as f:
-        config = json.load(f)
-
-    return {
-        "lang": config.get("lang", "en"),
-        "root": config.get("root", ".sdd")
-    }
+    """Resolve lang/root: .sdd-config.json, else SDD_LANG/SDD_ROOT, else defaults"""
+    lang, root = resolve_lang_and_root(project_root)
+    return {"lang": lang, "root": root}
 
 
 def get_plugin_root() -> Path:

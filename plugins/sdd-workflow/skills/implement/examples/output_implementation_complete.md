@@ -25,9 +25,10 @@
 
 All verification checks passed
 
-## Design Decisions Documented
+## Design Decisions Recorded
 
-Key decisions integrated into `.sdd/specification/[{path}/]{feature}_design.md`
+Key decisions noted in `.sdd/task/{ticket}/design-draft.md`, to be appended to
+`.sdd/adr/{feature}.md` by `/task-cleanup {ticket}` before the draft is deleted
 
 ## Next Steps
 

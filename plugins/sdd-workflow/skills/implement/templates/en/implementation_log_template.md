@@ -88,7 +88,7 @@ tags: []
 
 - [x] Matches API specification
 - [x] Matches data model
-- [x] Follows design decisions from `*_design.md`
+- [x] Follows the design decisions in `design-draft.md` (and the recorded ones in `adr/{feature}.md`)
 
 #### Commits
 
@@ -266,7 +266,8 @@ All design decisions made during implementation:
 **Rationale**: Better TypeScript integration, smaller bundle
 **Alternatives**: Joi, Yup
 **Status**: Implemented in Task 2.1
-**Documentation**: Add to `*_design.md` § Technology Stack
+**Documentation**: Add to `design-draft.md` § Technology Stack; the decision and its rationale reach
+`adr/{feature}.md` when `/task-cleanup` runs
 
 ### DD-002: {Next Decision}
 
@@ -405,7 +406,7 @@ Notes about how this feature integrates with existing systems:
 
 Track what documentation needs updating:
 
-- [x] Update `*_design.md` with Zod decision
+- [x] Record the Zod decision in `design-draft.md` (appended to `adr/{feature}.md` at cleanup)
 - [x] Update API documentation with new endpoints
 - [ ] Update README with new environment variables
 - [ ] Add ADR for validation approach
@@ -457,7 +458,7 @@ Insights gained during implementation:
 - [ ] Coverage ≥ 80%
 - [ ] Performance benchmarks pass
 - [ ] Security review complete
-- [ ] Spec consistency verified (`/check_spec`)
+- [ ] Spec consistency verified (`/check-spec`)
 
 ### Cleanup
 
@@ -655,15 +656,17 @@ Record achievement status of performance goals defined in non-functional require
 
 ---
 
-## Content to Integrate into Design Doc
+## Content to Integrate into the Decision Log
 
-Mark content from this log that should be integrated into design doc after implementation completion.
+Mark content from this log that `/task-cleanup` should append to `adr/{feature}.md` before this ticket's
+`task/` directory is deleted. The design draft is deleted with it, so anything worth keeping has to be named
+here.
 
 ### Content to Integrate
 
-- [ ] **Implementation Decision**: {Decision Item 1} → Add to "Design Decisions" section in `*_design.md`
-- [ ] **Technical Discovery**: {Discovery 1} → Reflect in "Technology Stack" section in `*_design.md`
-- [ ] **Alternative Approaches**: {Alternative consideration} → Add to "Design Decisions" section in `*_design.md`
+- [ ] **Implementation Decision**: {Decision Item 1} → the `Decision` item of a new `adr/{feature}.md` entry
+- [ ] **Technical Discovery**: {Discovery 1} → the `Rationale` item of that entry (a constraint the decision rests on), or a code comment / test when it is know-how rather than a decision
+- [ ] **Alternative Approaches**: {Alternative consideration} → the `Rejected alternatives` item of that entry
 
 ### Content Not to Integrate (Can be deleted)
 
@@ -698,17 +701,18 @@ Chronological record of implementation.
 
 ## Next Actions
 
-- [ ] Integrate important implementation decisions into design doc (`*_design.md`)
-- [ ] Verify consistency with specifications using `/check_spec`
-- [ ] Cleanup task log with `/task_cleanup`
-- [ ] Delete this log (after integration into design doc)
+- [ ] Integrate important implementation decisions into the decision log (`adr/{feature}.md`) via `/task-cleanup`
+- [ ] Verify consistency with specifications using `/check-spec`
+- [ ] Cleanup task log with `/task-cleanup`
+- [ ] Delete this log (after the decisions have landed in `adr/`)
 
 ---
 
 ## Reference Documents
 
-- Design Doc: `${SDD_SPECIFICATION_PATH}/[{path}/]{name}_design.md`
+- Design Draft: `${SDD_TASK_PATH}/{Ticket Number}/design-draft.md` (temporary, deleted at cleanup)
+- Decision Log: `${SDD_ADR_PATH}/[{path}/]{name}.md` (persistent, append-only)
 - Abstract Specification: `${SDD_SPECIFICATION_PATH}/[{path}/]{name}_spec.md`
 - Task List: `${SDD_TASK_PATH}/{Ticket Number}/tasks.md`
 
-※ For hierarchical structure, parent features use `index_spec.md`, `index_design.md`
+※ For hierarchical structure, parent features use `index_spec.md` under `specification/` and `index.md` under `adr/`

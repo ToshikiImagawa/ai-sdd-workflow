@@ -10,6 +10,7 @@ type: "prd"
 status: "draft"
 created: "{YYYY-MM-DD}"
 updated: "{YYYY-MM-DD}"
+sdd-version: "{plugin-version}"  # From ${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json
 depends-on: []  # Parent PRD if hierarchical
 priority: "medium"  # or extract from requirements
 risk: "medium"  # or extract from requirements

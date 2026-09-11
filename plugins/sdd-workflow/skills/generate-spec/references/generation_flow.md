@@ -33,18 +33,19 @@
    |- On issue detection: Apply fixes (main agent)
    |
 7. Confirm Design Doc generation (always generate if --ci)
+   |- Ticket number resolved: Generate and save draft to task/{ticket-number}/design-draft.md (Plan)
    |- Technical info present: Generate and save (Plan)
    |- No technical info: Confirm whether to skip
    |
 8. Design Doc principle compliance check with spec-reviewer (skip if --ci)
    |- Call spec-reviewer agent (--summary option)
-   |- **Target**: {feature-name}_design.md only (Spec already checked in step 6)
+   |- **Target**: task/{ticket-number}/design-draft.md only (Spec already checked in step 6)
    |- Check CONSTITUTION.md compliance (Technical constraints/Architecture focus)
    |- On violation detection: Review fix proposals and apply approved fixes (main agent)
    |- After fix, re-check
    |
 8a. Front matter validation with front-matter-reviewer (skip if --ci)
    |- Call front-matter-reviewer agent
-   |- **Target**: {feature-name}_design.md
+   |- **Target**: task/{ticket-number}/design-draft.md
    |- On issue detection: Apply fixes (main agent)
 ```

@@ -2,10 +2,15 @@
 
 ### Generated Files
 
-- [x] `${SDD_SPECIFICATION_PATH}/[{parent}/]{feature}_spec.md` (Abstract Specification)
-- [x] `${SDD_SPECIFICATION_PATH}/[{parent}/]{feature}_design.md` (Technical Design Doc)
+- [x] `${SDD_SPECIFICATION_PATH}/[{parent}/]{feature}_spec.md` (Abstract Specification, persistent)
+- [x] `${SDD_TASK_PATH}/{ticket-number}/design-draft.md` (Technical Design Doc draft, temporary — deleted after
+  implementation, once its key decisions are appended to `${SDD_ADR_PATH}/{feature}.md`)
 
-※ For hierarchical structure, parent features use `index_spec.md`, `index_design.md`
+※ For hierarchical structure, parent features use `index_spec.md`. The design draft is ticket-scoped, so its
+path is the same in both structures
+
+※ List only the files actually written. If Design Doc generation was skipped (see "Skip Design Doc Generation"),
+remove that line and state why it was skipped
 
 ### CONSTITUTION.md Compliance Check Results
 
@@ -32,9 +37,11 @@
 
 ### Next Steps
 
-1. Review generated specification & design doc content
-2. Break down into tasks with `/task_breakdown`
+1. Review generated specification & design draft content
+2. Break down into tasks with `/task-breakdown {feature} {ticket-number}`
 3. Verify clarity with `/clarify` before starting implementation
+4. After implementation, `/task-cleanup {ticket-number}` appends the key decisions to
+   `${SDD_ADR_PATH}/{feature}.md` and deletes the draft
 
 ### Recommended Manual Verification
 
@@ -45,11 +52,11 @@
 ### Verification Commands
 
 ```bash
-# Consistency check (design ↔ implementation)
-/check_spec {feature}
+# Consistency check (spec ↔ implementation) — run once implementation exists
+/check-spec {feature}
 
-# Comprehensive review (inter-document consistency + quality)
-/check_spec {feature} --full
+# Comprehensive review (inter-document consistency: PRD ↔ spec ↔ adr, plus quality)
+/check-spec {feature} --full
 
 # Specification clarity scan
 /clarify {feature}

@@ -59,6 +59,13 @@ This agent performs PRD reviews based on AI-SDD principles.
 2. Check `.sdd-config.json` if environment variables are not set
 3. Use default values if neither exists
 
+### ID Convention Resolution
+
+Requirement ID format must not be hardcoded to hyphen notation. Resolve it per
+`${CLAUDE_PLUGIN_ROOT}/shared/references/id_conventions_config.md` § PRD-Level ID Format Resolution (default
+`UR_xxx`, `FR_xxx`, `NFR_xxx`). Use the resolved format when checking requirement ID uniqueness and
+traceability below.
+
 The following documentation uses default values, but replace with custom values if environment variables or
 configuration file exists.
 
@@ -181,7 +188,7 @@ If front matter is absent, note in report: "Front matter not found. Consider add
 | Check Item                | Criteria                                                    |
 |:--------------------------|:------------------------------------------------------------|
 | **Requirement Type**      | Are requirement, functionalRequirement, etc. properly used? |
-| **Requirement ID**        | Are unique IDs assigned? (UR-xxx, FR-xxx, NFR-xxx)          |
+| **Requirement ID**        | Are unique IDs assigned? (format resolved above, e.g. `UR_xxx`, `FR_xxx`, `NFR_xxx`) |
 | **Attribute Values**      | Are risk, verifymethod written in lowercase?                |
 | **Requirement Relations** | Are contains, derives, traces, etc. properly used?          |
 

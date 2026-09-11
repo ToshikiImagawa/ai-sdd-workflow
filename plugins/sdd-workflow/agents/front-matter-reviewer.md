@@ -1,6 +1,6 @@
 ---
 name: front-matter-reviewer
-description: "Validates YAML front matter in AI-SDD documents. Checks field formats, dependency direction, status values, type-specific fields, cross-reference integrity, and id uniqueness. Use after document generation or during consistency checks. Pass target document paths as arguments."
+description: "Validates YAML front matter in AI-SDD documents (PRD, spec, design draft, adr, task, impl-log). Checks field formats, dependency direction, status values, type-specific fields, ADR file-level supersede pointers, cross-reference integrity, and id uniqueness. Use after document generation or during consistency checks. Pass target document paths as arguments."
 model: haiku
 color: cyan
 tools: Read, Glob, Grep, AskUserQuestion
@@ -18,7 +18,7 @@ $ARGUMENTS
 
 | Parameter           | Required | Description                                                                      |
 |:--------------------|:---------|:---------------------------------------------------------------------------------|
-| Target file path(s) | Yes      | One or more `.sdd/` document paths (PRD, spec, design, task, impl-log)           |
+| Target file path(s) | Yes      | One or more `.sdd/` document paths (PRD, spec, design, task, impl-log, adr)      |
 | `--cross-ref`       | No       | Enable project-wide cross-reference checks (id uniqueness, dependency integrity) |
 
 ### Input Examples
@@ -51,6 +51,7 @@ status transition rules, and missing front matter policy.
 | `SDD_ROOT`               | `.sdd`               | Root directory                 |
 | `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | PRD/Requirements directory     |
 | `SDD_SPECIFICATION_PATH` | `.sdd/specification` | Specification/Design directory |
+| `SDD_ADR_PATH`           | `.sdd/adr`           | Decision log (ADR) directory   |
 | `SDD_TASK_PATH`          | `.sdd/task`          | Task log directory             |
 
 **Path Resolution Priority:**
@@ -107,6 +108,10 @@ search outside this scope.
 Before starting validation, **read `${CLAUDE_PLUGIN_ROOT}/shared/references/front_matter_reference.md` using the Read tool** to understand the
 complete schema and validation rules.
 
+Also **read `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`'s `version` field** — this is the current plugin
+version used as the baseline for the `sdd-version generation` check in Step 4. Parse its major component
+(the first `.`-separated segment) for comparison against each document's `sdd-version` major.
+
 ### Step 2: Load Target Documents
 
 For each target document path:
@@ -123,9 +128,19 @@ Determine the expected document type from:
 1. The `type` field in front matter (if present)
 2. The file path and naming convention (using `SDD_*` environment variables):
     - `${SDD_REQUIREMENT_DIR}/*.md` -> `prd`
-    - `${SDD_SPECIFICATION_DIR}/*_spec.md` -> `spec`
-    - `${SDD_SPECIFICATION_DIR}/*_design.md` -> `design`
-    - `${SDD_TASK_DIR}/*.md` -> `task` or `implementation-log`
+    - `${SDD_SPECIFICATION_DIR}/*_design.md` -> `design` (a v4.x persistent design doc — still valid, see below)
+    - `${SDD_SPECIFICATION_DIR}/*.md` (any other name, suffix optional) -> `spec`
+    - `${SDD_ADR_DIR}/*.md` -> `adr` (`-decisions` suffix optional; `adr/` is a single-type directory)
+    - `${SDD_TASK_DIR}/{ticket-number}/design-draft.md` -> `design` (the current, temporary design draft)
+    - `${SDD_TASK_DIR}/*.md` (any other name) -> `task` or `implementation-log`
+
+This mirrors `scripts/naming.py`'s `determine_type`, which is the single source of truth for the mapping.
+
+**v4.x persistent design docs (`specification/*_design.md`)**: a project that started on AI-SDD v4.x may still
+contain these. They **remain valid** — read them as **supplementary input, and treat their absence as normal**.
+Do not create new ones (new technical design goes to `task/{ticket-number}/design-draft.md`), and never report
+an existing one as a naming violation or propose deleting it; it may stay until its decisions have been migrated
+to `adr/{feature}.md`. Validate its front matter with the `design` type checks in Step 5.
 
 If `type` field conflicts with file location, report as **error**.
 
@@ -136,12 +151,15 @@ Apply the following checks to all documents (from Validation Checklist — Commo
 | Check Item                  | Severity | Description                                                                                                            |
 |:----------------------------|:---------|:-----------------------------------------------------------------------------------------------------------------------|
 | **Required fields present** | error    | `id`, `title`, `type`, `status`, `created`, `updated` must be present                                                  |
-| **`id` format**             | warning  | Matches expected pattern for type (`prd-*`, `spec-*`, `design-*`, `task-*`, `impl-*`)                                  |
-| **`type` correctness**      | error    | Matches document location (`"prd"` for `${SDD_REQUIREMENT_DIR}/`, `"spec"`/`"design"` for `${SDD_SPECIFICATION_DIR}/`) |
+| **`id` format**             | warning  | Matches expected pattern for type (`prd-*`, `spec-*`, `design-*`, `adr-*`, `task-*`, `impl-*`)                          |
+| **`type` correctness**      | error    | Matches document location (`"prd"` for `${SDD_REQUIREMENT_DIR}/`, `"spec"`/`"design"` for `${SDD_SPECIFICATION_DIR}/`, `"adr"` for `${SDD_ADR_DIR}/`) |
 | **`status` validity**       | warning  | Value is one of the allowed values for the document type                                                               |
 | **`created` format**        | warning  | Matches `YYYY-MM-DD` date format                                                                                       |
 | **`updated` format**        | warning  | Matches `YYYY-MM-DD` date format                                                                                       |
-| **`depends-on` direction**  | error    | Dependencies point upstream only (spec->prd, design->spec, task->design)                                               |
+| **`depends-on` direction**  | error    | Dependencies point upstream only (spec->prd, design->spec, adr->spec, task->design)                                    |
+| **`sdd-version` presence**  | info     | Field absent: report as info "generation unknown — predates the field's introduction". Never an error or warning: the field arrived in v5, so every v4.x document lacks it (backward compatible). Do **not** silently drop it either — `doc-consistency-checker` aggregates these into its generation-unknown listing |
+| **`sdd-version` format**    | warning  | If present, must be a semver string (`"{major}.{minor}.{patch}"`)                                                      |
+| **`sdd-version` generation**| warning  | If present and its major version is lower than the current plugin's major (read from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`'s `version`), the document may predate a breaking-change migration |
 
 ### Step 5: Type-Specific Checks
 
@@ -156,16 +174,34 @@ Based on document type, apply additional checks:
 
 **Spec** (`type: "spec"`):
 
-| Check Item                  | Severity | Description         |
-|:----------------------------|:---------|:--------------------|
-| **`sdd-phase` correctness** | warning  | Must be `"specify"` |
+| Check Item                  | Severity | Description                                             |
+|:----------------------------|:---------|:----------------------------------------------------------|
+| **`sdd-phase` correctness** | warning  | Must be `"specify"`                                       |
+| **`impl-status` validity**  | warning  | Same allowed values as Design's `impl-status` below       |
 
-**Design** (`type: "design"`):
+**Design** (`type: "design"`) — `task/{ticket-number}/design-draft.md`, or a v4.x persistent
+`specification/*_design.md`:
 
 | Check Item                  | Severity | Description                                             |
 |:----------------------------|:---------|:--------------------------------------------------------|
 | **`sdd-phase` correctness** | warning  | Must be `"plan"`                                        |
 | **`impl-status` validity**  | warning  | One of: `not-implemented`, `in-progress`, `implemented` |
+
+**ADR** (`type: "adr"`):
+
+| Check Item                             | Severity | Description                                                                                                           |
+|:---------------------------------------|:---------|:----------------------------------------------------------------------------------------------------------------------|
+| **`sdd-phase` correctness**            | warning  | Must be `"implement"`                                                                                                 |
+| **`status` validity**                  | warning  | Must be `"approved"` — an entry is recorded only after the decision is made, so it never sits in `draft`/`review`, and a reversed decision does not flip it to `deprecated` |
+| **`depends-on` target type**           | error    | References the spec whose decisions the log records (`"spec-*"`)                                                      |
+| **`supersedes` / `superseded-by` form** | warning  | Values are `adr-*` ids of decision-log **files** (`supersedes` a list, `superseded-by` a single id). Omitted while the file is the live log for its feature |
+
+**`supersedes` / `superseded-by` are file-level only.** They mean "this whole decision log replaced / was
+replaced by another one" (feature renamed, split, or merged). One `adr/{feature}.md` holds many entries but a
+single front matter block, so it cannot express "entry X reverses entry Y" — that reversal belongs in the new
+entry's `Supersedes` item in the file body (see `AI-SDD-PRINCIPLES.md` § Architecture Decision Record → Entry
+Format). If a front matter `supersedes` / `superseded-by` value points at an entry heading or anchor instead of
+an `adr-*` file id, report it as an **error** and recommend moving it into the new entry's body.
 
 **Task** (`type: "task"`):
 
@@ -187,17 +223,21 @@ When `--cross-ref` option is specified, perform project-wide checks:
 |:---------------------------|:---------|:---------------------------------------------------------------------------|
 | **`id` uniqueness**        | error    | Scan all documents to ensure no duplicate IDs exist across the project     |
 | **`depends-on` integrity** | error    | All referenced IDs in `depends-on` exist in actual documents               |
-| **Status consistency**     | warning  | Downstream documents should not be `approved` if upstream is still `draft` |
+| **ADR supersede integrity** | error   | Each `adr-*` id in a `supersedes` / `superseded-by` field resolves to an existing decision-log file, and that file carries the reverse pointer (`supersedes` <-> `superseded-by`) |
+| **Status consistency**     | warning  | Downstream documents should not be `approved` if upstream is still `draft`. ADR files are exempt: their `status` is always `approved` |
 | **Status propagation**     | info     | Changes in upstream status may require downstream review                   |
 
 **Cross-reference scanning procedure**:
 
-1. Use Glob to find all `.md` files under `${SDD_REQUIREMENT_PATH}`, `${SDD_SPECIFICATION_PATH}`, and
-   `${SDD_TASK_PATH}`
+1. Use Glob to find all `.md` files under `${SDD_REQUIREMENT_PATH}`, `${SDD_SPECIFICATION_PATH}`,
+   `${SDD_ADR_PATH}`, and `${SDD_TASK_PATH}`. **`${SDD_ADR_PATH}` must be included** — omitting it both hides
+   duplicate/missing ids inside `adr/` and makes every `adr-*` reference from elsewhere look unresolvable
 2. Use Grep to extract `id:` lines from all found documents
 3. Build an ID registry (id -> file path mapping)
 4. Check target documents' `depends-on` entries against the registry
-5. Check for duplicate IDs
+5. Check `supersedes` / `superseded-by` values of ADR files against the registry (file-level ids only — an
+   entry-level reversal is not recorded in front matter, see the ADR checks in Step 5)
+6. Check for duplicate IDs
 
 ## Output Format
 

@@ -9,6 +9,7 @@ Default configuration created by `init-structure.py` when `.sdd-config.json` doe
   "directories": {
     "requirement": "requirement",
     "specification": "specification",
+    "adr": "adr",
     "task": "task"
   }
 }

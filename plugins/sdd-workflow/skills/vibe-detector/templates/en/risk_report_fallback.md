@@ -18,6 +18,11 @@ Use this structure only when `templates/${SDD_LANG:-en}/risk_report.md` does not
 - {What information is unclear or missing}
 - {What assumptions would need to be made}
 
+## Recommended Starting Phase
+
+- **Task Type**: {New Feature (Large) / New Feature (Small) / Bug Fix / Refactoring / Breaking Change / Technical Investigation}
+- **Starting Phase**: {Specify / Plan / Tasks / Implement}
+
 ## Recommended Actions
 
 1. {Specific action to clarify requirements}

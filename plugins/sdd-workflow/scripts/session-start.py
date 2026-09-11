@@ -3,6 +3,14 @@
 
 Loads .sdd-config.json at session start (generates if not exists)
 and initializes environment variables.
+
+It also maintains two independent notice files under the configured SDD root:
+
+- ``UPDATE_REQUIRED.md``: the CLAUDE.md AI-SDD section is missing or outdated.
+  /sdd-init fixes that, and deletes the file.
+- ``MIGRATION_PENDING.md``: v4.x persisted ``specification/*_design.md`` files
+  are still present. /sdd-init does not resolve this, so the list is rebuilt on
+  every session start and removed only once no such file is left.
 """
 
 import argparse
@@ -16,6 +24,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from doc_walker import iter_legacy_design_docs  # noqa: E402
 from env_export import rewrite_exports  # noqa: E402
 from hook_common import resolve_project_root  # noqa: E402
 
@@ -26,6 +35,7 @@ class SddConfig:
     lang: str = "en"
     requirement_dir: str = "requirement"
     specification_dir: str = "specification"
+    adr_dir: str = "adr"
     task_dir: str = "task"
     index: bool = True
 
@@ -52,6 +62,7 @@ def load_or_create_config(config_path: str, default_lang: str) -> Dict[str, Any]
             "directories": {
                 "requirement": "requirement",
                 "specification": "specification",
+                "adr": "adr",
                 "task": "task",
             },
             "index": True,
@@ -100,6 +111,8 @@ def build_sdd_config(raw: Dict[str, Any], default_lang: str) -> SddConfig:
         cfg.requirement_dir = dirs["requirement"]
     if dirs.get("specification"):
         cfg.specification_dir = dirs["specification"]
+    if dirs.get("adr"):
+        cfg.adr_dir = dirs["adr"]
     if dirs.get("task"):
         cfg.task_dir = dirs["task"]
     cfg.index = parse_index_flag(raw.get("index"))
@@ -204,9 +217,11 @@ def write_env_vars(cfg: SddConfig) -> None:
         f'export SDD_ROOT="{cfg.root}"',
         f'export SDD_REQUIREMENT_DIR="{cfg.requirement_dir}"',
         f'export SDD_SPECIFICATION_DIR="{cfg.specification_dir}"',
+        f'export SDD_ADR_DIR="{cfg.adr_dir}"',
         f'export SDD_TASK_DIR="{cfg.task_dir}"',
         f'export SDD_REQUIREMENT_PATH="{cfg.root}/{cfg.requirement_dir}"',
         f'export SDD_SPECIFICATION_PATH="{cfg.root}/{cfg.specification_dir}"',
+        f'export SDD_ADR_PATH="{cfg.root}/{cfg.adr_dir}"',
         f'export SDD_TASK_PATH="{cfg.root}/{cfg.task_dir}"',
         f'export SDD_LANG="{cfg.lang}"',
     ]
@@ -228,7 +243,135 @@ def compare_major_minor(plugin_version: str, project_version: str) -> bool:
     return project_tuple >= plugin_tuple
 
 
+# Number of legacy design docs listed individually in MIGRATION_PENDING.md; the
+# rest are summarized as a count so the file stays readable.
+LEGACY_DESIGN_LIST_LIMIT = 10
+
+# Lists the v4.x persisted design documents whose decisions have not been moved
+# into adr/ yet. Deliberately a separate file from UPDATE_REQUIRED.md: that one
+# reports a stale CLAUDE.md and is correctly deleted by /sdd-init, while this
+# list is an independent task that outlives /sdd-init. Keeping the list here
+# means it is regenerated at every session start for as long as the documents
+# exist, instead of disappearing the moment CLAUDE.md is brought up to date.
+MIGRATION_PENDING_FILENAME = "MIGRATION_PENDING.md"
+
+
+def resolve_readme_pointer(plugin_root: str) -> str:
+    """A path the agent can open for the "Migration from v4.x" README section.
+
+    Falls back to the ``${CLAUDE_PLUGIN_ROOT}`` token when the plugin root is
+    unknown, so the reader still gets something resolvable in-session rather
+    than a bare "see the plugin README".
+    """
+    base = plugin_root or "${CLAUDE_PLUGIN_ROOT}"
+    return f"{base}/README.md"
+
+
+def build_migration_pending_content(project_root: str, sdd_dir: str,
+                                    cfg: SddConfig,
+                                    plugin_root: str = "") -> str:
+    """MIGRATION_PENDING.md body for the v4.x -> v5.x document model, or ''.
+
+    Only produced when the project still holds persisted
+    ``{specification}/*_design.md`` files. Those files remain valid, so the text
+    asks for their decisions to be migrated into ``{adr}/`` and never calls them
+    a violation or tells the reader to delete them first.
+
+    English-only, matching UPDATE_REQUIRED.md: both files are guidance for the
+    AI agent (skills read UPDATE_REQUIRED.md via
+    prerequisites_plugin_update.md) rather than human-facing documents, so
+    neither is rendered per SDD_LANG. The README pointer names README.ja.md so a
+    Japanese-reading user is not left without one.
+    """
+    legacy_docs = iter_legacy_design_docs(Path(sdd_dir) / cfg.specification_dir)
+    if not legacy_docs:
+        return ""
+
+    def rel(path: Path) -> str:
+        try:
+            return path.relative_to(Path(project_root)).as_posix()
+        except ValueError:
+            return path.as_posix()
+
+    sdd_rel = rel(Path(sdd_dir))
+    listed = legacy_docs[:LEGACY_DESIGN_LIST_LIMIT]
+    lines = [f"- `{rel(p)}`" for p in listed]
+    remaining = len(legacy_docs) - len(listed)
+    if remaining > 0:
+        lines.append(f"- ... and {remaining} more")
+    file_list = "\n".join(lines)
+    readme = resolve_readme_pointer(plugin_root)
+
+    return f"""\
+# AI-SDD Document Model Migration (v4.x -> v5.x)
+
+## Pending Items
+
+This project still holds {len(legacy_docs)} persisted design document(s) under \
+`{sdd_rel}/{cfg.specification_dir}/`:
+
+{file_list}
+
+## What This Means
+
+These files remain valid: read them as supplementary input, and do not treat
+them as naming violations. Since v5.0.0 a technical design starts as a temporary
+draft at `{sdd_rel}/{cfg.task_dir}/{{ticket-number}}/design-draft.md` and is deleted
+after implementation; only the decisions worth keeping are appended to
+`{sdd_rel}/{cfg.adr_dir}/{{feature-name}}.md`. Moving each file's decision history
+there is human-paced and can be done feature by feature - nothing breaks until it
+is; keep the original until that is done.
+
+## Where the Steps Are
+
+Open `{readme}` and read the section
+"Extracting Existing `*_design.md` Files into `adr/`" under "Migration from v4.x".
+The same section in `README.ja.md`, next to it, is the Japanese version.
+
+---
+This file is regenerated at every session start while such documents exist, and
+is deleted automatically once none are left. It is a generated list, so edits to
+it do not survive the next session.
+"""
+
+
+def check_migration_pending(project_root: str, sdd_dir: str, cfg: SddConfig,
+                            plugin_root: str = "") -> None:
+    """Write (or clear) MIGRATION_PENDING.md from the current legacy doc set.
+
+    Independent of the CLAUDE.md version check: the list is rewritten whenever a
+    persisted v4.x design document is present and removed once none are, so
+    running /sdd-init (which deletes UPDATE_REQUIRED.md) does not lose it.
+    """
+    if not Path(sdd_dir).is_dir():
+        return
+
+    pending_file = Path(sdd_dir) / MIGRATION_PENDING_FILENAME
+    content = build_migration_pending_content(
+        project_root, sdd_dir, cfg, plugin_root,
+    )
+
+    if not content:
+        if pending_file.is_file():
+            pending_file.unlink()
+        return
+
+    pending_file.write_text(content, encoding="utf-8")
+    print(
+        "[AI-SDD] Persisted v4.x design documents found. "
+        f"See {Path(sdd_dir).name}/{MIGRATION_PENDING_FILENAME} for the adr/ "
+        "migration steps.",
+        file=sys.stderr,
+    )
+
+
 def check_claude_md(project_root: str, sdd_dir: str, plugin_version: str) -> None:
+    """Write (or clear) UPDATE_REQUIRED.md for the CLAUDE.md AI-SDD section.
+
+    Scoped to the CLAUDE.md version only: the v4.x -> v5.x document migration
+    list lives in MIGRATION_PENDING.md (see check_migration_pending), because
+    /sdd-init resolves the CLAUDE.md warning but not the migration.
+    """
     if not Path(sdd_dir).is_dir():
         return
 
@@ -328,6 +471,7 @@ def main() -> None:
         rebuild_index(project_root)
 
     check_claude_md(project_root, sdd_dir, plugin_version)
+    check_migration_pending(project_root, sdd_dir, cfg, plugin_root)
 
 
 if __name__ == "__main__":

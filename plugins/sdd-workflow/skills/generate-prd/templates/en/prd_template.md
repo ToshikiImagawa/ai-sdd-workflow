@@ -21,13 +21,14 @@ The filename should be `{feature-name}.md`.
 > When using in a project, customize it according to your project structure and
 > save it as `${SDD_ROOT}/PRD_TEMPLATE.md`.
 
-## Difference from Spec / Design Doc
+## Difference from the Downstream Documents
 
-| Document           | SDD Phase         | Role and Focus                                                                           | Abstraction           |
-|--------------------|-------------------|------------------------------------------------------------------------------------------|-----------------------|
-| `requirement/*.md` | **Specify**       | **"What to build" "Why to build"** - Defines business requirements. No technical details | Highest (Abstract)    |
-| `xxx_spec.md`      | **Specify**       | **"What to build"** - Defines abstract structure and behavior. No technical details      | High (Abstract)       |
-| `xxx_design.md`    | **Plan (Design)** | **"How to implement"** - Concrete technical design. Ensures design decision transparency | Medium-Low (Concrete) |
+| Document                               | SDD Phase              | Role and Focus                                                                            | Abstraction           | Persistence                                  |
+|----------------------------------------|------------------------|-------------------------------------------------------------------------------------------|-----------------------|----------------------------------------------|
+| `requirement/*.md` (this file)         | **Specify**            | **"What to build" "Why to build"** - Defines business requirements. No technical details  | Highest (Abstract)    | **Persistent**                               |
+| `specification/{feature-name}_spec.md` | **Specify**            | **"What to build"** - Defines abstract structure and behavior. No technical details       | High (Abstract)       | **Persistent**                               |
+| `task/{ticket-number}/design-draft.md` | **Plan (Design)**      | **"How to implement"** - Concrete technical plan for one ticket                           | Medium-Low (Concrete) | **Temporary** - deleted after implementation |
+| `adr/{feature-name}.md`                | **Implement & Review** | **"Why it was decided this way"** - Decisions, rationale, and rejected alternatives       | Medium                | **Persistent** (append-only)                 |
 
 ---
 

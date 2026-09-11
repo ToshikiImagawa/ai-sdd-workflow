@@ -26,6 +26,33 @@ For each category, classify clarity as:
 | **Partial** | Concept exists but details missing     | "Handle errors appropriately"       |
 | **Missing** | Not mentioned in specifications        | No mention of authentication flow   |
 
+**Check the implementation before classifying Non-Functional Requirements / Constraints as Partial or
+Missing**: when the target feature's `impl-status` is `implemented` (or it otherwise has real code
+behind it), an apparently undefined threshold, limit, or timeout may already be a concrete decision
+recorded only in the implementation (e.g. a `TIMEOUT_SECONDS` constant, a hard-coded retry count) rather
+than in the spec's prose. Search the relevant implementation (scripts, config defaults, constants) for
+the value before raising a clarification question about it. If the implementation already answers the
+question, classify the category as **Clear** and cite the implementation as the basis instead of
+re-asking something the codebase has already settled. Only when neither the spec nor the implementation
+fixes the value does it remain genuinely ambiguous.
+
+## Category Analysis Summary (Required Output)
+
+Record the Clear / Partial / Missing classification for **all 9 categories**, not only the ones that
+become questions. A category that turns into no question still needs its classification and a one-line
+basis (the specific statement, or its absence, that the classification rests on) recorded in the output.
+Without this, the analysis's actual coverage — which categories were checked and how thoroughly — is
+invisible to the reader, and detection granularity becomes unverifiable run to run.
+
+```markdown
+### Category Analysis Summary
+
+| # | Category               | Classification | Basis                                    |
+|:--|:------------------------|:----------------|:------------------------------------------|
+| 1 | Functional Scope        | Clear/Partial/Missing | {statement, or "not mentioned"}     |
+| ... (all 9 rows) |
+```
+
 ## Question Prioritization
 
 Generate up to 5 high-impact questions prioritizing:

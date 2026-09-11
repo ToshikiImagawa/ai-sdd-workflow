@@ -1,7 +1,7 @@
 ---
 name: finalize-prd
 description: "Finalize and integrate PRD from all artifacts. Use when combining use case diagrams, requirements analysis, and requirements diagrams into a complete PRD, or when called by generate-prd."
-argument-hint: "<feature-name> [--ci]"
+argument-hint: "<feature-name> [--ci] [--amend]"
 license: MIT
 user-invocable: true
 context: fork
@@ -41,6 +41,7 @@ This skill operates in two modes:
 | File                                                    | Purpose                                  |
 |:--------------------------------------------------------|:-----------------------------------------|
 | `references/prerequisites_directory_paths.md`           | Resolve `${SDD_*}` environment variables |
+| `references/id_conventions_config.md`                   | PRD-level ID format resolution algorithm and defaults (Integration Rule 5) |
 
 **Load PRD template** (in order):
 
@@ -51,17 +52,29 @@ This skill operates in two modes:
 
 - `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md` — For principle compliance
 
+**Read project configuration if available:**
+
+- `${CLAUDE_PROJECT_DIR}/.sdd-config.json` — provides `id_conventions`, used in Integration Rule 5 (ID Consistency)
+
 ## Input
 
 $ARGUMENTS
 
-| Argument        | Required | Description                                                    |
-|:----------------|:---------|:---------------------------------------------------------------|
-| `feature-name`  | Yes      | Feature name for the PRD                                       |
-| `usecase-text`  | Yes      | Use case diagram output from generate-usecase-diagram          |
-| `analysis-text` | Yes      | Requirements analysis output from analyze-requirements         |
-| `diagram-text`  | Yes      | Requirements diagram output from generate-requirements-diagram |
-| `--ci`          | -        | CI/non-interactive mode. Skips clarifying questions            |
+| Argument            | Required      | Description                                                    |
+|:--------------------|:--------------|:-----------------------------------------------------------------|
+| `feature-name`      | Yes           | Feature name for the PRD                                       |
+| `usecase-text`      | Yes           | Use case diagram output from generate-usecase-diagram (new actors/use cases only, when `--amend`) |
+| `analysis-text`     | Yes           | Requirements analysis output from analyze-requirements (new UR/FR/NFR only, when `--amend`) |
+| `diagram-text`      | Yes           | Requirements diagram output from generate-requirements-diagram (new nodes/relationships only, when `--amend`) |
+| `--ci`              | -             | CI/non-interactive mode. Skips clarifying questions            |
+| `--amend`           | -             | Amend mode: merge the artifacts above into `existing-prd-text` instead of building a PRD from scratch |
+| `existing-prd-text` | When `--amend` | Full text of the existing PRD to append to                    |
+
+> **Required input missing**: `usecase-text` / `analysis-text` / `diagram-text` are marked Required above because
+> they are the actual new content to integrate — if any is empty, a placeholder, or absent despite the caller
+> claiming to invoke this skill, that is a caller error, not something to fill in by inference. Do not invent
+> UR/FR/NFR content to compensate for missing input. Report the missing input in the output instead, and in
+> `--amend` mode return `existing-prd-text` unchanged rather than fabricating new requirements.
 
 ### Input Format
 
@@ -113,16 +126,11 @@ Preserve template section markers:
 
 ### 5. ID Consistency
 
-Ensure requirement IDs are consistent:
+Ensure requirement IDs are consistent. Resolve each type's ID format per `id_conventions_config.md` § PRD-Level
+ID Format Resolution (default `UR_xxx`, `FR_xxx`, `NFR_xxx`, `IR_xxx`, `DC_xxx`).
 
-| ID Format | Type                       | Example |
-|:----------|:---------------------------|:--------|
-| `UR-xxx`  | User Requirement           | UR-001  |
-| `FR-xxx`  | Functional Requirement     | FR-001  |
-| `NFR-xxx` | Non-Functional Requirement | NFR-001 |
-| `PR-xxx`  | Performance Requirement    | PR-001  |
-| `IR-xxx`  | Interface Requirement      | IR-001  |
-| `DC-xxx`  | Design Constraint          | DC-001  |
+> **Amend Mode (`--amend`)**: New IDs must continue from the existing PRD's maximum per prefix (the caller —
+> `generate-prd` Step 3.5 — computes and passes this). Never renumber or reuse an existing ID.
 
 ### 6. Validate
 
@@ -130,12 +138,46 @@ Check Quality Checks items before returning output.
 
 - If issues found: Fix and repeat from step 2
 
+### 7. Amend Mode Integration (`--amend`)
+
+When `--amend` is set, `existing-prd-text` is the current PRD in full. Build the output by taking that text
+verbatim and inserting only the new content — never regenerate or rewrite sections that already exist.
+
+> Reminder: the caller-error rule under **## Input** above still applies here. If `usecase-text` / `analysis-text` /
+> `diagram-text` were empty or absent, do not invent rows to insert into the tables below — return
+> `existing-prd-text` unchanged.
+
+| Insertion                                    | Where                                                                                        |
+|:-----------------------------------------------|:------------------------------------------------------------------------------------------------|
+| New UR/FR/NFR rows                             | §4 (Detailed Requirements) is prose, not a table (see `templates/{en,ja}/prd_template.md`: `### FR_001: {name}` headings) — append each new requirement as a new `### {ID}: {name}` subsection under the matching §4.x heading, matching the style of existing entries |
+| New requirements diagram nodes & relationships | Appended inside the existing `requirementDiagram` Mermaid block, before its closing code fence |
+| New actors/use cases (if any)                  | Appended inside the existing use case diagram's `subgraph` and tables. If the caller does not specify which existing use case a new `<<include>>`/`<<extend>>` relationship should attach to, default to the use case within the same functional category/`subgraph`, and state that judgment call in the output rather than silently guessing |
+| Front matter                                   | Preserve every existing field except `updated` (today) and `sdd-version` (current plugin version) |
+
+Everything else in `existing-prd-text` — prose, existing IDs, existing diagram nodes, existing front matter
+fields — must come through byte-for-byte unchanged. If the caller did not pass `existing-prd-text`, this is a
+caller error; do not attempt to reconstruct the existing PRD from memory.
+
+If an input artifact carries an attribute that has no corresponding slot in the existing PRD's structure (e.g.
+a `Priority` value when the existing §4 entries are prose that doesn't surface priority per-item), do not drop
+it silently — surface it inline in the new subsection's prose (e.g. as a `- Priority: ...` bullet) instead of
+omitting it.
+
 ## Front Matter Generation Rules
 
 Generated PRDs must include YAML front matter at the top of the file.
 
 See `references/front_matter_prd.md` for full schema definition, dependency direction rules,
 and validation checklist.
+
+### Common Field Rule
+
+| Field         | Rule                                                                                                                       |
+|:--------------|:-----------------------------------------------------------------------------------------------------------------------------|
+| `sdd-version` | Set to the sdd-workflow plugin's current version — read `version` from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` |
+
+> **Amend Mode (`--amend`)**: Do not regenerate any field below. Keep the existing PRD's front matter values as-is
+> except `updated` (today) and `sdd-version` (refresh per the rule above).
 
 ### PRD-Specific Field Rules
 
@@ -166,6 +208,9 @@ The caller (generate-prd) is responsible for:
 - Saving the output to `${CLAUDE_PROJECT_DIR}/${SDD_REQUIREMENT_PATH}/{feature-name}.md`
 - Running prd-reviewer for compliance check
 
+> **Amend Mode (`--amend`)**: The returned text is the full merged PRD (existing content + new insertions from
+> Rule 7 above), ready for the caller to save in place — not just the new fragment.
+
 ## Quality Checks
 
 Before returning output, verify:
@@ -177,6 +222,7 @@ Before returning output, verify:
 - [ ] Traceability is maintained (FR → UR)
 - [ ] Language is consistent throughout
 - [ ] Template structure is preserved
+- [ ] (`--amend` only) `existing-prd-text` content is preserved unchanged outside the insertion points listed in Rule 7
 
 ## Notes
 

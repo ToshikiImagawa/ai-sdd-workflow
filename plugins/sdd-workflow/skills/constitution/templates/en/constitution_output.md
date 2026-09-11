@@ -35,8 +35,8 @@ v1.2.0
 
 ### Verification Target
 
-- `${SDD_SPECIFICATION_PATH}/**/*_spec.md` (15 files)
-- `${SDD_SPECIFICATION_PATH}/**/*_design.md` (15 files)
+- `${SDD_SPECIFICATION_PATH}/**/*.md` - abstract specs, `_spec` suffix optional (15 files)
+- `${SDD_SPECIFICATION_PATH}/**/*_design.md` - v4.x persistent design docs, when present (15 files)
 - Template files (2 files)
 
 ### Verification Summary

@@ -19,6 +19,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 from hook_common import resolve_project_root  # noqa: E402
 from env_export import rewrite_exports  # noqa: E402
 
+# Comment written above the cache entry appended to the project's .gitignore.
+GITIGNORE_COMMENT = "# AI-SDD generated cache (not intended to be committed)"
+
 
 def log(message: str) -> None:
     """Print log message to stderr"""
@@ -57,6 +60,7 @@ def read_config(config_file: Path) -> dict:
         "root": config.get("root") or ".sdd",
         "requirement": directories.get("requirement") or "requirement",
         "specification": directories.get("specification") or "specification",
+        "adr": directories.get("adr") or "adr",
         "task": directories.get("task") or "task",
         "lang": config.get("lang") or "en",
     }
@@ -68,6 +72,7 @@ def copy_templates(sdd_dir: Path, plugin_root: Path, sdd_lang: str) -> None:
 
     generate_prd_skill = plugin_root / "skills" / "generate-prd"
     generate_spec_skill = plugin_root / "skills" / "generate-spec"
+    sdd_init_skill = plugin_root / "skills" / "sdd-init"
 
     # Template mappings (target -> source)
     # Note: CONSTITUTION.md is NOT copied here - it should be generated via
@@ -84,6 +89,10 @@ def copy_templates(sdd_dir: Path, plugin_root: Path, sdd_lang: str) -> None:
         (
             sdd_dir / "DESIGN_DOC_TEMPLATE.md",
             generate_spec_skill / "templates" / sdd_lang / "design_template.md",
+        ),
+        (
+            sdd_dir / "ADR_TEMPLATE.md",
+            sdd_init_skill / "templates" / sdd_lang / "adr_template.md",
         ),
     ]
 
@@ -104,20 +113,62 @@ def copy_templates(sdd_dir: Path, plugin_root: Path, sdd_lang: str) -> None:
     log(f"Templates copied: {copied_count}, skipped: {skipped_count}")
 
 
+def _normalize_gitignore_line(line: str) -> str:
+    """Reduce a .gitignore line to a comparable path form ('' for blanks/comments/negations)"""
+    stripped = line.strip()
+    if not stripped or stripped.startswith("#") or stripped.startswith("!"):
+        return ""
+    return stripped.lstrip("/").rstrip("/")
+
+
+def update_gitignore(project_root: Path, sdd_root: str) -> None:
+    """Add the cache directory to .gitignore, idempotently.
+
+    The cache under ${SDD_ROOT}/.cache/ is a generated artifact, so it is ignored by git.
+    An existing .gitignore is only appended to (never rewritten), and the entry is added
+    at most once. When .gitignore does not exist it is created with just this entry.
+    """
+    entry = f"{sdd_root}/.cache/"
+    target = _normalize_gitignore_line(entry)
+    gitignore = project_root / ".gitignore"
+
+    if gitignore.is_file():
+        content = gitignore.read_text(encoding="utf-8")
+        if any(_normalize_gitignore_line(line) == target for line in content.splitlines()):
+            log(f"Skipped (already in .gitignore): {entry}")
+            return
+
+        block = f"{GITIGNORE_COMMENT}\n{entry}\n"
+        if content.strip() == "":
+            updated = block
+        else:
+            separator = "" if content.endswith("\n") else "\n"
+            updated = f"{content}{separator}\n{block}"
+        gitignore.write_text(updated, encoding="utf-8")
+        log(f"Appended to .gitignore: {entry}")
+        return
+
+    gitignore.write_text(f"{GITIGNORE_COMMENT}\n{entry}\n", encoding="utf-8")
+    log(f"Created .gitignore with: {entry}")
+
+
 def export_env_vars(config: dict) -> None:
     """Export SDD_* environment variables to CLAUDE_ENV_FILE"""
     sdd_root = config["root"]
     requirement = config["requirement"]
     specification = config["specification"]
+    adr = config["adr"]
     task = config["task"]
 
     wrote = rewrite_exports("SDD_", [
         f'export SDD_ROOT="{sdd_root}"',
         f'export SDD_REQUIREMENT_DIR="{requirement}"',
         f'export SDD_SPECIFICATION_DIR="{specification}"',
+        f'export SDD_ADR_DIR="{adr}"',
         f'export SDD_TASK_DIR="{task}"',
         f'export SDD_REQUIREMENT_PATH="{sdd_root}/{requirement}"',
         f'export SDD_SPECIFICATION_PATH="{sdd_root}/{specification}"',
+        f'export SDD_ADR_PATH="{sdd_root}/{adr}"',
         f'export SDD_TASK_PATH="{sdd_root}/{task}"',
         f'export SDD_LANG="{config["lang"]}"',
     ])
@@ -142,19 +193,22 @@ def main() -> None:
     log(f"Root directory ready: {sdd_root}/")
     log(
         f"Note: Subdirectories ({config['requirement']}, {config['specification']}, "
-        f"{config['task']}) will be created automatically when files are generated"
+        f"{config['adr']}, {config['task']}) will be created automatically when files are generated"
     )
 
     # --- Phase 2: Copy templates (if not exist) ---
     copy_templates(sdd_dir, plugin_root, config["lang"])
 
-    # --- Phase 3: Cleanup ---
+    # --- Phase 3: Ignore the generated cache directory ---
+    update_gitignore(project_root, sdd_root)
+
+    # --- Phase 4: Cleanup ---
     update_required_file = sdd_dir / "UPDATE_REQUIRED.md"
     if update_required_file.is_file():
         update_required_file.unlink()
         log("Deleted: UPDATE_REQUIRED.md")
 
-    # --- Phase 4: Export environment variables to CLAUDE_ENV_FILE ---
+    # --- Phase 5: Export environment variables to CLAUDE_ENV_FILE ---
     # Note: These variables are already set by session-start.py, but we ensure they're current
     export_env_vars(config)
 

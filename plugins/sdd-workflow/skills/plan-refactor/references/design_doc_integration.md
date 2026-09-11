@@ -1,19 +1,29 @@
-# Design Document Integration Guide
+# Design Draft Integration Guide
 
-This guide explains how to integrate refactoring plans into existing design documents for the `/plan-refactor` skill.
+This guide explains how to integrate refactoring plans into the ticket-scoped Design Doc draft for the
+`/plan-refactor` skill.
 
 ## Overview
 
-Refactoring plans should be added to the **existing design document** (`*_design.md`) rather than creating separate files. This maintains traceability and keeps all design information in one place.
+Refactoring plans are added to the **Design Doc draft** at `task/{ticket-number}/design-draft.md` rather than to a
+separate file — and never to a document under `specification/`. The draft is where the technical "how" of a ticket
+lives, and the refactoring plan is exactly that.
+
+Both are **temporary**: they are deleted once implementation completes and the settled decisions have been appended
+to `adr/{feature-name}.md`. That is why the plan must state its decisions explicitly enough to survive the move
+(see "Decision Log Hand-off" below).
+
+`specification/` holds only the abstract spec. A `{feature-name}_design.md` left there by v4.x is read-only reading
+context — do not append the plan to it, and do not create a new one.
 
 ## Placement Rules
 
-### When Design Doc Exists
+### When the Design Draft Exists
 
-**Add as new section** at the end of the document:
+**Add as new section** at the end of the draft:
 
 ```markdown
-# {Feature Name} - Technical Design Document
+# {Feature Name} - Technical Design Draft
 
 ## Design Overview
 ...
@@ -39,10 +49,14 @@ Refactoring plans should be added to the **existing design document** (`*_design
 ...
 ```
 
-### When Design Doc Does Not Exist
+If a `## Refactoring Plan` section is already present, replace it rather than appending a second one.
 
-1. **Generate design doc** using reverse-engineering
-2. **Add Refactoring Plan section** immediately after standard sections
+### When the Design Draft Does Not Exist
+
+1. **Create the draft** at `task/{ticket-number}/design-draft.md` from
+   `templates/${SDD_LANG}/reverse_design_template.md`, filled in from the spec (Case A) or from the
+   reverse-engineering analysis (Case B)
+2. **Add the Refactoring Plan section** immediately after the standard sections
 
 ## Section Structure
 
@@ -57,15 +71,15 @@ The Refactoring Plan section should include:
 7. **Success Criteria** - Metrics, acceptance criteria
 8. **Risks and Mitigations** - Potential issues and how to handle them
 9. **Timeline and Milestones** - Target dates and owners
-10. **References** - Links to PRD, spec, patterns
+10. **References** - Links to PRD, spec, patterns, decision log
 
-See `templates/${SDD_LANG}/refactor-plan-section.md` for full template.
+See `templates/${SDD_LANG}/refactor_plan_section.md` for the full template.
 
 ## Integration with Other Sections
 
 ### Linking to Existing Sections
 
-When writing the Refactoring Plan, reference existing sections in the design doc:
+When writing the Refactoring Plan, reference the draft's own sections and the spec:
 
 ```markdown
 ### Current State Analysis
@@ -74,12 +88,12 @@ When writing the Refactoring Plan, reference existing sections in the design doc
 
 1. **High Coupling** (See "Architecture" section above)
    - Description: Components X and Y are tightly coupled
-   - Location: `src/x.ts:45`, referenced in design doc's Component Structure
+   - Location: `src/x.ts:45`, referenced in the draft's Component Structure
 ```
 
 ### Updating Existing Sections
 
-After refactoring is complete, update relevant sections:
+As the refactoring progresses, keep the draft's own sections current:
 
 **Before Refactoring:**
 ```markdown
@@ -98,10 +112,22 @@ After refactoring is complete, update relevant sections:
 
 - `LoginService`: Handles authentication only (session management extracted)
 - `SessionManager`: Manages user sessions (extracted from LoginService)
-
-**Refactoring History:**
-- 2026-02-20: Extracted SessionManager from LoginService (See Refactoring Plan below)
 ```
+
+Do not keep a "Refactoring History" list in the draft — the draft is discarded, so history belongs in
+`adr/{feature-name}.md`.
+
+## Decision Log Hand-off
+
+The plan is a proposal; implementation may change it. Only **settled** decisions are persisted, and only after
+implementation:
+
+1. `/task-cleanup` reads `task/{ticket-number}/` (including `design-draft.md`)
+2. It appends the decisions, their rationale, and the rejected alternatives to `adr/{feature-name}.md` (append-only)
+3. It then deletes `task/{ticket-number}/`
+
+So write the plan's "Refactoring Strategy" and "Impact Analysis" sections in a form that can be lifted into a
+decision log: name the approach chosen, the alternatives rejected, and why.
 
 ## Version Control Best Practices
 
@@ -110,19 +136,21 @@ After refactoring is complete, update relevant sections:
 When adding a refactoring plan:
 
 ```bash
-git add .sdd/specification/{feature-name}_design.md
-git commit -m "[add] リファクタリング計画を {feature-name}_design.md に追加
+git add .sdd/task/{ticket-number}/design-draft.md
+git commit -m "[add] リファクタリング計画を design-draft.md に追加
 
 - 現状分析: {brief summary}
 - 戦略: {approach}
 - フェーズ: {number of phases}
-
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+"
 ```
+
+Whether `task/` is committed at all is a project decision: it is a temporary directory, and some projects keep it
+out of version control. Follow the project's existing practice.
 
 ### Tracking Changes
 
-Use comments to track when refactoring plans are updated:
+Use a status header to track where the plan stands:
 
 ```markdown
 ## Refactoring Plan
@@ -130,30 +158,37 @@ Use comments to track when refactoring plans are updated:
 > **Last Updated:** 2026-02-20
 > **Status:** In Progress (Phase 2 of 4)
 > **Owner:** @alice
-
-### Changelog
-
-- **2026-02-20**: Phase 1 completed, updated metrics
-- **2026-02-15**: Initial plan created
 ```
 
 ## File Naming Conventions
 
 **IMPORTANT:** Follow the established naming conventions:
 
-| Directory | File Type | Naming Pattern |
-|:--|:--|:--|
-| `requirement/` | PRD | `{feature-name}.md` (no suffix) |
-| `specification/` | Spec | `{feature-name}_spec.md` (`_spec` suffix required) |
-| `specification/` | Design | `{feature-name}_design.md` (`_design` suffix required) |
+| Directory        | File Type    | Naming Pattern                                                |
+|:-----------------|:-------------|:--------------------------------------------------------------|
+| `requirement/`   | PRD          | `{feature-name}.md` (no suffix)                               |
+| `specification/` | Spec         | `{feature-name}_spec.md` (`_spec` suffix optional)            |
+| `task/`          | Design draft | `{ticket-number}/design-draft.md` (fixed filename, temporary) |
+| `adr/`           | Decision log | `{feature-name}.md` (`-decisions` suffix optional)            |
 
 **Examples:**
 
-- ✅ `.sdd/specification/auth_design.md`
-- ❌ `.sdd/specification/auth-design.md` (wrong separator)
-- ❌ `.sdd/specification/auth_refactor.md` (separate file not recommended)
+- ✅ `.sdd/task/68/design-draft.md`
+- ✅ `.sdd/specification/auth_spec.md`
+- 🕘 `.sdd/specification/auth_design.md` — legacy naming (v4.x): still valid for an existing file, do not
+  create a new one
+- ❌ `.sdd/task/68/auth_design.md` (the draft filename is fixed)
+- ❌ `.sdd/specification/auth_refactor.md` (separate plan file not supported)
+
+**v4.x persistent design docs (`specification/*_design.md`)**: a project that started on AI-SDD v4.x may
+still contain these. They **remain valid** — read them as **supplementary input, and treat their absence as
+normal**. Do not create new ones (new technical design goes to `task/{ticket-number}/design-draft.md`), and
+never report an existing one as a naming violation or propose deleting it; it may stay until its decisions
+have been migrated to `adr/{feature}.md`.
 
 ## Hierarchical Structure Support
+
+The **spec** supports flat and hierarchical layouts; the design draft path is always ticket-scoped and flat.
 
 ### Flat Structure
 
@@ -161,9 +196,13 @@ Use comments to track when refactoring plans are updated:
 .sdd/
 ├── requirement/
 │   └── auth.md
-└── specification/
-    ├── auth_spec.md
-    └── auth_design.md ← Add Refactoring Plan here
+├── specification/
+│   └── auth_spec.md
+├── task/
+│   └── 68/
+│       └── design-draft.md ← Add Refactoring Plan here
+└── adr/
+    └── auth.md             ← Settled decisions land here after cleanup
 ```
 
 ### Hierarchical Structure (Parent Feature)
@@ -173,10 +212,15 @@ Use comments to track when refactoring plans are updated:
 ├── requirement/
 │   └── auth/
 │       └── index.md
-└── specification/
+├── specification/
+│   └── auth/
+│       └── index_spec.md
+├── task/
+│   └── 68/
+│       └── design-draft.md ← Add Refactoring Plan here
+└── adr/
     └── auth/
-        ├── index_spec.md
-        └── index_design.md ← Add Refactoring Plan here
+        └── index.md
 ```
 
 ### Hierarchical Structure (Child Feature)
@@ -187,72 +231,75 @@ Use comments to track when refactoring plans are updated:
 │   └── auth/
 │       ├── index.md (parent PRD)
 │       └── login.md (child PRD)
-└── specification/
+├── specification/
+│   └── auth/
+│       ├── index_spec.md (parent spec)
+│       └── login_spec.md (child spec)
+├── task/
+│   └── 68/
+│       └── design-draft.md ← Add Refactoring Plan here
+└── adr/
     └── auth/
-        ├── index_design.md (parent design)
-        └── login_design.md ← Add Refactoring Plan here (child design)
+        └── login.md
 ```
 
 ## Multi-Feature Refactoring
 
-When refactoring affects multiple features:
+When refactoring affects multiple features, the plan still lives in a single place — the ticket's draft:
 
-### Option 1: Add to Each Feature's Design Doc
-
-If refactoring affects features A and B:
-
-1. Add Refactoring Plan to `feature-a_design.md`
-2. Add cross-reference in `feature-b_design.md`:
+1. Keep one Refactoring Plan per ticket in `task/{ticket-number}/design-draft.md`
+2. Name every affected feature in the plan's "Affected Components" table, with its spec path:
 
 ```markdown
-## Related Refactoring
+### Impact Analysis
 
-This feature is affected by refactoring work documented in:
-- `feature-a_design.md` - Refactoring Plan section
+**Affected Components:**
+
+| Component | Spec | Impact | Mitigation |
+|:--|:--|:--|:--|
+| `LoginService` | `specification/auth_spec.md` | Constructor signature changes | Update all instantiation sites |
+| `ProfileService` | `specification/profile_spec.md` | Reads sessions via the new interface | Update imports |
 ```
 
-### Option 2: Create Parent Feature
+3. At cleanup time, append the decisions to each affected feature's decision log (`adr/auth.md`,
+   `adr/profile.md`), so each feature's history is complete on its own
 
-If refactoring is large enough:
-
-1. Create parent feature (e.g., `auth/`)
-2. Add Refactoring Plan to `auth/index_design.md`
-3. Reference from child features
+If the work is large enough to need its own requirement, that is a PRD-level split — not a second plan file.
 
 ## Post-Refactoring Cleanup
 
 After refactoring is complete:
 
-1. **Update Refactoring Plan section** with "Completed" status
-2. **Archive old implementation notes** (move to end or remove)
-3. **Update main sections** to reflect new architecture
-4. **Clean up task logs** (`task/` directory) after implementation
+1. **Update the Refactoring Plan section** with "Completed" status
+2. **Update the draft's main sections** to reflect the new architecture
+3. **Update the spec** if the refactoring changed the feature's abstract behavior (see `task-cleanup`'s
+   "When to Update `*_spec.md`" criteria)
+4. **Run `/task-cleanup`** to append the settled decisions to `adr/{feature-name}.md` and delete
+   `task/{ticket-number}/`
 
-**Example:**
+**Example of what lands in the decision log:**
 
 ```markdown
-## Refactoring Plan
+## 2026-03-01: Decoupled session management from authentication
 
-> **Status:** ✅ Completed on 2026-03-01
-> **Original Issue:** High coupling between auth and session modules
-> **Result:** Successfully decoupled, test coverage increased from 45% to 85%
+**Decision**: Extract `ISessionManager` and inject it into `LoginService`.
 
-<details>
-<summary>View Original Plan (Archived)</summary>
+**Rationale**: `LoginService` instantiated `SessionManager` directly, so auth logic could not be unit tested
+without a database. Test coverage went from 45% to 85% after the change.
 
-### Purpose and Background
-...
-
-</details>
+**Rejected alternatives**:
+- Service locator — hides the dependency and keeps tests coupled to global state
+- Keep the coupling, add integration tests only — leaves a 5s-per-test suite
 ```
 
 ## References
 
-- See `templates/${SDD_LANG}/refactor-plan-section.md` for full template
-- See `references/refactor-patterns.md` for refactoring techniques
-- See AI-SDD-PRINCIPLES.md for document structure guidelines
+- See `templates/${SDD_LANG}/refactor_plan_section.md` for the full plan template
+- See `references/refactor_patterns.md` for refactoring techniques
+- See AI-SDD-PRINCIPLES.md for the document structure and persistence rules
+- See the `task-cleanup` skill for the `adr/` integration it performs
 
 ---
 
-**Last Updated:** 2026-02-15
+**Last Updated:** 2026-09-02
 **Maintained by:** AI-SDD plan-refactor skill

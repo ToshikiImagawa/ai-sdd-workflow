@@ -124,8 +124,9 @@ Higher priority principles take precedence over lower ones.
 
 **Verification**:
 
-- [ ] `*_spec.md` exists
-- [ ] `*_design.md` exists
+- [ ] The abstract spec exists under `specification/` (`{feature-name}.md` or `{feature-name}_spec.md`)
+- [ ] The technical design exists as `task/{ticket-number}/design-draft.md` while the ticket is open
+- [ ] The decisions are recorded in `adr/{feature-name}.md` once the ticket is cleaned up
 
 ---
 

@@ -15,6 +15,7 @@ and cross-reference validation.
 | `status`     | string | Yes      | Current status                                        |
 | `created`    | string | Yes      | Creation date (YYYY-MM-DD)                            |
 | `updated`    | string | Yes      | Last update date (YYYY-MM-DD)                         |
+| `sdd-version` | string | No      | sdd-workflow plugin version at generation time (e.g., `"5.0.0"`), read from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`. Absent in documents generated before this field was introduced |
 | `depends-on` | list   | No       | IDs of upstream documents                             |
 | `tags`       | list   | No       | Keywords for search/filtering                         |
 | `category`   | string | No       | Feature category                                      |

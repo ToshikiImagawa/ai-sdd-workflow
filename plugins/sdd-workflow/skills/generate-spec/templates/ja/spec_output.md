@@ -2,10 +2,14 @@
 
 ### 生成されたファイル
 
-- [x] `${SDD_SPECIFICATION_PATH}/[{親機能名}/]{機能名}_spec.md`（抽象仕様書）
-- [x] `${SDD_SPECIFICATION_PATH}/[{親機能名}/]{機能名}_design.md`（技術設計書）
+- [x] `${SDD_SPECIFICATION_PATH}/[{親機能名}/]{機能名}_spec.md`（抽象仕様書・永続）
+- [x] `${SDD_TASK_PATH}/{ticket-number}/design-draft.md`（技術設計書ドラフト・一時。重要な決定を
+  `${SDD_ADR_PATH}/{機能名}.md` へ追記したうえで実装完了後に削除する）
 
-※ 階層構造の場合、親機能は `index_spec.md`、`index_design.md`
+※ 階層構造の場合、親機能は `index_spec.md`。design draft はチケット単位なのでパスは両構造で同じ
+
+※ 実際に書き込んだファイルだけを列挙する。Design Doc 生成をスキップした場合（「Design Doc 生成のスキップ」参照）は
+その行を削除し、スキップした理由を記載する
 
 ### CONSTITUTION.md 準拠チェック結果
 
@@ -32,9 +36,11 @@
 
 ### 次のステップ
 
-1. 生成された仕様書・設計書の内容を確認
-2. `/task_breakdown` でタスクに分解
+1. 生成された仕様書・設計ドラフトの内容を確認
+2. `/task-breakdown {機能名} {ticket-number}` でタスクに分解
 3. 実装開始前に `/clarify` で明確度を確認
+4. 実装完了後、`/task-cleanup {ticket-number}` が重要な決定を `${SDD_ADR_PATH}/{機能名}.md` へ追記し、
+   ドラフトを削除する
 
 ### 推奨する手動検証
 
@@ -45,11 +51,11 @@
 ### 検証コマンド
 
 ```bash
-# 整合性チェック（design ↔ 実装）
-/check_spec {機能名}
+# 整合性チェック（spec ↔ 実装）— 実装が存在する段階で実行する
+/check-spec {機能名}
 
-# 包括的レビュー（ドキュメント間整合性 + 品質）
-/check_spec {機能名} --full
+# 包括的レビュー（ドキュメント間整合性: PRD ↔ spec ↔ adr + 品質）
+/check-spec {機能名} --full
 
 # 仕様の明確度スキャン
 /clarify {機能名}

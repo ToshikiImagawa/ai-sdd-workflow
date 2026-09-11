@@ -15,6 +15,7 @@ and cross-reference validation.
 | `status`     | string | Yes      | Current status                                        |
 | `created`    | string | Yes      | Creation date (YYYY-MM-DD)                            |
 | `updated`    | string | Yes      | Last update date (YYYY-MM-DD)                         |
+| `sdd-version` | string | No      | sdd-workflow plugin version at generation time (e.g., `"5.0.0"`), read from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`. Absent in documents generated before this field was introduced |
 | `depends-on` | list   | No       | IDs of upstream documents                             |
 | `tags`       | list   | No       | Keywords for search/filtering                         |
 | `category`   | string | No       | Feature category                                      |
@@ -77,3 +78,7 @@ pending → cancelled
 - Do **not** treat missing front matter as a violation.
 - When generating new documents, always include front matter.
 - When updating existing documents that lack front matter, do not add it unless explicitly requested.
+- task-breakdown's typical operation — converting an existing informal/unstructured `tasks.md` into individual
+  structured task documents — counts as *generating new documents* (the individual task files did not exist
+  before), so the "always include front matter" rule above applies. This is not "updating an existing document
+  that lacks front matter."

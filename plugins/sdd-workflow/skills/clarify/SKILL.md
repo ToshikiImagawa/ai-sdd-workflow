@@ -1,8 +1,8 @@
 ---
 name: clarify
 description: "Analyze specifications and generate clarification questions to eliminate ambiguity before implementation"
-argument-hint: "<feature-name> [--interactive]"
-arguments: [feature-name]
+argument-hint: "<feature-name> [ticket-number] [--interactive]"
+arguments: [feature-name, ticket-number]
 license: MIT
 user-invocable: true
 allowed-tools: Read, Glob, Grep, AskUserQuestion, Edit(.sdd/**)
@@ -22,6 +22,11 @@ before implementation.
 - `references/prerequisites_principles.md` - Read AI-SDD principles document
 - `references/prerequisites_directory_paths.md` - Resolve directory paths using `SDD_*` environment variables
 
+**PRD is out of scope for edits**: Although `allowed-tools` grants `Edit(.sdd/**)`, this skill only edits
+`*_spec.md` / `task/{ticket-number}/design-draft.md`. Never write to `requirement/**` — see
+AI-SDD-PRINCIPLES.md § Document Update
+Triggers ("Updating `requirement/` (PRD) — Never Automated").
+
 ### Relationship to Vibe Detector Skill
 
 This command is complementary to the `vibe-detector` skill:
@@ -39,17 +44,30 @@ The `SDD_LANG` environment variable determines the language (default: `en`).
 ## Input
 
 - `feature-name`: $feature-name
+- `ticket-number`: $ticket-number
 
 Full argument string: $ARGUMENTS
 
-> **Fallback**: If the value above is empty, remains a literal `$` placeholder, or starts with `--`
-> (a flag captured positionally), treat the argument as omitted and interpret the full argument
+> **Fallback**: If a value above is empty, remains a literal `$` placeholder, or starts with `--`
+> (a flag captured positionally), treat that argument as omitted and interpret the full argument
 > string instead. Ask the user interactively when a required argument is missing.
 
 | Argument        | Required | Description                                                        |
 |:----------------|:---------|:-------------------------------------------------------------------|
 | `feature-name`  | Yes      | Target feature name or path (e.g., `user-auth`, `auth/user-login`) |
+| `ticket-number` | -        | Locates the design draft `task/{ticket-number}/design-draft.md`. Omit to analyze the PRD, the spec, and any v4.x persistent design doc only |
 | `--interactive` | -        | Interactive mode: Answer questions one at a time                   |
+
+`ticket-number` may be passed positionally (`/clarify {feature-name} {ticket-number}`) or as a flag; both
+spellings — `--ticket {number}` and `--ticket={number}` — are accepted and mean the same thing.
+
+**When `ticket-number` is omitted**, no design draft is looked up at all: the analysis runs on the PRD, the
+abstract spec, and any v4.x persistent design doc (resolved from `feature-name`, so it is still consulted),
+and design-level categories are otherwise limited to what those documents express. This is a supported
+mode, not an error — but state it in the output ("no `ticket-number` given, so
+`task/{ticket-number}/design-draft.md` was not consulted") so the reduced coverage is visible. When a
+`ticket-number` *is* given and the draft is missing there, that is also normal (the draft is deleted once
+implementation completes) — report the resolved path and continue rather than prompting for regeneration.
 
 ### Input Examples
 
@@ -61,12 +79,28 @@ Full argument string: $ARGUMENTS
 
 Both flat and hierarchical structures are supported.
 
-See `references/target_specification_loading.md` for the list of paths to load for flat and hierarchical structures.
+See `references/target_specification_loading.md` for the list of paths to load, including how the design draft
+is resolved and what to do when it is absent.
+
+In addition to the paths listed there, load the v4.x persistent design doc when the project has one:
+`${CLAUDE_PROJECT_DIR}/${SDD_SPECIFICATION_PATH}/[{parent-feature}/]{feature-name}_design.md` (parent
+features use `index_design.md`). Its path follows the spec's flat/hierarchical structure and is resolved from
+`feature-name`, not from `ticket-number`.
+
+**v4.x persistent design docs (`specification/*_design.md`)**: a project that started on AI-SDD v4.x may
+still contain these. They **remain valid** — read them as **supplementary input, and treat their absence as
+normal**. Do not create new ones (new technical design goes to `task/{ticket-number}/design-draft.md`), and
+never report an existing one as a naming violation or propose deleting it; it may stay until its decisions
+have been migrated to `adr/{feature}.md`. When `task/{ticket-number}/design-draft.md` is absent (or
+`ticket-number` was omitted) but such a file exists, analyze the design-level categories against it instead
+of limiting them to what the spec expresses.
 
 **Note the difference in naming conventions**:
 
 - **Under requirement**: No suffix (`index.md`, `{feature-name}.md`)
-- **Under specification**: `_spec` or `_design` suffix required (`index_spec.md`, `{feature-name}_spec.md`)
+- **Under specification**: `_spec` suffix optional (`index_spec.md`, `{feature-name}_spec.md`, or no suffix).
+  A `_design.md` sibling here is a v4.x persistent design doc — still valid, see above
+- **Under task**: Design draft uses the fixed filename `design-draft.md`
 
 ### 2. Nine Category Analysis
 
@@ -87,7 +121,12 @@ Based on category analysis, generate up to 5 high-impact questions using the for
 After receiving user answers, the **main agent (this skill)** applies the integration:
 
 1. **Review Integration Proposals**: Review proposals from `clarification-assistant` agent output
-2. **Update Specifications**: Apply approved changes to appropriate `*_spec.md` or `*_design.md` using Edit/Write tools
+2. **Update Specifications**: Apply approved changes to the appropriate `*_spec.md` or
+   `task/{ticket-number}/design-draft.md` using Edit/Write tools (never `requirement/**` — see Prerequisites).
+   When the design draft is absent, integrate design-related answers into the `*_spec.md` only where they
+   belong at the abstract level; otherwise report them as findings rather than recreating the draft. A v4.x
+   persistent design doc is a **read-only** supplementary input here — it may inform the analysis, but never
+   receives integration edits; report answers that belong to it as findings instead
 3. **Mark Resolved**: Track which questions have been addressed
 4. **Generate Diff**: Show what was added to specifications
 

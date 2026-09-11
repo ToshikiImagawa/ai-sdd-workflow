@@ -96,8 +96,19 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 このコマンドは自動的に:
 
 - プロジェクトの `CLAUDE.md` に AI-SDD Instructions セクションを追加
-- `.sdd/` ディレクトリ構造を作成（requirement/, specification/, task/）
-- PRD、仕様書、設計書のテンプレートファイルを生成
+- `.sdd/` ルートディレクトリを作成。`requirement/`・`specification/`・`adr/`・`task/` の各サブディレクトリは
+  事前には作成**されず**、最初のファイルが書き込まれた時点で自動的に作成されます
+- PRD、仕様書、設計書、決定ログ（ADR）のテンプレートファイルを生成
+- プロジェクトの `.gitignore` に `.sdd/.cache/`（カスタム root の場合は `${SDD_ROOT}/.cache/`）を追加。
+  このディレクトリは生成物のためです。既存の行は書き換えられず、エントリが末尾に1回だけ追記されます
+  （`.gitignore` が無い場合はこのエントリだけで新規作成）。再実行しても追加されず、無視されるのは
+  `.cache/` のみで、`.sdd/` 配下のドキュメントは追跡対象のまま残ります
+
+`/sdd-init` の再実行はいつでも安全です。既存のテンプレートファイルは上書きされずスキップされ、
+`.gitignore` のエントリも重複しません。
+
+`CONSTITUTION.md` は `/sdd-init` では生成**されません**。汎用テンプレートのコピーではなくプロジェクトに
+合わせて作成するため、`/constitution init` を実行してください。
 
 ## 含まれるコンポーネント
 
@@ -106,10 +117,10 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 | エージェント                    | 説明                                                            |
 |:--------------------------|:--------------------------------------------------------------|
 | `prd-reviewer`            | PRD の品質と CONSTITUTION.md 準拠をレビュー。違反に対する修正提案を生成                |
-| `spec-reviewer`           | 仕様書の品質と CONSTITUTION.md 準拠をレビュー。違反に対する修正提案を生成                 |
+| `spec-reviewer`           | 仕様書・設計ドラフトの品質、CONSTITUTION.md 準拠、spec ↔ adr の決定整合をレビュー。違反に対する修正提案を生成 |
 | `requirement-analyzer`    | SysML 要件図ベースの分析、要件のトレーサビリティと検証                                |
 | `clarification-assistant` | 仕様明確化支援。9つのカテゴリで要件を分析し、統合提案を出力                                |
-| `front-matter-reviewer`   | AI-SDD ドキュメントの YAML front matter を検証。フィールド形式、依存方向、ID 一意性をチェック |
+| `front-matter-reviewer`   | AI-SDD ドキュメントの YAML front matter を検証。フィールド形式、依存方向、ADR のファイル単位 supersede ポインタ、ID 一意性をチェック |
 | `cross-prd-reviewer`      | 複数 PRD 間の整合性をレビュー。カテゴリ境界、用語、スタイル、原則参照網羅性をチェック                 |
 
 ### スキル（ユーザー起動可能）
@@ -118,17 +129,18 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 |:---------------------------------|:-------------------------------------------------------------|
 | `/sdd-init`                      | AI-SDD ワークフロー初期化。CLAUDE.md セットアップとテンプレート生成                   |
 | `/generate-spec`                 | 入力から抽象仕様書と技術設計書を生成                                           |
-| `/generate-prd`                  | ビジネス要件から SysML 要件図形式の PRD（要求仕様書）を生成                          |
-| `/check-spec`                    | 実装コードと仕様書の整合性をチェックし、不整合を検出                                   |
-| `/task-cleanup`                  | 実装完了後の task/ ディレクトリをクリーンアップし、設計判断を統合                         |
-| `/task-breakdown`                | 技術設計書からタスクを小タスクのリストに分解                                       |
+| `/generate-prd`                  | ビジネス要件から完全な PRD（要求仕様書）を生成。ユースケース図・UR/FR/NFR 分析・SysML 要件図を含む   |
+| `/check-spec`                    | 実装コードと抽象仕様書（spec）の整合性をチェックし、不整合を検出                            |
+| `/task-cleanup`                  | 実装完了後の task/ ディレクトリをクリーンアップし、設計判断と却下した代替案を削除前に `adr/{feature-name}.md` へ統合 |
+| `/render-adr-review`             | ADR決定ログを決定・理由・却下した代替案の軸で構造化した一時レビューHTMLとしてレンダリング              |
+| `/task-breakdown`                | 技術設計ドラフトからタスクを独立にテスト可能な小タスクのリストに分解                          |
 | `/clarify`                       | 仕様を9つのカテゴリでスキャンし、曖昧さを明確化するための質問を生成                           |
 | `/implement`                     | TDD ベースの5フェーズ実装。TaskList で進捗を追跡し、tasks.md に自動マーク             |
-| `/checklist`                     | 仕様書と設計書から9カテゴリの品質チェックリストを自動生成                                |
+| `/checklist`                     | 仕様書と計画から9カテゴリの品質チェックリストを構造化IDつきで自動生成                         |
 | `/run-checklist`                 | チェックリスト項目をテスト、リンター、セキュリティスキャンで自動検証                           |
 | `/constitution`                  | プロジェクトの非交渉可能な原則（constitution）を定義・管理                          |
-| `/recommend-front-matter`        | 既存の AI-SDD ドキュメントをスキャンし、構造化メタデータのための YAML front matter 追加を推奨 |
-| `/plan-refactor`                 | 既存機能のリファクタリング計画。実装を分析し、設計ドキュメントを作成・更新                        |
+| `/recommend-front-matter`        | 既存の AI-SDD ドキュメント（ADR決定ログを含む）をスキャンし、構造化メタデータのための YAML front matter 追加を推奨 |
+| `/plan-refactor`                 | 既存機能のリファクタリング計画。実装を分析し、計画をチケット単位の設計ドラフトに記録                    |
 | `/generate-usecase-diagram`      | ビジネス要件から Mermaid 形式のユースケース図を生成                               |
 | `/analyze-requirements`          | ユースケース図やビジネス要件から UR/FR/NFR を抽出                               |
 | `/generate-requirements-diagram` | 要求分析から Mermaid 形式の SysML 要件図を生成                              |
@@ -139,7 +151,7 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 | スキル                       | 説明                                 |
 |:--------------------------|:-----------------------------------|
 | `vibe-detector`           | ユーザー入力を分析し、Vibe Coding（曖昧な指示）を自動検出 |
-| `doc-consistency-checker` | ドキュメント間（PRD、仕様書、設計書）の整合性を自動チェック    |
+| `doc-consistency-checker` | ドキュメント間（PRD ↔ 仕様書 ↔ adr）の整合性を自動チェック   |
 
 ### フック
 
@@ -148,11 +160,50 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 | `session-start` | SessionStart | `.sdd-config.json` から設定を読み込み、環境変数を自動設定 |
 | `user-prompt-submit` | UserPromptSubmit | ユーザープロンプト内の Vibe Coding 兆候（曖昧な指示）を検知し、明確化リマインダーを注入 |
 | `pre-tool-use`  | PreToolUse (Write/Edit) | ファイル命名規則に違反する `.sdd/` ドキュメントへの書き込みを拒否し、実装ソースコード編集時に `CONSTITUTION.md` の原則を注入（セッションごとに1回） |
-| `post-tool-use` | PostToolUse (Write/Edit) | `.sdd/` ドキュメントや対応する設計書を持つソースファイルを編集した後、ドキュメント整合性チェックを促す |
+| `post-tool-use` | PostToolUse (Write/Edit) | `.sdd/` ドキュメントや対応する仕様書を持つソースファイルを編集した後、ドキュメント整合性チェックを促す（v4 の design doc しか対応しない場合は `adr/` への移行を案内する） |
 
 **注**: フックはプラグインインストール時に自動的に有効化されます。追加の設定は不要です。
 
 ## 使用方法
+
+### チケット番号について
+
+v5.0.0 以降、技術設計ドラフトとタスクログは `task/{ticket-number}/` 配下に置かれるため、いくつかのスキルは
+チケット番号を必要とします。渡し方はスキルごとに異なります:
+
+| スキル                                       | チケット番号の渡し方      | 必須か                                          |
+|:------------------------------------------|:----------------|:---------------------------------------------|
+| `/generate-spec`                          | オプションのみ         | 必須 — 省略時は対話的に解決。`--ci` モードでは指定必須              |
+| `/plan-refactor`                          | オプションのみ         | 必須 — 省略時は対話的に解決。`--ci` モードでは指定必須              |
+| `/task-breakdown`                         | 第2位置引数、またはオプション | 必須 — フォールバックなし                               |
+| `/implement`・`/checklist`・`/run-checklist` | 第2位置引数、またはオプション | 任意 — 省略時は feature 名がタスクディレクトリ名として使われる         |
+| `/clarify`                                | 第2位置引数、またはオプション | 任意 — 省略時は PRD・spec・v4.x の設計書（あれば）で分析する      |
+| `/task-cleanup`                           | 第1位置引数、またはオプション | 任意 — 省略時は `task/` 全体が対象                       |
+| `/check-spec`                             | オプションのみ         | 任意 — 補助入力にする設計ドラフトを絞り込む（「整合性チェック」も参照）         |
+| `/render-adr-review`                      | 第2位置引数、またはオプション | 任意 — 出力ファイル名に使う。省略時はソースファイルの機能名を使う           |
+
+チケット番号をオプションで渡す箇所では、`--ticket <番号>`（スペース）と `--ticket=<番号>`（イコール）の
+**どちらの書式も受理**されます。位置引数でも渡せるスキルでは、フラグ形式は位置引数のスロットを消費しないため、
+`/task-breakdown user-auth --ticket=123` でも feature 名は `user-auth` に解決されます。
+
+#### チケットトラッカーを使っていない場合
+
+チケット番号は `task/` 配下の**ディレクトリ名**と front matter の `ticket` フィールドの値としてのみ使われます。
+GitHub や JIRA などのトラッカーに対して検証されることはないため、安定した識別子であれば何でも使えます:
+
+```
+/generate-spec ユーザー認証機能 --ticket user-auth
+/task-breakdown user-auth user-auth
+/implement user-auth
+```
+
+最も簡単な運用は**feature 名をチケット番号として渡す**ことです。`/implement`・`/checklist`・`/run-checklist`
+は省略時に feature 名を使うため、その機能の `task/` 配下のファイルが1つのディレクトリにまとまります。
+ブランチ名や日付付きのスラッグ（`2026-09-10-user-auth`）でも同様に機能します。
+
+実際のトラッカーを必要とするのは `/task-cleanup` の完了コメント投稿だけです。トラッカーを特定できない場合、
+この手順は失敗せずスキップされたことが報告され、チケットと機能の対応は `adr/{feature-name}.md` の `ticket`
+フィールドに残ります。
 
 ### コマンド使用例
 
@@ -173,7 +224,33 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 
 ```
 /check-spec user-auth
+/check-spec user-auth --ticket TICKET-123   # 補助入力にする設計ドラフトを1チケットに絞る
+/check-spec user-auth --ticket=TICKET-123   # 同じ意味
+/check-spec user-auth --full                # PRD <-> spec <-> adr と品質レビューも実施
 ```
+
+`--ticket` は**どの** `task/{ticket-number}/design-draft.md` を補助入力として読むかを決めます。省略した場合も、
+対応が一意に定まる範囲ではヘルパースクリプトが自分でドラフトを選び、他チケットの設計を混ぜるくらいなら
+何も読まずに諦めます:
+
+| 状況                                                        | 読み込まれるもの                                        |
+|:----------------------------------------------------------|:------------------------------------------------|
+| ドラフトが存在しない（実装完了後の正常な状態）                                   | 何も読まない。設計チェックは報告されない                            |
+| `--ticket <番号>` を指定                                       | そのチケットのドラフトのみ                                   |
+| ドラフトの front matter `depends-on` が対象 spec の ID（`spec-*`）を参照 | そのドラフト（他チケットが並行していても選ばれる）                        |
+| プロジェクト全体でドラフトが1つだけ                                        | そのドラフト                                          |
+| 複数のドラフトがあり、どれもこの実行に紐付けられない                                | **どれも読まない**。スキップしたドラフトが報告されるので `--ticket` で再実行する |
+
+つまり `--ticket` が必須なのは最後の行のケースだけです。各ドラフトの front matter に
+`depends-on: ["spec-{feature}"]` を書いておけば、この場合も回避できます。
+
+`--full` を付けると追加で `spec-reviewer` エージェントによる**ドキュメントレベル**のレビューが走ります。
+内容は PRD ↔ 仕様書のトレーサビリティ、spec ↔ adr の決定整合（現行＝最新かつ未覆の決定が仕様書と一致するか、
+仕様書が覆された決定に依拠していないか、仕様書の振る舞いの背後にある決定がそもそも記録されているか）、
+CONSTITUTION.md 準拠、必須セクションの網羅性、曖昧な記述の検出、SysML 要求 ID の妥当性です。
+決定ログがまだ無い機能は**該当なし**として報告され、これは指摘でもなく「整合」でもありません。
+`adr/` は追記専用なので、修正は仕様書側か、`Supersedes` を持つ新規エントリの追記のどちらかで行い、
+既存エントリを編集することはありません。
 
 #### タスク分解
 
@@ -186,6 +263,15 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 ```
 /task-cleanup TICKET-123
 ```
+
+#### ADRレビューHTMLレンダリング
+
+```
+/render-adr-review adr/user-auth.md
+```
+
+決定ログを `.sdd/.cache/render-adr-review/` 配下の一時HTMLとして、決定・理由・却下した代替案の軸で
+構造化してレンダリングする。生成物はスクラッチファイルであり、コミットされない。
 
 #### 仕様明確化
 
@@ -241,7 +327,8 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 /sdd-init
 ```
 
-プロジェクト憲章（CONSTITUTION.md）とテンプレートを生成します。
+`.sdd/` ルートとドキュメントテンプレートを作成します。プロジェクト憲章（`CONSTITUTION.md`）は `/sdd-init` では
+作成されないため、続けて `/constitution init` を実行してください。
 
 #### Step 2: 要求仕様書（PRD）の作成
 
@@ -255,10 +342,11 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 #### Step 3: 仕様書と設計書の生成
 
 ```
-/generate-spec user-auth
+/generate-spec user-auth --ticket TICKET-123
 ```
 
-→ `.sdd/specification/user-auth_spec.md` と `user-auth_design.md` が生成されます。
+→ `.sdd/specification/user-auth_spec.md` が生成され、`.sdd/task/TICKET-123/design-draft.md` に
+一時的な設計ドラフトも生成されます。
 
 #### Step 4: 仕様の明確化
 
@@ -314,7 +402,8 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 /task-cleanup TICKET-123
 ```
 
-一時ファイルをクリーンアップし、重要な設計判断を `*_design.md` に統合します。
+`task/` 配下の一時ファイル（`design-draft.md` を含む）をクリーンアップし、重要な設計判断を
+`adr/{feature-name}.md`（追記専用）に統合してから削除します。
 
 ## v2.x からの移行
 
@@ -347,6 +436,121 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 2. 日本語サポートのために `.sdd-config.json` に `"lang": "ja"` を設定
 3. 自動化スクリプトを新しいコマンド名（アンダースコアからハイフン）に更新
 
+## v4.x からの移行
+
+### v5.0.0 の破壊的変更
+
+1. **`specification/{feature-name}_design.md` は永続ドキュメントではなくなりました。** 技術設計書はまず
+   `task/{ticket-number}/design-draft.md` の一時ドラフトとして作成され、`task/` の他のファイルと同様、
+   実装完了後に削除されます
+2. **新しい `adr/` ディレクトリを追加。** 決定・その理由・却下した代替案のみが `adr/{feature-name}.md`
+   （追記専用）に永続化されます
+3. **`/generate-spec` にチケット番号が必要になりました。** 設計ドラフトのパスが `specification/` ではなく
+   `task/{ticket-number}/` 配下になったため、`--ticket <番号>`（または `--ticket=<番号>`）を指定するか、
+   対話的に解決してください
+4. **`/check-spec` の比較基準が設計書から仕様書に変わりました。** `specification/` 配下の仕様書が第一級の
+   比較基準となり、設計ドラフトは仕様書で表現できない情報（モジュール構成・技術スタック）を補う**任意の
+   補助入力**としてのみ使われます。実装完了後にドラフトが存在しないのは正常な状態であり、不整合として
+   報告されることはありません
+5. **`/plan-refactor` の Case A / Case B 判定が仕様書基準になり、計画は設計ドラフトに書かれます。**
+   以前は `specification/{feature-name}_design.md` の有無で判定していましたが、**仕様書**の有無
+   （`_spec` サフィックスの有無どちらでも照合）で判定するようになりました。リファクタリング計画は
+   `task/{ticket-number}/design-draft.md` に書かれ、リバースエンジニアリングした仕様書は従来どおり
+   `specification/` 配下に永続化されます
+6. **`/plan-refactor` にチケット番号を渡すようになりました**（`--ticket <番号>` または `--ticket=<番号>`。
+   省略時は対話的に解決、`--ci` モードでは指定必須）。設計ドラフトのパスがチケット単位になったためです
+7. **`/task-breakdown` にチケット番号が必須になりました。** 読み込む設計ドラフトと書き出す `tasks.md` の
+   どちらも `task/{ticket-number}/` 配下にあるためです。`tasks.md` は常に
+   `task/{ticket-number}/tasks.md` に書かれ、従来の `task/{feature}/tasks.md` へのフォールバックは
+   廃止されました
+8. **`doc-consistency-checker` の対象が PRD ↔ spec ↔ design から PRD ↔ spec ↔ adr に変わりました**
+
+### 既存の `*_design.md` を `adr/` へ抜粋する手順
+
+この変更より前に永続化された `specification/{feature-name}_design.md` がある場合、決定履歴を
+`adr/{feature-name}.md` へ抜粋してください。
+
+**この移行は急ぐ必要はありません。** 既存の `specification/*_design.md` は**引き続き有効**です。命名規則
+フックはこれらを受理し、技術設計を読むスキルはこれらを**補助入力**として読み取ります
+（不在であることも同様に正常です）。違反として報告されることも、削除を促されることもありません。
+新規に作成しないことだけを守ってください — 新しい技術設計は `task/{ticket-number}/design-draft.md` に置きます。
+
+該当ファイルが存在する場合、`session-start` フックが `.sdd/MIGRATION_PENDING.md` を書き出し、対象ファイル
+（パス順に先頭10件と、残りの件数）を一覧化してこの節を参照するよう案内します。この一覧は
+**`.sdd/UPDATE_REQUIRED.md` とは独立**しています。`UPDATE_REQUIRED.md` は `CLAUDE.md` が古いことだけを
+報告するファイルで、`/sdd-init` を実行すると削除されますが、`MIGRATION_PENDING.md` はそのまま残ります。
+該当ファイルが1件でも残っている限りセッション開始ごとに書き直され、0件になると自動的に削除されるため、
+一覧が消えることなく自分のペースで移行を進められます。生成ファイルなので、直接編集しても次のセッションで
+上書きされます。
+
+1. `.sdd-config.json` で `directories.adr` にカスタム名を使用する場合は移行前に設定する
+   （デフォルトは `adr`）。その後 `/sdd-init` を再実行して、追記専用のエントリ形式を説明する
+   `ADR_TEMPLATE.md` を取得する（既存ファイルは上書きされないため、再実行はいつでも安全）。
+   ただし `/sdd-init` は `adr/` ディレクトリ自体を作成**しません** — `requirement/`・`specification/`・
+   `task/` と同様に、最初のファイルが書き込まれた時点で作成されます
+2. **各 `*_design.md` から設計判断を特定する** — 技術・アーキテクチャ・アプローチをなぜ選んだかを説明している節
+3. **`adr/{feature-name}.md` を作成する**（`specification/` 配下のパスに対応させる。例:
+   `specification/auth/user-login_design.md` → `adr/auth/user-login.md`）。
+   `shared/references/front_matter_reference.md` に定義された `type: "adr"` の front matter
+   フィールド（`id`、`type`、`title`、`status`、`created`、`updated`、`sdd-phase`、`depends-on`、
+   分かる場合は `ticket`）を設定する。決定は事後に記録するものなので `status` は `"approved"` とする。
+   front matter の `supersedes`/`superseded-by` は書かない — これらは決定ログ**ファイル全体**の引退
+   （機能のリネーム・分割・統合）を表すもので、エントリ間の覆しを表すものではない
+4. **決定ごとに1エントリを**ファイル末尾に `##` ブロックとして追記する。エントリの形式は固定:
+   - 見出し `## YYYY-MM-DD {決定のタイトル}` — 決定が確定した日付
+   - `- **Decision**:` 決めたこと
+   - `- **Rationale**:` なぜそれを選んだか。選択を強制した制約を含める
+   - `- **Rejected alternatives**:` 検討して却下した代替案とその理由。無い場合は `None considered`
+     と書く（捏造しない）
+   - `- **Supersedes**:` **同一ファイル内**の過去エントリを覆すときのみ記載。対象エントリ見出しへの
+     リンクと、何が変わったかを1行。覆された旧エントリは編集しない（`adr/` は追記専用）
+5. **持ち込まないもの**: 実装手順、理由付けのない技術スタックの列挙、現在のコードに既に反映されている内容 —
+   *why* のみを残し、*how* / *what* は持ち込まない
+6. **決定を `adr/` に取り込んだ後に旧 `*_design.md` を削除する場合**は、先に残存参照を自分で洗い出す。
+   `/check-spec` も `doc-consistency-checker` も Markdown リンクの健全性は検査しないため、
+   リンク切れは**報告されません**。検索は2本必要です。本文中のリンクは**パス**を保持しますが、
+   front matter の `depends-on` はドキュメントの **`id`** を保持するため、同じファイルが両者で
+   同じ書き方で現れることはありません:
+
+   ```bash
+   # 1. パス参照: 本文中のリンク・散文・コードブロック
+   grep -rn "_design\.md" .sdd/ --exclude-dir=.cache --exclude=AI-SDD-PRINCIPLES.md
+
+   # 2. ID 参照: `depends-on` のエントリと、そのドキュメント自身の `id`
+   #    フラット: design-{feature-name}   階層: design-{parent-feature}-{feature-name}
+   grep -rn "design-user-auth" .sdd/ --exclude-dir=.cache --exclude=AI-SDD-PRINCIPLES.md
+   ```
+
+   root をカスタマイズしている場合は `.sdd` を、移行対象の機能名に応じて `user-auth` をそれぞれ
+   置き換える。除外指定は2つとも必要です。`.sdd/.cache/` はセッション開始ごとに再生成され、
+   `.sdd/AI-SDD-PRINCIPLES.md` は `session-start` フックがインストール済みプラグインから上書き同期する
+   ためで、どちらも編集しても無意味であり、ヒットするのはプラグイン自身の説明文であってあなたの
+   ドキュメントへの参照ではありません。
+
+   残ったヒットのうち、削除したファイルを指しているものを更新する。本文中のリンクは
+   `adr/{feature-name}.md` へのリンクに、`depends-on` のエントリはその ADR の `id`
+   （`adr-{feature-name}`）または現行ドラフトの `id`（`design-{ticket-number}`）に、その依存が実際に
+   何を意味していたかに応じて書き換える。意味を失った参照は削除する。`*_design.md` という規約を散文で
+   言及しているだけのヒットは参照ではないので何もしなくてよい。旧ファイルをそのまま残すことも妥当な
+   選択で（上記の注記を参照）、その場合はどちらの検索結果にも対応は不要です
+
+完成した決定ログは `/render-adr-review adr/{feature-name}.md` で決定 / 理由 / 却下した代替案の軸に構造化して
+読み返せます。
+
+`adr/` のフィールド・フォーマットの全体は `AI-SDD-PRINCIPLES.md` の「Architecture Decision Record」節を
+参照してください。
+
+## 既知の制約
+
+- **`adr/` と実装の乖離は自動検出されません。** `/check-spec` は実装を抽象仕様と突き合わせ、`--full` は
+  さらに文書レベルの `PRD ↔ spec ↔ adr` レビューを行いますが、`adr/` のエントリを読んでコードが依然その決定に
+  従っているかを検査するチェックはありません。記録済みの決定を実装が変えたときは決定ログを人手でレビューし
+  （`/render-adr-review adr/{feature-name}.md` が役立ちます）、覆しは旧エントリを編集せず `Supersedes` 付きの
+  **新規エントリ**として記録してください。
+- **Markdown リンクの健全性は検証されません。** `/check-spec` も `doc-consistency-checker` もリンク切れを
+  報告しないため、ドキュメントを削除・改名した後は自分で残存参照を探してください
+  （「既存の `*_design.md` を `adr/` へ抜粋する手順」の `grep` を参照）。
+
 ## フックについて
 
 このプラグインはセッション開始時に `.sdd-config.json` を自動的に読み込み、環境変数を設定します。
@@ -359,7 +563,7 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 | `session-start` | SessionStart | `.sdd-config.json` から設定を読み込み、環境変数を設定 |
 | `user-prompt-submit` | UserPromptSubmit | ユーザープロンプト内の Vibe Coding 兆候（曖昧な指示）を検知し、明確化リマインダーを注入 |
 | `pre-tool-use`  | PreToolUse (Write/Edit) | ファイル命名規則に違反する `.sdd/` ドキュメントへの書き込みを拒否し、実装ソースコード編集時に `CONSTITUTION.md` の原則を注入（セッションごとに1回） |
-| `post-tool-use` | PostToolUse (Write/Edit) | `.sdd/` ドキュメントや対応する設計書を持つソースファイルを編集した後、ドキュメント整合性チェックを促す |
+| `post-tool-use` | PostToolUse (Write/Edit) | `.sdd/` ドキュメントや対応する仕様書を持つソースファイルを編集した後、ドキュメント整合性チェックを促す（v4 の design doc しか対応しない場合は `adr/` への移行を案内する） |
 
 ### 設定される環境変数
 
@@ -370,11 +574,14 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 | `SDD_ROOT`               | `.sdd`               | ルートディレクトリ     |
 | `SDD_LANG`               | `en`                 | 言語設定          |
 | `SDD_REQUIREMENT_DIR`    | `requirement`        | 要求仕様書ディレクトリ   |
-| `SDD_SPECIFICATION_DIR`  | `specification`      | 仕様書/設計書ディレクトリ |
+| `SDD_SPECIFICATION_DIR`  | `specification`      | 仕様書ディレクトリ     |
+| `SDD_ADR_DIR`            | `adr`                | 決定ログ（ADR）ディレクトリ |
 | `SDD_TASK_DIR`           | `task`               | タスクログディレクトリ   |
 | `SDD_REQUIREMENT_PATH`   | `.sdd/requirement`   | 要求仕様書フルパス     |
-| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書/設計書フルパス   |
+| `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書フルパス       |
+| `SDD_ADR_PATH`           | `.sdd/adr`           | 決定ログ（ADR）フルパス |
 | `SDD_TASK_PATH`          | `.sdd/task`          | タスクログフルパス     |
+| `SDD_INDEX`              | `on`                 | ドキュメントインデックスが有効（`index: true`、デフォルト）な間は `on` に設定される。`index` が `false` の場合は設定されず、スキルはこれによりインデックス高速パスが使えないことを判定する |
 
 ### フックのデバッグ
 
@@ -390,18 +597,55 @@ claude --debug
 **ツール権限の事前承認**、つまり「スキルがユーザーに尋ねずに実行できるツール呼び出し」の宣言です。**制限ではありません** —
 すべてのツールは引き続き呼び出し可能で、事前承認されていない操作は通常の権限確認にフォールバックするだけです。
 
-このプラグインは事前承認の範囲を意図的に狭く保っており、ドキュメント以外への書き込みや任意のシェルコマンド実行を無確認で行うことはありません:
+このプラグインは事前承認の範囲を意図的に狭く保っています。ベアな `Bash` を事前承認しているスキルは1つも無いため、
+任意のシェルコマンドを無確認で実行することはできず、書き込みの事前承認もドキュメントと決まったセットアップファイルの
+範囲に限られます:
 
 | 操作                                                                             | 事前承認される範囲                                                          | 挙動                       |
 |:---------------------------------------------------------------------------------|:----------------------------------------------------------------------------|:---------------------------|
 | AI-SDD ドキュメントへの書き込み                                                  | `Edit(.sdd/**)`                                                             | 確認なしで適用             |
 | `/sdd-init` / `/constitution` / `/recommend-front-matter` のセットアップファイル | `Edit(CLAUDE.md)`, `Edit(.sdd-config.json)`, `Edit(.claude/rules/**)`       | 確認なしで適用             |
-| 同梱ヘルパースクリプトの実行                                                     | `Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/<name>/scripts/<script>.py" *)` | 確認なしで適用             |
+| 同梱ヘルパースクリプトの実行（スクリプトごとに固定パス1本。下記の注意点を参照）   | `Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/<name>/scripts/<script>.py" *)` | 確認なしで適用             |
 | それ以外すべて                                                                   | 事前承認しない                                                              | Claude Code が確認を求める |
 
-「それ以外すべて」には、上記パス外への書き込み、任意のシェルコマンド、`git rm`、プロジェクト固有のテスト・リンターが含まれます。
-特に `/implement` / `/run-checklist` / `/task-cleanup` は `Bash` を**一切事前承認していません**。実行するコマンドがプロジェクト側のものであるため、
-各コマンドの実行前に確認が入ります。
+「それ以外すべて」には、上記パス外への書き込み、任意のシェルコマンド、削除コマンド `git rm` / `rm`、
+直接実行するテスト・リンターが含まれます。`/implement` と `/task-cleanup` は `Bash` を**一切事前承認していません**。
+そのため `/task-cleanup` の `git ls-files` と `git rm` / `rm` による削除を含め、実行するコマンドごとに確認が入ります。
+
+### プロジェクト側のコマンドを実行する事前承認済みスクリプト
+
+「同梱ヘルパースクリプトの実行」の行には注意が必要です。これらのスクリプトのうち1本は自己完結していません。
+`/run-checklist` は次を事前承認しています:
+
+```
+Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/run-checklist/scripts/run-verification.py" *)
+```
+
+そしてこのスクリプトは、**プロジェクト側のテスト・リンター・型チェック・監査コマンド**を `subprocess` で
+自分で実行します。追加の確認は入りません。マニフェストファイル（`package.json`・`pyproject.toml`・
+`Cargo.toml`・`go.mod`・`setup.py`・`requirements.txt`・`Gemfile`、またはマニフェストが1つも無い場合は
+`test_*.py` / `*_test.py` を含む `tests/`・`test/` ディレクトリ）から
+プロジェクト種別を判定し、固定表の中から利用可能な最初のコマンドを実行します:
+
+| プロジェクト種別 | 実行されうるコマンド                                                                       |
+|:----------|:---------------------------------------------------------------------------------|
+| Node      | `npm test`、`npx eslint .` / `eslint .`、`npx tsc --noEmit` / `tsc --noEmit`、`npm audit` |
+| Python    | `pytest`、`ruff check .`、`mypy .`、`pip-audit` / `safety check`                     |
+| Rust      | `cargo test`、`cargo clippy`、`cargo audit`                                        |
+| Go        | `go test ./...`、`golangci-lint run`、`govulncheck ./...`                           |
+| Ruby      | `bundle exec rspec`、`bundle exec rubocop`、`bundle exec bundler-audit`             |
+
+したがってラッパーを一度承認すると、その実行の間はこれらのコマンドが動きます。歯止めは2点です。コマンドの出所は
+上の表**だけ**であり、`checklist.md` の項目に書かれた検証コマンドは実行されず手動検証の指示として記録される
+（`allowed-tools` が承認しているのはスクリプトであってベアな `Bash` ではないため）こと、そして各コマンドは
+300秒で打ち切られることです。
+
+コマンドごとに確認したい場合は `/run-checklist` を使わず、テスト・リンター・監査コマンドを自分で実行して
+`task/{ticket-number}/checklist.md` の項目を手でチェックしてください。
+
+同梱ヘルパースクリプト10本（`find-spec-docs.py`・`validate-files.py`・`prepare-prd.py`・`prepare-spec.py`・
+`find-implementation-files.py`・`scan-existing-docs.py`・`scan-documents.py`・`run-verification.py`・
+`init-structure.py`・`update-claude-md.py`）のうち、別プロセスを起動するのは `run-verification.py` だけです。
 
 ### 権限確認を減らす
 
@@ -414,11 +658,17 @@ claude --debug
     "allow": [
       "Edit(.sdd/**)",
       "Bash(npm test:*)",
-      "Bash(git rm:*)"
+      "Bash(git ls-files:*)",
+      "Bash(git rm:*)",
+      "Bash(rm:*)"
     ]
   }
 }
 ```
+
+最後の3つは `/task-cleanup` の step 9 に対応します。step 9 は `git ls-files` で追跡状態を判定し、追跡されて
+いれば `git rm`、未追跡なら `rm` で削除します。`Bash(rm:*)` は**あらゆる** `rm` を許可するため、それが許容
+できる場合にのみ追加してください。
 
 **`Write(<path>)` ではなく `Edit(<path>)` を使ってください。** `Write(<path>)` はファイル権限チェックにマッチしません。
 `Edit(<path>)` ルールは Write を含む**すべてのファイル編集ツール**をカバーします。
@@ -506,13 +756,16 @@ Serena は LSP（Language Server Protocol）ベースのセマンティックコ
 ├── PRD_TEMPLATE.md               # PRD テンプレート（オプション）
 ├── SPECIFICATION_TEMPLATE.md     # 抽象仕様書テンプレート（オプション）
 ├── DESIGN_DOC_TEMPLATE.md        # 技術設計書テンプレート（オプション）
+├── ADR_TEMPLATE.md               # 決定ログ（ADR）テンプレート（オプション）
 ├── requirement/                  # PRD（要求仕様書）
 │   └── {feature-name}.md
 ├── specification/                # 永続的な知識資産
-│   ├── {feature-name}_spec.md    # 抽象仕様書
-│   └── {feature-name}_design.md  # 技術設計書
+│   └── {feature-name}_spec.md    # 抽象仕様書
+├── adr/                          # 永続的な決定ログ
+│   └── {feature-name}.md         # 決定と理由（追記専用）
 └── task/                         # 一時的なタスクログ（実装後に削除）
     └── {ticket-number}/
+        └── design-draft.md       # 技術設計ドラフト（実装後に削除）
 ```
 
 #### 階層構造（中〜大規模プロジェクト向け）
@@ -523,6 +776,7 @@ Serena は LSP（Language Server Protocol）ベースのセマンティックコ
 ├── PRD_TEMPLATE.md               # PRD テンプレート（オプション）
 ├── SPECIFICATION_TEMPLATE.md     # 抽象仕様書テンプレート（オプション）
 ├── DESIGN_DOC_TEMPLATE.md        # 技術設計書テンプレート（オプション）
+├── ADR_TEMPLATE.md               # 決定ログ（ADR）テンプレート（オプション）
 ├── requirement/                  # PRD（要求仕様書）
 │   ├── {feature-name}.md         # トップレベル機能（フラット構造と下位互換）
 │   └── {parent-feature}/         # 親機能ディレクトリ
@@ -530,21 +784,28 @@ Serena は LSP（Language Server Protocol）ベースのセマンティックコ
 │       └── {child-feature}.md    # 子機能の要件
 ├── specification/                # 永続的な知識資産
 │   ├── {feature-name}_spec.md    # トップレベル機能（フラット構造と下位互換）
-│   ├── {feature-name}_design.md
 │   └── {parent-feature}/         # 親機能ディレクトリ
 │       ├── index_spec.md         # 親機能の抽象仕様書
-│       ├── index_design.md       # 親機能の技術設計書
-│       ├── {child-feature}_spec.md   # 子機能の抽象仕様書
-│       └── {child-feature}_design.md # 子機能の技術設計書
+│       └── {child-feature}_spec.md   # 子機能の抽象仕様書
+├── adr/                          # 永続的な決定ログ
+│   ├── {feature-name}.md         # トップレベル機能（フラット構造と下位互換）
+│   └── {parent-feature}/         # 親機能ディレクトリ
+│       ├── index.md              # 親機能の決定ログ
+│       └── {child-feature}.md    # 子機能の決定ログ
 └── task/                         # 一時的なタスクログ（実装後に削除）
     └── {ticket-number}/
+        └── design-draft.md       # 技術設計ドラフト（実装後に削除）
 ```
 
 #### ドキュメント依存関係
 
 ```
-CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実装
+CONSTITUTION.md → requirement/ → *_spec.md → task/{ticket-number}/design-draft.md → 実装
 ```
+
+`adr/{feature-name}.md` は、`design-draft.md` が削除される前に抜粋された決定・理由・却下した
+代替案を永続化します（追記専用。既存の `*_design.md` を移行する場合は
+[v4.x からの移行](#v4x-からの移行) を参照）。
 
 すべてのドキュメントは `CONSTITUTION.md` のプロジェクト原則に従って作成されます。
 
@@ -567,6 +828,7 @@ CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実
   "directories": {
     "requirement": "requirement",
     "specification": "specification",
+    "adr": "adr",
     "task": "task"
   },
   "index": true,
@@ -582,6 +844,7 @@ CONSTITUTION.md → requirement/ → *_spec.md → *_design.md → task/ → 実
 | `lang`                      | `en`            | 言語（`en` または `ja`）                                                           |
 | `directories.requirement`   | `requirement`   | PRD（要求仕様書）ディレクトリ                                                            |
 | `directories.specification` | `specification` | 仕様書/設計書ディレクトリ                                                               |
+| `directories.adr`           | `adr`           | ADR（決定ログ）ディレクトリ                                                            |
 | `directories.task`          | `task`          | 一時タスクログディレクトリ                                                               |
 | `index`                     | `true`          | 真偽値。セッション開始時に `.sdd` ドキュメントの圧縮インデックス（SQLite → `index.md`）を構築しトークンを削減する。`false` で無効化。 |
 | `naming.ignore_patterns`    | `[]`            | ファイル名（basename）に対して照合する glob パターン（`fnmatch` 形式）。マッチしたファイルは `requirement`/`specification` の命名規則チェックをスキップする（例: テスト用ファイルの `*_test.md`）。 |
@@ -624,6 +887,7 @@ sdd-workflow/
 │   ├── implement/                 # TDDベース実装の実行
 │   ├── clarify/                   # 仕様明確化
 │   ├── task-cleanup/              # タスククリーンアップ
+│   ├── render-adr-review/         # ADR軸レビューHTMLレンダリング
 │   ├── checklist/                 # 品質チェックリスト生成
 │   ├── run-checklist/             # チェックリスト自動検証
 │   ├── recommend-front-matter/    # YAML front matter推奨

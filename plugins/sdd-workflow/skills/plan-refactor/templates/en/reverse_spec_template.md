@@ -69,7 +69,8 @@ The following requirements are extracted from the current codebase:
 
 ### Internal Interfaces
 
-{Internal module boundaries}
+{Internal module boundaries other code depends on — each boundary and the contract it offers, not the files
+or components sitting behind it}
 
 ## Dependencies
 
@@ -78,6 +79,24 @@ The following requirements are extracted from the current codebase:
 ## Data Model
 
 {Database schema, data structures if applicable}
+
+## Behavior and Data Flow
+
+**Externally observable flow only**: the entry points that accept input, the transformation the feature is
+required to perform, the external calls and side effects it makes, and what it returns. The internal call
+sequence between private components is not observable behavior — it stays in the ticket's design draft.
+
+```mermaid
+sequenceDiagram
+    participant Caller
+    participant Feature as {FEATURE_NAME}
+    participant External as {External dependency}
+    Caller ->> Feature: {input}
+    Feature ->> External: {call or side effect}
+    Feature -->> Caller: {output}
+```
+
+{Prose description of the flow, when a diagram adds nothing}
 
 ## Implementation Notes
 
@@ -88,9 +107,13 @@ The following requirements are extracted from the current codebase:
 **Architecture Pattern:**
 {Observed pattern, e.g., MVC, layered architecture}
 
+> The pattern name is the only structural fact this spec records. The component inventory, the directory
+> layout and the per-component dependencies belong to the ticket's design draft and are discarded with it —
+> see "Reverse-Engineered Analysis — What Persists and What Does Not" in the `plan-refactor` skill.
+
 ---
 
 **Next Steps:**
 1. Review this reverse-engineered specification for accuracy
 2. Add missing requirements
-3. Proceed to design document creation or refactoring planning
+3. Proceed to design draft creation or refactoring planning

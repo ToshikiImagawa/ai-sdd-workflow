@@ -7,55 +7,69 @@
 | Feature Name      | {Feature Name}                           |
 | Ticket Number     | {Ticket Number}                          |
 | Specification     | `${SDD_SPECIFICATION_PATH}/{feature}_spec.md`   |
-| Design Document   | `${SDD_SPECIFICATION_PATH}/{feature}_design.md` |
+| Design Draft      | `${SDD_TASK_PATH}/{ticket}/design-draft.md` (omit if already deleted) |
+| v4.x Design Doc   | `${SDD_SPECIFICATION_PATH}/[{path}/]{feature}_design.md` (omit if the project has none) |
 | Generated Date    | YYYY-MM-DD                               |
 | Checklist Version | 1.0                                      |
 
 ## Checklist Summary
 
-| Category              | Total Items | P0 | P1 | P2 | P3 |
-|:----------------------|:------------|:---|:---|:---|:---|
-| Requirements Review   | -           | -  | -  | -  | -  |
-| Specification Review  | -           | -  | -  | -  | -  |
-| Design Review         | -           | -  | -  | -  | -  |
-| Implementation Review | -           | -  | -  | -  | -  |
-| Testing Review        | -           | -  | -  | -  | -  |
-| Documentation Review  | -           | -  | -  | -  | -  |
-| Security Review       | -           | -  | -  | -  | -  |
-| Performance Review    | -           | -  | -  | -  | -  |
-| Deployment Review     | -           | -  | -  | -  | -  |
-| Project Principles Review | -      | -  | -  | -  | -  |
+| Category              | Total Items | P1 | P2 | P3 |
+|:----------------------|:------------|:---|:---|:---|
+| Requirements Review   | -           | -  | -  | -  |
+| Specification Review  | -           | -  | -  | -  |
+| Design Review         | -           | -  | -  | -  |
+| Implementation Review | -           | -  | -  | -  |
+| Testing Review        | -           | -  | -  | -  |
+| Documentation Review  | -           | -  | -  | -  |
+| Security Review       | -           | -  | -  | -  |
+| Performance Review    | -           | -  | -  | -  |
+| Deployment Review     | -           | -  | -  | -  |
 
-**Priority Levels**:
+**Priority Levels** — record here whether you actually compared this definition against the SKILL.md
+body and found them consistent, or found and resolved a discrepancy (do not copy this line verbatim as
+if that comparison had been performed):
 
-- **P0**: Critical - Must pass before merge
-- **P1**: High - Should pass before merge
-- **P2**: Medium - Should pass before release
-- **P3**: Low - Nice to have
+- **P1 - High**: Must pass before merge (checked before PR creation)
+- **P2 - Medium**: Should pass before merge (checked during PR review)
+- **P3 - Low**: Nice to have (checked opportunistically)
+
+**Category-to-ID mapping** (`CHK-{category}{seq}` format; `run-checklist`'s verification logic depends on this mapping):
+
+`CHK-1xx`=Requirements, `CHK-2xx`=Specification, `CHK-3xx`=Design, `CHK-4xx`=Implementation, `CHK-5xx`=Testing,
+`CHK-6xx`=Documentation, `CHK-7xx`=Security, `CHK-8xx`=Performance, `CHK-9xx`=Deployment
+
+**Basis** (per item, required): which document and statement the item was extracted from
+(e.g. `PRD FR-003`, `design §6 Architecture`), or `synthesized from: {component}` when derived from an
+implementation component's existence rather than quoted from a document.
 
 ---
 
 ## Requirements Review
 
-### CHK001 [P0] - Functional Requirements Coverage
+### CHK-101 [P1] Functional Requirements Coverage
 
 - [ ] All functional requirements (FR-xxx) from PRD are implemented
 - [ ] Each requirement maps to specific implementation
 - [ ] No requirements are partially implemented
 
+**Basis**: PRD FR-xxx (extracted)
+
 **Verification**:
 
 - Review PRD
 - Check implementation coverage
-- Run `/check_spec {feature}` for consistency
+- Run `/check-spec {feature}` for consistency
 
 ---
 
-### CHK002 [P0] - Non-Functional Requirements
+### CHK-102 [P1] Non-Functional Requirements
 
 - [ ] Performance requirements (NFR-xxx) are met
 - [ ] Security requirements are implemented
 - [ ] Scalability requirements are addressed
+
+**Basis**: PRD NFR-xxx (extracted)
 
 **Verification**:
 
@@ -65,7 +79,7 @@
 
 ---
 
-### CHK003 [P1] - Acceptance Criteria
+### CHK-103 [P2] Acceptance Criteria
 
 - [ ] All acceptance criteria from PRD are met
 - [ ] Edge cases identified in PRD are handled
@@ -78,9 +92,33 @@
 
 ---
 
+### CHK-104 [P1] CONSTITUTION.md Compliance
+
+- [ ] The applicable principles from `CONSTITUTION.md` are stated in the Spec/Design doc
+- [ ] The implementation complies with the stated principles
+- [ ] Any deviation from a principle follows the exception process (justification, review approval)
+
+**Verification**:
+
+- Run `/constitution validate`
+- Review the "Principle Alignment" section of the Spec/Design doc
+
+---
+
+### CHK-105 [P2] Template Sync with Constitution
+
+- [ ] SPECIFICATION_TEMPLATE.md / DESIGN_DOC_TEMPLATE.md in use is aligned with the latest CONSTITUTION.md version
+- [ ] No missing updates due to `/constitution sync` not being run
+
+**Verification**:
+
+- Compare CONSTITUTION.md change history with each template's last update date
+
+---
+
 ## Specification Review
 
-### CHK004 [P0] - Public API Implementation
+### CHK-201 [P1] Public API Implementation
 
 - [ ] All APIs defined in spec are implemented
 - [ ] API signatures match specification exactly
@@ -96,7 +134,7 @@
 
 ---
 
-### CHK005 [P0] - Data Model Consistency
+### CHK-202 [P1] Data Model Consistency
 
 - [ ] Type definitions match specification
 - [ ] Required fields are enforced
@@ -111,7 +149,7 @@
 
 ---
 
-### CHK006 [P0] - Behavior Alignment
+### CHK-203 [P1] Behavior Alignment
 
 - [ ] Sequence diagrams in spec are followed
 - [ ] State transitions match specification
@@ -124,7 +162,7 @@
 
 ---
 
-### CHK007 [P1] - Constraint Enforcement
+### CHK-204 [P2] Constraint Enforcement
 
 - [ ] All constraints in spec are implemented
 - [ ] Boundary conditions are handled
@@ -139,7 +177,7 @@
 
 ## Design Review
 
-### CHK008 [P0] - Architecture Alignment
+### CHK-301 [P1] Architecture Alignment
 
 - [ ] Module structure matches design document
 - [ ] Layer separation is maintained
@@ -153,7 +191,7 @@
 
 ---
 
-### CHK009 [P0] - Technology Stack Compliance
+### CHK-302 [P1] Technology Stack Compliance
 
 - [ ] All specified libraries are used
 - [ ] No unapproved dependencies added
@@ -165,7 +203,7 @@
 
 ---
 
-### CHK010 [P1] - Design Decisions Documented
+### CHK-303 [P2] Design Decisions Documented
 
 - [ ] All significant design decisions are documented
 - [ ] Rationale for decisions is clear
@@ -178,7 +216,7 @@
 
 ---
 
-### CHK011 [P1] - Integration Points Verified
+### CHK-304 [P2] Integration Points Verified
 
 - [ ] External API integrations are tested
 - [ ] Database connections are configured
@@ -194,7 +232,7 @@
 
 ## Implementation Review
 
-### CHK012 [P0] - Code Structure
+### CHK-401 [P1] Code Structure
 
 - [ ] Code follows project conventions
 - [ ] Naming is clear and consistent
@@ -208,7 +246,7 @@
 
 ---
 
-### CHK013 [P0] - Error Handling
+### CHK-402 [P1] Error Handling
 
 - [ ] All error cases are handled
 - [ ] Errors are logged appropriately
@@ -222,7 +260,7 @@
 
 ---
 
-### CHK014 [P1] - Code Quality
+### CHK-403 [P2] Code Quality
 
 - [ ] No code smells detected
 - [ ] Complexity is reasonable
@@ -238,7 +276,7 @@
 
 ## Testing Review
 
-### CHK015 [P0] - Unit Test Coverage
+### CHK-501 [P1] Unit Test Coverage
 
 - [ ] Unit tests exist for all business logic
 - [ ] Code coverage ≥ 80%
@@ -255,7 +293,7 @@
 
 ---
 
-### CHK016 [P0] - Integration Tests
+### CHK-502 [P1] Integration Tests
 
 - [ ] Integration tests cover all main flows
 - [ ] External service mocks are realistic
@@ -269,7 +307,7 @@
 
 ---
 
-### CHK017 [P0] - Edge Case Testing
+### CHK-503 [P1] Edge Case Testing
 
 - [ ] Null/undefined inputs tested
 - [ ] Empty collections tested
@@ -283,7 +321,7 @@
 
 ---
 
-### CHK018 [P1] - Non-Functional Testing
+### CHK-504 [P2] Non-Functional Testing
 
 - [ ] Performance tests pass
 - [ ] Load tests pass
@@ -299,7 +337,7 @@
 
 ## Documentation Review
 
-### CHK019 [P1] - Code Comments
+### CHK-601 [P2] Code Comments
 
 - [ ] Complex logic is commented
 - [ ] Public APIs have documentation
@@ -313,7 +351,7 @@
 
 ---
 
-### CHK020 [P1] - Design Document Updated
+### CHK-602 [P2] Design Document Updated
 
 - [ ] Design doc reflects implementation
 - [ ] Recent decisions are documented
@@ -329,7 +367,7 @@
 
 ## Security Review
 
-### CHK021 [P0] - Input Validation
+### CHK-701 [P1] Input Validation
 
 - [ ] All user inputs are validated
 - [ ] SQL injection prevention in place
@@ -343,7 +381,7 @@
 
 ---
 
-### CHK022 [P0] - Authentication & Authorization
+### CHK-702 [P1] Authentication & Authorization
 
 - [ ] Authentication is required where needed
 - [ ] Authorization checks are in place
@@ -357,7 +395,7 @@
 
 ---
 
-### CHK023 [P0] - Data Protection
+### CHK-703 [P1] Data Protection
 
 - [ ] Sensitive data is encrypted
 - [ ] Passwords are hashed (never plain text)
@@ -373,7 +411,7 @@
 
 ## Performance Review
 
-### CHK024 [P1] - Response Time
+### CHK-801 [P2] Response Time
 
 - [ ] API response times meet requirements
 - [ ] Database queries are optimized
@@ -387,7 +425,7 @@
 
 ---
 
-### CHK025 [P2] - Resource Usage
+### CHK-802 [P3] Resource Usage
 
 - [ ] Memory usage is reasonable
 - [ ] No memory leaks detected
@@ -403,7 +441,7 @@
 
 ## Deployment Review
 
-### CHK026 [P0] - Configuration Management
+### CHK-901 [P1] Configuration Management
 
 - [ ] Environment variables are documented
 - [ ] Configuration files are correct
@@ -417,7 +455,7 @@
 
 ---
 
-### CHK027 [P0] - Database Migrations
+### CHK-902 [P1] Database Migrations
 
 - [ ] Migrations are tested
 - [ ] Rollback migrations exist
@@ -431,7 +469,7 @@
 
 ---
 
-### CHK028 [P0] - Deployment Plan
+### CHK-903 [P2] Deployment Plan
 
 - [ ] Deployment steps are documented
 - [ ] Rollback plan exists
@@ -445,60 +483,34 @@
 
 ---
 
-## Project Principles Review
-
-### CHK029 [P0] - CONSTITUTION.md Compliance
-
-- [ ] The applicable principles from `CONSTITUTION.md` are stated in the Spec/Design doc
-- [ ] The implementation complies with the stated principles
-- [ ] Any deviation from a principle follows the exception process (justification, review approval)
-
-**Verification**:
-
-- Run `/constitution validate`
-- Review the "Principle Alignment" section of the Spec/Design doc
-
----
-
-### CHK030 [P1] - Template Sync with Constitution
-
-- [ ] SPECIFICATION_TEMPLATE.md / DESIGN_DOC_TEMPLATE.md in use is aligned with the latest CONSTITUTION.md version
-- [ ] No missing updates due to `/constitution sync` not being run
-
-**Verification**:
-
-- Compare CONSTITUTION.md change history with each template's last update date
-
----
-
 ## Completion Criteria
 
 ### Pre-PR Checklist
 
-All P0 items must be complete:
+All P1 items must be complete:
 
-- [ ] All P0 items checked
+- [ ] All P1 items checked
 - [ ] All tests passing
 - [ ] Spec consistency verified
 - [ ] Ready for code review
 
 ### Pre-Merge Checklist
 
-All P0 and P1 items must be complete:
+All P1 and P2 items must be complete:
 
-- [ ] All P0 items checked
 - [ ] All P1 items checked
+- [ ] All P2 items checked
 - [ ] Code review approved
 - [ ] CI/CD pipeline green
 - [ ] Ready for merge
 
 ### Pre-Release Checklist
 
-All items through P2 should be complete:
+All items (including P3) should be complete:
 
-- [ ] All P0 items checked
 - [ ] All P1 items checked
 - [ ] All P2 items checked
+- [ ] All P3 items checked
 - [ ] QA sign-off
 - [ ] Ready for production deployment
 
@@ -517,6 +529,10 @@ All items through P2 should be complete:
 
 - PRD: `${SDD_REQUIREMENT_PATH}/[{path}/]{name}.md` (if exists)
 - Abstract Specification: `${SDD_SPECIFICATION_PATH}/[{path}/]{name}_spec.md`
-- Technical Design: `${SDD_SPECIFICATION_PATH}/[{path}/]{name}_design.md`
+- Technical Design Draft: `${SDD_TASK_PATH}/{ticket}/design-draft.md` (temporary; omit this line if it was
+  already deleted at implementation completion)
+- v4.x Persistent Design Doc: `${SDD_SPECIFICATION_PATH}/[{path}/]{name}_design.md` (supplementary input in a
+  project carried over from v4.x; omit this line if the project has none)
 
-※ For hierarchical structure, parent features use `index.md`, `index_spec.md`, `index_design.md`
+※ For hierarchical structure, parent features use `index.md`, `index_spec.md`, `index_design.md`. The design
+draft is ticket-scoped, so its path is the same in both structures

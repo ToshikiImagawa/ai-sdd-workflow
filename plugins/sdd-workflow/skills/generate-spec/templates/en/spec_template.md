@@ -4,6 +4,7 @@ title: "{Feature Name}"
 type: "spec"
 status: "draft"
 sdd-phase: "specify"
+impl-status: "not-implemented"
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
 depends-on: []
@@ -22,18 +23,20 @@ The filename should be `{feature-name}_spec.md`.
 > When using in a project, customize it according to your programming language and project structure,
 > and save it as `${SDD_ROOT}/SPECIFICATION_TEMPLATE.md`.
 
-## Difference from Technical Design Doc
+## Difference from the Other Technical Documents
 
-| Document        | SDD Phase         | Role and Focus                                                                                     | Abstraction           |
-|-----------------|-------------------|----------------------------------------------------------------------------------------------------|-----------------------|
-| `xxx_spec.md`   | **Specify**       | **"What to build" "Why to build"** - Defines abstract structure and behavior. No technical details | High (Abstract)       |
-| `xxx_design.md` | **Plan (Design)** | **"How to implement"** - Concrete technical design. Ensures design decision transparency           | Medium-Low (Concrete) |
+| Document                                | SDD Phase              | Role and Focus                                                                                          | Abstraction           | Persistence                                        |
+|-----------------------------------------|------------------------|---------------------------------------------------------------------------------------------------------|-----------------------|----------------------------------------------------|
+| `{feature-name}_spec.md` (this file)    | **Specify**            | **"What to build" "Why to build"** - Defines abstract structure and behavior. No technical details      | High (Abstract)       | **Persistent**                                     |
+| `task/{ticket-number}/design-draft.md`  | **Plan (Design)**      | **"How to implement"** - Concrete technical plan for one ticket                                         | Medium-Low (Concrete) | **Temporary** - deleted after implementation       |
+| `adr/{feature-name}.md`                 | **Implement & Review** | **"Why it was decided this way"** - Append-only log of decisions, rationale, and rejected alternatives  | Medium                | **Persistent** (append-only)                       |
 
 ---
 
 # {Feature Name} `<MUST>`
 
-**Related Design Doc:** [link to xxx_design.md]
+**Related Design Draft:** [link to task/{ticket-number}/design-draft.md] (temporary — may already be deleted)
+**Related Decision Log:** [link to adr/{feature-name}.md]
 **Related PRD:** [link to requirement/{feature-name}.md]
 
 ---
@@ -141,16 +144,28 @@ Describe business or technical constraints.
 - ✅ Functional and non-functional requirements
 - ✅ Glossary
 
-## What NOT to Include (→ Design Doc)
+## What NOT to Include
+
+Technical content goes to one of two other documents. Pick the destination by how long the content must live.
+
+### → `task/{ticket-number}/design-draft.md` (temporary draft, deleted after implementation)
 
 - ❌ Implementation status and progress
-- ❌ Technology stack selection rationale
 - ❌ Architecture and module structure
 - ❌ Implementation patterns and design patterns
 - ❌ Directory structure and file placement
 - ❌ Test strategy and coverage goals
-- ❌ Design decision records
 - ❌ Change history and migration guides
+
+### → `adr/{feature-name}.md` (persistent, append-only decision log)
+
+- ❌ Design decision records — the decision, its rationale, and the rejected alternatives
+- ❌ Technology stack selection rationale
+
+**A decision that must outlive the ticket does not survive in the design draft.** The draft is deleted once
+implementation completes, so append its decisions, rationale, and rejected alternatives to
+`adr/{feature-name}.md` before deletion (the `task-cleanup` skill does this). Recording a decision only in the
+draft loses it.
 
 ---
 

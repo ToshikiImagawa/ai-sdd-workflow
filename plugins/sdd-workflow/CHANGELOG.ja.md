@@ -9,6 +9,701 @@
 
 ## [Unreleased]
 
+## [5.0.0] - 2026-09-10
+
+**注記**: ドキュメントモデルに破壊的変更を含むメジャーリリースである。既存プロジェクトを
+アップグレードする前に README.md / README.ja.md の「Migration from v4.x」を読むこと。ただし移行は
+**急ぐ必要がない**。既存の `specification/*_design.md` は引き続き有効であり、命名フックも受理し、
+技術設計を読むスキルは補助入力として読む。決定を `adr/` へ移すまで何も壊れないので、自分のペースで
+進めればよい。
+
+### Breaking Changes
+
+#### ドキュメント構造
+
+- **`specification/{feature-name}_design.md` は永続ドキュメントではなくなった** - 技術設計書は
+  `task/{ticket-number}/design-draft.md` の一時ドラフトとなり、`task/` の他のファイルと同様、実装完了後に
+  削除される。決定・その理由・却下した代替案のみが、新設の `adr/{feature-name}.md`
+  （追記専用）に永続化される。v4.x 由来の既存 `specification/*_design.md` は**引き続き有効**であり、
+  技術設計を読むスキルは補助入力として読み、いずれも命名違反として報告することも削除を提案することも
+  ない（対象スキルの一覧は Fixed の「v4.x の永続設計書」項を参照）。それらの決定を
+  `adr/{feature-name}.md` へ移すのは人間のペースで機能単位に進められる作業 —
+  README.md / README.ja.md の「v4.x からの移行」を参照
+- **`/generate-spec` にチケット番号が必須になった** - 設計ドラフトのパスがチケット単位
+  （`task/{ticket-number}/design-draft.md`）になったため、`/generate-spec` は `--ticket <番号>`
+  を受け取る（`--ci` モードでは必須、それ以外は対話的に解決）
+- **`doc-consistency-checker` のチェック対象が PRD ↔ spec ↔ design から PRD ↔ spec ↔ adr へ変更**
+- **`/check-spec` の比較基準が技術設計書から抽象仕様書（spec）へ変更** - 技術設計書は
+  `task/{ticket-number}/design-draft.md` の一時ドラフトとなり実装完了後に削除されるため、恒久的な比較基準に
+  できなくなった。`/check-spec` は `specification/` 配下の spec（サフィックス任意）を第一級の比較基準とし、
+  設計ドラフトは存在する場合のみ補助入力として参照する。実装完了後にドラフトが存在しないことは正常な状態
+  であり、乖離としては報告しない。spec は抽象仕様であるため、比較は spec から読み取れる項目（公開 API・
+  データモデル・振る舞い・リテラル値）に限定し、モジュール構成・技術スタックはドラフトが存在する場合のみ
+  比較する。`specification/` 配下に v4.x の `{feature}_design.md` を残しているプロジェクトでは、
+  それらのファイルも同じ補助入力として扱う
+- **`/plan-refactor` の Case A / Case B 判定が spec の有無ベースになり、計画の書き込み先が設計ドラフトに変更** -
+  従来は `specification/{feature-name}_design.md` の有無で判定していたが、これは永続ドキュメントではなくなった
+  ため、常に Case B に落ち、新方針が廃止したはずの永続設計書を逆生成して作ってしまっていた。判定は
+  **spec の有無**（`_spec` サフィックスの有無どちらも検出）に変更し、リファクタリング計画と逆生成設計は
+  `task/{ticket-number}/design-draft.md` に書き込む。逆生成 spec は従来どおり `specification/` 配下に
+  永続化する。v4.x 由来の `*_design.md` が残っている場合も検出はするが、参照用のコンテキストとしてのみ扱い、
+  Case 判定にも書き込み先にも使わない
+- **`/plan-refactor` にチケット番号が必要になった** - 設計ドラフトのパスがチケット単位のため、
+  `/plan-refactor` は `--ticket=<番号>` を受け取る（`--ci` モードでは必須、それ以外は対話的に解決）。
+  既存の `task/{ticket-number}/design-draft.md` は Case A の補助入力として読み込まれる
+- **`/task-breakdown` にチケット番号が必須になった** - 読み込む設計ドラフトと出力する `tasks.md` の
+  いずれも `task/{ticket-number}/` 配下にあるため、チケット番号を省略できなくなった。`tasks.md` は
+  常に `task/{ticket-number}/tasks.md` へ出力され、従来の `task/{feature}/tasks.md` へのフォール
+  バックは廃止された
+
+### Added
+
+#### Skills
+
+- **`/generate-prd --amend`** - 新規モード。既存 PRD を全上書きせず、新たに与えられた要求だけを追記する。
+  既存の要求 ID・セクション・要求図ノードを保持し、新規 ID は既存の最大値（プレフィックス別）の続きから
+  採番する。`finalize-prd` も `--amend` 呼び出し時は既存 PRD 本文を受け取り新規内容を統合するようになった
+- **`/generate-spec --amend`** - 新規モード。既存の抽象仕様書を全上書きせず、新たな機能要求・非機能要求
+  のみを追記する。既存の要求 ID・セクションは保持される
+- **`render-adr-review`** - `adr/{feature-name}.md` の決定ログ（または `*_spec.md`/
+  `*_design.md` の決定根拠セクション）を、単純な Markdown→HTML 変換ではなく決定・理由・却下した代替案の
+  軸で構造化した一時レビューHTMLとしてレンダリングする新規スキル。生成物は
+  `.sdd/.cache/render-adr-review/` 配下に出力され、コミットを想定しない。
+  決定ログは覆しを一方向（新しいエントリ側）にのみ記録し、覆された側のエントリは編集しないため、
+  失効した決定は原文中に何の目印も持たず現行の決定と同じに読めてしまう。本スキルは各エントリの
+  `Supersedes` 参照を解決して指し先のエントリを失効として標示するので、陳腐化した決定が現行のものと
+  視覚的に区別され、置き換えたエントリへのリンクを持つ。この標示には `Supersedes` 項目が記録している
+  「何が変わったか」の1行も含み、リンク先は原文の Markdown アンカーを流用せず同一 HTML 内の覆した側の
+  カードを指す。ファイルレベルの `supersedes` / `superseded-by` front matter フィールドはこの判定に
+  一切使わない（決定ログファイルが丸ごと引退したことを表すフィールドであり、エントリ1件の失効を
+  表さないため）。後から覆された決定も、自身の比較表の中では引き続き「採用」として表示される —
+  その時点ではそれが選択されたものであり、覆しはエントリの状態に属する情報であって履歴を書き換える
+  理由にはならない。`Rejected alternatives: None considered` は「代替案を検討していない」として扱い、
+  却下された選択肢としては描画しない
+- **`task-cleanup`** - 実装完了時にチケットへ要約コメントを投稿するようになった。また、`adr/` に統合する
+  決定が「When to Update `*_spec.md`」の基準に該当するかを判定し、該当する場合は `AskUserQuestion` で
+  Spec 更新を提案する
+- **`/sdd-init` が `${SDD_ROOT}/ADR_TEMPLATE.md` を生成するようになった** - 決定ログのテンプレートを
+  両言語でプラグインに同梱し、PRD / spec / design テンプレートと同様にコピーする（既存ファイルは
+  上書きしない）。内容は確定した ADR エントリ形式、覆しを含む2エントリの記入例、そして「最後の
+  エントリの下に追記し、上のエントリには触らない」という注記。なお `/sdd-init` が作成するのは
+  `${SDD_ROOT}/` ルートのみで、`adr/` は `requirement/`・`specification/`・`task/` と同じく
+  最初のファイル書き込み時に自動作成される
+- **`/sdd-init` がキャッシュディレクトリをプロジェクトの `.gitignore` に追記するようになった** -
+  `.sdd/.cache/`（カスタムルートなら `${SDD_ROOT}/.cache/`）には生成物で使い捨ての内容
+  （ドキュメントインデックス、スキルごとの作業用コピー、`render-adr-review` の HTML）が入るが、
+  無視するかどうかは利用者に任されていた。`${SDD_ROOT}/` の外にあるファイルへの**新規の書き込み**である
+  ため、挙動は意図的に最小限にしている: 内容を説明するコメント付きで1度だけ追記し、既存の `.gitignore`
+  の行はすべて保持し（末尾改行が無い場合のみ補う）、`.gitignore` が無ければ当該エントリのみで新規作成し、
+  既に同じパスを無視しているプロジェクト（先頭・末尾のスラッシュの差は同一視）には何もしない。
+  `/sdd-init` を再実行しても行は重複しない。無視されるのは `.cache/` のみで、`${SDD_ROOT}/` 配下の
+  PRD・仕様書・設計ドラフト・決定ログは追跡対象のまま
+- **`/check-spec --ticket <番号>`** - 補助入力の設計ドラフトを対象チケットに絞り込む（後述の Fixed 参照）
+
+#### Configuration
+
+- **`SDD_ADR_DIR` / `SDD_ADR_PATH`** - `adr/` ディレクトリ用の環境変数を新設。既存の `SDD_*_DIR` /
+  `SDD_*_PATH` と同じパターンでセッション開始時に設定される
+
+#### Hooks
+
+- **`${SDD_ROOT}/MIGRATION_PENDING.md` が、移行待ちの v4.x ドキュメントを一覧するようになった** -
+  プロジェクトに `specification/**/*_design.md` が残っている場合、SessionStart フックがこのファイルに
+  それらを列挙（最大10件、超過分は件数で要約）し、(a) それらは引き続き有効で補助入力として読むこと、
+  (b) 決定の移行先は `adr/{feature-name}.md`、(c) 新規の技術設計は
+  `task/{ticket-number}/design-draft.md`、(d) 移行が済むまで元ファイルを削除しないこと、を記載する。
+  手順の在り処は「プラグインの README を参照」ではなく、実際に開けるパスとして示す —
+  `<plugin root>/README.md` の「Migration from v4.x」配下の
+  「Extracting Existing `*_design.md` Files into `adr/`」節（日本語は同ディレクトリの `README.ja.md`）。
+  このファイルは **`UPDATE_REQUIRED.md` とは意図的に別建て**である。`UPDATE_REQUIRED.md` は
+  `CLAUDE.md` が古いことだけを報告し `/sdd-init` を実行すれば消えるが、未完了の移行は別軸・別ペースの
+  関心事であるため、`MIGRATION_PENDING.md` は `/sdd-init` を跨いで残り、該当ファイルが1件でもある限り
+  セッション開始ごとに書き直され、0件になると自動的に削除される。生成ファイルなので手編集は次の
+  セッションで置き換わる。該当ファイルが無いプロジェクトには生成されない。なお `UPDATE_REQUIRED.md` は
+  存在するとスキルが実行前に `/sdd-init` を促す一方、`MIGRATION_PENDING.md` は実行前チェックではない —
+  移行が未完了でもスキルの実行が止まることはない
+
+#### Front Matter
+
+- **`sdd-version` 共通フィールド** - ドキュメントは front matter の `sdd-version` フィールドに、
+  生成時点の sdd-workflow プラグインバージョン（`plugin.json` から取得）を記録できるようになった。
+  `generate-spec`・`generate-prd`・`finalize-prd`・`task-cleanup` が front matter 生成時にこの値を
+  設定する。このフィールド導入前に生成されたドキュメント、または `recommend-front-matter` が既存
+  ドキュメントへ後付けで front matter を付与した場合は存在しない（後付け時に現行バージョンを設定すると
+  偽の生成世代情報になるため、意図的に付与しない）
+- **`sdd-version` を読み取り側でも活用** - ドキュメントインデックス（`.cache/index.md`）の Metadata
+  テーブルに `sdd-version` を含めるようになった。`front-matter-reviewer` はその semver 形式を検証し、
+  現行プラグインの major より古い場合は警告する（移行漏れの可能性を示す advisory）。
+  `doc-consistency-checker` は「世代が古いドキュメント」と「世代不明のドキュメント」（`sdd-version` が
+  そもそも無い＝v5 以前に書かれたものの通常状態）を、人間による移行レビュー用の2つの独立した候補リスト
+  として一覧化する
+- **`type: "adr"` スキーマ** - `shared/references/front_matter_reference.md` に決定ログの
+  front matter フィールドを定義した。`status`（記録時点で常に `"approved"`）と `supersedes` /
+  `superseded-by` を含む。後者2つは**ファイルレベル専用**である: 1つの決定ログは多数のエントリを
+  持つが front matter は1つしかないため、これらは「決定ログファイルが丸ごと引退して置き換えられた」
+  （機能のリネーム・分割・統合）ことを記録する。エントリ間の覆しは新しいエントリの本文に記録する —
+  後述の ADR エントリ形式を参照
+- **`impl-status` が Design 専用ではなく Spec でも有効なフィールドになった** - spec は、承認ライフサイクル
+  （`status`）とは独立した軸として、自身が記述する振る舞いが実装に反映されているかを記録できるようになった。
+  `generate-spec` が新規 spec に `"not-implemented"` を設定し、`implement` が実装の進行に応じて
+  `"in-progress"` / `"implemented"` へ進め、`implement` が更新し忘れた場合の安全網として `task-cleanup` も
+  更新する。`check-spec` は、仕様書に記載され実装が見つからない機能を常に Critical とするのではなく、この
+  フィールドで分岐するようになった：`implemented` なら退行として Critical、`not-implemented`/`in-progress`
+  なら意図した先行として Info、フィールド未設定なら判定不能として Warning（追加を推奨）。
+  `front-matter-reviewer` は spec の `impl-status` の許容値も検証し、`recommend-front-matter` は本
+  フィールドが欠落している spec を列挙する — 実装の実態を確認しないスキルであるため、値の書き込みは
+  行わない（後述の Changed 参照）
+
+#### ワークフローガイダンス
+
+- **タスク種別判定に破壊的変更が追加された** - `AI-SDD-PRINCIPLES.md` の Task Type Determination 表と
+  Task Scale Criteria に "Breaking Change" 行が追加され、影響範囲の洗い出し・後方互換性の方針決定・
+  移行手順の記録先（`adr/`）を定義する新設の "Breaking Change Handling" 節が追加された。この表は
+  `.claude/rules/ai-sdd-instructions.md` にも転記され、原則ドキュメントを開かなくても全プロジェクトに
+  同じガイダンスが届くようになった
+- **PRD が存在しない場合の新規起草が明示的に許可された** - `AI-SDD-PRINCIPLES.md` は「PRD は自動更新しない」
+  というルールが既存 PRD の書き換えを禁じるものであり、存在しない PRD をゼロから起草する行為には適用され
+  ないことを明記した。起草した PRD は人間が承認するまで `status: "draft"` と `"reverse-engineered"` タグを
+  付ける。`/plan-refactor` は逆生成した spec に依存先の PRD が無い場合、この起草を提案するようになった
+- **`vibe-detector` が推奨開始フェーズを出力するようになった** - リスクレポートは、従来の曖昧さリスク評価に
+  加えて、依頼内容をタスク種別判定表に照らして分類し、対応する開始フェーズ（Specify/Plan/Tasks/Implement）
+  を報告する
+- **ADR エントリの本文形式が各スキル任せではなく仕様として確定した** - `AI-SDD-PRINCIPLES.md` の
+  Architecture Decision Record に "Entry Format" 節を追加した。1ファイルは front matter 1個 + `#`
+  タイトル1個 + 末尾に追記される `##` エントリ多数で構成される。各エントリの見出しは
+  `## YYYY-MM-DD {decision title}` で、**Decision**・**Rationale**・**Rejected alternatives**
+  （該当が無ければ `None considered`。捏造は禁止）を必ず持ち、同一ファイル内の過去エントリを覆す場合
+  のみ任意の **Supersedes** でそのエントリへリンクする。覆しは新しいエントリ側に一方向で記録し、
+  覆された側のエントリは逆参照の追加すら行わない（追記専用を保つため）。したがって最後のエントリが
+  常に現行の決定である。これらの項目は `render-adr-review` と `doc-consistency-checker` が抽出する
+  フィールドと1対1で対応するため、この形式で書けば追加の取り決めなしにスキルから読める
+
+### Fixed
+
+- **`adr/` がドキュメントインデックスと `/recommend-front-matter` の走査対象になった** - いずれも
+  従来は `requirement/` と `specification/`（後者は加えて `task/`）のみを走査しており、決定ログが
+  圧縮インデックスや front matter 推奨結果に一度も現れなかった
+- **決定ログの編集でドキュメントインデックスが更新されるようになった** - `PostToolUse` のリマインダー
+  自体は発火していたが、他のドキュメント種別では発火するインデックス更新が `adr/` では実行されて
+  いなかった
+- **`AI-SDD-PRINCIPLES.md` の Configuration Items 表と `.sdd-config.json` の例に `directories.adr`
+  を記載** - `session-start` はこの設定を既に `SDD_ADR_DIR` / `SDD_ADR_PATH` に解決しており、`adr/`
+  自体は最初のファイル書き込み時に作成される（`/sdd-init` が作成するのは `${SDD_ROOT}/` ルートのみで、
+  サブディレクトリは作らない）。欠落していたのは設定項目のドキュメント記載のみだった
+- **`doc-consistency-checker` の Obsolescence Detection に、決定の覆しを記録する方法を明記** -
+  従来は追跡対応が未定義だった。同じ `adr/{feature-name}.md` の末尾に、必須項目と、覆す対象エントリへの
+  `Supersedes` リンクを備えた新しいエントリを追記する提案に置き換えた。陳腐化したエントリは一切変更
+  しない — 逆参照も追加せず、`status: "deprecated"` にも書き換えず、ファイルレベルの `supersedes` /
+  `superseded-by` front matter フィールドにも書かない（同一ファイル内のエントリ間の関係は、そもそも
+  front matter では表現できない）
+- **`adr/{feature}.md` の front matter に `ticket` フィールドを追加し、`task-cleanup` がこれを設定
+  するようにした** - チケットのトラッカー（GitHub Issue / JIRA）に到達できない場合、`task-cleanup`
+  はステップ9（完了サマリの投稿）を代替手段なしにスキップしており、`task/{ticket-number}/` を削除する
+  とチケット番号と機能の唯一の対応関係が失われていた。ステップ7で作成する `adr` エントリが `ticket`
+  を記録するようになったため、トラッカーに到達できない場合でも対応関係が保持される
+- **`run-checklist` が実際にテスト・リンタ・セキュリティスキャナを実行できるようになった** -
+  `allowed-tools` にシェル実行権限が一切無く、スキルの核心機能（検証コマンドの実行）が静的解析による
+  推測に黙って後退していた。プロジェクトのツールチェーンを検出しテスト/リンタ/型検査/セキュリティ
+  コマンドを実行する `scripts/run-verification.py`（`references/verification_commands.md` のマッピングを
+  実装）を新設し、このリポジトリの「ベアな`Bash`は使わない」規約に沿ってこのスクリプトのみを事前承認した。
+  テストが未設定のプロジェクトは `FAIL` ではなく `SKIPPED` として報告するため、未設定のカテゴリが
+  品質ゲートを落とすことはない。スクリプトが扱わないカテゴリ（フォーマッタ検査・依存関係解析・
+  ドキュメントカバレッジ）は、自動検証されるかのような記述を避け、手動レビュー項目として
+  `references/verification_commands.md` に明示した
+- **README.md / README.ja.md の権限節が、事前承認の実態より安全側に書かれていたのを修正** -
+  「シェル実行を一切事前承認していないスキル」の列挙に `/run-checklist` が残っていたが、本リリースで
+  同スキルに `scripts/run-verification.py`（上記）を与えた時点でこれは事実でなくなっていた — この
+  スクリプトはプロジェクト自身のテスト・リンタ・型検査・監査コマンドを確認なしにサブプロセスで起動する。
+  インストール前に判断すべき情報であるため、権限節にはスクリプトのフルパス、検出に使うプロジェクト
+  マーカー（`package.json`・`pyproject.toml`・`Cargo.toml`・`go.mod`・`setup.py`・`requirements.txt`・
+  `Gemfile`、およびマニフェストが1つも無い場合は `test_*.py` / `*_test.py` を含む `tests/`・`test/`
+  ディレクトリ）、ツールチェーンごとに実行するコマンド、1コマンドあたり300秒の
+  タイムアウト、そして `checklist.md` 内に書かれたコマンドは**実行されない**こと（事前承認されているのは
+  ベアな `Bash` ではなくこのスクリプト1本だけであるため）を記載した。スキルが事前承認しているヘルパー
+  スクリプト10本を列挙し、そのうち別プロセスを起動するのはこの1本だけであることも明記した。
+  v4.0.1 で `Bash` を外した3スキルのうち、シェル実行を一切事前承認しないまま残るのは
+  `/implement` と `/task-cleanup` の2件である
+- **`checklist` のテンプレートが自身のSKILL.mdと矛盾しなくなった** - テンプレートは `P0`〜`P3` の優先度と
+  `CHK001` 通し番号を使っていたが、SKILL.md本文のProcessing Flowと正準例
+  （`examples/checklist_full_example.md`）は `P1`〜`P3` と `CHK-{カテゴリ}{連番}`（例: `CHK-501`）を
+  定義していた。両言語のテンプレートを正準の形式に書き換え、テンプレートにのみ存在した「10.
+  プロジェクト原則レビュー」カテゴリを要求レビュー内（`CHK-104`/`CHK-105`）に統合して
+  `run-checklist` の `CHK-1xx`〜`CHK-9xx` マッピングが前提とする9カテゴリ構成を維持し、Export
+  Formats節に残っていた（存在しない）「P0 items」という記述も修正した
+- **`vibe-detector` のEscalation手順が、実行できない操作を指示しなくなった** - `disallowed-tools` は
+  `Write`/`Edit`/`Bash` を意図的に禁止している（`user-invocable: false` であり、ユーザーの明示的な
+  呼び出しなしに実装前へ自動介入するため、読み取り専用を維持する設計）が、Escalation節は
+  `assumed-spec.md` への直接保存を指示していた。今後は推定仕様の内容を自身の
+  出力に含め、呼び出し元セッション（通常の書き込み権限を持つ）に保存を委ねる
+- **`recommend-front-matter` がADRのスキーマを認識するようになった** - `scan-documents.py` は既に
+  `adr/` を走査・分類していたが、スキルのPrerequisitesと `type_specific_fields.md` テンプレートには
+  ADRのフィールド定義が一切無く、front matterが無い決定ログへの推奨が不完全または創作的になっていた。
+  `references/front_matter_adr.md` を新設し、両言語の `type_specific_fields.md` にADRの項目を追加した。
+  あわせて、スキル自身の `type` 列挙と `depends-on` 推論表にも `adr` を追加した（走査対象の他の型は
+  すべて列挙されていたため、これが無いと新設したリファレンスに到達しない）
+- **`naming.py::determine_type()` が `task/{ticket}/design-draft.md` を `type: "task"` に誤分類
+  しなくなった** - `implementation_log`/`impl_log` というファイル名は特別扱いしていたが、新世代の
+  設計ドラフトの正規配置場所である `design-draft.md` の分岐が無く、`recommend-front-matter` 等の
+  呼び出し元が誤ったtype別フィールドを推奨していた
+- **`constitution` の2つのバージョンバンプ表が行単位で一致するようになった** - 「Update Constitution」
+  の表は原則追加をMAJORバンプとしていたが、専用の`add`手順と「Semantic Versioning」表はいずれもMINOR
+  としていた。さらに同じ表は「Clarify principle」をMINORとする一方、「Semantic Versioning」表は同じ行為で
+  ある「Fix expression of principle」をPATCHとしており、「Conditions for Major Version Bump」節が破壊的変更
+  として挙げる優先度変更の行も欠けていた。両表が同じ変更種別を列挙し、「既存の原則が要求する内容を変えるか」
+  という単一の基準で分類する形に統一した
+- **`sdd-init` の「Configuration File Management」節が、自身のスクリプトと矛盾しなくなった** -
+  `init-structure.py` が `.sdd-config.json` 不在時にデフォルト値で自動生成すると記述していたが、
+  実際のスクリプトはエラー終了する（意図的な設計 — デフォルト生成の責務はSessionStartフックが持ち、
+  `sdd-init`側では重複させない）。記述を実際の意図された挙動に修正した
+- **`front_matter_reference.md` のADRスキーマが、自身のStatus Transition Rulesと矛盾しなくなった** -
+  フィールド表はADRの`status`に `draft`/`review`/`approved`/`deprecated` のライフサイクルを列挙して
+  いたが、Status Transition Rules節は「ADRはそのライフサイクルに従わない」と明記していた。ADRの
+  `status` は記録時点で常に `"approved"` であり、決定の覆しは新しいエントリ本文の `Supersedes` 項目に
+  一方向で記録する（ファイルレベルの `supersedes` / `superseded-by` は決定ログファイルが丸ごと引退して
+  置き換えられたことのみを表す）、という記述に修正した
+- **`finalize-prd` の Rule 7（Amend Mode Integration）が、自身のPRDテンプレートと矛盾しなくなった** -
+  新規UR/FR/NFR行の挿入先を「§4（Detailed Requirements）内の表の末尾」と記述していたが、
+  `templates/{en,ja}/prd_template.md` の §4 は `### FR_001: {name}` というプローズ見出し形式であり
+  テーブルは存在しない。記述をテンプレート実態（新規サブセクションを既存エントリと同じ体裁で追加する）
+  に修正した。あわせて、新規ユースケースの関係線（`<<include>>`/`<<extend>>`）の接続先が呼び出し元から
+  明示されない場合のデフォルト方針と、入力側にはあるが既存PRD構造に対応する欄が無い属性（例:
+  Priority）を黙って落とさずプローズ内に明記する方針を追加した
+- **README.md / README.ja.md の「v4.x からの移行」手順が実際に機能するようになった** - 手順1は
+  「`/sdd-init` を再実行して `adr/` ディレクトリとテンプレートを作成する」と案内していたが、スクリプトが
+  作成するのは `${SDD_ROOT}/` ルートのみであり、そもそも ADR テンプレート自体が存在しなかった。手順6は
+  「`*_design.md` を削除したら `/check-spec`（または `doc-consistency-checker`）で確認する」と案内して
+  いたが、どちらのスキルもリンク健全性を検査しないため、そのまま従うと壊れた `depends-on` と本文リンクが
+  黙って残る。手順1は再実行で実際に得られるもの（`ADR_TEMPLATE.md`。`adr/` は最初の書き込み時に作成
+  される）に修正した。手順6は実行可能な `grep` 2本に差し替えた — パス参照用（`_design\.md`）と ID 参照用
+  （`design-{feature-name}`、階層構造では `design-{parent}-{feature}`）で、いずれも `.sdd/.cache/` と
+  `.sdd/AI-SDD-PRINCIPLES.md` を除外する（どちらもインストール済みプラグインから再生成される生成物で、
+  ヒットするのは利用者のドキュメントからの参照ではなくプラグイン自身の説明文である）。除外が無いと
+  検索結果が生成物で埋まって実用にならなかった。手順の指示も、実際に削除したファイルを指すヒットのみを
+  更新すること・散文での規約言及は参照ではないこと・リンク切れはどのスキルも報告しないこと・旧ファイルを
+  残す選択も妥当であることに書き換えた。残りの手順も確定した ADR エントリ形式と実際の front matter
+  フィールド一覧に合わせた
+- **README.md / README.ja.md が破壊的変更を網羅し、チケット番号の扱いを説明するようになった** -
+  「v5.0.0 の破壊的変更」節は今回の破壊的変更のうち3件しか挙げておらず、`/check-spec` の比較基準の反転、
+  `/plan-refactor` の Case 判定変更とチケット引数追加、`/task-breakdown` のチケット番号必須化と
+  フォールバック廃止、`doc-consistency-checker` の対象変更は、この変更履歴を読まないと分からなかった。
+  節の内容を本節と1対1で対応させた。さらに新設の「チケット番号について」節で、スキルごとの渡し方
+  （オプション／位置引数）と必須性を一覧化し、チケットトラッカーを使っていないプロジェクトは任意の
+  安定した識別子（機能名が最も簡単）を使えることを説明した — トラッカーを必要とするのは
+  `/task-cleanup` の完了コメントだけで、到達できない場合はスキップされ、対応関係は
+  `adr/{feature-name}.md` の `ticket` front matter フィールドに残る。あわせて `/sdd-init` の説明を実態に
+  修正し（作成するのはルートのみ。`CONSTITUTION.md` は `/constitution init` で作る）、環境変数表に
+  `SDD_INDEX` を追加した
+- **README.md / README.ja.md のコンポーネント表と `/check-spec` の説明が、同梱スキルの実態に一致した** -
+  表は `doc-consistency-checker` を「PRD ↔ spec ↔ design を検査」と説明し続けており、本リリース自身の
+  破壊的変更一覧と矛盾していた。他にも6行がスキル側の description からずれていた（`/plan-refactor` の
+  「設計書を作成／更新」、`/generate-prd` を SysML 出力に限定した記述、`/check-spec` の対象を抽象仕様書
+  ではなく「仕様書」とした記述、`/task-breakdown` が「技術設計書」を読むという記述、`/checklist` と
+  `/task-cleanup` が廃止済みの退避先を挙げていた記述）。全行をスキルが実際に宣言している description と
+  突き合わせて修正し、`spec-reviewer` / `front-matter-reviewer` の行には `adr/` 関連の責務を追記した。
+  `/check-spec` の節も、「複数チケットが並行していて `--ticket` を省略するとどのドラフトも読まない」という
+  誤った説明を、スキルが実際に持つ5つの結果（ドラフト無し／`--ticket` 指定／`depends-on` 一致／
+  ドラフトが1件だけ／候補複数で根拠なし）の一覧に置き換え、`--ticket` が必須なのは最後のケースのみで、
+  ドラフトに `depends-on` を書けば回避できることを明記した。`--full` が実際に何をレビューするか
+  （決定ログが解決できない機能は「整合」ではなく「該当なし」であることを含む）も明示した。v5 への言及が
+  一切無かった配布リポジトリのランディング README も、インストール済みプラグインの更新手順と看板の
+  破壊的変更2点を扱い、移行節へリンクするようになった
+- **v4.x の永続設計書の扱いが、技術設計を読むすべての箇所で揃った** -
+  `check-spec`・`plan-refactor`・`task-breakdown` は
+  以前から残存する `specification/*_design.md` を補助入力として読んでいたが、プラグインの他の部分は
+  それらとも互いとも食い違っていた: `/implement` はこれを Technical Design 前提条件の充足として
+  認めないため、v4.x で着手した機能を再開すると存在したことのない設計ドラフトの再生成を促された。
+  `/generate-spec` の既存ドキュメントチェックは一切探索しないため、記録済みの技術スタックやモジュール
+  構成と矛盾するドラフトを生成しうる。`/checklist` と `/clarify` は完全に無視しており、設計レビュー項目と
+  設計レベルの質問が抽象仕様書から読み取れる範囲に狭まっていた — v4.1.0 はこの設計書を読んでいた
+  （`/checklist` は必須入力としていた）ので、リリース版に対する退行だった。`spec-reviewer` はレビューできず、
+  `task-cleanup` は「別フローで
+  削除される一時ファイル」と宣言し、`plan-refactor` は「手動移行が必要」と述べ、命名クイックリファレンスは
+  命名フックが従来から許容しているにもかかわらず「Incorrect Naming (never use these)」に列挙していた。
+  `/check-spec`・`/checklist`・`/clarify`・`/constitution`・`/generate-spec`・`/implement`・
+  `/plan-refactor`・`/recommend-front-matter`・`/sdd-init`・`/task-breakdown`・`/task-cleanup`・
+  `doc-consistency-checker`・`spec-reviewer`・`front-matter-reviewer` のすべてが同じ扱いに揃った:
+  これらのファイルは**引き続き有効**であり、**補助入力として読み**、
+  **不在は正常**、新規の技術設計は常に `task/{ticket-number}/design-draft.md` へ書き、いずれも
+  命名違反として報告したり削除を提案したりしない。`/checklist` と `/clarify` はこの設計書をチケット番号
+  ではなく**機能名**から解決する（フラットなら `{feature-name}_design.md`、階層構造なら
+  `{parent-feature}/index_design.md` / `{parent-feature}/{feature-name}_design.md`）ため、チケット番号を
+  省略しても参照される。また両スキルはこれを読み取り専用として扱い、回答やチェックリストの編集を
+  書き戻さない。`/checklist` が生成するチェックリストはどの設計ソースを使ったかを記録する。なお
+  「チケットディレクトリに設計ドラフトも `tasks.md` も無い」という `/checklist` の警告は従来どおり出る —
+  この設計書は `specification/` 配下にあり、チケットについて何も語らないため
+- **`/generate-spec` の完了レポートが、生成していないファイルを生成したと報告しなくなった** -
+  今回のリリースで廃止したはずの `specification/{feature}_design.md`（階層構造では `index_design.md`）
+  を生成物として報告し、次ステップと検証コマンドに実在しないコマンド名 `/task_breakdown` `/check_spec`
+  を提示していた。永続 spec と一時ファイル `task/{ticket-number}/design-draft.md` を実際の書き込み先と
+  して報告し（ドラフトをスキップした場合は行を削除して理由を書く指示付き）、次ステップは実在する
+  `/task-breakdown {feature} {ticket-number}`・`/check-spec`・およびドラフト削除前に決定を `adr/` へ
+  移す `/task-cleanup {ticket-number}` を提示するようになった
+- **`/generate-prd` の完了レポートが、その時点では必ず失敗するコマンドを案内しなくなった** -
+  PRD を書いた直後に実行する検証コマンドとして `/check-spec {feature} --full` を提示していた。しかし
+  その時点では `specification/` が存在しない（他のサブディレクトリと同様、最初のファイル書き込み時に
+  作成される）ため、案内に従うと `/check-spec` は毎回「Specification directory not found」で停止した。
+  レポートは実行可能性でコマンドを2分割するようになった: PRD 単体で動作する `/clarify {feature}`
+  （回答は `requirement/` へ書き込めないため、`/generate-spec` の入力に載せるか手で PRD に反映する旨を
+  付記）と、仕様書が必要な `/check-spec {feature} --full`（理由付き）。次のステップはコピー＆ペーストで
+  動く `/generate-spec --ticket {ticket-number} {requirements-description}` になり、「生成されたファイル」
+  節には、このスキルが書き込むドキュメントは PRD 1ファイルだけである旨（ユースケース図・UR/FR/NFR 表・
+  SysML 要求図は PRD 内部のセクションであり別ファイルではない）を明記した
+- **プロジェクトへコピーされる spec テンプレートが v5 のドキュメントモデルを説明するようになった** -
+  `.sdd/SPECIFICATION_TEMPLATE.md` は技術スタックの選定理由・アーキテクチャ・設計判断の記録を永続
+  `xxx_design.md` へ退避させ続け、`adr/` に一切言及していなかったため、これを元に書いた spec は
+  廃止済みドキュメントを指し続けていた。比較表を3ドキュメント（spec: 永続 / 設計ドラフト: 一時 /
+  決定ログ: 永続・追記専用）に更新し、ヘッダーに Related Design Draft と Related Decision Log を持たせ、
+  除外内容を退避先別に分割し（決定・その理由・却下した代替案は `adr/{feature-name}.md` へ、それ以外の
+  技術内容はドラフトへ）、ドラフトにしか書かれていない決定はドラフト削除時に失われることを警告する
+- **`task-cleanup` が `task/{ticket-number}/` を削除する前に `adr/` への追記結果を検証するようになった** -
+  削除ステップは統合が実際に反映されたかを確認せずに `git rm` を実行していたため、抽出漏れや編集失敗が
+  あると設計判断が永久に失われた。削除の前に検証ゲートを通すようになった: 決定ログをディスクから再読込し、
+  追記したエントリの `## YYYY-MM-DD {title}` 見出しと Decision / Rationale / Rejected alternatives が
+  存在し空でないこと、実行前から存在したエントリが無改変であること、直前ステップの front matter および
+  他ドキュメントの編集がディスク上にあることを確認する。いずれかが失敗した場合は何も削除せず、
+  `task/{ticket-number}/` を残して欠落を報告する
+- **`task-cleanup` がコミットされていない `task/` ディレクトリも削除できるようになった** - 削除手段が
+  `git rm` 固定だったため、未追跡のパスに対しては
+  `fatal: pathspec '...' did not match any files` で失敗して何も削除せず、かつスキル側は「別の削除経路を
+  試みるな」と定めていた。そのため `task/` を Git にコミットしない運用のプロジェクトでは、検証まで
+  通ったクリーンアップを最後まで完了できなかった。まず対象に対して `git ls-files` を実行して追跡状態を
+  確定し（一致有無に関わらず exit 0 なので**出力**で判断する）、追跡されていれば `git rm`、未追跡なら
+  素の `rm`、混在しているディレクトリでは追跡分と未追跡分をそれぞれのコマンドで削除するようになった。
+  未コミットの `task/` に対する `rm` は回避策ではなく正規の経路として明文化されている。このスキルは
+  依然として `Bash` を事前承認していないため、`git ls-files` と各削除コマンドは都度確認を求める。
+  ユーザーが削除自体を断った場合は停止して報告し、確認プロンプトを回避するために削除コマンドを
+  切り替えることは禁止されている。確認回数を減らすために許可リストへ登録する場合の対象は
+  `git ls-files`・`git rm`・`rm` の3つで、README の `settings.json` の例も3件を列挙し、`rm` を許可すると
+  あらゆる `rm` を許可することになる旨を注記した
+- **`doc-consistency-checker` が、実際には評価していないプロジェクトに「stale 0件」と報告しなくなった** -
+  `sdd-version` を持たないドキュメントは stale リストから明示的に除外されており、このフィールドは v5 以前に
+  書かれたものには存在しないため、v5 以前のドキュメントだけで構成されたプロジェクトは常に「stale: 0」と
+  報告され、移行完了と区別できなかった。stale（`sdd-version` あり・major が古い）と世代不明
+  （`sdd-version` 不在）を別々に数えて2つのリストとして報告し、片方が0でも必ず両方を出す
+  （例: `stale: 0 / generation unknown: 85 of 85 checked`）。いずれも Grep + Glob で算出するため、
+  ドキュメントインデックスが無効でもこの検査はスキップされない
+- **`doc-consistency-checker` が、検査していない領域を「問題なし」と報告しなくなった** - `adr/` が空で
+  v4.x の `specification/*_design.md` しか無い場合、spec ↔ 決定記録の検査はそもそも実行されないまま
+  レポートが「問題なし」で返っていた。分岐するようになった: `adr/` にエントリがあれば従来どおり検査し、
+  エントリが無く v4.x の設計書がある場合は同じ4項目をその設計書に対して実行して
+  `spec ↔ design (v4.x legacy)` として報告し、どちらも無い場合は `not checked` と報告する（決して
+  consistent とは報告しない）。すべてのレポート冒頭に、使用した決定記録のソースと、実行できなかった
+  検査領域とその理由を明示する
+- **`front-matter-reviewer` が `adr/` のドキュメントを検証できるようになった** - 型判定・id パターン・
+  相互参照の Glob 対象のいずれからも `adr/` が欠けていたため、`adr-*` 参照はすべて未解決に見え、`adr/`
+  内の id 重複は検出されず、ADR 固有のフィールドは一度も検査されなかった。`adr/*.md` を
+  `type: "adr"`（`task/{ticket-number}/design-draft.md` を `type: "design"`）と判定し、`adr-*` の id を
+  受理し、ADR 固有フィールドを検査し、ファイルレベルの `supersedes` / `superseded-by` の相互ポインタを
+  双方向で確認し、エントリ見出しやアンカーがそれらのファイルレベルフィールドに書かれている場合は
+  error として本文への移動を勧告するようになった。`sdd-version` の不在は info（世代不明）として報告し、
+  黙って落とさない
+- **`spec-reviewer` が設計ドラフトをレビューするようになった** - Input Format と技術設計レビュー節が
+  `specification/{feature}_design.md` を要求し続けていたため、`/generate-spec` が実際に生成するものを
+  レビューできなかった。`task/{ticket-number}/design-draft.md` を受け取り（不在は正常であり、その場合
+  spec ↔ design のトレーサビリティ検査は not applicable として報告する）、廃止された階層構造チェックの
+  代わりにチケットスコープを検査し、後の `adr/` エントリに必要な却下代替案を求め、v4.x の設計書は
+  補助入力としてレビューする
+- **`/check-spec` が他チケットの設計ドラフトを比較に混入させなくなった** - ヘルパースクリプトが `task/`
+  配下の `design-draft.md` を全件収集していたため、複数チケットが並行していると別チケットの設計が補助
+  入力として渡され、無関係な機能に対してモジュール構成の警告を出していた。ドラフトの選定は
+  `--ticket <番号>` が与えられていればそれ、次にドラフトの `depends-on` が対象 spec の id と一致するもの、
+  次にプロジェクト内でドラフトが1件だけならそれ、という順になった。候補が複数残り根拠が無い場合は1件も
+  採用せず、候補を列挙して `--ticket` 付きでの再実行を勧める。同じスクリプトは先頭のフラグを機能名と
+  誤認しなくなった（従来は `/check-spec --full` が `--full` という名前の spec を探していた）
+- **`/check-spec` が降格した乖離の件数を報告するようになった** - `impl-status` による Critical の降格は
+  黙って行われ、かつ v4.x のドキュメントには `impl-status` が存在しないため、レポート全体が降格された
+  うえで「Critical 0件」と読まれうる状態だった。Warning への降格（フィールド不在）と Info への降格
+  （`not-implemented` / `in-progress`）の件数を、0件でも常に出力し、降格した項目は解決済みではないことを
+  明記するようになった。判定不能ケースの案内も、存在しない `impl-status` の自動付与を指すのをやめ、
+  「列挙 → 実装の実態を確認 → 自分で記入」の手順を説明する。また、デフォルト実行でも `--full` でも
+  `adr/` と実装の乖離は検出されない（`--full` は spec ↔ adr の文書整合のみ）ため、レポートに
+  `adr ↔ Implementation: Not checked` と手動確認手順を出し、スキル側にも既知の制約として明記した
+- **`/check-spec --full` が、約束していた spec ↔ adr レビューを実際に行うようになった** - このモードは
+  「各 spec を対応する決定ログと比較する」と説明されていたが、どの spec にどのログが対応するかを解決する
+  処理が無く、委譲先のレビュー観点も定義されておらず、英語の出力テンプレートには結果欄そのものが
+  無かった（日本語版にのみ行があった）。`/check-spec` は spec ごとに決定ログを解決するようになった —
+  spec の `specification/` 配下での位置を `adr/` に写した名前一致（`adr/{feature}.md` と旧形式の
+  `adr/{feature}-decisions.md`）、それが無い場合は front matter の `depends-on` がその spec を指す `adr`
+  ドキュメント。`directories.adr` のカスタム名も尊重し、解決したパスを `spec-reviewer` に渡す。
+  レビュー観点は、spec が記述する振る舞いの背後にある決定が記録されているか、現行の決定（後続エントリに
+  覆されていない最新エントリ）が spec と一致するか、spec が覆された決定に依拠していないか、エントリが
+  参照する spec 要素が現存するか、エントリが必須項目を備えているか、用語が一貫しているか。矛盾の修正は
+  spec の修正か、`Supersedes` リンク付きの新規エントリの追記のいずれかで、記録済みエントリの編集や
+  ファイルレベル front matter フィールドの利用は行わない。決定ログを解決できなかった機能は
+  **該当なし**として報告し、整合とは報告しない。`adr/` ディレクトリが存在しないプロジェクトはエラーでも
+  警告でもない。これはドキュメント同士のレビューであり、`adr/` と実装の乖離は対象外（上記の制約のとおり）
+- **`recommend-front-matter` が設計ドラフトに正しい id を推奨するようになった** - id 生成に design の
+  例外が無かったため、`task/{ticket-number}/design-draft.md` にはどの相互参照も解決できない feature
+  スコープの id が付いていた。`design-{ticket-number}` になった（機能名を含めず、チケットディレクトリを
+  階層の親として扱わない）。v4.x の `specification/*_design.md` は従来の feature スコープ形を維持する。
+  task / 実装ログの `depends-on` 推論は同一 `task/{ticket-number}/` のドラフトを第一候補とし、無ければ
+  v4.x の設計書にフォールバックし、どちらも無いことを正常な結果として扱う。欠落していた
+  `adr` -> `spec` の推論手順も追加した
+- **`sdd-init` の Migration Support が、実際には行わない作業を説明しなくなった** - 「再実行すると
+  `${SDD_ROOT}/AI-SDD-PRINCIPLES.md` が無ければ生成する」と主張していたが、このファイル（および
+  `.claude/rules/ai-sdd-instructions.md`）は SessionStart フックの責務であり毎セッション再同期され、
+  スクリプトは一切触らない。さらに移行が必要かどうかの判定条件もそのファイルの不在としており、フックが
+  常に作るため成立しない状態だった。判定条件を `ADR_TEMPLATE.md` の不在（`adr/` ドキュメントモデル導入
+  前の初期化）に変更し、テンプレート一覧を4件に更新し、v4.x プロジェクトを v5 のドキュメントモデルへ
+  移行する手順の節を新設した
+- **`/constitution sync` に、同期対象として挙げている ADR テンプレートの手順が加わった** -
+  `ADR_TEMPLATE.md` は `CONSTITUTION.md` と同期するファイルの一覧に載っていたが、その下の手順は spec /
+  design テンプレートからタスクテンプレートへ飛んでおり、名前を挙げただけで一度も触られていなかった。
+  手順にこの項目を追加した: エントリ形式への原則参照の追加と用語の同期を行い、必須エントリ項目
+  （Decision / Rationale / Rejected alternatives）はスキルが機械的に読むため維持し、sync が触るのは
+  テンプレートのみで、`${SDD_ADR_PATH}/{feature-name}.md` に記録済みのエントリは追記専用のため
+  書き換えない
+- **生成される `.claude/rules/ai-sdd-instructions.md` のディレクトリ図に `ADR_TEMPLATE.md` が載った** -
+  フラット図・階層図のいずれも PRD / spec / design のテンプレートは挙げているのに、`/sdd-init` がその隣に
+  作る決定ログのテンプレートだけが欠けていた。このファイルは SessionStart フックが毎セッション各
+  プロジェクトへ再同期し、`.sdd/` 配下の作業では常にロードされるため、実際の初期化結果と食い違う
+  `${SDD_ROOT}/` を提示していた
+- **`checklist` の spec 表が、自身の命名注記と矛盾しなくなった** - 表は `{feature-name}_spec.md`
+  （階層構造の親は `index_spec.md`）を required としていたが、その下の注記は `specification/` 配下では
+  サフィックスが任意だと述べていた。どちらの形式でも required 行を満たすようになった
+- **`/constitution validate` がサフィックス無しの spec を取りこぼさなくなった** - 事前スキャンが
+  `specification/**/*_spec.md` を glob していたが、本リリースで同ディレクトリの `_spec` は任意になったため、
+  `{feature-name}.md` という名前の spec がスキャン対象から漏れ、原則準拠の検証が黙って行われていなかった。
+  `specification/` 配下の `.md` から v4.x の `*_design.md`（従来どおり別リストに載る）を除いた全件を
+  スキャンするようになった
+- **憲章テンプレートが永続設計書を必須と書かなくなった** - 配布される `CONSTITUTION.md` テンプレート
+  （および `/constitution` の例・レポートテンプレート）が、すべての実装に `specification/*_design.md` を
+  要求していた（本リリースで永続ドキュメントではなくなった文書）。該当行を v5 のドキュメント構成
+  （抽象仕様書（サフィックス任意）・チケットの一時 `task/{ticket-number}/design-draft.md`・確定した決定の
+  `adr/{feature-name}.md`）に更新した
+- **PRD テンプレート・実装ログ・vibe-detector レポートに残っていた v4 世代のドキュメント表** - PRD
+  テンプレートのドキュメント比較表、実装ログの「統合内容」節、`vibe-detector` の仕様書ステータス表が
+  いずれも `xxx_design.md` を永続の技術ドキュメントとして説明し続けていたため、それを読んだプロジェクトは
+  ワークフローが保持しないファイルに決定を書き続けることになっていた。spec / design-draft / 決定ログの
+  3分割を示すようにし、実装ログの統合チェックリストは各項目を対応する `adr/` エントリの項目
+  （Decision / Rationale / Rejected alternatives）に向けるようにした
+- **出力テンプレートが存在しないコマンド名を提示しなくなった** - `task-breakdown`・`clarify`・
+  `check-spec`・`implement`・`constitution`・`vibe-detector` のテンプレートや例が、`/check_spec`・
+  `/generate_spec`・`/task_cleanup` というアンダースコア表記（v4 でハイフンへ改名されて以降は
+  有効なコマンド名ではない）の実行を案内し続けていた。実在するコマンド名（`/check-spec`・
+  `/generate-spec`・`/task-cleanup`）を提示するようになった
+- **`sdd-init` の「このコマンドが行うこと」が `CONSTITUTION.md` を作ると主張しなくなった** -
+  項目2が「`${SDD_ROOT}/CONSTITUTION.md` が無ければ作成する」と書いており、同ファイル内の後続3箇所と、
+  意図的にコピー対象外にしている `init-structure.py` に矛盾していた。不足を報告して
+  `/constitution init` を案内する内容に修正した
+- **`run-checklist` が、チェックリスト不在時に「何も検証していない」まま報告しなくなった** -
+  Error Handling はテスト失敗とツール不在のみを扱い、チェックリスト自体が見つからない場合の規定が無かった。
+  解決したパス、チケットの解決経路（引数か機能名由来か）、および2つの対処（チケット番号付きで再実行する／
+  `/checklist` で生成する）を報告するようになり、読み込めていないチェックリストに対する検証結果は
+  報告しない
+- **PRDレベルの要求ID形式が、ハードコードではなく `id_conventions` から解決されるようになった** -
+  `analyze-requirements`・`prd-reviewer`・`generate-requirements-diagram` がハイフン表記
+  （`UR-xxx` / `FR-xxx` / `NFR-xxx`）をハードコードしていた一方、同梱のPRDテンプレートと
+  パイプラインの他の部分は既に `UR_001` / `FR_001` を生成していた。そのため
+  `.sdd-config.json` に `id_conventions` を設定していても該当3件では無視され、既定設定の
+  プロジェクトでも要求分析が出すIDが自身のPRDテンプレートが書くIDと一致しなかった。
+  3件とも `shared/references/id_conventions_config.md` § PRD-Level ID Format Resolution に従って
+  形式を解決し、未設定時は `UR_xxx` / `FR_xxx` / `NFR_xxx` にフォールバックするようになったため、
+  設定した規約が端から端まで尊重される
+- **`check-spec` が、唯一の設計ドラフトが実は別チケットのものだった場合に誤って添付しなくなった** -
+  `find-spec-docs.py` の sole-draft フォールバックは、ディスク上に唯一存在するドラフトを、その
+  `depends-on` front matter が明確に別の仕様を指している場合でも採用してしまっていた（これは
+  「たまたま1件しかない無タグのドラフト」ではなく「別機能に属するという積極的な証拠」）。
+  該当ドラフトは sole-draft の例外から除外され、`unscoped`（または残った無タグのドラフトがあれば
+  そちらへのフォールバック）になるようにした
+- **`check-spec` / `constitution validate` が、`api_design.md` のようなspecをv4.x永続design docと
+  誤判定しなくなった** - `specification/` 配下では `_spec` 接尾辞が任意化されているため、`_design` で
+  終わる正規のspec名が新設される可能性があるが、ファイル名だけのヒューリスティックはこれを区別できず、
+  両コマンドの出力から黙って除外していた。front matter の `type` フィールドが宣言されている場合は
+  そちらをヒューリスティックより優先するようにした
+- **`post-tool-use.py` のspec同期リマインダが、globメタ文字を含むソースファイル名でも文字通りに
+  マッチするようになった** - `find_spec_doc` / `find_legacy_design_doc` がファイルの語幹を未エスケープ
+  のまま `rglob` パターンに埋め込んでいたため、`parse[v2].py` のようなファイルは `[v2]` がワイルドカード
+  の文字クラスとして解釈され、実在するspecへのリマインダが出なくなっていた。同じ修正を`check-spec`の
+  CLIターゲット引数（部分一致フォールバック）にも適用した
+- **`run-checklist` の検証スクリプトが、対象カテゴリの候補ツールが全て未インストールの場合に
+  `SKIPPED` を返さなくなった** - SKILL.md がこのケース用に定義済みの `TOOL_NOT_FOUND` を正しく返す
+  ようにした（`SKIPPED` は「このカテゴリにコマンドが定義されていない」「ツールは実行されたが検証対象が
+  無かった」の2ケース専用として残す）
+- **`run-checklist` の検証スクリプトが、非UTF-8のツール出力デコードで未捕捉のクラッシュを起こす
+  リスクをなくした** - `subprocess.run` のデコードをロケール既定から `errors="replace"` に変更した。
+  従来はロケールが非UTF-8（`LANG=C` のCIコンテナ等）の場合に `UnicodeDecodeError` が発生し、
+  スキルが期待するJSON結果を返さずスクリプトが異常終了することがあった
+- **`evaluate-skills` の安全ガード監査が、あるキーワードの最初の出現が否定文脈だった場合に、
+  それ以降の本物の違反を検査しなくなる問題を修正した** - `audit_run_artifacts.py` は各キーワードの
+  最初の出現位置だけを見ており、それが否定文脈（「...確認をスキップしてはならない...」）に該当すると、
+  同一キーワードの後続の本物の違反を検査していなかった
+- **`evaluate-skills` のskill-creatorパス解決が、キャッシュが一度も存在しない場合に無言で異常終了
+  しなくなった** - `set -euo pipefail` の下で、存在しないキャッシュディレクトリへの `find` が
+  「未インストール」という親切なエラーメッセージより先にスクリプトを終了させていた。また、複数バージョンが
+  キャッシュされている場合に誤った「最新版」を選んでしまう問題も修正した——キャッシュディレクトリ名は
+  ソート可能なバージョン番号ではなくインストール時のハッシュのため、辞書順ソートには順序としての意味が
+  無く、代わりに更新日時（mtime）で最新を判定するようにした
+
+### Changed
+
+#### Naming
+
+- **`specification/`・`adr/` の `_spec`/`_design`/`-decisions` サフィックスが任意になった** - いずれも
+  単一種別ディレクトリ（配下は抽象仕様書のみ／決定ログのみ）であるため、命名規則強制フックはこれらの
+  ディレクトリでサフィックスを必須としなくなった。既存のサフィックス付きファイルは引き続き有効。
+  `requirement/` は変更なし（`_spec`/`_design` サフィックスは引き続き禁止）
+- **生成スキルが新規ADRファイルのデフォルトを `adr/{feature}.md`（`-decisions` サフィックス無し）に統一** -
+  `task-cleanup`・`generate-spec`・`render-adr-review`・`doc-consistency-checker`・`sdd-init`・
+  `implement`・共有の `document_dependencies.md` の参照例が、新規決定ログ作成時のデフォルトとして
+  サフィックス無しのファイル名を示すようになった。既存の `-decisions.md` ファイルは引き続き有効で、
+  そのまま検出・編集される。`naming.py` のバリデーションに変更はない
+
+#### Hooks
+
+- **編集後リマインダの参照先が技術設計書から spec に変更** - ソースファイル編集後、`PostToolUse` フックは
+  `specification/` 配下の対応する spec（`{stem}_spec.md` → `{stem}.md` の順）を探索し、spec の同期を促す
+  ようになった。従来は `{stem}_design.md` を探索していたため、永続ドキュメントとして存在しなくなった
+  v5.0.0 ではリマインダが発火しなかった。`.sdd/` ドキュメント編集時のリマインダも PRD ↔ spec ↔ adr を
+  参照するようになった
+- **v4.x の設計書しか持たない機能でもリマインダが出るようになった** - 探索先を spec に移した結果、
+  `specification/{stem}_design.md` しかドキュメントが無い機能のソースを編集しても何も出力されず、
+  そうしたプロジェクトが従来受け取っていたリマインダが黙って消えていた。このケースには専用の文言を
+  出すようになった: 設計書は有効な補助入力として読むこと、その決定は `adr/{feature-name}.md` に
+  属すること、移行が済むまで削除しないこと。手順の在り処は「プラグインの README を参照」ではなく、
+  実際に開けるパスとして示す — `<plugin root>/README.md` の「Migration from v4.x」配下の
+  「Extracting Existing `*_design.md` Files into `adr/`」節。spec が
+  存在する場合は従来と同一の spec 同期リマインダを使い、出力されるメッセージは常に1件のみ
+- **`adr/` 配下の編集にもリマインダが出るようになった** - 決定ログを編集しても従来は何も出力されなかった。
+  追記専用（過去エントリを書き換えない）であることと、仕様を変える決定は spec に反映する必要があることを
+  促すようになった
+
+#### Skills
+
+- **下流スキルが技術設計書を `task/{ticket-number}/design-draft.md` から読むようになった** -
+  `task-breakdown`・`implement`・`checklist`・`clarify` が、`/generate-spec` が生成しなくなった旧
+  `specification/{feature}_design.md` を参照し続けていた。そのため `/generate-spec` →
+  `/task-breakdown` → `/implement` と順に辿るとデッドロックし、下流スキルが必須とする設計書が
+  永久に作られない状態だった。4スキルすべてがチケット単位の固定パスを参照するようになり、この
+  パスは抽象仕様書のフラット／階層構造とは独立している
+- **`checklist`・`clarify` は設計ドラフトを任意入力として扱うようになった** - 設計ドラフトは実装完了時に
+  削除されるため、不在でもこれらのスキルは停止せず、抽象仕様書（および存在する場合は PRD・`tasks.md`）
+  のみで続行する。`clarify` は設計ドラフトの位置を特定するための任意引数 `ticket-number` を受け取る。
+  ドラフトが無く、v4.x の `specification/{feature-name}_design.md`（階層構造の親は `index_design.md`）が
+  残っているプロジェクトでは、設計レベルの質問と設計レビュー項目をその設計書から導出する（省略ではなく）
+- **`task-breakdown`・`implement` の `depends-on` がチケット単位の design ID になった** - 設計ドラフト
+  自身の `id` は `design-{ticket-number}` であるのに、指示は `design-{feature-name}` のままで、
+  `front-matter-reviewer` の cross-reference 検査が必ず失敗していた。両スキルが
+  `["design-{ticket-number}"]` を指示するようになり、`shared/references/front_matter_reference.md` の
+  `type: "design"` スキーマも同じ形式に修正した
+- **`implement` が `_spec` サフィックス有無の両方の抽象仕様書を受け付けるようになった** -
+  `specification/` 配下でサフィックスが任意になったにもかかわらず前提条件チェックは
+  `{feature}_spec.md` のみを要求していた。`{feature}.md` / `{feature}_spec.md` のいずれでも満たせる
+- **`/plan-refactor` が決定を `adr/` へ引き継ぐ導線を提示** - 完了出力で `/task-cleanup` を案内し、設計ドラフト
+  （およびそこに含まれるリファクタリング計画）が削除される前に、確定した決定を `adr/{feature-name}.md` へ
+  追記するよう促す。本スキル自身は `adr/` に書き込まない — 計画は提案であり、追記専用ログに載せるのは
+  確定した決定のみとするため
+- **`doc-consistency-checker` の PRD 更新推奨の導線が `/generate-prd --amend` を案内するようになった** -
+  spec の変更が PRD の要求と矛盾し、人間が PRD 更新を選んだ場合、従来は手段を指定していなかったが、
+  `/generate-prd --amend` を案内するようになった
+- **チケット番号を取るすべてのスキルで `--ticket <番号>` と `--ticket=<番号>` のどちらでも渡せる** -
+  スキルごとに一方の
+  書式しか記載していなかったため、あるスキルで覚えた書き方が他のスキルに通じなかった。
+  チケット番号を受け取る10スキル — `/generate-spec`・`/plan-refactor`・`/task-breakdown`・`/implement`・
+  `/checklist`・`/run-checklist`・`/clarify`・`/task-cleanup`・`/check-spec`・`/render-adr-review` —
+  のすべてが両書式を同義として受理することを明記し、番号が位置引数のスキルではフラグ形式が位置引数の
+  スロットを消費しないことも明記した。とくに `/render-adr-review` は、位置に捕まったフラグを値として
+  扱わなくなり、`/render-adr-review adr/x.md --ticket=123` の出力ファイル名が
+  `--ticket=123-review.html` になることが無くなった。`/generate-spec` の `argument-hint` にも、従来は補完に出て
+  いなかった `--ticket`・`--ci`・`--amend` を列挙した。`--ci` モードでチケット番号が欠けている場合は、
+  読み書きを一切行う前に停止し、欠落している引数と修正した実行例を提示する（プレースホルダの番号や
+  `task/unknown/` ディレクトリを勝手に作らない）
+- **チケット番号を省略できるスキルが、解決したパスを明示するようになった** - `/implement`・
+  `/checklist`・`/run-checklist`・`/clarify`・`/task-cleanup` は機能名（または `task/` 全体）に
+  フォールバックするため、読み書き先が黙って変わる。各スキルが解決したパスを出力に明示し、そこに
+  何も無い場合はそのパス・チケット番号の省略が原因である可能性・2つの対処を報告するようになった
+  （他の task ディレクトリを探し回ったり、必要なドキュメント無しで作業を始めたりしない）。`/clarify`
+  は PRD・spec・および v4.x の設計書のみで分析したことも明示するため、設計関連の質問カバレッジが
+  下がっていることが見える
+- **`recommend-front-matter` は `impl-status` が欠けている spec を列挙し、このフィールドを書き込まない** -
+  `--apply` は従来、front matter を既に持つ spec に `impl-status: "not-implemented"` を追記し、front
+  matter が無いドキュメントに書き込むブロックにもこれを含めていた。この値は実装についての主張であり、
+  このスキルは実装を確認しない。さらに実装済みの spec に `not-implemented` を刻むと、`/check-spec` の
+  退行検知（Critical）が「意図した先行」（Info）に変わってしまう — このフィールドが検出するために存在する
+  まさにその失敗である。front matter を既に持つドキュメントは一切変更せず、書き込むブロックからも
+  `impl-status` を外し、フィールドが欠けている spec を列挙するだけにした。実装の実態を確認して
+  `implemented` / `in-progress` / `not-implemented` を自分で記入する運用になる。承認ダイアログの件数も
+  「front matter が無いドキュメント」のみになった
+- **`task-cleanup` の決定ログ追記が確定したエントリ形式に従うようになった** - 指示は「末尾に追記する」
+  「既存エントリの構造に合わせる」程度で、見出しの形も項目名も運任せだった。決定1件 = `## YYYY-MM-DD
+  {decision title}` エントリ1件とし、Decision / Rationale / Rejected alternatives（該当が無ければ
+  `None considered`。捏造は禁止）を必須、同一ファイル内の過去エントリへの `Supersedes` リンクを任意と
+  した。既存エントリの書き換え・並べ替え・削除は禁止、覆された側のエントリは一切編集せず、覆しを
+  ファイルレベルの `supersedes` / `superseded-by` front matter フィールドに書いてはならない
+- **`task-cleanup` が削除する技術知見の退避先を示すようになった** - 実装のコツ・トラブルシューティング
+  メモ・パフォーマンス知見は、退避先が定義されないまま「削除可能」と分類されていたため単に失われていた。
+  知見は決定ではないので `adr/` のエントリにはならない（決定の Rationale の一部としてなら入る）。
+  削除する各項目について退避先 — コードコメント／振る舞いを固定するテスト／`*_spec.md` — を必須とし、
+  どこへ退避したかを報告するようになった
+- **`/plan-refactor` の技術的負債の観察に永続的な退避先が定義された** - 従来は設計ドラフトに書かれるだけで、
+  ドラフトとともに失われていた。各観察に3つの退避先のいずれかを割り当てるようになった: 今回のリファクタで
+  解消する負債は `/task-cleanup` が追記する `adr/` エントリの Rationale へ、意識的に見送る負債は
+  トラッカー item（その id を計画に記録。見送り自体が決定である場合は cleanup で独自エントリにもなる）へ、
+  実装が spec の記述と矛盾している負債は人間が承認する `*_spec.md` の修正提案へ。負債用の新規ドキュメントは
+  作らない（v5 に常設の負債台帳は無く、`adr/` は決定の記録である）。完了出力には退避先が未定の観察を
+  列挙する
+- **`/plan-refactor` が、逆生成した分析のうちどこまでがチケットを越えて残るかを明示するようになった** -
+  Case B では既存実装の棚卸し結果を設計ドラフトに書き出すが、ドラフトはクリーンアップで削除されるため、
+  棚卸しのどの項目が永続ドキュメントに到達すべきなのかがどこにも書かれておらず、結果として毎チケット
+  丸ごと失われていた。境界を明文化し、逆生成テンプレート側に永続する項目の置き場所を用意した:
+  外部から観測できるデータフローは逆生成 spec の新設「振る舞いとデータフロー」節へ、他のコードが依存する
+  モジュール境界は同 spec の「内部インターフェース」節へ（契約のみ。背後のファイル構成は書かない）、
+  アーキテクチャのパターン名は同 spec の実装ノートへ。一方、コンポーネント内訳・ディレクトリ構成・
+  コンポーネント間依存・内部の呼び出し順序・主要アルゴリズムの解説・状態管理の内部・テストカバレッジの
+  数値は**意図的に永続させない**（コードから再導出でき、ドキュメント側の複製は必ずずれていくため。
+  spec テンプレート自身もこれらを除外している）。Case B の完了出力は、spec に引き継いだ項目と意図的に
+  破棄した項目をそれぞれ提示するようになった。`/task-cleanup` も同じ理由で同種の構造記述を削除可能に
+  分類し、退避先を求めない — ただし構造に関する*決定*は従来どおり `adr/` エントリとして残る
+
+#### Documentation
+
+- **`AI-SDD-PRINCIPLES.md`** - Consistency Checking 表に恒久的な実装チェックとして `spec ↔ Implementation`
+  行を追加し、`design ↔ Implementation` を「設計ドラフトが存在する実装中のみ有効」と位置づけ直した。
+  `adr/` ディレクトリと `design-draft.md` のライフサイクルを明文化し、
+  `requirement/`（PRD）は spec/design/実装側の変更から自動更新されないこと — 矛盾は人間の判断に委ね、
+  無断で書き戻さないことを明記した
+- **`shared/references/document_dependencies.md`** - `adr/` モデルに整合するよう更新（それまで
+  `specification/*_design.md` を永続扱いとする旧記述のまま、再設計に追随していなかった）
+- **`check-spec` の front-matter-reviewer への委任が、実行できなかった場合に明示するようになった** -
+  従来はエージェント委任ができない実行環境では front matter 検証が黙ってスキップされ、それでも
+  チェック完了として報告されていた。今後はその旨を明示し、人間による手動レビュー項目として一覧化する
+- **`generate-prd` の prd-reviewer / front-matter-reviewer への委任も同様の明示的フォールバックを持つ** -
+  上記と同じ修正を両方の呼び出し箇所（新規生成・`--amend`）に適用した
+- **`checklist` の各項目が根拠を開示するようになった** - 各項目がどの文書のどの記述から導出されたかを
+  明記し、文書からの引用ではなく実装コンポーネントの存在から推論した場合は
+  `synthesized from: {コンポーネント名}` と記載する。これにより「抽出」と「創作」をレビュアーが
+  区別できる
+- **`clarify` が9カテゴリすべてについて Clear/Partial/Missing の分類を記録するようになった** -
+  質問化しなかったカテゴリも含め、分析が実際にどこまで網羅されたかが出力から見えるようになった
+- **`generate-requirements-diagram` が、網羅性と10〜15要求の可読性ガイドラインが衝突する場合の
+  優先順位を明示するようになった** - 網羅性が優先され、まずサブシステム別の図分割を検討する。
+  分割が適用できない場合のみサブ要求を1つの注記付きノードへ圧縮してよいが、どのサブ要求を
+  なぜ圧縮したかを明示しなければならない
+- **`clarify` が、NFR/制約を曖昧と判定する前に実装コードを確認するようになった** - 対象機能の
+  `impl-status` が `implemented` の場合、未定義に見える閾値やタイムアウトが実は実装コード側にのみ
+  記録された決定済みの値（`TIMEOUT_SECONDS` 定数など）である場合がある。仕様書の記述だけで
+  「未定義」と判断する前に、実装済みの値を確認するようにした
+- **`generate-requirements-diagram` が、要求図節の欠落を対象文書への直接編集で補わなくなった** -
+  「テキストのみ返す」契約に、節が欠落している場合でも `Write`/`Edit` で「親切に」補ってはならない
+  ことを明記した。要求図は常にテキストとして返し、書き込むかどうかの判断は呼び出し元に委ねる
+- **`checklist` が全カテゴリの全項目に優先度付与を必須化した** - 標準9カテゴリ以外の自作カテゴリ
+  （原則適合カテゴリ等）を含む。加えて優先度体系の出所明示が、テンプレートの定型文の丸写しではなく
+  SKILL.md本文とテンプレートの実際の比較記録を要求するようになった
+- **`check-spec` がNFRもFRと同様に個別に実装と突き合わせるようになった** - NFRについて結論部の
+  一文で済ませる報告はこの突き合わせ要件を満たさなくなった。重大度分類にも、重大度は検出確度ではなく
+  実質的な影響（公開インターフェース・観測可能な振る舞い・データモデルへの影響か、内部詳細のみか）に
+  基づくことを明記した
+- **`task-cleanup` のADRエントリ形式の指示が、`AI-SDD-PRINCIPLES.md` に既に定義済みの全項目テーブルを
+  丸ごと再掲しなくなった** - そのテーブルを正典として参照するようになり、cleanup固有の補足（見出しの
+  日付の取得元、「None considered」の文言）だけをローカルに残した。これにより2つのコピーが黙って
+  食い違うことがなくなる
+- **`PreToolUse` フックが `.sdd-config.json` をツール呼び出しごとに1回だけ読み込むようになった
+  （従来は2回）** - パス解決とnaming除外パターンの参照が、それぞれ独立してファイルをopen・parseして
+  いた
+- **`PostToolUse` フックのspec同期リマインダが、ソースファイル1件の編集ごとに `specification/` を
+  1回だけ走査するようになった（従来は最大3回）** - `find_spec_doc` の2つの接尾辞候補と、別途行われて
+  いた `find_legacy_design_doc` へのフォールバックを、1回のディレクトリ一覧取得から解決するようにした
+
 ## [4.1.0] - 2026-08-19
 
 ### Added

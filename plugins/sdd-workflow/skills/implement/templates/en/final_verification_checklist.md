@@ -24,6 +24,7 @@
 - [x] Data models match spec
 - [x] Behavior matches spec
 - [x] Design doc updated with decisions
+- [x] Spec `impl-status` updated to `implemented`
 
 ### Documentation
 

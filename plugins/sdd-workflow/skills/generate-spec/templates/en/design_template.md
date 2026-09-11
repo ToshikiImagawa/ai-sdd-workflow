@@ -1,5 +1,5 @@
 ---
-id: "design-{feature-name}"
+id: "design-{ticket-number}"
 title: "{Feature Name}"
 type: "design"
 status: "draft"
@@ -16,25 +16,29 @@ risk: "medium"
 
 # Technical Design Document Template (Design Doc)
 
-This document is a template for creating Technical Design Documents under `${SDD_SPECIFICATION_PATH}/`.
-The filename should be `{feature-name}_design.md`.
+This document is a template for creating a Technical Design Document **draft** under `${SDD_TASK_PATH}/{ticket-number}/`.
+The filename is `design-draft.md`.
+This is a **temporary** file: delete it after implementation, once its key decisions are integrated into
+`adr/{feature-name}.md`.
 
 > **Note**: This template is a fallback for the plugin.
 > When using in a project, customize it according to your programming language and project structure,
 > and save it as `${SDD_ROOT}/DESIGN_DOC_TEMPLATE.md`.
 
-## Difference from Abstract Specification
+## Difference from the Other Technical Documents
 
-| Document        | SDD Phase         | Role and Focus                                                                                     | Abstraction           |
-|-----------------|-------------------|----------------------------------------------------------------------------------------------------|-----------------------|
-| `xxx_spec.md`   | **Specify**       | **"What to build" "Why to build"** - Defines abstract structure and behavior. No technical details | High (Abstract)       |
-| `xxx_design.md` | **Plan (Design)** | **"How to implement"** - Concrete technical design. Ensures design decision transparency           | Medium-Low (Concrete) |
+| Document                                | SDD Phase              | Role and Focus                                                                                      | Abstraction           | Persistence                                  |
+|-----------------------------------------|------------------------|-----------------------------------------------------------------------------------------------------|-----------------------|----------------------------------------------|
+| `specification/{feature-name}_spec.md`  | **Specify**            | **"What to build" "Why to build"** - Defines abstract structure and behavior. No technical details  | High (Abstract)       | **Persistent**                               |
+| `task/{ticket-number}/design-draft.md` (this file) | **Plan (Design)** | **"How to implement"** - Concrete technical plan for one ticket                          | Medium-Low (Concrete) | **Temporary** - deleted after implementation |
+| `adr/{feature-name}.md`                 | **Implement & Review** | **"Why it was decided this way"** - Decisions, rationale, and rejected alternatives                 | Medium                | **Persistent** (append-only)                 |
 
 ---
 
 # {Feature Name} `<MUST>`
 
-**Related Spec:** [link to xxx_spec.md]
+**Related Spec:** [link to specification/{feature-name}_spec.md]
+**Related Decision Log:** [link to adr/{feature-name}.md]
 **Related PRD:** [link to requirement/{feature-name}.md]
 
 ---

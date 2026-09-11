@@ -35,6 +35,16 @@
 
 {DEEPER_ANALYSIS_OF_WHY_PROBLEMS_EXIST}
 
+**Problems Left Out of This Refactoring's Scope:**
+
+Move anything this plan will not fix into the "Technical Debt Observations" list and give it a persistent
+destination (tracker item / proposed spec correction). This draft is deleted at `/task-cleanup`, so an entry
+with no destination is lost.
+
+| Problem   | Destination                                           |
+|:----------|:------------------------------------------------------|
+| {problem} | {tracker item {id / to be created} / proposed spec correction} |
+
 ### Refactoring Strategy
 
 **Goals:**
@@ -48,7 +58,7 @@
 - **Pattern:** {e.g., Extract Interface, Strategy Pattern, Repository Pattern}
 - **Technique:** {e.g., Strangler Fig Pattern for gradual migration}
 - **References:**
-  - See `references/refactor-patterns.md` for pattern details
+  - See `references/refactor_patterns.md` for pattern details
   - Martin Fowler's Refactoring Catalog: {specific refactorings}
 
 **Trade-offs:**
@@ -115,6 +125,18 @@
 - [ ] None (backward compatible)
 - [ ] Internal API only (no external impact)
 - [ ] Public API changes (requires version bump and migration guide)
+
+**Alternative Approaches Comparison (required when breaking changes apply):**
+
+If anything other than "None (backward compatible)" is checked above, compare at least 2 concrete alternative
+approaches. Do not implement any of them — present the comparison and leave the choice for human review.
+
+| Approach | Summary | Pros | Cons |
+|:--|:--|:--|:--|
+| {Approach 1: e.g., immediate breaking change} | {description} | {pros} | {cons} |
+| {Approach 2: e.g., phased deprecation with migration window} | {description} | {pros} | {cons} |
+
+**Recommendation:** {which one and why; final decision is left to human review}
 
 **Affected Components:**
 
@@ -225,8 +247,9 @@ If critical issues are discovered post-deployment:
 
 - Related PRD: `{path_to_prd}`
 - Related Specification: `{path_to_spec}`
-- Design Patterns: See `references/refactor-patterns.md`
-- Integration Guide: See `references/design-doc-integration.md`
+- Decision Log (after cleanup): `${SDD_ADR_PATH}/{feature-name}.md`
+- Design Patterns: See `references/refactor_patterns.md`
+- Integration Guide: See `references/design_doc_integration.md`
 
 ---
 
