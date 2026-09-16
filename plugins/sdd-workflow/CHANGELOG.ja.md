@@ -9,6 +9,37 @@
 
 ## [Unreleased]
 
+## [5.1.0] - 2026-09-16
+
+### 追加
+
+- **`/migrate-design-to-adr` スキル** - v4.x で永続化された `specification/{feature-name}_design.md` を
+  追記専用の決定ログ `adr/{feature-name}.md` へ移行する。決定・理由・却下した代替案（*why*）のみを
+  持ち込み、実装ステータス・モジュール分割・データモデル・テスト戦略・変更履歴・未解決の課題は
+  持ち込まない。エントリ形式は `/task-cleanup` と同じ2段フォールバック（`ADR_TEMPLATE.md`、
+  無ければ `AI-SDD-PRINCIPLES.md` の Architecture Decision Record 節）で解決するため、
+  形式を二重に定義しない。機能名または `--all` を受け取り、`--all` ではパイロット1件で形式を承認した後に
+  残りを一括処理する。元の `*_design.md` の削除は必ず明示的な確認を取り、保持することも妥当な選択として
+  扱う。付属スクリプトが移行対象への参照を検出し、コア標準参照（書き換えを提案）とプロジェクト固有参照
+  （手動対応として報告）に分類する。生成ファイル・`CHANGELOG.md`・既存 ADR エントリ・`design-draft.md`
+  への参照は報告しない
+
+### 修正
+
+- **`/sdd-init` 実行時に `AI-SDD-PRINCIPLES.md` / `ai-sdd-instructions.md` が旧バージョンのまま
+  取り残される不具合** - `session-start.py` が持っていた再生成ロジック（`get_plugin_version` /
+  `sync_principles_file` / `sync_rules_files`）を共通モジュール
+  `plugins/sdd-workflow/scripts/principles_sync.py` へ抽出し、`session-start.py` と
+  `init-structure.py` の両方から呼び出すようにした。`/reload-plugins` でプラグインバージョンを
+  切り替えた直後は `SessionStart` イベントが発火しないため、その状態で `/sdd-init` を実行すると
+  `.sdd/AI-SDD-PRINCIPLES.md` と `.claude/rules/ai-sdd-instructions.md` が旧バージョンのまま
+  取り残されていた
+- **`AI-SDD-PRINCIPLES.md` の表記不整合** - §Document Dependencies の依存関係の説明にある2箇所で
+  `task/design-draft.md` に `{ticket-number}` プレースホルダが欠落していた（同ファイル内の他9箇所は
+  プレースホルダ付き）。また §Consistency Checking の「Check Target」表の2行で `Implementation` の
+  大文字表記が同じ表の他の行・直後の「Check Execution Timing」表と揺れていた。表記のみの修正で
+  挙動に変更はない
+
 ## [5.0.0] - 2026-09-10
 
 **注記**: ドキュメントモデルに破壊的変更を含むメジャーリリースである。既存プロジェクトを

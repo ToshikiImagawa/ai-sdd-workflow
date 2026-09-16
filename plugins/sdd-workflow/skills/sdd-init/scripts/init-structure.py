@@ -18,6 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 from hook_common import resolve_project_root  # noqa: E402
 from env_export import rewrite_exports  # noqa: E402
+from principles_sync import sync_all as sync_principles_and_rules  # noqa: E402
 
 # Comment written above the cache entry appended to the project's .gitignore.
 GITIGNORE_COMMENT = "# AI-SDD generated cache (not intended to be committed)"
@@ -195,6 +196,13 @@ def main() -> None:
         f"Note: Subdirectories ({config['requirement']}, {config['specification']}, "
         f"{config['adr']}, {config['task']}) will be created automatically when files are generated"
     )
+
+    # Regenerate the plugin-managed agent guidance files from the plugin that is
+    # active right now. /sdd-init can run after /reload-plugins swapped the
+    # plugin version without a SessionStart event, in which case the hook has not
+    # re-synced them and they would stay on the previous version.
+    log("Syncing AI-SDD-PRINCIPLES.md / .claude/rules/ai-sdd-instructions.md...")
+    sync_principles_and_rules(str(plugin_root), str(project_root), sdd_root, str(sdd_dir))
 
     # --- Phase 2: Copy templates (if not exist) ---
     copy_templates(sdd_dir, plugin_root, config["lang"])

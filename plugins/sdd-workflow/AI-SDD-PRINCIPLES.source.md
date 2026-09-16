@@ -338,8 +338,8 @@ graph RL
 **Meaning of Dependency Direction**:
 
 - `Implementation` is created based on `task/` task logs, including the `design-draft.md` produced during the Plan phase
-- `task/design-draft.md` is created referencing `*_spec.md` (concretizing abstract "what"). It is a **temporary draft**, discarded after implementation
-- `adr/` is created by extracting the decision rationale from `task/design-draft.md` before it is deleted, and persists as an append-only log
+- `task/{ticket-number}/design-draft.md` is created referencing `*_spec.md` (concretizing abstract "what"). It is a **temporary draft**, discarded after implementation
+- `adr/` is created by extracting the decision rationale from `task/{ticket-number}/design-draft.md` before it is deleted, and persists as an append-only log
 - `*_spec.md` is created referencing `requirement` (converting business requirements to technical specifications)
 - `requirement` is created following `CONSTITUTION.md` principles (non-negotiable project principles)
 
@@ -655,8 +655,8 @@ Verify consistency between documents:
 | **PRD ↔ spec**              | Requirement ID to spec mapping, functional requirement coverage                            |
 | **spec ↔ design**           | API definition match, requirement reflection in design decisions, constraint consideration |
 | **design ↔ adr**            | Decision rationale is captured in `adr/{feature}.md` before `task/{ticket-number}/design-draft.md` is deleted |
-| **spec ↔ Implementation**   | Public API match, data model match, behavior match per requirement ID, literal value match. **The persistent implementation check** — the spec outlives the design draft, so this is the baseline whenever no draft exists |
-| **design ↔ Implementation** | Module structure match, interface definition match. **Only valid while `task/{ticket-number}/design-draft.md` exists** (i.e. during implementation); the draft is deleted afterwards, so this check no longer applies |
+| **spec ↔ implementation**   | Public API match, data model match, behavior match per requirement ID, literal value match. **The persistent implementation check** — the spec outlives the design draft, so this is the baseline whenever no draft exists |
+| **design ↔ implementation** | Module structure match, interface definition match. **Only valid while `task/{ticket-number}/design-draft.md` exists** (i.e. during implementation); the draft is deleted afterwards, so this check no longer applies |
 
 **Check Execution Timing**:
 

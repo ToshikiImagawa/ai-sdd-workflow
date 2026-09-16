@@ -133,6 +133,7 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 | `/check-spec`                    | 実装コードと抽象仕様書（spec）の整合性をチェックし、不整合を検出                            |
 | `/task-cleanup`                  | 実装完了後の task/ ディレクトリをクリーンアップし、設計判断と却下した代替案を削除前に `adr/{feature-name}.md` へ統合 |
 | `/render-adr-review`             | ADR決定ログを決定・理由・却下した代替案の軸で構造化した一時レビューHTMLとしてレンダリング              |
+| `/migrate-design-to-adr`         | v4.x で永続化された `specification/*_design.md` を `adr/{feature-name}.md` へ移行し（決定のみを持ち込む）、更新が必要な参照を報告 |
 | `/task-breakdown`                | 技術設計ドラフトからタスクを独立にテスト可能な小タスクのリストに分解                          |
 | `/clarify`                       | 仕様を9つのカテゴリでスキャンし、曖昧さを明確化するための質問を生成                           |
 | `/implement`                     | TDD ベースの5フェーズ実装。TaskList で進捗を追跡し、tasks.md に自動マーク             |
@@ -466,6 +467,12 @@ CONSTITUTION.md 準拠、必須セクションの網羅性、曖昧な記述の�
 8. **`doc-consistency-checker` の対象が PRD ↔ spec ↔ design から PRD ↔ spec ↔ adr に変わりました**
 
 ### 既存の `*_design.md` を `adr/` へ抜粋する手順
+
+`/migrate-design-to-adr <feature-name>` は以下の手順を代行します。決定を抽出し、`ADR_TEMPLATE.md`
+（無ければ `AI-SDD-PRINCIPLES.md`）から解決したエントリ形式で `adr/{feature-name}.md` へ追記し、
+元ファイルの削除前に確認を取り、更新が必要な参照を「書き換えを提案できるもの」と「利用者だけが判断できるもの」
+に分けて報告します。`--all` を渡すと保留中の全ファイルを順に処理できます（パイロット1件で形式を承認してから
+残りを一括処理してください）。以下の手動手順はスキルが行う内容の説明であり、手作業で移行する場合の参照でもあります。
 
 この変更より前に永続化された `specification/{feature-name}_design.md` がある場合、決定履歴を
 `adr/{feature-name}.md` へ抜粋してください。

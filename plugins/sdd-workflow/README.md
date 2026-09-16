@@ -135,6 +135,7 @@ customized to your project instead of copied from a generic template.
 | `/check-spec`                    | Checks consistency between implementation code and the abstract specification (spec), detecting discrepancies |
 | `/task-cleanup`                  | Cleans up the task/ directory after implementation, integrating design decisions and rejected alternatives into `adr/{feature-name}.md` before deletion |
 | `/render-adr-review`             | Renders an ADR decision log into a temporary review HTML, structured by decision / rationale / rejected alternatives |
+| `/migrate-design-to-adr`         | Migrates a v4.x persisted `specification/*_design.md` into `adr/{feature-name}.md`, carrying over decisions only, and reports the references that need updating |
 | `/task-breakdown`                | Breaks down tasks from the technical design draft into a list of independently testable small tasks          |
 | `/clarify`                       | Scans specs across 9 categories, generates questions to clarify ambiguity                                    |
 | `/implement`                     | TDD-based 5-phase implementation. Tracks progress with TaskList and auto-marks in tasks.md                   |
@@ -472,6 +473,13 @@ decisions into `adr/{feature-name}.md` (append-only) before deletion.
 8. **`doc-consistency-checker` now checks PRD ↔ spec ↔ adr**, not PRD ↔ spec ↔ design
 
 ### Extracting Existing `*_design.md` Files into `adr/`
+
+`/migrate-design-to-adr <feature-name>` performs the steps below for you: it extracts the decisions, appends
+them to `adr/{feature-name}.md` in the entry format resolved from `ADR_TEMPLATE.md` (else
+`AI-SDD-PRINCIPLES.md`), asks before deleting the original, and reports every reference that needs updating —
+splitting them into ones it can propose a rewrite for and ones only you can decide on. Use
+`--all` to work through every pending file, approving the format on a pilot file first. The manual steps below
+document what the skill does, and remain the reference for migrating by hand.
 
 If your project has persisted `specification/{feature-name}_design.md` files created before this change,
 extract their decision history into `adr/{feature-name}.md`.
