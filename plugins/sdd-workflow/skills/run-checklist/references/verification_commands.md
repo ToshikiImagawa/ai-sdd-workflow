@@ -12,6 +12,8 @@ python3 "${CLAUDE_PLUGIN_ROOT}/skills/run-checklist/scripts/run-verification.py"
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/run-checklist/scripts/run-verification.py" security
 ```
 
+The opt-in `proof` category takes options (see "Law Proof (CHK-205)" below).
+
 The script owns detection and execution; it implements the "Detection Priority" order below and the
 test / lint / type-check / security rows of the tables that follow. It prints a JSON result
 (`PASS` / `FAIL` / `SKIPPED` / `TOOL_NOT_FOUND` / `TIMEOUT`) on stdout — see SKILL.md for how each status maps
@@ -67,6 +69,38 @@ review items rather than reporting them as failures.
 | Spec Consistency     | `/check-spec {feature}`             |
 | Type Definition      | Run type checker (tsc, mypy, etc.)  |
 | API Signature        | Compare exports with spec document  |
+
+### Law Proof (CHK-205, opt-in)
+
+Only for specs whose front matter has `laws:`. Pass every directory in one call (each element prefixed with `${SDD_ROOT}/`):
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/run-checklist/scripts/run-verification.py" proof \
+  --laws-dir .sdd/laws/auth/user-login --laws-dir .sdd/laws/auth/signup [--verdict] [--timeout 300]
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/run-checklist/scripts/run-verification.py" proof \
+  --print-laws-hash --laws-dir .sdd/laws/auth/user-login   # for a human writing the approval line
+```
+
+Without `--laws-dir` the script scans `${SDD_LAWS_PATH}`. Defaults come from `.sdd-config.json` (`proof.timeout_seconds`, `proof.verdict`); CLI options win.
+
+| Decision (first match wins)                                           | Status           |
+|:----------------------------------------------------------------------|:-----------------|
+| `bend` not on PATH                                                    | `TOOL_NOT_FOUND` |
+| Specified directory missing                                           | `FAIL`           |
+| No `LAWS.bend`                                                        | `SKIPPED`        |
+| Orphan laws (no `# spec:`, unresolved id, or not in the spec's `laws:`) | `FAIL`           |
+| No valid `# approved:` line (missing, malformed, hash mismatch)       | `SKIPPED`        |
+| No `law` declaration                                                  | `SKIPPED`        |
+| No `PROOF.bend`; `PROOF.bend` does not import `LAWS`; disallowed import | `FAIL`         |
+| Time limit exceeded                                                   | `TIMEOUT`        |
+| Exit 0 and `ALL PROOFS CHECK`                                         | `PASS`           |
+| `--verdict` and Lean kernel unavailable                               | re-run without it, `verdict: "unavailable"` |
+| Anything else                                                         | `FAIL`           |
+
+Approved directories may also carry a `warnings` array (`source_drift` / `source_invalid`, FR-013) when a `# source:` section hash no longer matches the spec. It is additive: status and aggregation are unchanged, and it is omitted when `bend` is absent.
+
+Multiple directories aggregate as FAIL > TIMEOUT > TOOL_NOT_FOUND > SKIPPED > PASS. `BEND_NO_TELEMETRY=1` is always set.
+**PASS means the reference model satisfies the approved laws; it does not prove the implementation.**
 
 ### Design Review (CHK-3xx)
 

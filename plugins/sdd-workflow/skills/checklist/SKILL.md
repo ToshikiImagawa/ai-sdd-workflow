@@ -187,7 +187,7 @@ extracted verbatim. This basis line is what lets a reviewer tell "extracted" apa
 | Category                  | Purpose                           | Examples                                       |
 |:--------------------------|:----------------------------------|:-----------------------------------------------|
 | **Requirements Review**   | Verify all requirements addressed | FR-xxx coverage, NFR-xxx validation            |
-| **Specification Review**  | Verify spec completeness          | API signatures, data models                    |
+| **Specification Review**  | Verify spec completeness          | API signatures, data models, law proof (CHK-205) |
 | **Design Review**         | Verify design quality             | Architecture patterns, tech stack              |
 | **Implementation Review** | Verify code quality               | Code structure, naming conventions             |
 | **Testing Review**        | Verify test adequacy              | Unit tests, integration tests, edge cases      |
@@ -195,6 +195,12 @@ extracted verbatim. This basis line is what lets a reviewer tell "extracted" apa
 | **Security Review**       | Verify security measures          | Authentication, authorization, data validation |
 | **Performance Review**    | Verify performance                | Response times, resource usage                 |
 | **Deployment Review**     | Verify deployment readiness       | Configuration, migrations, rollback plan       |
+
+**Fixed item `CHK-205 [P2]` (law proof / proof gate)**: generate it from the template **only when the target
+spec's front matter has `laws:`**. For a spec without `laws:`, do not generate it (it would always read
+SKIPPED and only add noise). It stays in the Specification Review category (2xx) and is opt-in, so it is P2,
+not P1: Bend is an optional dependency and a P1 item would make merging environment-dependent. Copy the
+template's note that PASS covers the reference model, not the implementation.
 
 ### 4. Organize by Priority
 

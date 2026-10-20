@@ -10,7 +10,8 @@ on violation.
 
 When the write target is implementation source code, injects the project's
 CONSTITUTION.md principles as additionalContext. To avoid context bloat:
-- only source files inside the project are targeted
+- only source files inside the project are targeted (files outside the
+  project, e.g. under an absolute .sdd-config.json root, are out of scope)
 - injection happens at most once per session (marker file keyed by session_id)
 - the injected text is truncated to CONSTITUTION_MAX_CHARS
 """
@@ -26,6 +27,7 @@ from hook_common import (  # noqa: E402
     emit_additional_context,
     emit_permission_deny,
     get_project_root,
+    is_within_project,
     load_naming_ignore_patterns,
     load_sdd_paths,
     read_sdd_config_json,
@@ -91,6 +93,13 @@ def main() -> None:
         return
 
     project_root = get_project_root(payload)
+    # Files outside the project are explicitly out of scope (issue #151): with an
+    # absolute .sdd-config.json "root" the documents live outside the project,
+    # and this hook cannot validate them. The decision lives in
+    # hook_common.is_within_project so future external-root support changes
+    # one place; session-start.py warns the user about the limitation.
+    if not is_within_project(file_path, project_root):
+        return
     rel_path = relative_to_project(file_path, project_root)
     if not rel_path:
         return

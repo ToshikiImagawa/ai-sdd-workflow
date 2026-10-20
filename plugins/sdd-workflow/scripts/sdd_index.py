@@ -23,7 +23,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from hook_common import load_sdd_paths, resolve_project_root  # noqa: E402,F401
+from hook_common import (  # noqa: E402,F401
+    is_external_sdd_root,
+    load_sdd_paths,
+    resolve_project_root,
+)
 from fm_parser import (  # noqa: E402,F401
     LIST_KEYS,
     _strip_scalar,
@@ -515,6 +519,8 @@ def upsert_document(conn: sqlite3.Connection, rec: Dict[str, Any]) -> None:
 def rebuild_all(project_root: str) -> None:
     paths = load_sdd_paths(project_root)
     sdd_root = paths.root
+    if is_external_sdd_root(sdd_root, project_root):
+        return  # unsupported root (issue #155): skip indexing
     req_dir, spec_dir, adr_dir = paths.requirement_dir, paths.specification_dir, paths.adr_dir
     conn = connect(db_path(project_root, sdd_root))
     try:
@@ -559,6 +565,8 @@ def rebuild_all(project_root: str) -> None:
 
 def update_one(project_root: str, rel_path: str) -> None:
     sdd_root = load_sdd_paths(project_root).root
+    if is_external_sdd_root(sdd_root, project_root):
+        return  # unsupported root (issue #155): skip indexing
     db_file = db_path(project_root, sdd_root)
     if not Path(db_file).is_file():
         return

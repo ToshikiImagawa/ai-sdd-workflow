@@ -9,6 +9,46 @@
 
 ## [Unreleased]
 
+## [5.2.0] - 2026-10-21
+
+### 追加
+
+- `/draft-laws` の抽出ルール: 固定 API に集約関数（例: `Model.aggregate`）があり、その下位に二項演算（例: `Model.worse`）がある場合、交換則・単位元・空入力・単一要素の法則はまず集約関数の側で書く。二項演算側は上限に余裕があるときだけ追加する。候補に `level: "binary"` を付けられ、`rank` は同一優先内でそれを最後に並べる
+- **`/draft-laws` スキル** - `draft <feature>` は spec（判定表・集約規則・不変条件・数値目標）から法則候補を抽出し、`# source:` 節ハッシュ・`# model-api:` 行・静的チェック・抽出レポート（`--ticket <n>` で `laws-draft-report.md`）付きで `LAWS.bend`（既存の `LAWS.bend` があれば `LAWS.draft.bend`）に出力する。`model <feature>` は承認行が有効なときだけ `main.bend` / `PROOF.bend` を作成する。`# approved:`・`laws-status`・`laws:` は書かず（提案のみ）、承認行を持つ `LAWS.bend` には触れず、`bend` も呼ばない。`.sdd-config.json` の `laws.max_laws`（1 以上の整数、既定 10）で採用数を制限し、候補の整列と打ち切りは `draft_laws.py` が決定的に行う
+- proof ゲートの出典ずれ warning と spec 編集時の促しを追加: `run-verification.py proof` は、承認済みの法則ディレクトリで `# source:` の節ハッシュが現在の spec と一致しない場合、任意の `warnings` 配列（`{"code": "source_drift" | "source_invalid", "law", "source"}`）を加える（加算のみ。判定・集約・既存キーは不変。`bend` 不在では出さない）。`post-tool-use` は `laws:` を持つ spec の編集後に、ずれた法則を挙げて `/draft-laws` での再抽出を促す。`CHK-205` に併記
+- 今後の `/draft-laws` スキルと proof ゲートの warning が使う共有モジュール `laws_drafting.py` を追加: `# source:` が指す spec 節の節ハッシュ、`bend` 不要の法則案の静的チェック（出典の実在・欠落、重複、自明法則、import 許可形式、`# model-api:` の整合）、出典ずれ検出、承認の有効性判定（`laws_header.py` を再利用）。既存の法則・proof ゲートの挙動は変わらない
+- **Bend 証明ゲート（opt-in）** - `/run-checklist` に検証カテゴリ `proof` を追加し、spec の制約を Bend の法則
+  （`${SDD_LAWS_PATH}/{feature}/` の `LAWS.bend` / `PROOF.bend` / `main.bend`）として検査する。任意機能であり、
+  `bend`・法則ファイル・承認済みの法則が無ければ `TOOL_NOT_FOUND` / `SKIPPED` となり実行全体を失敗させない。
+  法則は、法則本文の内容ハッシュに束縛された人手の `# approved:` 行があって初めて有効になり、承認済みの法則本文を
+  編集すると承認は失効する。`bend` は常に `BEND_NO_TELEMETRY=1` で起動し、`import Base` と法則ディレクトリ内の
+  相対 import のみ許可する。spec と双方向に結びつかない法則ディレクトリ（孤児 laws）は FAIL。
+  **PASS は参照モデルが承認済みの法則を満たす保証であり、実装の正しさの保証ではない。**
+  `run-verification.py proof` は `--laws-dir`（複数可）、`--verdict`、`--timeout`、`--print-laws-hash` を取る
+- spec の front matter に `laws:` / `laws-status:` を追加（`front-matter-reviewer` が検証し、`--cross-ref` では
+  ディレクトリの実在・`# spec:` の一致・状態と実ファイルの整合・孤児 laws も検査）。`laws:` を持つ spec でのみ `CHK-205 [P2]` を生成
+- `post-tool-use` のリマインド: `.bend` 編集後に proof ゲートの再実行、`main.bend` の `# model-of:` に挙げたファイルの編集後にモデルの見直しを促す
+- `.sdd-config.json` に `directories.laws` / `proof.timeout_seconds` / `proof.verdict` を追加。セッション開始時に `SDD_LAWS_DIR` / `SDD_LAWS_PATH` をエクスポート
+
+### 修正
+
+- **`.sdd-config.json` の `root` に絶対パスを指定するとフックが無音で壊れる** (#151) -
+  プロジェクト外を指す `root` では、`pre-tool-use.py` が外部ドキュメントを警告なく素通りし
+  （命名規則検証・CONSTITUTION 注入が効かない）、`post-tool-use.py` はソース編集が外部 spec に
+  マッチすると `Path.relative_to` の `ValueError` で落ち（rc=1）、`session-start.py` は何も警告しなかった。
+  絶対パス／プロジェクト外の root は現時点で**未対応**であり、本修正はそれを無音ではなく明示する:
+  `session-start.py` が警告（相対パスまたは git サブモジュールを案内）を出して処理を継続し、
+  `post-tool-use.py` はプロジェクト外ドキュメントを無視して落ちなくなり、`pre-tool-use.py` は新設の
+  `hook_common.is_within_project()` / `is_external_sdd_root()` ヘルパー（将来外部 root を対応する際の
+  差し替え点）でプロジェクト外パスを「対象外」として扱い、`init-structure.py` は無意味になる
+  `{root}/.cache/` の `.gitignore` 追記をスキップして警告する。
+- **絶対パス `root` で `session-start.py` / `sdd_index.py` が外部ディレクトリへ書き込む** (#155) -
+  警告後も `session-start.py` がプロジェクト外へ `.cache/`・`AI-SDD-PRINCIPLES.md`・`UPDATE_REQUIRED.md`・
+  `MIGRATION_PENDING.md` を生成し、`sdd_index.py` は `relative_to` で `ValueError` になり得た。#151 の
+  「絶対パス root は未対応」に揃え、`session-start.py` は警告（書き込みをスキップした旨を明記）と
+  `SDD_*` のエクスポートのみ行って終了し（プロジェクト内の AI-SDD 設定の同期（`.claude/rules/` など）・CLAUDE.md チェック・
+  移行判定もまとめてスキップされる）、`sdd_index.py` は外部 root では索引生成をスキップする。
+
 ## [5.1.0] - 2026-09-16
 
 ### 追加

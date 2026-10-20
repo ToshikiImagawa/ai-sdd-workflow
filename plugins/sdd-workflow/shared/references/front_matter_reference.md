@@ -45,6 +45,8 @@ and cross-reference validation.
 | `priority`   | `critical`, `high`, `medium`, `low`         | Inherit from PRD if available          |
 | `risk`       | `high`, `medium`, `low`                     | Inherit from PRD if available          |
 | `depends-on` | `["prd-*"]`                                 | References PRD                         |
+| `laws`       | list of `${SDD_ROOT}`-relative directories (e.g. `["laws/auth/user-login"]`) | Optional, opt-in (Bend proof gate). Pointer to the law directories derived from this spec. Laws are downstream, so this is **not** a dependency: never put them in `depends-on` |
+| `laws-status` | `none`, `drafted`, `approved`, `proven`    | Optional. Absent means `none`. See "Spec `laws-status` Transitions" below |
 
 ##### `status` vs `impl-status`
 
@@ -226,6 +228,26 @@ observes the implementation state:
 | `not-implemented` → `in-progress`  | `implement`                          | When implementation for the spec starts                             |
 | `in-progress` → `implemented`      | `implement`                          | When implementation completes (all tasks done, verification passes) |
 | → `implemented` (safety net)       | `task-cleanup`                       | If `implement` did not set it (e.g. work resumed from a different session) |
+
+### Spec `laws-status` Transitions
+
+```
+none → drafted → approved → proven
+```
+
+Back-transitions are allowed: `proven → approved` (re-check failed), `proven → drafted` / `approved → drafted`
+(law body revised, so the content-hash approval expired, or the approval line was removed).
+
+| Transition                  | Updated By                                           | When                                                       |
+|:----------------------------|:-----------------------------------------------------|:-----------------------------------------------------------|
+| `none` → `drafted`          | A human, or the law-drafting skill (follow-up ticket) | A draft `LAWS.bend` exists, unapproved                     |
+| `drafted` → `approved`      | **A human only**                                      | Reviewed `LAWS.bend` and appended a valid `# approved:` line |
+| `approved` → `proven`       | **A human only**                                      | After the proof gate reports PASS (the gate only *recommends* this) |
+
+`laws:` / `laws-status:` are checked by `front-matter-reviewer` (value validity, no law path in `depends-on`,
+and with `--cross-ref` the directory, `# spec:` match, status vs. files, and orphan laws in the reverse
+direction). Whether an approval line still matches the current law body is **not** checked there; the proof gate
+decides that.
 
 ## Missing Front Matter Policy
 

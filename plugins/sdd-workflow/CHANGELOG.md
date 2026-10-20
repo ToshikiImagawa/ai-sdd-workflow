@@ -9,6 +9,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.0] - 2026-10-21
+
+### Added
+
+- `/draft-laws` extraction rule: when the fixed API has an aggregate function (e.g. `Model.aggregate`) over a binary operation (e.g. `Model.worse`), write commutativity / identity / empty-input / single-element laws on the aggregate first; binary-operation versions are added only when the cap has room. Candidates may carry `level: "binary"`, which `rank` orders last inside one priority
+- **`/draft-laws` skill** - `draft <feature>` extracts law candidates from a spec (decision tables, aggregation rules, invariants, numeric targets) into `LAWS.bend` (or `LAWS.draft.bend` when a `LAWS.bend` already exists) with `# source:` section hashes, `# model-api:` lines, a static check and an extraction report (`--ticket <n>` writes `laws-draft-report.md`); `model <feature>` writes `main.bend` / `PROOF.bend` only when the approval line is valid. It never writes `# approved:` or `laws-status` / `laws:` (proposals only), never touches a `LAWS.bend` with an approval line, never calls `bend`. `.sdd-config.json` `laws.max_laws` (integer >= 1, default 10) caps adopted laws; candidates are ordered and cut off deterministically by `draft_laws.py`
+- Proof gate source-drift warnings and spec-edit reminder: `run-verification.py proof` adds an optional `warnings` array (`{"code": "source_drift" | "source_invalid", "law", "source"}`) to approved laws directories whose `# source:` section hash no longer matches the spec (additive; statuses, aggregation and existing keys unchanged; omitted when `bend` is absent). `post-tool-use` suggests re-running `/draft-laws` after editing a spec with `laws:`, naming drifted laws. Reported on `CHK-205`
+- Shared `laws_drafting.py` module for the upcoming `/draft-laws` skill and proof-gate warnings: spec section hash behind `# source:` comments, bend-free static checks of drafted laws (source existence/absence, duplicates, trivial laws, import allowlist, `# model-api:` consistency), source-drift detection and approval validity (reuses `laws_header.py`). No behavior change to existing laws or the proof gate
+- **Bend proof gate (opt-in)** - `/run-checklist` gains a `proof` verification category that checks a spec's
+  constraints as Bend laws (`${SDD_LAWS_PATH}/{feature}/` with `LAWS.bend` / `PROOF.bend` / `main.bend`). It is
+  optional: without `bend`, a law file or an approved law it reads `TOOL_NOT_FOUND` / `SKIPPED` and never fails the
+  run. A law counts only with a human-written `# approved:` line bound to a content hash of the law text, so editing
+  an approved law expires the approval. `bend` always runs with `BEND_NO_TELEMETRY=1`, and only `import Base` and
+  relative imports inside the laws directory are allowed. Law directories not bound to a spec in both directions
+  (orphan laws) fail. **PASS means the reference model satisfies the approved laws, not that the implementation is correct.**
+  `run-verification.py proof` takes `--laws-dir` (repeatable), `--verdict`, `--timeout` and `--print-laws-hash`
+- Spec front matter `laws:` / `laws-status:` (`front-matter-reviewer` validates them, and with `--cross-ref` the
+  directory, `# spec:` match, status vs. files and orphan laws); `CHK-205 [P2]` generated only for specs with `laws:`
+- `post-tool-use` reminders: re-run the proof gate after a `.bend` edit, and review the model after editing a file
+  named in a `main.bend` `# model-of:` line
+- `.sdd-config.json`: `directories.laws`, `proof.timeout_seconds`, `proof.verdict`; `SDD_LAWS_DIR` / `SDD_LAWS_PATH` exported at session start
+
+### Fixed
+
+- **Hooks broke silently when `.sdd-config.json` `root` was an absolute path** (#151) -
+  With a `root` pointing outside the project, `pre-tool-use.py` skipped external documents without
+  a word (no naming validation / CONSTITUTION injection), `post-tool-use.py` crashed with a
+  `ValueError` from `Path.relative_to` (rc=1) whenever a source edit matched a spec outside the
+  project, and `session-start.py` never warned. Absolute / project-escaping roots are **not supported
+  yet**; this change makes that explicit instead of silent: `session-start.py` prints a warning
+  (suggesting a relative path or a git submodule) and continues, `post-tool-use.py` ignores
+  out-of-project documents without failing, `pre-tool-use.py` treats out-of-project paths as out of
+  scope via the new `hook_common.is_within_project()` / `is_external_sdd_root()` helpers (the single
+  place to change if external roots are supported later), and `init-structure.py` skips the
+  meaningless `{root}/.cache/` `.gitignore` entry with a warning.
+- **`session-start.py` / `sdd_index.py` wrote into the external directory for an absolute `root`** (#155) -
+  After warning, `session-start.py` still created `.cache/`, `AI-SDD-PRINCIPLES.md`, `UPDATE_REQUIRED.md`
+  and `MIGRATION_PENDING.md` outside the project, and `sdd_index.py` could hit `ValueError` in
+  `relative_to`. Consistent with #151 (absolute roots unsupported), both now skip: `session-start.py`
+  warns (the message states that writes were skipped), exports `SDD_*` and returns, which also skips the sync of
+  in-project AI-SDD settings (`.claude/rules/` etc.), the CLAUDE.md check and the migration check; `sdd_index.py`
+  skips indexing when the root is external.
+
 ## [5.1.0] - 2026-09-16
 
 ### Added

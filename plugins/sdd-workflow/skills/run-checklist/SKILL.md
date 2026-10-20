@@ -47,7 +47,7 @@ Full argument string: $ARGUMENTS
 |:----------------|:---------|:---------------------------------------------------------------------|
 | `feature-name`  | Yes      | Target feature name or path (e.g., `user-auth`, `auth/user-login`)   |
 | `ticket-number` | -        | Task directory name. Uses feature-name if omitted                    |
-| `--category`    | -        | Run only specific category (e.g., `--category testing`)              |
+| `--category`    | -        | Run only specific category (e.g., `--category testing`). `--category proof` is an alias that verifies only `CHK-205` (law proof) |
 | `--priority`    | -        | Run only specific priority level (e.g., `--priority P1`)             |
 
 ### Input Format
@@ -126,7 +126,7 @@ verbatim rather than treating the item as failed.
 | Category (CHK-xxx)         | Auto-Verifiable | Verification Method                                            |
 |:---------------------------|:----------------|:-----------------------------------------------------------------|
 | Requirements (1xx)         | Partial         | `/check-spec` for spec consistency                              |
-| Specification (2xx)        | Partial         | `run-verification.py typecheck`, API signature validation       |
+| Specification (2xx)        | Partial         | `run-verification.py typecheck`, API signature validation; `CHK-205` via `run-verification.py proof` (below) |
 | Design (3xx)               | Partial         | Dependency analysis, architecture checks                        |
 | Implementation (4xx)       | Yes             | `run-verification.py lint`                                      |
 | Testing (5xx)              | Yes             | `run-verification.py test`                                      |
@@ -134,6 +134,36 @@ verbatim rather than treating the item as failed.
 | Security (7xx)             | Yes             | `run-verification.py security`                                  |
 | Performance (8xx)          | Partial         | Benchmark tools (if configured)                                  |
 | Deployment (9xx)           | Partial         | Config validation                                                |
+
+#### Law Proof Gate (`proof`, CHK-205, opt-in)
+
+Verify `CHK-205` only when the target spec's front matter has `laws:` (the checklist skill generates the item under
+the same condition). Do not call `proof` for a spec without `laws:`.
+
+1. Read the spec's `laws:` list (`${SDD_ROOT}`-relative directories) and `laws-status:`
+2. Prepend `${SDD_ROOT}/` to each element and call the script **once** with all of them:
+   `python3 "${CLAUDE_PLUGIN_ROOT}/skills/run-checklist/scripts/run-verification.py" proof --laws-dir <dir> [--laws-dir <dir> ...]`
+   (add `--verdict` only if the user asked for the Lean re-check). The script aggregates; do not aggregate yourself
+3. Record the top-level `status` / `reason`, the per-directory `results`, and `verdict` for `CHK-205`
+4. Always carry the JSON `note` into the result: **PASS guarantees that the reference model (`main.bend`) satisfies
+   the approved laws, not that the implementation is correct**
+
+| `proof` status   | Meaning                                                                                              | Outcome |
+|:-----------------|:-----------------------------------------------------------------------------------------------------|:--------|
+| `PASS`           | `bend` reported `ALL PROOFS CHECK` for every approved law                                            | Passes. Recommend a human move `laws-status` to `proven` (never edit the spec yourself) |
+| `FAIL`           | Proof failed, `PROOF.bend` missing / not importing `LAWS.bend`, disallowed import, directory not found, or **orphan laws** (`# spec:` missing or unresolved, or not listed in the spec's `laws:`) | Fails |
+| `SKIPPED`        | No `LAWS.bend`, no valid `# approved:` line (unapproved or expired), or no `law` declaration         | Not a failure. For an unapproved/expired one, show the current hash from `reason` so a human can write the approval line |
+| `TOOL_NOT_FOUND` | `bend` is not installed. A missing Lean kernel is **not** this status: it appears as `verdict: "unavailable"` | Not a failure |
+| `TIMEOUT`        | A directory exceeded the time limit                                                                   | Needs manual review |
+
+**Source drift warnings (`warnings[]`, non-blocking)**: for an approved laws directory, a result may carry
+`warnings` (`{"code": "source_drift" | "source_invalid", "law", "source"}`) for laws whose `# source:` section hash no
+longer matches the spec (or whose `# source:` is malformed). Append the count and the law names to the `CHK-205` result
+(e.g. `1 source drift: sort_len (§3.1.1)`) and suggest re-running `/draft-laws` and having a human re-approve. A warning
+never changes the status, expires the approval or blocks a PASS. Laws without `# source:` are exempt, and nothing is
+reported when `bend` is absent.
+
+Never write an `# approved:` line and never change the spec's `laws-status`: both are human steps.
 
 ### 4. Record Results
 
@@ -212,4 +242,5 @@ When a verification tool is not configured, record `Status: SKIPPED` with the re
 - Manual verification items are marked for human review
 - Results are appended to existing checklist, preserving manual checks
 - Run with `--category` to focus on specific verification types
+- The law proof gate is opt-in: without `laws:` in the spec, `bend`, or an approved `LAWS.bend`, it reads SKIPPED / TOOL_NOT_FOUND and never fails the run
 - Security scanners may require additional setup (npm audit, safety, etc.)

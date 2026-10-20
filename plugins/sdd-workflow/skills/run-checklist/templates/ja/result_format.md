@@ -72,6 +72,21 @@
 - 実行日時: 2024-01-15 10:32:00
 ```
 
+#### 法則証明 (CHK-205、opt-in)
+
+```markdown
+**自動検証結果**:
+- コマンド: `run-verification.py proof --laws-dir .sdd/laws/auth/user-login`
+- ステータス: PASSED
+- 法則ディレクトリ: 1件検査（verdict: not-requested）
+- 注記: PASS は参照モデル（main.bend）が承認済み法則を満たす保証であり、実装の正しさの保証ではない
+- 警告: 出典ずれ 1件（非ブロッキング）: `sort_len`（§3.1.1）。`/draft-laws` での再抽出を検討
+- 推奨: 人が `laws-status` を `proven` へ進めてよい（本スキルは spec を編集しない）
+- 実行日時: 2024-01-15 10:33:00
+```
+
+SKIPPED（未承認・承認失効）では `reason` の現在のハッシュを併記し、FAIL では失敗した各ディレクトリと `reason`（孤児 laws・規約外 import など）を列挙する。
+
 ## 失敗詳細フォーマット
 
 検証が失敗した場合、詳細を含める：

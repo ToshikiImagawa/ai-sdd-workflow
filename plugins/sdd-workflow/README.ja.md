@@ -139,6 +139,7 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 | `/implement`                     | TDD ベースの5フェーズ実装。TaskList で進捗を追跡し、tasks.md に自動マーク             |
 | `/checklist`                     | 仕様書と計画から9カテゴリの品質チェックリストを構造化IDつきで自動生成                         |
 | `/run-checklist`                 | チェックリスト項目をテスト、リンター、セキュリティスキャンで自動検証                           |
+| `/draft-laws`                    | spec から Bend 法則案（`LAWS.bend`）を生成して人の承認に回し、承認後に参照モデルと証明を作成（opt-in の proof ゲート） |
 | `/constitution`                  | プロジェクトの非交渉可能な原則（constitution）を定義・管理                          |
 | `/recommend-front-matter`        | 既存の AI-SDD ドキュメント（ADR決定ログを含む）をスキャンし、構造化メタデータのための YAML front matter 追加を推奨 |
 | `/plan-refactor`                 | 既存機能のリファクタリング計画。実装を分析し、計画をチケット単位の設計ドラフトに記録                    |
@@ -161,7 +162,7 @@ Claude Code で `/plugin` コマンドを実行し、`sdd-workflow` が表示さ
 | `session-start` | SessionStart | `.sdd-config.json` から設定を読み込み、環境変数を自動設定 |
 | `user-prompt-submit` | UserPromptSubmit | ユーザープロンプト内の Vibe Coding 兆候（曖昧な指示）を検知し、明確化リマインダーを注入 |
 | `pre-tool-use`  | PreToolUse (Write/Edit) | ファイル命名規則に違反する `.sdd/` ドキュメントへの書き込みを拒否し、実装ソースコード編集時に `CONSTITUTION.md` の原則を注入（セッションごとに1回） |
-| `post-tool-use` | PostToolUse (Write/Edit) | `.sdd/` ドキュメントや対応する仕様書を持つソースファイルを編集した後、ドキュメント整合性チェックを促す（v4 の design doc しか対応しない場合は `adr/` への移行を案内する） |
+| `post-tool-use` | PostToolUse (Write/Edit) | `.sdd/` ドキュメントや対応する仕様書を持つソースファイルを編集した後、ドキュメント整合性チェックを促す（v4 の design doc しか対応しない場合は `adr/` への移行を案内する）。あわせて `.bend` 法則ファイルの編集後に proof ゲートの再実行を、`main.bend` の `# model-of:` に挙げたファイルの編集後に参照モデルの見直しを促す |
 
 **注**: フックはプラグインインストール時に自動的に有効化されます。追加の設定は不要です。
 
@@ -547,6 +548,75 @@ CONSTITUTION.md 準拠、必須セクションの網羅性、曖昧な記述の�
 `adr/` のフィールド・フォーマットの全体は `AI-SDD-PRINCIPLES.md` の「Architecture Decision Record」節を
 参照してください。
 
+## Bend 証明ゲート（opt-in）
+
+spec の制約・不変条件・事後条件を [Bend](https://github.com/HigherOrderCO/Bend) の法則として検査する任意の品質ゲートです。
+**既定では無効**で、spec に `laws:` が無い・`bend` CLI が無い・承認済みの法則ファイルが無い場合は何も実行せず、
+失敗にもなりません（結果は `SKIPPED` / `TOOL_NOT_FOUND`）。CI に `bend` を入れる必要はありません。
+
+### PASS の意味
+
+> **PASS は参照モデル（`main.bend`）が承認済みの法則を満たす保証であり、プロジェクトの実装の正しさの保証ではありません。**
+> モデルは実装を Bend で小さく書き直したもので、両者の乖離は証明では検知できません。`# model-of:` に挙げた
+> ファイルを編集すると、フックがモデルと法則の見直しを促します。
+
+### 配置
+
+```
+.sdd/laws/{feature}/        # 階層 spec は spec と同じ階層（例: laws/auth/user-login/）
+├── LAWS.bend               # 法則の宣言。先頭コメント: `# spec:` と `# approved:`
+├── PROOF.bend              # 証明。LAWS を import すること
+└── main.bend               # 参照モデル（省略可）。先頭コメント: `# spec:` と `# model-of:`
+```
+
+spec 側は front matter で指し示します（依存関係ではなくポインタ。`depends-on` には書きません）。
+
+```yaml
+laws: ["laws/auth/user-login"]   # ${SDD_ROOT} 相対
+laws-status: "approved"          # none | drafted | approved | proven
+```
+
+`LAWS.bend` は `# spec: <spec の id>` で始めます。`# spec:` が無い、spec に解決できない、または解決先 spec の `laws:` に
+載っていない法則ディレクトリは**孤児 laws** で、ゲートは FAIL、`front-matter-reviewer --cross-ref` は error にします。
+
+### 承認（人が行う）
+
+人がレビューし、現在の法則本文に束縛された承認行を追記して初めて法則が有効になります。
+
+```
+# approved: 2026-10-17 @reviewer sha256:3f9a1c0b7d2e
+```
+
+ハッシュは `python3 "${CLAUDE_PLUGIN_ROOT}/skills/run-checklist/scripts/run-verification.py" proof --print-laws-hash --laws-dir .sdd/laws/auth/user-login` で得ます。
+ハッシュは先頭コメント部を除いた本文が対象なので、承認行の追記では失効しませんが、法則本文の変更（行内の空白でも。改行コードと末尾改行の違いは無視）で失効し、
+ゲートは新しいハッシュ付きで `SKIPPED` を返します。AI は承認行を書きません（PR レビューで確認してください）。
+`laws-status` を `approved` / `proven` に進めるのも人の作業です。
+
+### `/draft-laws` による法則案の生成
+
+`LAWS.bend` を手書きする代わりに、`/draft-laws` が spec から 2 段階で生成します。`bend` は呼ばず、承認行も書きません。
+
+1. `/draft-laws draft {feature}` は spec の構造化された節（決定表・集約規則・制約・数値目標の NFR。上限は `laws.max_laws`、既定 10）から法則を抽出し、`LAWS.bend` に書きます。各法則には `# source: <spec の id> §<節> sha256:<節ハッシュ>` が付き、法則が前提とするモデル関数は `# model-api:` 行に列挙されます。未承認の `LAWS.bend` または承認済みの `LAWS.bend` が既にある場合、再生成案は `LAWS.draft.bend` に出力されます（採用・削除は人が判断。`--overwrite` で置き換えられるのは未承認の `LAWS.bend` だけ）。`--ticket` を付けると `task/{ticket}/laws-draft-report.md` に、採用した法則・モデル API・未採用の候補・静的チェック結果を出力します。spec への `laws:` / `laws-status: drafted` の追加は提案に留まります。
+2. 法則をレビューし、人が承認します（「承認」の節を参照）。
+3. `/draft-laws model {feature}` は `LAWS.bend` に有効な承認行が無いと拒否され、有効なら `# model-api:` 行に従って `main.bend` と `PROOF.bend` を書きます。`LAWS.bend` は変更しません。
+
+### 実行
+
+`/run-checklist {feature} {ticket}` が `CHK-205`（`laws:` を持つ spec でのみ生成）を検証し、`--category proof` はその項目だけを検証します。
+全ディレクトリを 1 回の `run-verification.py proof --laws-dir ...` で渡し、最も悪い判定
+（FAIL > TIMEOUT > TOOL_NOT_FOUND > SKIPPED > PASS）を記録します。`bend` は常に `BEND_NO_TELEMETRY=1` で起動し、
+`import Base` と法則ディレクトリ内の `.bend` への別名付き相対 import（Bend が要求する `import ./main.bend as Model` の形）だけを許可します（別名のないローカル import を含むそれ以外は `bend` 起動前に FAIL）。
+オプション: `--verdict`（Lean での再検査。使えなければ `verdict: "unavailable"` でフォールバック）、`--timeout`。
+承認済みのディレクトリでは、法則の `# source:` の節ハッシュが現在の spec と一致しないとき、非ブロッキングの `warnings` 配列（`source_drift` / `source_invalid`）が付き、`CHK-205` に併記されます（判定は変わりません）。`laws:` を持つ spec を編集すると `post-tool-use` フックが再抽出を促します。
+`.sdd-config.json` のキー: `directories.laws`、`proof.timeout_seconds`、`proof.verdict`。
+macOS / Linux のみ（Windows は WSL 経由）。Bend v2.0.37 で検証済み、Lean での再検査には Lean v4.34.0 が必要です。
+
+### モデルの書き方
+
+- モデルは小さく。対象は制約・不変条件・事後条件のみで、IO・外部境界・性能はモデルにしません
+- Bend のローカル import は必ず別名付きです（`import ./LAWS.bend as Laws`）。法則 `X` の証明は `PROOF.bend` の `def Laws.X` で与えます。モデルの関数が法則を呼んだり、証明が自分の証明する法則を経由して自分自身を呼んではいけません。関数名と法則名は分けます（関数 `sort`、法則 `sort_preserves_length`）
+- 法則を改訂したら承認し直します
+
 ## 既知の制約
 
 - **`adr/` と実装の乖離は自動検出されません。** `/check-spec` は実装を抽象仕様と突き合わせ、`--full` は
@@ -570,7 +640,7 @@ CONSTITUTION.md 準拠、必須セクションの網羅性、曖昧な記述の�
 | `session-start` | SessionStart | `.sdd-config.json` から設定を読み込み、環境変数を設定 |
 | `user-prompt-submit` | UserPromptSubmit | ユーザープロンプト内の Vibe Coding 兆候（曖昧な指示）を検知し、明確化リマインダーを注入 |
 | `pre-tool-use`  | PreToolUse (Write/Edit) | ファイル命名規則に違反する `.sdd/` ドキュメントへの書き込みを拒否し、実装ソースコード編集時に `CONSTITUTION.md` の原則を注入（セッションごとに1回） |
-| `post-tool-use` | PostToolUse (Write/Edit) | `.sdd/` ドキュメントや対応する仕様書を持つソースファイルを編集した後、ドキュメント整合性チェックを促す（v4 の design doc しか対応しない場合は `adr/` への移行を案内する） |
+| `post-tool-use` | PostToolUse (Write/Edit) | `.sdd/` ドキュメントや対応する仕様書を持つソースファイルを編集した後、ドキュメント整合性チェックを促す（v4 の design doc しか対応しない場合は `adr/` への移行を案内する）。あわせて `.bend` 法則ファイルの編集後に proof ゲートの再実行を、`main.bend` の `# model-of:` に挙げたファイルの編集後に参照モデルの見直しを促す |
 
 ### 設定される環境変数
 
@@ -588,6 +658,8 @@ CONSTITUTION.md 準拠、必須セクションの網羅性、曖昧な記述の�
 | `SDD_SPECIFICATION_PATH` | `.sdd/specification` | 仕様書フルパス       |
 | `SDD_ADR_PATH`           | `.sdd/adr`           | 決定ログ（ADR）フルパス |
 | `SDD_TASK_PATH`          | `.sdd/task`          | タスクログフルパス     |
+| `SDD_LAWS_DIR`           | `laws`               | Bend 法則ディレクトリ（opt-in の証明ゲート） |
+| `SDD_LAWS_PATH`          | `.sdd/laws`          | Bend 法則ディレクトリのフルパス |
 | `SDD_INDEX`              | `on`                 | ドキュメントインデックスが有効（`index: true`、デフォルト）な間は `on` に設定される。`index` が `false` の場合は設定されず、スキルはこれによりインデックス高速パスが使えないことを判定する |
 
 ### フックのデバッグ
@@ -853,6 +925,9 @@ CONSTITUTION.md → requirement/ → *_spec.md → task/{ticket-number}/design-d
 | `directories.specification` | `specification` | 仕様書/設計書ディレクトリ                                                               |
 | `directories.adr`           | `adr`           | ADR（決定ログ）ディレクトリ                                                            |
 | `directories.task`          | `task`          | 一時タスクログディレクトリ                                                               |
+| `directories.laws`          | `laws`          | opt-in の証明ゲート用 Bend 法則ディレクトリ                                                   |
+| `proof.timeout_seconds`     | `300`           | 証明ゲートの法則ディレクトリごとの制限時間（正の整数）                                              |
+| `proof.verdict`             | `false`         | Lean カーネルでも再検査する（`--verdict`）                                                    |
 | `index`                     | `true`          | 真偽値。セッション開始時に `.sdd` ドキュメントの圧縮インデックス（SQLite → `index.md`）を構築しトークンを削減する。`false` で無効化。 |
 | `naming.ignore_patterns`    | `[]`            | ファイル名（basename）に対して照合する glob パターン（`fnmatch` 形式）。マッチしたファイルは `requirement`/`specification` の命名規則チェックをスキップする（例: テスト用ファイルの `*_test.md`）。 |
 
@@ -920,6 +995,7 @@ sdd-workflow/
 │   ├── sdd_index.py               # .sdd/ ドキュメントの構造化インデックス生成
 │   ├── hook_common.py             # 共有: stdin/stdout・パス解決・.sdd-config読込
 │   ├── fm_parser.py               # 共有: front matter 検出・パース
+│   ├── laws_header.py             # 共有: Bend 法則ファイル規約の解析（証明ゲート）
 │   ├── naming.py                  # 共有: 命名規則検証・ドキュメント種別判定
 │   ├── doc_walker.py              # 共有: 対象ドキュメント走査・design doc探索
 │   └── env_export.py              # 共有: CLAUDE_ENV_FILE への export 書き出し

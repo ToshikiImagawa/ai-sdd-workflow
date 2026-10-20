@@ -53,6 +53,7 @@ status transition rules, and missing front matter policy.
 | `SDD_SPECIFICATION_PATH` | `.sdd/specification` | Specification/Design directory |
 | `SDD_ADR_PATH`           | `.sdd/adr`           | Decision log (ADR) directory   |
 | `SDD_TASK_PATH`          | `.sdd/task`          | Task log directory             |
+| `SDD_LAWS_PATH`          | `.sdd/laws`          | Bend law directories (opt-in proof gate) |
 
 **Path Resolution Priority:**
 
@@ -178,6 +179,10 @@ Based on document type, apply additional checks:
 |:----------------------------|:---------|:----------------------------------------------------------|
 | **`sdd-phase` correctness** | warning  | Must be `"specify"`                                       |
 | **`impl-status` validity**  | warning  | Same allowed values as Design's `impl-status` below       |
+| **`laws-status` validity**  | warning  | If present, one of: `none`, `drafted`, `approved`, `proven`. Absent is `none` (opt-in field) |
+| **`laws` placement**        | warning  | `laws:` on a non-spec document type is out of place (spec-only field)                  |
+| **`laws` form**             | warning  | A list of `${SDD_ROOT}`-relative directory paths (e.g. `laws/auth/user-login`)         |
+| **`depends-on` has no law path** | error | A `depends-on` value containing `/` or `.bend` is a laws pointer in the wrong field. Laws are downstream and never an upstream dependency |
 
 **Design** (`type: "design"`) — `task/{ticket-number}/design-draft.md`, or a v4.x persistent
 `specification/*_design.md`:
@@ -226,6 +231,10 @@ When `--cross-ref` option is specified, perform project-wide checks:
 | **ADR supersede integrity** | error   | Each `adr-*` id in a `supersedes` / `superseded-by` field resolves to an existing decision-log file, and that file carries the reverse pointer (`supersedes` <-> `superseded-by`) |
 | **Status consistency**     | warning  | Downstream documents should not be `approved` if upstream is still `draft`. ADR files are exempt: their `status` is always `approved` |
 | **Status propagation**     | info     | Changes in upstream status may require downstream review                   |
+| **`laws:` directory exists** | error  | Each `laws:` element resolved as `${SDD_ROOT}/{element}` is an existing directory       |
+| **`# spec:` matches**      | error    | The first lines of that directory's `LAWS.bend` carry `# spec: {this spec's id}`        |
+| **`laws-status` matches files** | warning | `approved` / `proven` without a well-formed `# approved:` line (`YYYY-MM-DD <approver> sha256:<12 hex>`), or `proven` without `PROOF.bend` |
+| **Orphan laws (reverse check)** | error | For every directory under `${SDD_LAWS_PATH}` that has a `LAWS.bend`: (a) its `# spec:` id resolves to an existing spec in the id registry, and (b) that spec's `laws:` lists the directory (`${SDD_ROOT}`-relative). A missing `# spec:` line is also an orphan |
 
 **Cross-reference scanning procedure**:
 
@@ -238,6 +247,18 @@ When `--cross-ref` option is specified, perform project-wide checks:
 5. Check `supersedes` / `superseded-by` values of ADR files against the registry (file-level ids only — an
    entry-level reversal is not recorded in front matter, see the ADR checks in Step 5)
 6. Check for duplicate IDs
+7. **`laws:` checks (forward, spec -> laws)**: for each target spec that has `laws:`, Glob/Read each directory's
+   `LAWS.bend` and read only its leading comment lines
+8. **Orphan laws (reverse, laws -> spec)**: the gate (`run-verification.py proof`) scans the spec side
+   exhaustively; this reviewer scans the **laws side** and matches it against the id registry from step 3
+   (the id -> file mapping obtained by this same scan, FR-006). Glob `${SDD_LAWS_PATH}/**/LAWS.bend`, Read each
+   file's leading comment lines for `# spec:`, then look the id up in the registry and check that the resolved
+   spec's `laws:` contains the directory
+
+**Scope of the laws checks**: Read / Glob / Grep only. Do **not** compute the content hash and do **not** judge
+whether an approval line still matches the current law body. That check belongs to the proof gate
+(`run-verification.py proof`, current value via `--print-laws-hash`). Skip every laws check silently when the
+project has no `${SDD_LAWS_PATH}` directory and no spec declares `laws:`.
 
 ## Output Format
 

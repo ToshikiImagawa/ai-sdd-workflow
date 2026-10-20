@@ -12,7 +12,8 @@ import re
 from typing import Any, Dict, List, Tuple
 
 FM_MAX_LINES = 50
-LIST_KEYS = {"depends-on", "tags"}
+# ``laws``: spec-only pointer list to Bend law directories (proof-gate_spec FR-008).
+LIST_KEYS = {"depends-on", "tags", "laws"}
 
 
 def find_front_matter_bounds(lines: List[str]) -> Tuple[bool, int]:

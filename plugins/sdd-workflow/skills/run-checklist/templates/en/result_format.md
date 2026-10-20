@@ -72,6 +72,21 @@ Add after each CHK section that was verified:
 - Executed: 2024-01-15 10:32:00
 ```
 
+#### Law Proof (CHK-205, opt-in)
+
+```markdown
+**Automated Verification Result**:
+- Command: `run-verification.py proof --laws-dir .sdd/laws/auth/user-login`
+- Status: PASSED
+- Laws directories: 1 checked (verdict: not-requested)
+- Note: PASS means the reference model (main.bend) satisfies the approved laws. It does not prove the project's implementation.
+- Warnings: 1 source drift (non-blocking): `sort_len` (§3.1.1) - consider re-running `/draft-laws`
+- Recommendation: a human may move `laws-status` to `proven` (this skill never edits the spec)
+- Executed: 2024-01-15 10:33:00
+```
+
+For SKIPPED (unapproved / expired approval) include the current hash from `reason`; for FAIL list each failing directory and its `reason` (e.g. orphan laws, disallowed import).
+
 ## Failure Details Format
 
 When a verification fails, include details:

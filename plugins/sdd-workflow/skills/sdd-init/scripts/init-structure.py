@@ -16,7 +16,7 @@ from pathlib import Path
 
 # Shared modules live in plugins/sdd-workflow/scripts (three levels up + scripts).
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
-from hook_common import resolve_project_root  # noqa: E402
+from hook_common import is_external_sdd_root, resolve_project_root  # noqa: E402
 from env_export import rewrite_exports  # noqa: E402
 from principles_sync import sync_all as sync_principles_and_rules  # noqa: E402
 
@@ -129,6 +129,18 @@ def update_gitignore(project_root: Path, sdd_root: str) -> None:
     An existing .gitignore is only appended to (never rewritten), and the entry is added
     at most once. When .gitignore does not exist it is created with just this entry.
     """
+    if is_external_sdd_root(sdd_root, str(project_root)):
+        # An absolute (or project-escaping) root would produce a .gitignore line
+        # that never matches anything in this repository (issue #151). Absolute
+        # roots are not supported yet; say so instead of writing a dead entry.
+        log(
+            f"WARNING: Skipped .gitignore update: root '{sdd_root}' is an absolute "
+            "path or points outside the project, so a '{root}/.cache/' entry would "
+            "be meaningless here. Absolute roots are not supported yet; use a "
+            "relative path inside the project or a git submodule."
+        )
+        return
+
     entry = f"{sdd_root}/.cache/"
     target = _normalize_gitignore_line(entry)
     gitignore = project_root / ".gitignore"

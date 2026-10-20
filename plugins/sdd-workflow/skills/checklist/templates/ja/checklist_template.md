@@ -176,6 +176,25 @@
 
 ---
 
+### CHK-205 [P2] 法則証明（proof ゲート）
+
+> 対象 spec の front matter に `laws:` がある場合**のみ**生成する。無い場合はこの項目を省く。
+
+- [ ] spec の `laws:` に列挙された全ディレクトリで proof ゲートが PASS を返している
+- [ ] 各 `LAWS.bend` に有効な `# approved:` 行がある（人が現在の法則本文を承認している）
+- [ ] `main.bend` の `# model-of:` が、モデルの写す実装ファイルを今も指している
+
+**根拠**: spec front matter の `laws:`（抽出）
+
+**検証方法**:
+
+- `/run-checklist {feature} {ticket} --category proof`（`run-verification.py proof` を実行）
+- SKIPPED / TOOL_NOT_FOUND は失敗ではない（法則ファイル無し・未承認・`bend` 未導入）
+
+**注記**: PASS は参照モデル（`main.bend`）が承認済み法則を満たす保証であり、**実装の正しさの保証ではない**。
+
+---
+
 ## 3. 設計レビュー
 
 ### CHK-301 [P1] アーキテクチャの整合性

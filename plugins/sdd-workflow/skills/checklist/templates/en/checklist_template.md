@@ -175,6 +175,26 @@ implementation component's existence rather than quoted from a document.
 
 ---
 
+### CHK-205 [P2] Law Proof (proof gate)
+
+> Generated **only when the target spec's front matter has `laws:`**. Omit this item otherwise.
+
+- [ ] The proof gate reports PASS for every directory listed in the spec's `laws:`
+- [ ] Each `LAWS.bend` carries a valid `# approved:` line (a human approved the current law text)
+- [ ] `# model-of:` in `main.bend` still points at the implementation files the model mirrors
+
+**Basis**: spec front matter `laws:` (extracted)
+
+**Verification**:
+
+- `/run-checklist {feature} {ticket} --category proof` (runs `run-verification.py proof`)
+- SKIPPED / TOOL_NOT_FOUND are not failures (law file absent, unapproved, or `bend` not installed)
+
+**Note**: PASS guarantees that the reference model (`main.bend`) satisfies the approved laws. It does **not**
+prove that the implementation is correct.
+
+---
+
 ## Design Review
 
 ### CHK-301 [P1] Architecture Alignment
