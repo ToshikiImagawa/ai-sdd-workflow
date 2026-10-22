@@ -1,0 +1,23 @@
+schema_version: "1.1"
+name: clarify/score-below-threshold-needs-clarification
+description: "spec spec-design/clarify 3.1.1 row 2: clarity score < 80% recommends further clarification instead of implementation"
+tags: [clarify, prose, spec-3.1.1]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 20
+  allowed_tools: [Read, Glob, Grep, Skill]
+graders:
+  - type: regex
+    name: verdict_not_ready
+    target: last_message
+    pattern: "not (yet )?(implementation[- ]ready|ready for implementation)|(further|additional|more) clarification|(resolve|address|clarify)[^\\n]{0,80}before implement|追加の明確化|実装可能ではない|実装前に"
+    flags: im
+    match: "contains"
+  - type: regex
+    name: score_is_70
+    target: last_message
+    pattern: "\\b70\\s*%"
+    flags: im
+    match: "contains"
+expected_outcome: "Score 70% and a recommendation to clarify further."

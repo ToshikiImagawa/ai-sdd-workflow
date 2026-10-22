@@ -164,7 +164,7 @@ requirementDiagram
 
 | Attribute        | Description                                              | Example Values                                    |
 |:-----------------|:---------------------------------------------------------|:--------------------------------------------------|
-| **id**           | Unique identifier for the requirement                    | `REQ_001`, `FR_001`, `PR_001`                     |
+| **id**           | Unique identifier for the requirement                    | `REQ_001`, `FR_001`, `NFR_001`                   |
 | **text**         | Detailed description of what is required                 | `"System shall allow users to login"`             |
 | **risk**         | Risk level associated with implementing this requirement | `high`, `medium`, `low`                           |
 | **verifymethod** | Method used to verify the requirement is satisfied       | `test`, `analysis`, `demonstration`, `inspection` |
@@ -652,7 +652,7 @@ requirementDiagram
     }
 
     performanceRequirement Response_Time {
-        id: PR_001
+        id: NFR_001
         text: "Response time under 2 seconds"
         risk: low
         verifymethod: demonstration

@@ -4,10 +4,10 @@ Example interactive session for `/constitution update`:
 
 ```
 What type of change?
-1. Add new principle (MAJOR)
-2. Modify existing principle (MAJOR)
-3. Clarify existing principle (MINOR)
-4. Update enforcement methods (MINOR)
+1. Add new principle
+2. Modify existing principle
+3. Clarify existing principle (meaning unchanged)
+4. Update enforcement methods
 
 > 1
 
@@ -26,10 +26,13 @@ Are there exceptions?
 Review proposed change:
 [Display formatted principle]
 
+Does this make existing implementations violations (y/n)?
+> n
+
 Confirm (y/n)?
 > y
 
 Constitution updated
-  Version: 1.0.0 -> 2.0.0
+  Version: 1.0.0 -> 1.1.0 (MINOR: no existing implementation becomes a violation)
   Changes: Added principle P4
 ```

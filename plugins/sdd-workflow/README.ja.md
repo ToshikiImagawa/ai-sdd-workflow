@@ -552,7 +552,12 @@ CONSTITUTION.md 準拠、必須セクションの網羅性、曖昧な記述の�
 
 spec の制約・不変条件・事後条件を [Bend](https://github.com/HigherOrderCO/Bend) の法則として検査する任意の品質ゲートです。
 **既定では無効**で、spec に `laws:` が無い・`bend` CLI が無い・承認済みの法則ファイルが無い場合は何も実行せず、
-失敗にもなりません（結果は `SKIPPED` / `TOOL_NOT_FOUND`）。CI に `bend` を入れる必要はありません。
+失敗にもなりません（結果は `SKIPPED` / `TOOL_NOT_FOUND`）。利用側プロジェクトの CI に `bend` を入れる必要はありません
+（このプラグイン自身のリポジトリは optional な CI ジョブでゲートを実行していますが、利用者には求めません）。
+
+実装が散文（`SKILL.md` やエージェント定義）の spec は法則化しません。その決定表の行はプラグインの `evals/` 配下の
+eval スイート（1 行 = 1 ケース。`claude plugin eval ./plugins/sdd-workflow` で実行）が検査します。スキル品質の
+評価との役割分担はリポジトリの `.claude/skill-evals/README.md` を参照してください。
 
 ### PASS の意味
 

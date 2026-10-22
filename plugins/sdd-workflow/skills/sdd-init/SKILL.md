@@ -50,7 +50,7 @@ Steps:
 
 ### 2. Read AI-SDD Principles Document
 
-**Before execution, read the AI-SDD principles document.**
+**Before execution, read only the AI-SDD principles sections below (not the whole file): § Project Configuration File, § Recommended Directory Structure, § File Naming Convention.**
 
 AI-SDD principles document path: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/AI-SDD-PRINCIPLES.md`
 

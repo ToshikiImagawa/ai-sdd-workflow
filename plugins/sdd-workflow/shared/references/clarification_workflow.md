@@ -6,7 +6,7 @@
 2. Load existing specification (*_spec.md) if exists
 3. Systematically analyze across nine categories
 4. Evaluate clarity (Clear/Partial/Missing)
-5. Calculate clarity score (Total score = Clear items / All items)
+5. Calculate clarity score (Clear items ÷ (all items − N/A items); see `skills/clarify/references/nine_category_analysis.md`)
 6. Generate up to 5 high-impact questions
 7. Present questions to user
 
@@ -17,7 +17,7 @@
 3. Output integration proposals (target file, section, proposed content)
 4. Re-scan across 9 categories
 5. Recalculate clarity score
-6. Score 80% or above -> Ready for implementation; Score below 80% -> Generate additional questions
+6. Score 80% or above -> Ready for implementation; 60-79% -> Generate additional questions; 40-59% -> Significant specification revision needed; below 40% -> Do not start implementation, rebuild the specification
 
 ## Interactive Mode
 

@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: front-matter-validation/crossref-laws-spec-id-mismatch-is-error
+description: "spec quality-guardrails/front-matter-validation 3.1.1 row 7: LAWS.bend # spec: differs from the spec id under --cross-ref -> error"
+tags: [front-matter-validation, prose, spec-3.1.1]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 20
+  allowed_tools: [Read, Glob, Grep, Agent]
+graders:
+  - type: regex
+    name: crossref_laws_spec_id_mismatch_is_error
+    target: last_message
+    pattern: "\\berror\\b.*(?<![\\w-])(?:laws|spec:)(?![\\w-])|(?<![\\w-])(?:laws|spec:)(?![\\w-]).*\\berror\\b"
+    flags: im
+    match: "contains"
+expected_outcome: "The issue is reported with severity error."

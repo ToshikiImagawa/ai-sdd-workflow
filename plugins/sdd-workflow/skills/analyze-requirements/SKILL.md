@@ -101,10 +101,8 @@ For each use case and context, derive:
    - ID format: from Step 0 / `id_conventions.prd_functional` (default `FR_xxx`)
 
 3. **Non-Functional Requirements (NFR)**
-   - Performance requirements
-   - Security requirements
-   - Usability requirements
-   - Reliability requirements
+   - Categories (`${CLAUDE_PLUGIN_ROOT}/shared/references/nfr_checklist.md`): Performance, Security, Reliability,
+     Scalability, Usability, Maintainability, Compatibility
    - ID format: from Step 0 / `id_conventions.prd_nonfunctional` (default `NFR_xxx`)
 
 ### 3. Requirement Attributes

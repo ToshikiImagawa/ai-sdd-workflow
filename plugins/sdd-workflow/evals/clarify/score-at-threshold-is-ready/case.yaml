@@ -1,0 +1,23 @@
+schema_version: "1.1"
+name: clarify/score-at-threshold-is-ready
+description: "spec spec-design/clarify 3.1.1 row 1: clarity score >= 80% is judged implementation-ready"
+tags: [clarify, prose, spec-3.1.1]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 20
+  allowed_tools: [Read, Glob, Grep, Skill]
+graders:
+  - type: regex
+    name: verdict_ready
+    target: last_message
+    pattern: "implementation[- ]ready|ready for implementation|実装可能"
+    flags: im
+    match: "contains"
+  - type: regex
+    name: score_is_80
+    target: last_message
+    pattern: "\\b80\\s*%"
+    flags: im
+    match: "contains"
+expected_outcome: "Score 80% and the verdict implementation-ready."

@@ -37,13 +37,13 @@ locations, principle reference coverage matrix, fix proposal summary)
 
 ## Prerequisites
 
-**Before execution, you must read the AI-SDD principles document.**
+**Before execution, you must read only the AI-SDD principles sections below (not the whole file): § Role of Each Document and Abstraction Level, § Document Dependencies.**
 
 AI-SDD principles document path: `${SDD_ROOT}/AI-SDD-PRINCIPLES.md`
 
 **Note**: This file is automatically updated at the start of each session.
 
-Understand AI-SDD principles, document structure, persistence rules, and Vibe Coding prevention details.
+Apply the rules in the sections above; open another section only when a rule is in question.
 
 ### Directory Path Resolution
 
@@ -64,10 +64,9 @@ Understand AI-SDD principles, document structure, persistence rules, and Vibe Co
 
 ### Index Fast Path
 
-When `SDD_INDEX` is `on`, a pre-built compressed index exists at `${SDD_ROOT}/.cache/index.md`.
-Read it **once** and use its `Metadata` table (filter by `type=prd`) and `Requirement IDs` table for
-cross-PRD consistency checks. Fall back to raw Read of a specific PRD only when glossary text or full
-section content is needed. When `SDD_INDEX` is unset or `off`, use the existing Glob/Grep/Read flow.
+Follow `${CLAUDE_PLUGIN_ROOT}/shared/references/index_fast_path.md`.
+Tables used: `Metadata` (filter by `type=prd`) and `Requirement IDs` (cross-PRD consistency checks).
+Raw Read of a specific PRD only when glossary text or full section content is needed.
 
 ## Role
 

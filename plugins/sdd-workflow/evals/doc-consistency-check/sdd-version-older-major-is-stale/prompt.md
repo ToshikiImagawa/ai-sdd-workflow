@@ -1,0 +1,1 @@
+Run the doc-consistency-checker skill's `sdd-version` generation detection over every document under `.sdd/` of this project and report its stale-generation and generation-unknown listings, naming each document path on the line of the listing it belongs to.

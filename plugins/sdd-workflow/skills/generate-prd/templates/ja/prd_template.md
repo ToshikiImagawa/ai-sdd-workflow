@@ -46,7 +46,7 @@ risk: "medium"
 
 - **requirement**: 一般的な要求
 - **functionalRequirement**: 機能要求
-- **performanceRequirement**: パフォーマンス要求
+- **performanceRequirement**: パフォーマンス要求（非機能要求 `NFR_xxx` に使用）
 - **interfaceRequirement**: インターフェース要求
 - **designConstraint**: 設計制約
 
@@ -180,8 +180,8 @@ requirementDiagram
     }
 
     performanceRequirement Performance1 {
-        id: PR_001
-        text: "パフォーマンス要求1"
+        id: NFR_001
+        text: "非機能要求1（例: 性能 — p95 応答時間 X ms 以内）"
         risk: high
         verifymethod: test
     }
@@ -266,11 +266,17 @@ requirementDiagram
 
 **検証方法:** テストによる検証
 
-## 4.2. パフォーマンス要求 `<OPTIONAL>`
+## 4.2. 非機能要求 `<OPTIONAL>`
 
-### PR_001: {パフォーマンス要求名}
+<!--
+カテゴリ: 性能(Performance) / セキュリティ(Security) / 信頼性(Reliability) / 拡張性(Scalability) / ユーザビリティ(Usability) / 保守性(Maintainability) / 互換性(Compatibility)
+目標値は第三者が合否判定できる形で書く（単位付きの数値、または版・レベル付きの標準名）。
+レベルと例は shared/references/nfr_checklist.md を参照。
+-->
 
-{パフォーマンス要求の詳細な説明と目標値}
+### NFR_001: {非機能要求名}（カテゴリ: {性能 など}）
+
+{詳細な説明と目標値（負荷・環境条件と測定方法を含む）}
 
 **検証方法:** テストによる検証
 
@@ -347,7 +353,7 @@ requirementDiagram
 - ✅ 概要と目的
 - ✅ ユースケース図（概要・詳細）
 - ✅ SysML要求図（requirementDiagram構文）
-- ✅ 要求の詳細説明（機能要求、パフォーマンス要求、インターフェース要求、設計制約）
+- ✅ 要求の詳細説明（機能要求、非機能要求、インターフェース要求、設計制約）
 - ✅ 要求間の関係（contains, derives, satisfies, verifies, refines, traces）
 - ✅ 制約事項・前提条件
 - ✅ スコープ外の明示

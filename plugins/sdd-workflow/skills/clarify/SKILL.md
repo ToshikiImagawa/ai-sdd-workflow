@@ -19,7 +19,7 @@ before implementation.
 **Read the following prerequisite references before execution:**
 
 - `references/prerequisites_plugin_update.md` - Check for plugin updates
-- `references/prerequisites_principles.md` - Read AI-SDD principles document
+- `references/prerequisites_principles.md` - Read only these sections of the AI-SDD principles document (not the whole file): § Vibe Coding Prevention, § Document Update Triggers, § Role of Each Document and Abstraction Level
 - `references/prerequisites_directory_paths.md` - Resolve directory paths using `SDD_*` environment variables
 
 **PRD is out of scope for edits**: Although `allowed-tools` grants `Edit(.sdd/**)`, this skill only edits
@@ -107,7 +107,7 @@ of limiting them to what the spec expresses.
 Analyze specifications across 9 key categories. See `references/nine_category_analysis.md` for:
 
 - Full category definitions and analysis focus
-- Clarity level classification (Clear / Partial / Missing)
+- Clarity level classification (Clear / Partial / Missing; N/A for a category that does not apply)
 - Question prioritization criteria
 - Question format template
 
@@ -185,7 +185,7 @@ Use `--detail` with one of the following values:
 The following verifications are automatically performed during clarification:
 
 - [x] **Nine Category Scan**: Comprehensively detect ambiguities across functional scope, data model, flow, etc.
-- [x] **Clarity Score Calculation**: Classify items as Clear/Partial/Missing and calculate overall score
+- [x] **Clarity Score Calculation**: Classify items as Clear/Partial/Missing/N/A and calculate overall score (Clear items ÷ (all items − N/A items); see `references/nine_category_analysis.md`)
 - [x] **Question Prioritization**: Select questions based on impact, risk, and blocker status
 
 ### Verification Commands
@@ -194,11 +194,12 @@ The following verifications are automatically performed during clarification:
 
 ### Implementation Readiness Criteria
 
-| Clarity Score | Recommended Action                                   |
-|:--------------|:-----------------------------------------------------|
-| 80% or above  | Ready for implementation                             |
-| 60-79%        | Recommended to resolve Partial items                 |
-| Below 60%     | Further clarification required before implementation |
+| Clarity Score | Recommended Action                                     |
+|:--------------|:-------------------------------------------------------|
+| 80% or above  | Ready for implementation                               |
+| 60-79%        | Recommended to resolve Partial items                   |
+| 40-59%        | Significant specification revision needed              |
+| Below 40%     | Do not start implementation; rebuild the specification |
 
 ## Notes
 

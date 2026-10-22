@@ -19,7 +19,7 @@ alternatives into `${CLAUDE_PROJECT_DIR}/${SDD_ADR_PATH}/{feature}.md` (append-o
 **Read the following prerequisite references before execution:**
 
 - `references/prerequisites_plugin_update.md` - Check for plugin updates
-- `references/prerequisites_principles.md` - Read AI-SDD principles document
+- `references/prerequisites_principles.md` - Read only these sections of the AI-SDD principles document (not the whole file): § Knowledge Asset Persistence Management, § Architecture Decision Record, § Document Persistence Rules
 - `references/prerequisites_directory_paths.md` - Resolve directory paths using `SDD_*` environment variables
 
 ### Tool Permissions

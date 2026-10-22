@@ -6,7 +6,7 @@ This template is the output format for Vibe Coding risk detection.
 
 ## Vibe Coding Risk Detected
 
-### Risk Level: High / Medium / Low
+### Risk Level: {High | Medium | Low}
 
 ### Detected Vague Instructions
 

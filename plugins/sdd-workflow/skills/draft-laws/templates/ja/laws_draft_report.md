@@ -21,21 +21,29 @@
 |:--|:--|:--|:--|
 | Model.{{FN}} | {{ARGS}} | {{RETURNS}} | {{ENCODING}} |
 
+## 差分テストへ回した候補
+
+点命題（`for` 量化を持たない。判定表 1 行ずつ）。`{{TESTS_TARGET}}` に書き、参照モデルではなく実装（`impl-of:` {{IMPL_PATHS}}）に対して assert する。プロジェクトの `pytest` で実行する。既存のテストファイルは上書きせず、下に差分を示す。
+
+| 候補 | 出典 | テスト関数 | 命題 |
+|:--|:--|:--|:--|
+| {{CANDIDATE}} | §{{SECTION}} | {{SUGGESTED_TEST}} | {{DESCRIPTION}} |
+
 ## 未採用の候補
 
-| 候補 | 出典 | 理由（上限超過 / 自明法則 / 重複） |
+| 候補 | 出典 | 理由（上限超過 / 自明法則 / 重複 / unbounded_nat） |
 |:--|:--|:--|
 | {{CANDIDATE}} | §{{SECTION}} | {{REASON}} |
 
 ## 法則化しない理由
 
-| 節 | 理由（IO 依存 / 性能 / 散文のみ / 節番号なし） |
+| 節 | 理由（IO 依存 / 性能 / 散文のみ / 節番号なし / prose_implementation） |
 |:--|:--|
 | §{{SECTION}} | {{REASON}} |
 
 ## 静的チェック
 
-`draft_laws.py check` の結果: error {{ERRORS}} 件、warning {{WARNINGS}} 件。
+`draft_laws.py check` の結果（法則ファイルと `--tests`）: error {{ERRORS}} 件、warning {{WARNINGS}} 件。
 
 | コード | 重大度 | 法則 | メッセージ |
 |:--|:--|:--|:--|
@@ -53,3 +61,5 @@
    ```
 3. 承認後に `laws-status: approved` へ更新し、`/draft-laws model {{FEATURE}}` を実行する。
 4. `/run-checklist {{FEATURE}} <ticket> --category proof` で検査する。PASS 後に人が `laws-status: proven` へ更新する。
+5. 差分テストを実行する（`pytest {{TESTS_TARGET}}`）。proof ゲートとは独立で、実装を検証する。
+6. 実装の所在: `{{IMPL_SOURCE}}`。{{IMPL_OF_PROPOSAL}}

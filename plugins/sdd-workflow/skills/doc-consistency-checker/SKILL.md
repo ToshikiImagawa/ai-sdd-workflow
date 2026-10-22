@@ -20,26 +20,24 @@ When reading templates, use the path: `templates/${SDD_LANG:-en}/`
 
 ## Prerequisites
 
-**Before execution, read the AI-SDD principles document.**
+**Before execution, read only the AI-SDD principles sections below (not the whole file): § Document Dependencies, § Consistency Checking, § Document Update Triggers, § Document Link Convention, § Architecture Decision Record.**
 
 AI-SDD principles document path: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/AI-SDD-PRINCIPLES.md`
 
 **Note**: This file is automatically updated at the start of each session.
 
-Understand AI-SDD principles, document structure, persistence rules, and Vibe Coding prevention details.
+Apply the rules in the sections above; open another section only when a rule is in question.
 
 See `references/prerequisites_directory_paths.md` for directory path resolution using `SDD_*` environment variables.
 
 ### Index Fast Path
 
-When `SDD_INDEX` is `on`, a pre-built compressed index exists at `${SDD_ROOT}/.cache/index.md`.
-Read it **once** and use all its tables (`Metadata`, `Requirement IDs`, `SysML Relationships`,
-`Data Models`, `API Signatures`) for cross-document consistency checks. This replaces
-the need for multiple Glob/Grep/Read calls across `.sdd/`. Fall back to raw Read of a specific file
-only when cross-reference verification requires full section text. When `SDD_INDEX` is unset or `off`,
-use the existing Glob/Grep/Read flow. The `Metadata` table's `sdd-version` column also drives Check
-Item 3 (Generation Detection) below, where an **empty** cell in that column means the document's generation
-is unknown rather than current.
+Follow `${CLAUDE_PLUGIN_ROOT}/shared/references/index_fast_path.md`.
+Tables used: all (`Metadata`, `Requirement IDs`, `SysML Relationships`, `Data Models`,
+`API Signatures`) for cross-document consistency checks. Raw Read of a specific file only when
+cross-reference verification requires full section text. The `Metadata` table's `sdd-version` column also
+drives Check Item 3 (Generation Detection) below, where an **empty** cell in that column means the
+document's generation is unknown rather than current.
 
 ## Input
 

@@ -46,7 +46,7 @@
 | FR_001 | Functional | Implemented | Tested | - |
 | FR_002 | Functional | Implemented | Not Tested | Test case needed |
 | FR_003 | Functional | Not Implemented | - | Implementation required |
-| PR_001 | Performance | Not Implemented | - | Benchmark required |
+| NFR_001 | Performance | Not Implemented | - | Benchmark required |
 
 **Implemented requirements**: {list of implemented requirement IDs}
 

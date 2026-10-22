@@ -76,7 +76,7 @@ Systematically analyze requirements from users across **9 categories**:
 | **1. Functional Scope**            | Boundaries of in/out scope, edge case coverage                         |
 | **2. Data Model**                  | Type definitions, required fields, constraints, data lifetime          |
 | **3. Flow**                        | State transitions, error handling, retry strategies                    |
-| **4. Non-Functional Requirements** | Performance targets, scalability, security                             |
+| **4. Non-Functional Requirements** | Seven categories of `${CLAUDE_PLUGIN_ROOT}/shared/references/nfr_checklist.md` (Performance, Security, Reliability, Scalability, Usability, Maintainability, Compatibility) |
 | **5. Integration**                 | External system integration, API contracts, dependencies               |
 | **6. Edge Cases**                  | Exception handling, boundary values, behavior when data is missing     |
 | **7. Constraints**                 | Technical constraints, business constraints, regulatory requirements   |
@@ -156,13 +156,13 @@ Read `${CLAUDE_PLUGIN_ROOT}/shared/templates/${SDD_LANG:-en}/clarification_analy
 
 ## Prerequisites
 
-**Before execution, you must read the AI-SDD principles document.**
+**Before execution, you must read only the AI-SDD principles sections below (not the whole file): § Vibe Coding Prevention, § Role of Each Document and Abstraction Level.**
 
 AI-SDD principles document path: `${SDD_ROOT}/AI-SDD-PRINCIPLES.md`
 
 **Note**: This file is automatically updated at the start of each session.
 
-Understand AI-SDD principles, document structure, persistence rules, and Vibe Coding prevention details.
+Apply the rules in the sections above; open another section only when a rule is in question.
 
 This agent performs specification clarification support based on AI-SDD principles.
 
@@ -186,11 +186,10 @@ This agent performs specification clarification support based on AI-SDD principl
 
 ### Index Fast Path
 
-When `SDD_INDEX` is `on`, a pre-built compressed index exists at `${SDD_ROOT}/.cache/index.md`.
-Read it **once** and use its `Metadata`, `Requirement IDs`, and `Data Models` tables for ambiguity
-detection across the 9 analysis categories. Fall back to raw Read of a specific file only when full
-specification text is needed for detailed ambiguity assessment. When `SDD_INDEX` is unset or `off`,
-use the existing Glob/Grep/Read flow.
+Follow `${CLAUDE_PLUGIN_ROOT}/shared/references/index_fast_path.md`.
+Tables used: `Metadata`, `Requirement IDs`, `Data Models` (ambiguity detection across the 9 analysis
+categories). Raw Read of a specific file only when full specification text is needed for detailed
+ambiguity assessment.
 
 ## File Naming Convention (Important)
 
@@ -287,6 +286,8 @@ You are successful when:
 - After analysis, no critical gaps remain and specs serve as source of truth
 
 ## Clarity Score Evaluation Criteria
+
+Score: Clear items ÷ (all items − N/A items); definition in `${CLAUDE_PLUGIN_ROOT}/skills/clarify/references/nine_category_analysis.md`.
 
 | Score Range      | Rating       | Action                                                          |
 |:-----------------|:-------------|:----------------------------------------------------------------|

@@ -21,21 +21,29 @@ Fixed by: `{{MODEL_API_SOURCE}}` (`spec` / `main.bend` / `unfixed`; `unfixed` me
 |:--|:--|:--|:--|
 | Model.{{FN}} | {{ARGS}} | {{RETURNS}} | {{ENCODING}} |
 
+## Candidates routed to differential tests
+
+Point assertions (no `for` quantifier; one decision-table row each). Written to `{{TESTS_TARGET}}` and asserted against the implementation (`impl-of:` {{IMPL_PATHS}}), not against the reference model. Run them with the project's `pytest`. An existing test file is not overwritten: the diff is shown below instead.
+
+| Candidate | Source | Test function | Proposition |
+|:--|:--|:--|:--|
+| {{CANDIDATE}} | §{{SECTION}} | {{SUGGESTED_TEST}} | {{DESCRIPTION}} |
+
 ## Rejected candidates
 
-| Candidate | Source | Reason (limit / trivial / duplicate) |
+| Candidate | Source | Reason (limit / trivial / duplicate / unbounded_nat) |
 |:--|:--|:--|
 | {{CANDIDATE}} | §{{SECTION}} | {{REASON}} |
 
 ## Sections not turned into laws
 
-| Section | Reason (IO-dependent / performance / prose only / no section number) |
+| Section | Reason (IO-dependent / performance / prose only / no section number / prose_implementation) |
 |:--|:--|
 | §{{SECTION}} | {{REASON}} |
 
 ## Static check
 
-`draft_laws.py check` result: {{ERRORS}} error(s), {{WARNINGS}} warning(s).
+`draft_laws.py check` result (law file and `--tests`): {{ERRORS}} error(s), {{WARNINGS}} warning(s).
 
 | Code | Severity | Law | Message |
 |:--|:--|:--|:--|
@@ -53,3 +61,5 @@ Fixed by: `{{MODEL_API_SOURCE}}` (`spec` / `main.bend` / `unfixed`; `unfixed` me
    ```
 3. After approval set `laws-status: approved`; then run `/draft-laws model {{FEATURE}}`.
 4. Verify with `/run-checklist {{FEATURE}} <ticket> --category proof`; after PASS a human sets `laws-status: proven`.
+5. Run the differential tests (`pytest {{TESTS_TARGET}}`); they are independent of the proof gate and check the implementation.
+6. Implementation location: `{{IMPL_SOURCE}}`. {{IMPL_OF_PROPOSAL}}

@@ -56,13 +56,13 @@ exclude the following directories: `node_modules`, `.git`, `dist`, `build`, `.ne
 
 ## Prerequisites
 
-**Before execution, you must read the AI-SDD principles document.**
+**Before execution, you must read only the AI-SDD principles sections below (not the whole file): § Project Configuration File, § Role of Each Document and Abstraction Level.**
 
 AI-SDD principles document path: `${SDD_ROOT}/AI-SDD-PRINCIPLES.md`
 
 **Note**: This file is automatically updated at the start of each session.
 
-Understand AI-SDD principles, document structure, persistence rules, and Vibe Coding prevention details.
+Apply the rules in the sections above; open another section only when a rule is in question.
 
 This agent performs requirement analysis based on AI-SDD principles.
 
@@ -89,11 +89,10 @@ configuration file exists.
 
 ### Index Fast Path
 
-When `SDD_INDEX` is `on`, a pre-built compressed index exists at `${SDD_ROOT}/.cache/index.md`.
-Read it **once** and use its `Requirement IDs`, `SysML Relationships`, and `Metadata` tables for
-requirement analysis, traceability verification, and gap detection. Fall back to raw Read of a specific file
-only when the index lacks a needed excerpt (e.g., full requirement text for gap analysis prose).
-When `SDD_INDEX` is unset or `off`, use the existing Glob/Grep/Read flow.
+Follow `${CLAUDE_PLUGIN_ROOT}/shared/references/index_fast_path.md`.
+Tables used: `Requirement IDs`, `SysML Relationships`, `Metadata` (requirement analysis, traceability
+verification, gap detection). Raw Read of a specific file only when the index lacks a needed excerpt
+(e.g., full requirement text for gap analysis prose).
 
 ## SysML Requirements Diagram Theory
 
@@ -123,7 +122,7 @@ When new features or change requests occur, generate proposals for the following
 
 - Top-level requirements: `REQ_XXX` (3-digit zero-padded)
 - Functional requirements: `FR_XXX` (3-digit zero-padded)
-- Performance requirements: `PR_XXX` (3-digit zero-padded)
+- Non-functional requirements: `NFR_XXX` (3-digit zero-padded; category per `${CLAUDE_PLUGIN_ROOT}/shared/references/nfr_checklist.md`)
 - Interface requirements: `IR_XXX` (3-digit zero-padded)
 - Design constraints: `DC_XXX` (3-digit zero-padded)
 - Hierarchical: `REQ_002_01` (add 2 digits after parent requirement ID)
@@ -279,7 +278,7 @@ Default directory structure:
 - Root directory: `.sdd`
 - Requirement directory: `requirement`
 
-For configuration file details, refer to the AI-SDD principles document (`${SDD_ROOT}/AI-SDD-PRINCIPLES.md`).
+For configuration file details, read `${SDD_ROOT}/AI-SDD-PRINCIPLES.md` § Project Configuration File.
 
 ### Directory Structure
 

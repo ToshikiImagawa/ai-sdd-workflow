@@ -18,18 +18,20 @@ Classification and basis for all 9 categories, including the ones that produced 
 
 ### Clarity Score
 
-| Category      | Clear  | Partial | Missing | Score   |
-|:--------------|:-------|:--------|:--------|:--------|
-| Scope         | 3      | 1       | 0       | 75%     |
-| Data Model    | 2      | 2       | 1       | 60%     |
-| Flow          | 4      | 0       | 0       | 100%    |
-| Non-func Reqs | 0      | 2       | 2       | 25%     |
-| Integration   | 1      | 0       | 1       | 50%     |
-| Edge Cases    | 1      | 2       | 1       | 50%     |
-| Constraints   | 2      | 0       | 0       | 100%    |
-| Terminology   | 3      | 1       | 0       | 75%     |
-| Done Criteria | 0      | 1       | 2       | 17%     |
-| **Overall**   | **16** | **9**   | **7**   | **61%** |
+| Category | Clear | Partial | Missing | N/A | Score |
+|:--|--:|--:|--:|--:|--:|
+| Scope | 3 | 1 | 0 | 0 | 75% |
+| Data Model | 2 | 2 | 1 | 0 | 40% |
+| Flow | 4 | 0 | 0 | 1 | 100% |
+| Non-func Reqs | 0 | 2 | 2 | 0 | 0% |
+| Integration | 1 | 0 | 1 | 0 | 50% |
+| Edge Cases | 1 | 2 | 1 | 0 | 25% |
+| Constraints | 2 | 0 | 0 | 0 | 100% |
+| Terminology | 3 | 1 | 0 | 0 | 75% |
+| Done Criteria | 0 | 1 | 2 | 0 | 0% |
+| **Overall** | **16** | **9** | **7** | **1** | **50%** |
+
+**Clarity score** = Clear items ÷ (all items − N/A items), counted per item. Partial and Missing stay in the denominator, never in the numerator. Definition: `${CLAUDE_PLUGIN_ROOT}/skills/clarify/references/nine_category_analysis.md`.
 
 ### 🔴 Missing (Undefined) Items
 

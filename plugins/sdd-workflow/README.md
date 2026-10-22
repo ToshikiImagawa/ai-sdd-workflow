@@ -562,7 +562,13 @@ reference.
 
 An optional quality gate that checks a spec's constraints, invariants and postconditions as [Bend](https://github.com/HigherOrderCO/Bend) laws.
 It is **off by default**: without a `laws:` entry in a spec, a `bend` CLI, or an approved law file, nothing runs and
-nothing fails (the result is `SKIPPED` / `TOOL_NOT_FOUND`). CI does not need `bend` installed.
+nothing fails (the result is `SKIPPED` / `TOOL_NOT_FOUND`). Your project's CI does not need `bend` installed
+(this plugin's own repository runs the gate in an optional CI job, but that is not required of users).
+
+Specs whose implementation is prose (a `SKILL.md` or an agent definition) are not turned into laws. Their
+decision-table rows are checked instead by the plugin's eval suite under `evals/` (one case per row, run with
+`claude plugin eval ./plugins/sdd-workflow`); see `.claude/skill-evals/README.md` in the repository for how it
+relates to the skill-quality evals.
 
 ### What PASS means
 

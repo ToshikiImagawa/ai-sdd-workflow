@@ -1,7 +1,7 @@
 ---
 name: implement
 description: "Execute TDD-based implementation and progressively complete checklist in tasks.md"
-argument-hint: "<feature-name> [ticket-number]"
+argument-hint: "<feature-name> [ticket-number] [--ci]"
 arguments: [feature-name, ticket-number]
 license: MIT
 user-invocable: true
@@ -17,7 +17,7 @@ Execute implementation following TDD (Test-Driven Development) approach based on
 **Read the following prerequisite references before execution:**
 
 - `references/prerequisites_plugin_update.md` - Check for plugin updates
-- `references/prerequisites_principles.md` - Read AI-SDD principles document
+- `references/prerequisites_principles.md` - Read only these sections of the AI-SDD principles document (not the whole file): § Role of Each Document and Abstraction Level, § Task Type Determination, § Breaking Change Handling, § Document Update Triggers
 - `references/prerequisites_directory_paths.md` - Resolve directory paths using `SDD_*` environment variables
 
 ### Required Prerequisites
@@ -54,10 +54,17 @@ Full argument string: $ARGUMENTS
 > (a flag captured positionally), treat that argument as omitted and interpret the full argument
 > string instead. Ask the user interactively when a required argument is missing.
 
+**When `feature-name` is missing**:
+
+- **Interactive**: ask for it with `AskUserQuestion` before loading any document
+- **`--ci` mode**: do not ask. Abort with an error naming the missing argument and the fix
+  (`/implement {feature-name} {ticket-number}`), and write no files
+
 | Argument | Required | Description |
 |:--|:--|:--|
 | `feature-name` | Yes | Target feature name or path (e.g., `user-auth`, `auth/user-login`) |
 | `ticket-number` | - | Task directory name, holding both `tasks.md` and `design-draft.md`. Uses feature-name if omitted |
+| `--ci` | - | CI/non-interactive mode. See "When to Pause" for behavior at ambiguous points |
 
 `ticket-number` may be passed positionally (`/implement {feature-name} {ticket-number}`) or as a flag; both
 flag spellings — `--ticket {number}` and `--ticket={number}` — are accepted and mean the same thing.
@@ -256,6 +263,9 @@ Pause and ask for clarification when:
 - Multiple valid interpretations exist
 - Non-functional requirements unclear
 - External dependencies unavailable
+
+**`--ci` mode**: do not pause. Pick the most spec-conformant interpretation, record the assumption in the
+implementation log, and continue.
 
 ## TDD Best Practices
 

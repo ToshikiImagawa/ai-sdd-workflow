@@ -9,6 +9,38 @@
 
 ## [Unreleased]
 
+## [5.3.0] - 2026-10-23
+
+### 追加
+
+- `evals/`: 実装が散文のため法則化しない spec（prd-generation / front-matter-validation / impl-spec-check / doc-consistency-check / vibe-detection / clarify）向けの `claude plugin eval` スイート。決定表 1 行または不変条件 1 件 = 1 ケース（32 ケース）で、各 `case.yaml` の `description` が検査する spec の節を示す。グレーダーは regex のみ。`claude plugin eval ./plugins/sdd-workflow --trust-plugin --scaffold --allow-tools Bash Write Edit` で実行
+- `draft-laws`: 点命題（`for` 量化を持たない法則＝判定表 1 行。`kind` が `empty` / `singleton` / `identity` のものを除く）を `LAWS.bend` に書かなくなった。`rank` は新しい `to_tests` 配列で返し、`draft` は実装に対する差分 pytest（`<laws.tests_dir>/test_<feature>.py`、既定 `tests/laws/`。新テンプレート `laws_tests.md` en/ja）として書く。各テストの直前には法則と同じ `# source:` 行を置く。新しい `check --tests <file> --spec <spec>` がその行を検査する（error `test_source_missing` / `test_source_drift`）。`.sdd-config.json` に `laws.tests_dir` を追加
+- `draft-laws`: spec が実装の所在を本文の `impl-of: <path>` 行（`model-api:` と同形式）で宣言する。`status` が `impl` として返し（宣言が無ければ既存 `main.bend` の `# model-of:`、どちらも無ければ warning `impl_undeclared`）、`model` 段階は `# model-of:` にそれを写す（パスを自分で選ばない）。実装が散文のみ（全パスが `.md`）の spec は法則化しない（`impl.lawifiable: false`、`reason: prose_implementation`。法則もテストも書かず、理由をレポートに残す）
+- `draft-laws migrate <feature>`: 既存 `LAWS.bend` を読み取り専用で keep / to_tests / prose_delete に分類し移行表を出す（新テンプレート `laws_migration_report.md` en/ja）。法則の削除・再承認・spec front matter の更新は人の作業のまま
+
+- `shared/references/nfr_checklist.md`: NFR 参照資料（7 カテゴリ、「定量化されている」の定義と 4 段階（未記述 / 言及のみ / 目標値あり / 目標値＋条件＋測定方法）、良い例・悪い例、目安の範囲）。`ambiguity_patterns.md` からリンク。参照資料のみで、スキル・エージェントの挙動は変更なし (Refs #8)
+- `shared/references/ambiguity_criteria.md`: 曖昧さ判定基準の唯一の置き場。要求ごとの ○/△/× 判定と割合の目安（固定しきい値ではない）、`vibe-detector` 用の High/Medium/Low 観点チェック（PRD/spec がない入力でも使える）、`nfr_checklist.md` の段階を引く NFR の扱いと 7 カテゴリの集約規則（対象カテゴリの最低の印）。`vibe-detector` と `ambiguity_patterns.md` から参照。`vibe-detector` と `generate-spec` のリスク表に「spec なし＋明確な依頼 → Medium」の行を追加（従来の 3 行表の拡張。High / Low の行の文言は変更なし） (Refs #9)
+
+### 変更
+
+- `user-prompt-submit` フック: Vibe Coding 兆候を検知したときに注入するコンテキストで、Skill ツールによる `sdd-workflow:vibe-detector` の呼び出しと、実装前にリスクレポートを出力することを明示するようにした。従来の「vibe-detector スキルのフローに従え」という文言ではスキルが読み込まれず、リスクレベルが出力されなかった
+- `vibe-detector` テンプレート: リスクレベル行を literal の `High / Medium / Low` からプレースホルダ（`{High | Medium | Low}`）に変更した。literal のままだとモデルが 1 つを選ばずそのまま写すことがあった
+- Bend 証明ゲート: `bend` は引き続き任意依存で、利用側プロジェクトの CI に `bend` は不要（無ければ結果は `SKIPPED` / `TOOL_NOT_FOUND`）。README と laws-drafting / proof-gate の spec から「CI では実行しない」という表現を改め、このプラグイン自身のリポジトリでは optional（required ではない）CI ジョブで実行するようにした
+- Bend 法則は全称的な性質（`for x: T`）に限定し、固定入力の命題は参照モデル（同じ表の写し）に対して証明するのではなく pytest で実装に対して検証するようにした。proof ゲート（`run-verification.py`・`CHK-205`・判定表・PASS の意味）は変更なし。差分テストはゲートとは独立。`main.bend` の `# model-of:` はソースコードを指すこととし、SKILL.md やエージェント定義は指さない
+- `draft-laws` のレポートテンプレート（en/ja）に「差分テストへ回した候補」節と実装の所在を追加
+- `constitution` スキル（`SKILL.md`・`references/best_practices.md`）と `constitution_template.md`（en/ja）のバージョン区分を、リポジトリの `CONSTITUTION` v2.3.0 の定義に統一: メジャー＝既存の実装を違反にする破壊的変更、マイナー＝機能追加・更新（既存の実装が準拠のままとなる緩和を含む）、パッチ＝意味を変えない修正。改定 PR に既存実装への影響とその根拠を書き、レビュアーが確認する（Closes #200） 既存プロジェクトの CONSTITUTION は自動では更新されない。必要ならチームで区分の定義を手で更新する。
+- 6 agent と `doc-consistency-checker` に重複していた `### Index Fast Path` の記述を `shared/references/index_fast_path.md` に集約（`index.md` は 1 回だけ Read、全文が必要なときのみ個別ファイルへフォールバック、`SDD_INDEX` が未設定/`off` なら従来の Glob/Grep/Read）。各ファイルには使用テーブルとフォールバック条件のみ残す。`SDD_INDEX=on` 時の挙動は不変 (Refs #190)
+- 曖昧さ評価の記述の食い違いを解消 (Refs #9): `/clarify` の明確度スコアの段階の `skills/clarify/SKILL.md` を `clarification-assistant`（4 段階）に合わせた（agent は未変更）。clarify 出力テンプレート（スキル・shared、en/ja）のスコア表の計算ミスを修正（総合 50% = Clear 16 / 32、旧 61%。カテゴリ別も Clear / 総数で再計算）。`spec-reviewer` の PRD→spec の数値を「カバレッジ率」（Covered + Partially Covered）と明記し、明確度スコア（Clear のみ）とは別物であることを記載。`generate-spec` の High/Medium/Low を正典である `vibe-detector` と同じ文言に統一
+- スキル・エージェントが `AI-SDD-PRINCIPLES.md`（約43KB）の全文 Read を指示しないようにした。`prerequisites_principles.md` は
+  `grep -n` で見出しを探し、各スキル/エージェントが指定する節（`§ <見出し>`）だけを読む手順に変更。各参照元
+  （スキル18・エージェント5）が必要な節を個別に列挙する。`AI-SDD-PRINCIPLES.source.md` 本文は変更なし (Refs #7)
+- `spec-reviewer` の Covered / Partially Covered / Not Covered に具体的な判定基準を追加。基準は `ambiguity_criteria.md`（§1。NFR は §3）を参照し二重定義しない。80% の警告は変更なし。NFR の確認では定量化（`nfr_checklist.md` の Level 0–3）も報告する。`spec_review_output.md`（en/ja）と `check-spec` を同期。NFR カテゴリを `nfr_checklist.md` の 7 カテゴリに統一（`clarification-assistant` / `clarify` / `analyze-requirements` / `generate-prd` / `generate-spec`。PRD §4.2 と spec §3.2 のテンプレートにカテゴリの案内を追加）。PRD テンプレート §4.2 / `requirement-analyzer` / 出力例の ID を `PR_xxx` から `NFR_xxx` に統一（SysML の要素型 `performanceRequirement` は変更なし） (Refs #9, Refs #8)
+- #9 の実例検証で見つかった基準のずれを補正（Refs #9）: `nfr_checklist.md` に Level 2 の「検査可能な二値条件」（例付き）、OS 名のみの Compatibility は Level 2（版・サポート期間は検証の記述が伴う場合のみ Level 3 の要素）、要求文言から 7 カテゴリへの対応表（どれにも当てはまらない文言は V6 の対象外）、Level 3 例の表記統一を追加。`ambiguity_criteria.md`: spec が適用外と明記した V1〜V5 は N/A、V3/V4 の △/× の線、PRD が NFR を持たない場合は親 PRD の NFR で V6 を判定。`spec-reviewer` と出力テンプレート（en/ja）: カバレッジ率（Covered + Partially）の定義はそのまま、参考表示として Partially の件数・Covered のみの率を併記し、警告は Not / Partially の件数でも出す。spec が PRD の検証方法を弱めた場合は Partially、既存の正典へのリンク委譲は Covered、分母は全要求 ID（UR/FR/NFR/IR/DC）。`clarify`: 明確度スコア = Clear の項目数 ÷（全項目数 − N/A の項目数）、項目単位、Partial は分子に入れず、定義は `nine_category_analysis.md` の 1 か所（SKILL.md・エージェント・テンプレートはリンク）。spec-reviewer の警告はカバレッジ 80% 未満または未カバー 1 件以上のときだけ。OS 名＋CI での検証（版なし）は Level 3
+
+### 修正
+
+- **5 スキルの `--ci` モード** - `checklist` / `implement` / `run-checklist` / `recommend-front-matter` が `--ci` 指定時も対話確認で停止していた。`generate-spec` / `plan-refactor` と同じ作法（引数不足はエラー終了、確認はスキップ）に揃えた。`task-breakdown` は本文では実装済みだったが `argument-hint` に `--ci` が抜けていたので追記
+
 ## [5.2.0] - 2026-10-21
 
 ### 追加

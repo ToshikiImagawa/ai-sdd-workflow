@@ -1,0 +1,16 @@
+schema_version: "1.1"
+name: doc-consistency-check/sdd-version-older-major-is-stale
+description: "spec quality-guardrails/doc-consistency-check 3.1.2 row 2: sdd-version with an older major is an FR-007 target"
+tags: [doc-consistency-check, prose, spec-3.1.2]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 20
+  allowed_tools: [Read, Glob, Grep, Skill]
+graders:
+  - type: regex
+    name: old_gen_listed_as_stale
+    target: last_message
+    pattern: "\\b(?:stale)\\b(?:(?!unknown|absent)[\\s\\S]){0,600}^[ \\t]*[-*|\\d][^\\n]*old-gen\\.md"
+    flags: im
+    match: "contains"

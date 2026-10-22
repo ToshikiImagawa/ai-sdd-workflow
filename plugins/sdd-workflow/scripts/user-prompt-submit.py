@@ -50,9 +50,8 @@ def main() -> None:
         "UserPromptSubmit",
         "[AI-SDD] Potential Vibe Coding signals detected in the user prompt:\n"
         f"{findings}\n"
-        "Before implementing, follow the vibe-detector skill flow: assess the risk level, "
-        "clarify ambiguous points with the user (or via the clarify skill), and check "
-        "existing specifications under the SDD specification directory.",
+        "Before doing anything else, invoke the Skill tool with skill \"sdd-workflow:vibe-detector\" "
+        "and the user prompt as its argument, and output its risk report before implementing.",
     )
 
 

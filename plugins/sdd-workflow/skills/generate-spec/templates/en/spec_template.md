@@ -60,9 +60,14 @@ Describe the purpose and main design principles of the feature.
 
 ## 3.2. Non-Functional Requirements `<OPTIONAL>`
 
-| ID      | Category    | Requirement   | Target   |
-|---------|-------------|---------------|----------|
-| NFR-001 | Performance | [Requirement] | [Target] |
+<!--
+Category: Performance / Security / Reliability / Scalability / Usability / Maintainability / Compatibility.
+Write each Target so a third party can judge pass/fail (see shared/references/nfr_checklist.md).
+-->
+
+| ID      | Category    | Requirement   | Target                                                |
+|---------|-------------|---------------|-------------------------------------------------------|
+| NFR-001 | Performance | [Requirement] | [Target: number + unit, load condition, measurement]  |
 
 # 4. API `<MUST>`
 

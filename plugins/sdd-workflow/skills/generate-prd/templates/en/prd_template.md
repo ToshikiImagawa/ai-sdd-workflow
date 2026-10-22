@@ -46,7 +46,7 @@ Briefly describe the purpose and scope of this document.
 
 - **requirement**: General requirement
 - **functionalRequirement**: Functional requirement
-- **performanceRequirement**: Performance requirement
+- **performanceRequirement**: Performance requirement (used for non-functional requirements `NFR_xxx`)
 - **interfaceRequirement**: Interface requirement
 - **designConstraint**: Design constraint
 
@@ -180,8 +180,8 @@ requirementDiagram
     }
 
     performanceRequirement Performance1 {
-        id: PR_001
-        text: "Performance requirement 1"
+        id: NFR_001
+        text: "Non-functional requirement 1 (e.g. Performance: p95 response time under X ms)"
         risk: high
         verifymethod: test
     }
@@ -266,11 +266,17 @@ requirementDiagram
 
 **Verification method:** Test
 
-## 4.2. Performance Requirements `<OPTIONAL>`
+## 4.2. Non-Functional Requirements `<OPTIONAL>`
 
-### PR_001: {Performance Requirement Name}
+<!--
+Category: Performance / Security / Reliability / Scalability / Usability / Maintainability / Compatibility
+State each target so a third party can judge pass/fail (number with unit, or named standard with version).
+See nfr_checklist.md (shared/references) for the levels and examples.
+-->
 
-{Detailed description and target values for performance requirement}
+### NFR_001: {Non-Functional Requirement Name} (Category: {Performance, etc.})
+
+{Detailed description and target values (with load/environment conditions and measurement method)}
 
 **Verification method:** Test
 

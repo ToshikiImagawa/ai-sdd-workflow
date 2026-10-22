@@ -25,7 +25,7 @@ material.
 **Read the following prerequisite references before execution:**
 
 - `references/prerequisites_plugin_update.md` - Check for plugin updates
-- `references/prerequisites_principles.md` - Read AI-SDD principles document
+- `references/prerequisites_principles.md` - Read only these sections of the AI-SDD principles document (not the whole file): § Architecture Decision Record
 - `references/prerequisites_directory_paths.md` - Resolve directory paths using `SDD_*` environment variables
 - `references/html_structure_reference.md` - Template layers, placeholders, and the highlighting contract this skill must follow
 

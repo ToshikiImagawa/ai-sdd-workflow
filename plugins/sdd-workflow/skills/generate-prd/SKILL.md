@@ -18,7 +18,7 @@ Generates PRD from business requirements by orchestrating sub-skills.
 | File                                          | Purpose                                  |
 |:----------------------------------------------|:-----------------------------------------|
 | `references/prerequisites_directory_paths.md` | Resolve `${SDD_*}` environment variables |
-| `references/prerequisites_principles.md`      | Load AI-SDD principles                   |
+| `references/prerequisites_principles.md`      | Load AI-SDD principles (sections only: § Role of Each Document and Abstraction Level, § File Naming Convention, § Document Update Triggers) |
 | `references/prerequisites_plugin_update.md`   | Check plugin version compatibility       |
 
 **PRD writes are human-directed, not inferred**: This skill's PRD writes (Step 10) are authored directly from the
@@ -94,7 +94,7 @@ Read the following files from `$GENERATE_PRD_REFERENCES`:
 | File                                  | Purpose                                  |
 |:--------------------------------------|:-----------------------------------------|
 | `prerequisites_directory_paths.md`    | Resolve `${SDD_*}` environment variables |
-| `prerequisites_principles.md`         | Load AI-SDD principles                   |
+| `prerequisites_principles.md`         | Load AI-SDD principles (sections only: § Role of Each Document and Abstraction Level, § File Naming Convention, § Document Update Triggers) |
 | `prerequisites_plugin_update.md`      | Check plugin version compatibility       |
 | `usecase_diagram_guide.md`            | Use case diagram notation                |
 | `mermaid_notation_rules.md`           | Mermaid syntax rules                     |
@@ -183,7 +183,9 @@ below and in Step 6.
    - ID format: from above (`id_conventions.prd_functional`)
    - Include: ID, Requirement, Derived From (matching UR ID format above), Priority, Risk, Verification
 
-3. **Non-Functional Requirements (NFR)**: Quality attributes
+3. **Non-Functional Requirements (NFR)**: Quality attributes. Use the seven categories and quantification levels in
+   `${CLAUDE_PLUGIN_ROOT}/shared/references/nfr_checklist.md` (Performance, Security, Reliability, Scalability,
+   Usability, Maintainability, Compatibility); state each target so a third party can judge pass/fail
    - ID format: from above (`id_conventions.prd_nonfunctional`)
    - Include: ID, Requirement, Category, Priority, Risk, Verification
 

@@ -18,7 +18,7 @@ and verify that all specifications and design documents comply with them.
 **Read the following prerequisite references before execution:**
 
 - `references/prerequisites_plugin_update.md` - Check for plugin updates
-- `references/prerequisites_principles.md` - Read AI-SDD principles document
+- `references/prerequisites_principles.md` - Read only these sections of the AI-SDD principles document (not the whole file): § Recommended Directory Structure, § Importance of CONSTITUTION.md Compliance Check
 - `references/prerequisites_directory_paths.md` - Resolve directory paths using `SDD_*` environment variables
 
 ### Language Configuration
@@ -119,7 +119,7 @@ Add a new principle to a constitution by running `/constitution add "Library-Fir
 
 1. Confirm principle details with the user
 2. Add to the appropriate category
-3. Bump minor version (e.g., 1.0.0 -> 1.1.0)
+3. Bump version per the "Version Bump Rules" in §4
 4. Record in change history
 
 ### 3. Show Current Constitution (show)
@@ -141,27 +141,32 @@ Add a new principle to a constitution by running `/constitution add "Library-Fir
 
 **Version Bump Rules**:
 
-| Change Type                | Version Impact | Example        |
-|:---------------------------|:---------------|:---------------|
-| Add principle              | MINOR (x.Y.z)  | 1.0.0 -> 1.1.0 |
-| Modify principle           | MAJOR (X.y.z)  | 1.0.0 -> 2.0.0 |
-| Remove principle           | MAJOR (X.y.z)  | 1.0.0 -> 2.0.0 |
-| Change principle priority  | MAJOR (X.y.z)  | 1.0.0 -> 2.0.0 |
-| Update enforcement         | MINOR (x.Y.z)  | 1.0.0 -> 1.1.0 |
-| Clarify principle          | PATCH (x.y.Z)  | 1.0.0 -> 1.0.1 |
-| Fix typo                   | PATCH (x.y.Z)  | 1.0.0 -> 1.0.1 |
+| Change Type                | Version Impact                           |
+|:---------------------------|:-----------------------------------------|
+| Add principle              | MINOR (x.Y.z) or MAJOR (X.y.z)           |
+| Modify principle           | MINOR (x.Y.z) or MAJOR (X.y.z)           |
+| Remove principle           | MINOR (x.Y.z) or MAJOR (X.y.z)           |
+| Change principle priority  | MINOR (x.Y.z) or MAJOR (X.y.z)           |
+| Update enforcement         | MINOR (x.Y.z)                            |
+| Clarify principle (meaning unchanged) | PATCH (x.y.Z)         |
+| Fix typo / wording / link  | PATCH (x.y.Z)                            |
+
+Where a row shows MINOR or MAJOR, it is MAJOR only if the change makes existing implementations violations;
+otherwise MINOR (see the rule below).
 
 This table enumerates the same change types as the "Semantic Versioning" table in §7 (Version Management),
-and the two must agree row for row. The split follows one rule: **does the change alter what an existing
-principle demands?**
+and the two must agree row for row. The split follows one rule: **does the change make existing
+implementations violations?** Judge by impact, not by size of the wording change.
 
-- **MAJOR** — an existing principle's meaning, presence, or priority changes, so specs and designs that
-  already comply may stop complying. This is the breaking case (§7's "Conditions for Major Version Bump").
-- **MINOR** — something is added without changing an existing demand: a new principle (see the "Add
-  Principle (add)" flow in §2, which also bumps minor), or a new/updated enforcement mechanism for a
-  principle whose wording is unchanged.
-- **PATCH** — only the expression changes, not the demand. Clarifying a principle's wording *is* fixing its
-  expression, which is why it sits here alongside typo fixes rather than under MINOR.
+- **MAJOR** — a breaking change: specs, designs, or code that already comply start to violate (§7's
+  "Conditions for Major Version Bump"). Removal, change of meaning, a new principle, or wider scope all count,
+  but only where they create violations.
+- **MINOR** — a feature addition or update that leaves existing implementations compliant: a new principle
+  (see the "Add Principle (add)" flow in §2), broader or clearer scope, added process rules, a new/updated
+  enforcement mechanism, or a relaxation that changes meaning but violates nothing.
+- **PATCH** — a fix that does not change meaning: typos, wording, link fixes.
+
+State the impact on existing implementations, and why, in the amendment PR so a reviewer (or the team's agreed review mechanism) can confirm the bump.
 
 ### 5. Validate (validate)
 
@@ -260,9 +265,9 @@ Update constitution version by running `/constitution bump-version {major|minor|
 
 | Version Type | Use Case                                                                    | Example        |
 |:-------------|:----------------------------------------------------------------------------|:---------------|
-| Major        | Remove/significantly change existing principle, or change its priority (breaking) | 1.0.0 -> 2.0.0 |
-| Minor        | Add new principle, or add/update an enforcement mechanism                    | 1.0.0 -> 1.1.0 |
-| Patch        | Clarify the expression of a principle, typo fix                             | 1.0.0 -> 1.0.1 |
+| Major        | Breaking change that makes existing implementations violations (removal, change of meaning, new principle, or wider scope, only where it creates violations) | 1.0.0 -> 2.0.0 |
+| Minor        | Feature addition/update (new principle, broader or clearer scope, added process rules, enforcement mechanism, relaxation that leaves existing implementations compliant) | 1.0.0 -> 1.1.0 |
+| Patch        | Fix that does not change meaning (typo, wording, link) | 1.0.0 -> 1.0.1 |
 
 This mirrors the "Version Bump Rules" table in §4 (Update Constitution); keep the two in sync when either
 changes.
@@ -327,11 +332,11 @@ constitution file -> bump version -> update affected documents -> verify with `/
 
 ### Conditions for Major Version Bump
 
-Major version bump required for any of the following:
+Major version bump is required only when the change makes existing implementations violations, for example:
 
-- Removal of existing principle
-- Significant change to existing principle
-- Change in principle priority
+- Removal of an existing principle that makes existing implementations violations
+- Change to an existing principle's meaning or priority that makes existing implementations violations
+- A new principle or wider scope that makes existing implementations violations
 - Breaking changes affecting existing specs/designs
 
 ## Best Practices

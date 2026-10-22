@@ -6,7 +6,7 @@
 # Vibe Coding Risk Report
 
 **Detection Date**: {YYYY-MM-DD}
-**Risk Level**: 🔴 High / 🟡 Medium / 🟢 Low
+**Risk Level**: {🔴 High | 🟡 Medium | 🟢 Low}
 
 ## Detected Issues
 

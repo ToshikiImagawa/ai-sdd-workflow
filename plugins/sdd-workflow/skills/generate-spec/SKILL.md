@@ -19,7 +19,7 @@ Generates the following documents from input content according to the AI-SDD wor
 **Read the following prerequisite references before execution:**
 
 - `references/prerequisites_plugin_update.md` - Check for plugin updates
-- `references/prerequisites_principles.md` - Read AI-SDD principles document
+- `references/prerequisites_principles.md` - Read only these sections of the AI-SDD principles document (not the whole file): § Role of Each Document and Abstraction Level, § File Naming Convention, § Document Dependencies, § Task Type Determination
 - `references/prerequisites_directory_paths.md` - Resolve directory paths using `SDD_*` environment variables
 
 ### Template Preparation Flow (Optimized)
@@ -87,11 +87,14 @@ The Design Doc draft path is ticket-scoped, so the ticket number must be resolve
 
 Analyze input content and assess risk based on the following criteria:
 
-| Risk   | Condition                     | Response                                                |
-|:-------|:------------------------------|:--------------------------------------------------------|
-| High   | No specs + vague instructions | Confirm missing information with user before generating |
-| Medium | Some requirements unclear     | Clarify ambiguous points before generating              |
-| Low    | Requirements clear            | Can generate as-is                                      |
+| Risk       | Condition                                              | Response                                                |
+|:-----------|:-------------------------------------------------------|:--------------------------------------------------------|
+| **High**   | No specs + vague instructions (any viewpoint missing)  | Confirm missing information with user before generating |
+| **Medium** | No specs + clear request (no viewpoint missing)        | Confirm the assumptions before generating               |
+| **Medium** | Specs exist + some ambiguity                           | Clarify ambiguous points before generating              |
+| **Low**    | Specs exist + clear requirements                       | Can generate as-is                                      |
+
+(Risk conditions follow the canonical definition in the `vibe-detector` skill; the Response column is specific to generating a spec.)
 
 **Examples of Vague Input**:
 
@@ -122,7 +125,7 @@ Extract/infer the following from input:
 | **Technology Stack**            | Technologies/libraries to use                 | Yes      |
 | **Architecture Proposal**       | Module structure/layer design                 | Yes      |
 | **Design Decisions**            | Reasons for technology selection/alternatives |          |
-| **Non-Functional Requirements** | Performance/security requirements             |          |
+| **Non-Functional Requirements** | Quantified per the seven categories in `${CLAUDE_PLUGIN_ROOT}/shared/references/nfr_checklist.md` |          |
 
 ### 3. Missing Information Confirmation
 

@@ -1015,7 +1015,7 @@ requirementDiagram
     }
 
     performanceRequirement Response_Time {
-        id: PR_001
+        id: NFR_001
         text: "Response time under 2 seconds"
         risk: low
         verifymethod: demonstration

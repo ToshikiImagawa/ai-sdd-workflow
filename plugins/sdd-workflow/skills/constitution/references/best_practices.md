@@ -59,7 +59,7 @@ Use in CI/CD pipelines for automated validation.
 - Constitution file should be placed directly under `${SDD_ROOT}/` (`${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/CONSTITUTION.md`)
 - Constitution is a living document, updated as team learns
 - Version all changes to track evolution
-- Major version changes may require code migration
+- Major version changes (breaking: existing implementations become violations) may require code migration
 - Keep principles few (3-7) and high-impact
 - Too many principles = ignored principles
 - Review constitution quarterly for relevance

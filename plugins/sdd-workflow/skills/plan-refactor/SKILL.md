@@ -29,7 +29,7 @@ a write target.
 **Read the following prerequisite references before execution:**
 
 - `references/prerequisites_plugin_update.md` - Check for plugin updates
-- `references/prerequisites_principles.md` - Read AI-SDD principles document
+- `references/prerequisites_principles.md` - Read only these sections of the AI-SDD principles document (not the whole file): § Role of Each Document and Abstraction Level, § Task Type Determination, § Knowledge Asset Persistence Management, § Document Update Triggers
 - `references/prerequisites_directory_paths.md` - Resolve directory paths using `SDD_*` environment variables
 
 **PRD is read-only context**: Although `allowed-tools` grants `Edit(.sdd/**)`, this skill only writes to
@@ -101,8 +101,8 @@ See `references/front_matter_spec_design.md` for full schema definition, depende
 **No PRD found**: This skill never writes to `requirement/**` (see "PRD is read-only context" above). When
 `depends-on` is left empty because no PRD exists for `feature-name`, do not stop at the empty field — include a
 proposal in the refactoring plan output recommending a human-approved, reverse-engineered draft PRD
-(`status: "draft"`, `tags` including `"reverse-engineered"`), per AI-SDD-PRINCIPLES.md § Workflow Management
-Guidelines ("Never Automated" governs rewriting, not drafting a new PRD from scratch). The proposal is a
+(`status: "draft"`, `tags` including `"reverse-engineered"`), per AI-SDD-PRINCIPLES.md § Document Update
+Triggers ("Never Automated" governs rewriting, not drafting a new PRD from scratch). The proposal is a
 recommendation only — never draft or write the PRD file itself.
 
 ### Reverse-Engineered Design Draft Rules

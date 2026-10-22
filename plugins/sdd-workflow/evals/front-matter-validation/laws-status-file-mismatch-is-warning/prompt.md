@@ -1,0 +1,1 @@
+Use the front-matter-reviewer agent to validate the YAML front matter of every document under `.sdd/` with `--cross-ref`. Reproduce the agent's report verbatim as your final message: it must contain the issue table with one row per issue and the severity (error / warning / info) in the same row as the field or check name.

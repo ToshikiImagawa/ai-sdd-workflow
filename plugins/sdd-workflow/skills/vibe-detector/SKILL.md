@@ -21,7 +21,7 @@ When reading templates, use the path: `templates/${SDD_LANG:-en}/`
 
 ## Prerequisites
 
-**Before execution, you must read the AI-SDD principles document.**
+**Before execution, read only the AI-SDD principles sections below (not the whole file): § Vibe Coding Prevention, § Task Type Determination.**
 
 AI-SDD principles document path: `${CLAUDE_PROJECT_DIR}/${SDD_ROOT}/AI-SDD-PRINCIPLES.md`
 
@@ -76,11 +76,16 @@ It receives user input context for analysis.
 
 ## Risk Assessment Criteria
 
-| Level      | Condition                        | Response                                                 |
-|:-----------|:---------------------------------|:---------------------------------------------------------|
-| **High**   | No specs + vague instructions    | **Require** specification creation before implementation |
-| **Medium** | Specs exist + some ambiguity     | Clarify ambiguous points before implementation           |
-| **Low**    | Specs exist + clear requirements | Can start implementation                                 |
+| Level      | Condition                                                      | Response                                                 |
+|:-----------|:---------------------------------------------------------------|:---------------------------------------------------------|
+| **High**   | No specs + vague instructions (any viewpoint missing)          | **Require** specification creation before implementation |
+| **Medium** | No specs + clear request (no viewpoint missing)                | Create or confirm specs before implementation            |
+| **Medium** | Specs exist + some ambiguity                                   | Clarify ambiguous points before implementation           |
+| **Low**    | Specs exist + clear requirements                               | Can start implementation                                 |
+
+This table is a summary; the canonical, detailed criteria (viewpoint checks V1–V6, per-requirement ○/△/× marks, NFR levels and
+aggregation) are in `${CLAUDE_PLUGIN_ROOT}/shared/references/ambiguity_criteria.md`. The "no specs + clear request" row is an
+extension of the earlier 3-row table.
 
 ## Task Type Determination
 

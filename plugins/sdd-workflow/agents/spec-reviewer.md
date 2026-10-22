@@ -33,13 +33,13 @@ traceability check results, fix proposal summary)
 
 ## Prerequisites
 
-**Before execution, you must read the AI-SDD principles document.**
+**Before execution, you must read only the AI-SDD principles sections below (not the whole file): § Role of Each Document and Abstraction Level, § Document Dependencies, § Consistency Checking, § Vibe Coding Prevention.**
 
 AI-SDD principles document path: `${SDD_ROOT}/AI-SDD-PRINCIPLES.md`
 
 **Note**: This file is automatically updated at the start of each session.
 
-Understand AI-SDD principles, document structure, persistence rules, and Vibe Coding prevention details.
+Apply the rules in the sections above; open another section only when a rule is in question.
 
 This agent performs specification reviews based on AI-SDD principles.
 
@@ -75,11 +75,10 @@ when checking PRD ↔ spec traceability below.
 
 ### Index Fast Path
 
-When `SDD_INDEX` is `on`, a pre-built compressed index exists at `${SDD_ROOT}/.cache/index.md`.
-Read it **once** and use its `Metadata`, `Requirement IDs`, `Data Models`, and `API Signatures` tables
-for traceability and consistency checks between spec and design. Fall back to raw Read of a specific file
-only when full section text is needed for ambiguity analysis. When `SDD_INDEX` is unset or `off`, use the
-existing Glob/Grep/Read flow.
+Follow `${CLAUDE_PLUGIN_ROOT}/shared/references/index_fast_path.md`.
+Tables used: `Metadata`, `Requirement IDs`, `Data Models`, `API Signatures` (traceability and
+consistency checks between spec and design). Raw Read of a specific file only when full section text is
+needed for ambiguity analysis.
 
 ## Role
 
@@ -205,27 +204,40 @@ Specification).
       CONSTITUTION compliance, completeness, clarity, spec ↔ design, spec ↔ adr) will be performed as usual.
 
 2. **Extract Requirement IDs**: Extract all requirement IDs (format resolved above, e.g. `UR_xxx`, `FR_xxx`,
-   `NFR_xxx`) from PRD
+   `NFR_xxx`, `IR_xxx`, `DC_xxx`) from PRD. All of them are the denominator (Total Requirements). If the PRD has no NFR of its own and refers to a parent PRD, judge NFR coverage against the parent PRD's NFRs
 
 3. **Search for Corresponding Sections in spec**: Search how each requirement ID is addressed in spec
 
 4. **Classify Coverage Status**: Classify each requirement's coverage status using the following criteria:
-    - 🟢 **Covered**: Clear implementation approach or functional requirement described in spec
-    - 🟡 **Partially Covered**: Related description exists in spec but doesn't fully cover the requirement
-    - 🔴 **Not Covered**: No corresponding description found in spec
+    Judge each requirement with the same tests as `${CLAUDE_PLUGIN_ROOT}/shared/references/ambiguity_criteria.md`
+    (Section 1 for FR/UR, Section 3 for NFR), applied to how the **spec** describes it. Apply only the items that
+    apply to the requirement (target, inputs/outputs, error behavior, boundary conditions, completion criteria);
+    when unsure between two statuses, choose the lower one. Judge only the NFR items the PRD states; a category the
+    PRD does not mention is out of scope (list it as a suggestion if needed), so Covered never requires filling all
+    seven categories.
+    - 🟢 **Covered**: Every applicable item is stated in spec (○). For an NFR: the affected category is at
+      `nfr_checklist.md` Level 2 or higher (if one NFR spans several categories, judge by the lowest level, as in
+      `ambiguity_criteria.md` Section 3)
+    - 🟡 **Partially Covered**: Related description exists, but at least one applicable item is missing or vague
+      (△). For an NFR: Level 1 (named, no target value)
+    - 🔴 **Not Covered**: No corresponding description, or only the topic is named (×). For an NFR: Level 0
 
-5. **Calculate Coverage**: `(Covered + Partially Covered) / Total Requirements × 100%`
+    Weakened verification methods and delegation by link are judged as defined in `ambiguity_criteria.md` Section 1.
 
-6. **Threshold Check**: Issue warning if coverage is below 80%
+    This is a traceability judgment on PRD→spec; it is not the `/clarify` clarity score.
+
+5. **Calculate Coverage Rate** (PRD→spec traceability; distinct from the `/clarify` clarity score, which counts only Clear items): `(Covered + Partially Covered) / Total Requirements × 100%`. The rate is a reference value only (it stays 100% when everything is at least Partially, so it does not discriminate). Always show it with the **Partially Covered count** and the **Covered-only rate** (`Covered / Total Requirements × 100%`)
+
+6. **Threshold Check**: Issue warning only if coverage is below 80% or Not Covered is 1 or more. The Partially Covered count is displayed but does not trigger the warning. Summary row: 🟢 when coverage is 80% or higher and Not Covered is 0; otherwise 🔴
 
 #### Check Items
 
 | Check Target                              | Verification Content                                                                                | Criteria                                                                   | Importance |
 |:------------------------------------------|:----------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------|:-----------|
-| **Requirement ID Mapping**                | Search all PRD requirement IDs (UR/FR/NFR) in spec and identify corresponding sections              | Are requirement IDs explicitly documented in spec?                         | High       |
+| **Requirement ID Mapping**                | Search all PRD requirement IDs (UR/FR/NFR/IR/DC) in spec and identify corresponding sections              | Are requirement IDs explicitly documented in spec?                         | High       |
 | **Functional Requirement Coverage**       | Are PRD functional requirements (e.g. `FR_xxx`) covered in spec's functional requirements/API definitions? | Is implementation approach for each PRD FR documented in spec?             | High       |
-| **Non-Functional Requirement Reflection** | Are PRD non-functional requirements (e.g. `NFR_xxx`) reflected in spec's constraints/quality requirements? | Are constraints/quality criteria for each PRD NFR documented in spec?      | Medium     |
-| **Coverage Threshold Check**              | Verify that PRD requirement coverage in spec is 80% or higher                                       | Coverage = (Covered + Partially Covered) / Total Requirements × 100% ≥ 80% | High       |
+| **Non-Functional Requirement Reflection** | Are PRD non-functional requirements (e.g. `NFR_xxx`) reflected in spec's constraints/quality requirements? Is each one **quantified** (`${CLAUDE_PLUGIN_ROOT}/shared/references/nfr_checklist.md` Level 0–3, seven categories)? | Are constraints/quality criteria for each PRD NFR documented in spec at Level 2 or higher? Report Level 1 or 0 as Partially/Not Covered; a missing measurement method (Level 2 vs 3) is a suggestion only | Medium     |
+| **Coverage Threshold Check**              | Verify that PRD requirement coverage in spec is 80% or higher                                       | Coverage = (Covered + Partially Covered) / Total Requirements × 100% ≥ 80% (reference only; also report the Partially Covered count and the Covered-only rate); warn on < 80% or Not Covered ≥ 1 | High       |
 | **Terminology Consistency**               | Is same terminology used in PRD and spec?                                                           | Are key concepts and feature names used consistently?                      | Low        |
 
 ### spec ↔ design Traceability Check

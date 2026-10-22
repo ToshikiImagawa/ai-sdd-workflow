@@ -379,7 +379,7 @@ When adding new principles, consider the following:
    ↓
 3. Add to constitution file
    ↓
-4. Minor version bump (e.g., 1.0.0 → 1.1.0)
+4. Decide the version bump (see "Semantic Versioning")
    ↓
 5. Update affected documents
    ↓
@@ -491,7 +491,7 @@ Review metrics monthly in team retrospective.
 
 ### Minor Version (x.Y.z)
 
-**Scope**: Clarifications, additional examples, enforcement method updates
+**Scope**: Feature additions and updates that do not make existing implementations violations (new principles, broader or clearer scope, added process rules, relaxations that change meaning but leave existing implementations compliant)
 
 **Process**:
 
@@ -505,7 +505,7 @@ Review metrics monthly in team retrospective.
 
 ### Major Version (X.y.z)
 
-**Scope**: New principles, changes to existing principles, removal of principles
+**Scope**: Breaking changes that make existing implementations violations (removal or change of meaning of a principle, a new principle, or a wider scope, only where it creates violations)
 
 **Process**:
 
@@ -550,9 +550,11 @@ Constitution versions follow these rules:
 
 | Version Type | Usage                                        | Example       |
 |:-------------|:---------------------------------------------|:--------------|
-| Major        | Removal/major changes to existing principles (breaking changes) | 1.0.0 → 2.0.0 |
-| Minor        | Addition of new principles                   | 1.0.0 → 1.1.0 |
-| Patch        | Expression fixes, typo corrections           | 1.0.0 → 1.0.1 |
+| Major        | Breaking change that makes existing implementations violations (removal, change of meaning, new principle, or wider scope, only where it creates violations) | 1.0.0 → 2.0.0 |
+| Minor        | Feature addition/update (new principle, broader or clearer scope, added process rules, relaxations that leave existing implementations compliant) | 1.0.0 → 1.1.0 |
+| Patch        | Fixes that do not change meaning (typos, wording, link fixes) | 1.0.0 → 1.0.1 |
+
+**How to decide**: the deciding question is whether existing implementations become violations, not how large the wording change is. In the amendment PR, describe the impact on existing implementations and its rationale, and have a reviewer (or the team's agreed review mechanism) confirm the bump.
 
 ---
 

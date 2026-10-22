@@ -2,9 +2,11 @@
 
 Single source of truth for the laws-drafting conventions (laws-drafting_spec.md):
 the spec section hash behind ``# source:`` comments (FR-003), the static checks
-on drafted law files (FR-006, 3.1.3), source-drift detection shared by the proof
-gate and the post-tool-use hook (FR-011 / FR-013) and the approval validity
-verdict that gates the ``model`` stage (FR-007). Everything is stdlib-only and
+on drafted law files (FR-006, 3.1.3) and on differential pytest files (3.1.3-9),
+source-drift detection shared by the proof gate and the post-tool-use hook
+(FR-011 / FR-013), the approval validity verdict that gates the ``model`` stage
+(FR-007), the point-assertion test (FR-014) and the implementation-location
+resolution (FR-015 / 3.1.5). Everything is stdlib-only and
 needs no ``bend`` (NFR-001 / NFR-002).
 
 Approval and content-hash rules stay in laws_header.py; this module reuses them
@@ -44,6 +46,15 @@ MODEL_REF_RE = re.compile(r"\bModel\.([A-Za-z_]\w*)")
 # A spec declares the model API with plain ``model-api: Model.<fn>(...) -> T`` lines
 # (no leading ``#``, so the ``# model-api:`` examples of a law file are not picked up).
 SPEC_MODEL_API_RE = re.compile(r"^\s*(?:[-*]\s+)?model-api:\s*Model\.(?P<fn>[A-Za-z_]\w*)\s*\((?P<rest>.*)$")
+# A spec declares where the implementation lives with plain ``impl-of: <project-relative path>``
+# lines (spec 3.1.5; same shape as ``model-api:``). A trailing ``# comment`` is ignored.
+SPEC_IMPL_OF_RE = re.compile(r"^\s*(?:[-*]\s+)?impl-of:\s*(?P<path>[^\s#]+)\s*(?:#.*)?$")
+# ``for x: T`` declarations of a law body (one or several variables; the multi-variable form is
+# a syntax error in Bend but still counts as a quantifier here).
+FOR_DECL_RE = re.compile(r"\bfor\s+([A-Za-z_]\w*(?:\s*,\s*[A-Za-z_]\w*)*)\s*:")
+# ``def test_*`` of a pytest file (module level or inside a class).
+TEST_DEF_RE = re.compile(r"^\s*def\s+(?P<name>test_\w*)\s*\(")
+PROSE_SUFFIXES = (".md",)
 # ``def`` of main.bend: optionally indented, optional type parameters (``def f<T>(...)``).
 MAIN_DEF_RE = re.compile(r"^\s*def\s+(?P<fn>[A-Za-z_]\w*)\s*(?:<[^>]*>)?\s*\((?P<rest>.*)$")
 # ``for a: Nat`` and the comma form ``for a, b: Nat``.
@@ -285,6 +296,53 @@ def model_api_from_spec(spec_text: str) -> Dict[str, str]:
     return out
 
 
+def impl_of_from_spec(spec_text: str) -> List[str]:
+    """Project-relative implementation paths declared by ``impl-of:`` lines of a spec (spec
+    3.1.5 priority 1), in declaration order, duplicates dropped. Empty when none."""
+    out: List[str] = []
+    for line in spec_text.splitlines():
+        m = SPEC_IMPL_OF_RE.match(line)
+        if m is not None and m.group("path") not in out:
+            out.append(m.group("path"))
+    return out
+
+
+def impl_of_main(main_path: Path) -> List[str]:
+    """``# model-of:`` paths of an existing ``main.bend`` header (spec 3.1.5 priority 2)."""
+    if not main_path.is_file():
+        return []
+    out: List[str] = []
+    for value in read_header(main_path).get("model-of", []):
+        path = value.split("#", 1)[0].strip()
+        if path and path not in out:
+            out.append(path)
+    return out
+
+
+def resolve_impl(spec_text: Optional[str], laws_dir: Path) -> Dict[str, object]:
+    """Where the implementation lives (spec 3.1.5 / FR-015): ``{"paths", "source", "lawifiable",
+    "reason"}``. ``source`` is ``spec`` (``impl-of:`` lines), ``main.bend`` (its ``# model-of:``)
+    or ``none``. ``lawifiable`` is False with ``reason: prose_implementation`` when every
+    declared path is a Markdown file (SKILL.md / agent definition): laws over a prose
+    implementation cannot be tied to code, so the spec is not lawified."""
+    paths = impl_of_from_spec(spec_text) if spec_text else []
+    source = "spec" if paths else "none"
+    if not paths:
+        paths = impl_of_main(laws_dir / MODEL_FILE)
+        source = "main.bend" if paths else "none"
+    prose = bool(paths) and all(p.lower().endswith(PROSE_SUFFIXES) for p in paths)
+    return {"paths": paths, "source": source, "lawifiable": not prose,
+            "reason": "prose_implementation" if prose else None}
+
+
+def is_point_assertion(body: str) -> bool:
+    """True for a law body with at least one ``{lhs == rhs : T}`` equation and no ``for``
+    quantifier (spec FR-014): a fixed-input proposition, i.e. one row of a decision table. Such
+    candidates go to the differential pytest instead of ``LAWS.bend`` unless their ``kind`` is
+    ``empty`` / ``singleton`` / ``identity`` (decided by the caller)."""
+    return FOR_DECL_RE.search(body) is None and bool(_top_level_equations(body))
+
+
 def spec_model_api_duplicates(spec_text: str) -> List[str]:
     """Function names declared by more than one ``model-api:`` line of the spec."""
     seen: Dict[str, int] = {}
@@ -429,6 +487,77 @@ def source_drift(laws_path: Path, spec_path: Path) -> List[Dict[str, str]]:
             section = law.source.section if law.source else ""
             warnings.append({"code": SOURCE_DRIFT, "law": law.name, "source": section})
     return warnings
+
+
+class TestRef(NamedTuple):
+    """One ``def test_*`` of a differential pytest file with its nearest ``# source:`` comment."""
+    name: str
+    line: int
+    source_raw: Optional[str]
+    source: Optional[SourceRef]
+
+
+def source_refs_of_file(path: Path) -> List[TestRef]:
+    """Every ``def test_*`` of a pytest file bound to the ``# source:`` comment directly above
+    it (spec 4.1 "differential test"). The lookup walks up through blank lines, comment lines
+    and decorators (``@...``, part of the function); any other code line stops it, so a test
+    without its own source comment reads as missing."""
+    lines = read_lines(path)
+    out: List[TestRef] = []
+    for i, line in enumerate(lines):
+        m = TEST_DEF_RE.match(line)
+        if m is None:
+            continue
+        source_raw: Optional[str] = None
+        j = i - 1
+        while j >= 0:
+            s = lines[j].strip()
+            if s and not s.startswith("#") and not s.startswith("@"):
+                break
+            h = HEADER_RE.match(s)
+            if h is not None and h.group(1) == "source":
+                source_raw = h.group(2).strip()
+                break
+            j -= 1
+        out.append(TestRef(m.group("name"), i + 1, source_raw,
+                           parse_source(source_raw) if source_raw is not None else None))
+    return out
+
+
+def check_test_sources(tests_path: Path, spec_path: Optional[Path]) -> List[Finding]:
+    """Static check 9 (spec 3.1.3) of a differential pytest file: every ``def test_*`` has a
+    ``# source:`` comment (else error ``test_source_missing``) that names an existing section
+    of the spec whose hash is current (else error ``test_source_drift``; malformed /
+    other-spec / absent-section sources keep the law-file codes). Without ``spec_path`` only
+    the presence check runs. The test body itself is not inspected (pytest judges it)."""
+    findings: List[Finding] = []
+    if not tests_path.is_file():
+        return [Finding("tests_file_missing", ERROR, "", f"tests file not found: {tests_path}")]
+    spec_text = _read_text(spec_path) if spec_path is not None else None
+    spec_id = spec_id_of(spec_text) if spec_text is not None else ""
+    for ref in source_refs_of_file(tests_path):
+        if ref.source_raw is None:
+            findings.append(Finding(
+                "test_source_missing", ERROR, ref.name,
+                f"test '{ref.name}' (line {ref.line}) has no '# source:' comment"))
+            continue
+        if spec_text is None:
+            continue
+        law = LawDecl(ref.name, ref.line, ref.source_raw, ref.source, "")
+        problem = _source_problem(law, spec_text, spec_id)
+        if problem is None:
+            continue
+        kind, detail = problem
+        text = {
+            "invalid": f"malformed '# source:' ({detail})",
+            "spec": f"'# source:' names spec id '{detail}', not '{spec_id}'",
+            "missing": f"section §{detail} does not exist in the spec",
+            "hash": f"section hash differs from the spec (current sha256:{detail})",
+        }[kind]
+        code = {"invalid": SOURCE_INVALID, "spec": "source_spec_mismatch",
+                "missing": "source_section_missing", "hash": "test_source_drift"}[kind]
+        findings.append(Finding(code, ERROR, ref.name, f"test '{ref.name}': {text}"))
+    return findings
 
 
 # --- static checks (3.1.3) -------------------------------------------------

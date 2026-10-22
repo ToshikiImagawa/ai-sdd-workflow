@@ -27,6 +27,8 @@ This document defines the markdown structure that `analyze-requirements` must re
 | NFR_002 | System available 99.9% uptime        | Reliability | Should   | High   | Analysis       |
 | NFR_003 | User actions logged for audit        | Security    | Could    | Low    | Inspection     |
 
+Category: one of the seven in `${CLAUDE_PLUGIN_ROOT}/shared/references/nfr_checklist.md` (Performance, Security, Reliability, Scalability, Usability, Maintainability, Compatibility).
+
 ## Requirements Summary
 
 | Category | Count | Must | Should | Could |

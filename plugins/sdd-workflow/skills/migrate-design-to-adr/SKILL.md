@@ -25,7 +25,7 @@ makes the migration mechanical when the user chooses to do it.
 **Read the following prerequisite references before execution:**
 
 - `references/prerequisites_plugin_update.md` - Check for plugin updates
-- `references/prerequisites_principles.md` - Read AI-SDD principles document
+- `references/prerequisites_principles.md` - Read only these sections of the AI-SDD principles document (not the whole file): § Architecture Decision Record, § File Naming Convention, § Knowledge Asset Persistence Management
 - `references/prerequisites_directory_paths.md` - Resolve directory paths using `SDD_*` environment variables
 - `references/front_matter_reference.md` - Front matter schema (the `type: "adr"` table is the authority for the
   file-level fields written in step 4)

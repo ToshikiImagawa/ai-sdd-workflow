@@ -101,14 +101,15 @@ The following sections need to be added:
 | NFR-001 | Non-Functional Requirement | {Non-functional requirement content} | {Corresponding constraints/quality requirements} | 🟢 Covered |
 | NFR-002 | Non-Functional Requirement | {Non-functional requirement content} | Partially documented | 🟡 Partially Covered |
 
-**Coverage: {X}% ({Covered+Partially Covered}/{Total Requirements})**
+**Coverage (reference): {X}% ({Covered+Partially Covered}/{Total Requirements}) / Covered only: {Y}% ({Covered}/{Total Requirements}) / Partially Covered: {n} items / Not Covered: {n} items**
 
-Warning: Coverage is below 80% (displayed only when coverage is below 80%)
+Warning: Coverage is below 80%, or Not Covered is 1 or more (displayed only in those cases; the Partially Covered count never triggers it)
 
 **Criteria**:
-- 🟢 **Covered**: PRD requirement is clearly documented in spec with implementation approach defined
-- 🟡 **Partially Covered**: Related description exists in spec but doesn't fully cover the requirement
-- 🔴 **Not Covered**: No corresponding description found in spec
+Judged with `ambiguity_criteria.md` (Section 1; NFR: Section 3 / `nfr_checklist.md` Level):
+- 🟢 **Covered**: Every applicable item (target, inputs/outputs, error behavior, boundary conditions, completion criteria) is stated in spec. NFR: Level 2 or higher
+- 🟡 **Partially Covered**: Related description exists, but at least one applicable item is missing or vague. NFR: Level 1
+- 🔴 **Not Covered**: No corresponding description, or only the topic is named. NFR: Level 0
 
 ##### 🔴 Not Covered Requirements ({n} items)
 
@@ -195,7 +196,7 @@ decision log is the normal state for a feature whose decisions have not been rec
 
 | Check Target        | Result                      | Details                                      |
 |:--------------------|:----------------------------|:---------------------------------------------|
-| PRD - spec          | 🟢 Consistent / 🔴 Inconsistent | Coverage: {X}%, Not Covered: {n} items       |
+| PRD - spec          | 🟢 Consistent (coverage ≥ 80% and Not Covered = 0) / 🔴 Inconsistent | Coverage: {X}% (Covered only: {Y}%), Partially Covered: {n} items, Not Covered: {n} items       |
 | spec - design       | 🟢 Consistent / 🔴 Inconsistent | Inconsistencies: {n} items                   |
 | spec - adr          | 🟢 Consistent / 🔴 Inconsistent / ⚪ Not applicable | Contradictions: {n} items, Unrecorded decisions: {n} items, or no decision log |
 | CONSTITUTION - docs | 🟢 Compliant / 🔴 Violation / No Principles | Violations: {n} items, Partial Violations: {n} items |
@@ -238,9 +239,9 @@ decision log is the normal state for a feature whose decisions have not been rec
 | FR-002 | {Functional requirement content} | Not documented | 🔴 Not Covered |
 | NFR-001 | {Non-functional requirement content} | {Corresponding constraints/quality requirements} | 🟢 Covered |
 
-**Coverage: {X}% ({Covered+Partially Covered}/{Total Requirements})**
+**Coverage (reference): {X}% ({Covered+Partially Covered}/{Total Requirements}) / Covered only: {Y}% ({Covered}/{Total Requirements}) / Partially Covered: {n} items / Not Covered: {n} items**
 
-Warning: Coverage is below 80% (displayed only when coverage is below 80%)
+Warning: Coverage is below 80%, or Not Covered is 1 or more (displayed only in those cases; the Partially Covered count never triggers it)
 
 ##### spec - design Consistency (design files only)
 

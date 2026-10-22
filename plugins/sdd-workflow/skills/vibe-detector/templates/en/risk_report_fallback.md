@@ -6,7 +6,7 @@ Use this structure only when `templates/${SDD_LANG:-en}/risk_report.md` does not
 # Vibe Coding Risk Report
 
 **Detection Date**: {YYYY-MM-DD}
-**Risk Level**: 🔴 High / 🟡 Medium / 🟢 Low
+**Risk Level**: {🔴 High | 🟡 Medium | 🟢 Low}
 
 ## Detected Issues
 
