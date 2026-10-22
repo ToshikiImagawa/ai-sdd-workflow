@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.1] - 2026-10-23
+
+### Fixed
+
+- **`--ci` mode in `task-cleanup` and `check-spec`** - Both skills still stopped at their scope confirmation in a non-interactive session (5.3.0 added `--ci` to five other skills but left these two out)
+  - `check-spec --ci`: skips the no-argument scope confirmation and checks every spec. The skill is read-only, so nothing else changes
+  - `task-cleanup --ci`: requires `ticket-number` (aborts with an error instead of sweeping the whole of `task/` non-interactively), records any spec-update proposal as "deferred" instead of asking, and skips integration for an unclear target while keeping `task/` in place. It does not pre-approve the delete / `gh issue comment` shell commands: a CI run must grant those through its own permission configuration, otherwise `--ci` still fails safely at the first delete
+
 ## [5.3.0] - 2026-10-23
 
 ### Added

@@ -1,7 +1,7 @@
 ---
 name: check-spec
 description: "Check consistency between implementation code and abstract specifications (spec), detecting discrepancies"
-argument-hint: "[feature-name] [--ticket <number>] [--full]"
+argument-hint: "[feature-name] [--ticket <number>] [--full] [--ci]"
 arguments: [feature-name]
 license: MIT
 user-invocable: true
@@ -71,10 +71,14 @@ Full argument string: $ARGUMENTS
     - CONSTITUTION.md compliance check
     - Completeness, clarity, and SysML compliance check
     - Vague description detection
+- `--ci`: CI/non-interactive mode. Skips the scope confirmation below and checks every spec when
+  `feature-name` is omitted. This skill is read-only (`disallowed-tools: Write, Edit`), so there is nothing
+  else to confirm; the report is the same as in interactive mode
 
 ### Input Examples
 
 - `/check-spec user-auth` — Consistency check only (default)
+- `/check-spec --ci` — All specs, no scope confirmation (for CI)
 - `/check-spec user-auth --ticket 123` — Consistency check with ticket 123's design draft as auxiliary input
 - `/check-spec task-management --full` — Consistency check + quality review
 - `/check-spec --full` — Comprehensive check for all specifications
@@ -92,6 +96,8 @@ Replace placeholders with actual file names and counts.
 
 - User approves -> Execute check on all files
 - User cancels or specifies a particular file -> Re-execute with the specified scope
+
+**`--ci` mode**: do not ask. Treat the full list as approved and proceed to Phase 1 directly.
 
 ## Processing Flow
 

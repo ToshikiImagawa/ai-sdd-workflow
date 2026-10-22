@@ -1,7 +1,7 @@
 ---
 name: task-cleanup
 description: "Clean up task/ directory after implementation completion, integrating design decisions and rejected alternatives into adr/{feature}.md before deletion"
-argument-hint: "[ticket-number]"
+argument-hint: "[ticket-number] [--ci]"
 arguments: [ticket-number]
 license: MIT
 user-invocable: true
@@ -32,6 +32,12 @@ skill runs asks the user for confirmation at the moment it runs** — `ls` and `
 misconfiguration: do not propose widening `allowed-tools`, and do not route around the prompt. If a
 confirmation cannot be answered (non-interactive session), the command fails — report the pending deletion
 in the output and leave `task/` in place rather than retrying.
+
+`--ci` does not change this. It removes the **skill's own** questions (scope confirmation, the spec-update
+proposal in step 6), not the harness's permission prompts: a CI run that is expected to delete must
+pre-approve the shell commands above through its permission configuration (for example `--allowedTools`
+or a `settings.json` rule) before invoking this skill. Without that, `--ci` still fails safely at the
+first delete and reports the pending deletion.
 
 ### Document Persistence Rules (Reference)
 
@@ -71,7 +77,8 @@ Full argument string: $ARGUMENTS
 
 | Argument | Required | Description |
 |:--|:--|:--|
-| `ticket-number` | - | Target ticket number or path. Accepted positionally, or as a flag in either form: `--ticket <number>` and `--ticket=<number>`. Targets entire task/ if omitted |
+| `ticket-number` | - (Yes in `--ci` mode) | Target ticket number or path. Accepted positionally, or as a flag in either form: `--ticket <number>` and `--ticket=<number>`. Targets entire task/ if omitted |
+| `--ci` | - | CI/non-interactive mode. Requires `ticket-number`: aborts with an error instead of prompting when it is missing. Skips the skill's own confirmations (scope confirmation, step 6 spec-update proposal). Does not pre-approve shell commands — see "Tool Permissions" |
 
 `ticket-number` may be passed positionally or as a flag; both spellings — `--ticket {number}` and
 `--ticket={number}` — are accepted and mean the same thing. Strip the `--ticket`/`--ticket=` prefix before
@@ -83,6 +90,7 @@ using the value.
 - `/task-cleanup --ticket TICKET-123`
 - `/task-cleanup --ticket=TICKET-123`
 - `/task-cleanup feature/task-management`
+- `/task-cleanup TICKET-123 --ci` (CI mode: no prompts from this skill; shell commands still need pre-approval)
 - `/task-cleanup` (without arguments, targets entire task/)
 
 ### Scope Confirmation for No-Argument Execution
@@ -96,6 +104,10 @@ Replace placeholders with actual directory/file names, types, dates, and counts.
 **Post-confirmation behavior**:
 - User approves -> Execute cleanup on entire task/
 - User cancels or specifies a particular directory -> Re-execute with the specified scope
+
+**`--ci` mode**: do not ask. Deleting the whole of `task/` is never done non-interactively — abort with an
+error naming the missing argument and the fix (`/task-cleanup {ticket-number} --ci`), and write or delete
+nothing. With `ticket-number` given, skip this section and start at step 1.
 
 ## Processing Flow
 
@@ -205,6 +217,9 @@ If any decision matches, propose a `*_spec.md` update to the user via `AskUserQu
 decision and the affected `*_spec.md`). **Do not edit `*_spec.md` automatically** — spec changes require explicit
 user confirmation. Record the outcome (updated / deferred / not applicable) for the output.
 
+**`--ci` mode**: do not ask. Record every matching decision as "deferred" together with the affected
+`*_spec.md`, so the output lists what a human still has to decide. The spec is never edited in CI mode.
+
 ### 7. Update Front Matter in Related Documents
 
 Independent of step 6 — do not wait for the spec-update decision to perform these edits. Before deleting task
@@ -294,7 +309,8 @@ Use the `templates/${SDD_LANG:-en}/cleanup_output.md` template for output format
 ### Cases Requiring Careful Judgment
 
 - **Implementation not complete**: Keep task/
-- **Integration target unclear**: Confirm with user
+- **Integration target unclear**: Confirm with user. In `--ci` mode do not ask: skip integration for that
+  item, keep `task/{ticket-number}/` in place, and report the unresolved target in the output
 - **Information spanning multiple features**: Integrate into most related document
 - **Spec update trigger matched but user declines**: Record as "deferred" in the output, do not re-prompt within the same run
 - **Step 8 verification failed**: Keep `task/{ticket-number}/` and report the missing entry. An unverified
