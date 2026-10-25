@@ -12,11 +12,9 @@
     {
       "name": "sdd-workflow",
       "source": {
-        "source": "git-subdir",
-        "url": "ToshikiImagawa/ai-sdd-workflow-dev",
-        "path": "plugins/sdd-workflow",
-        "ref": "v5.3.1",
-        "sha": "355cc90f27c448c57c6c9188020794106873ad12"
+        "source": "archive",
+        "url": "https://github.com/ToshikiImagawa/ai-sdd-workflow-dev/releases/download/v5.3.1/sdd-workflow-5.3.1.zip",
+        "sha256": "92570656fe9040918cc433f5ba9a9499409d9ecef28e483045db256457375217"
       },
       "description": "A unified plugin supporting AI-driven Specification-Driven Development (AI-SDD) workflow. Prevents Vibe Coding problems and achieves high-quality implementations using specifications as the source of truth. Supports multiple languages via SDD_LANG configuration.",
       "version": "5.3.1",
