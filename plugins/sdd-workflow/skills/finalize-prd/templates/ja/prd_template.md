@@ -1,1 +1,0 @@
-../../../generate-prd/templates/ja/prd_template.md

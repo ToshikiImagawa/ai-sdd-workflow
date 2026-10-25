@@ -1,1 +1,0 @@
-../../../shared/references/mermaid_notation_rules.md
