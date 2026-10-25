@@ -13,12 +13,14 @@ AI-driven Specification-Driven Development (AI-SDD) workflow.
 このリポジトリはプラグインの**カタログ（`.claude-plugin/marketplace.json`）のみ**を持ちます。プラグイン本体・
 CHANGELOG・GitHub Release は本体リポジトリ
 [ToshikiImagawa/ai-sdd-workflow-dev](https://github.com/ToshikiImagawa/ai-sdd-workflow-dev) にあります。
-カタログの各エントリは `git-subdir` ソースで本体リポジトリのサブディレクトリをタグとコミット SHA に固定して参照します。
+カタログの各エントリは `archive` ソースで、本体リポジトリの GitHub Release に添付された配布用 zip を参照し、
+`sha256` で内容を固定します。インストール時は zip をダウンロードして展開するだけなので、利用者の環境に git は不要です（Claude Code v2.1.224 以降が必要）。
 
 This repository holds **only the plugin catalog (`.claude-plugin/marketplace.json`)**. The plugin source code,
 CHANGELOG, and GitHub Releases live in the main repository,
 [ToshikiImagawa/ai-sdd-workflow-dev](https://github.com/ToshikiImagawa/ai-sdd-workflow-dev). Each catalog entry
-uses a `git-subdir` source that points to a subdirectory of the main repository, pinned to a tag and commit SHA.
+uses an `archive` source that points to the distribution zip attached to a GitHub Release of the main repository,
+pinned by its `sha256`. Installation only downloads and extracts the zip, so git is not required on the user's machine (requires Claude Code v2.1.224 or later).
 
 プラグインは、Vibe Coding問題を防ぎ、仕様書を真実の源として高品質な実装を実現します。
 
@@ -107,32 +109,31 @@ For plugin details, the CHANGELOG, and releases, see the main repository.
 ## カタログの更新 / Updating the Catalog
 
 本体リポジトリでリリースタグ `vX.Y.Z` が打たれると、本体リポジトリの release workflow がこのリポジトリの `main` 向けに
-`marketplace.json` の `version` / `ref` / `sha` を更新する PR を作成します。PR をマージすると利用者に新しいバージョンが
+`marketplace.json` の `version` / `url` / `sha256` を更新する PR を作成します。PR をマージすると利用者に新しいバージョンが
 配布されます。
 
 When a release tag `vX.Y.Z` is pushed in the main repository, its release workflow opens a PR against `main` of this
-repository that updates `version` / `ref` / `sha` in `marketplace.json`. Merging that PR delivers the new version to
+repository that updates `version` / `url` / `sha256` in `marketplace.json`. Merging that PR delivers the new version to
 users.
 
 ### プラグインを追加するとき / Adding a Plugin
 
-`.claude-plugin/marketplace.json` の `plugins` 配列に `git-subdir` ソースのエントリを追加します。`sha` には `ref` の
-タグが指すコミットの 40 桁 SHA を指定します（`git ls-remote <url> 'refs/tags/vX.Y.Z*'` で確認でき、annotated tag の
-場合は `^{}` の行がコミット SHA です）。
+`.claude-plugin/marketplace.json` の `plugins` 配列に `archive` ソースのエントリを追加します。`url` には本体リポジトリの
+GitHub Release に添付した配布用 zip の URL を、`sha256` にはその zip の SHA-256（64 桁の 16 進）を指定します
+（`curl -sL <url> | shasum -a 256` で確認できます）。プラグインのルート（`.claude-plugin/plugin.json` を含むディレクトリ）は zip の先頭か 1 階層下に置きます。
 
-Add an entry with a `git-subdir` source to the `plugins` array in `.claude-plugin/marketplace.json`. Set `sha` to the
-40-character SHA of the commit the `ref` tag points to (check it with `git ls-remote <url> 'refs/tags/vX.Y.Z*'`; for
-an annotated tag, the `^{}` line is the commit SHA).
+Add an entry with an `archive` source to the `plugins` array in `.claude-plugin/marketplace.json`. Set `url` to the
+distribution zip attached to a GitHub Release of the main repository, and `sha256` to the SHA-256 of that zip
+(64 hex characters; check it with `curl -sL <url> | shasum -a 256`). Place the plugin root (the directory containing
+`.claude-plugin/plugin.json`) at the top of the zip or one directory down.
 
 ```json
 {
   "name": "<plugin-name>",
   "source": {
-    "source": "git-subdir",
-    "url": "<owner>/<repo>",
-    "path": "plugins/<plugin-name>",
-    "ref": "vX.Y.Z",
-    "sha": "<40-char commit SHA>"
+    "source": "archive",
+    "url": "https://github.com/<owner>/<repo>/releases/download/vX.Y.Z/<plugin-name>-X.Y.Z.zip",
+    "sha256": "<64-char SHA-256 of the zip>"
   },
   "description": "...",
   "version": "X.Y.Z"
