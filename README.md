@@ -10,16 +10,26 @@ AI-driven Specification-Driven Development (AI-SDD) workflow.
 
 ## 概要 / Overview
 
-このリポジトリには、Vibe Coding問題を防ぎ、仕様書を真実の源として高品質な実装を実現するためのプラグインが含まれています。
+このリポジトリはプラグインの**カタログ（`.claude-plugin/marketplace.json`）のみ**を持ちます。プラグイン本体・
+CHANGELOG・GitHub Release は本体リポジトリ
+[ToshikiImagawa/ai-sdd-workflow-dev](https://github.com/ToshikiImagawa/ai-sdd-workflow-dev) にあります。
+カタログの各エントリは `git-subdir` ソースで本体リポジトリのサブディレクトリをタグとコミット SHA に固定して参照します。
 
-This repository contains plugins to prevent Vibe Coding problems and achieve high-quality implementations using
-specifications as the source of truth.
+This repository holds **only the plugin catalog (`.claude-plugin/marketplace.json`)**. The plugin source code,
+CHANGELOG, and GitHub Releases live in the main repository,
+[ToshikiImagawa/ai-sdd-workflow-dev](https://github.com/ToshikiImagawa/ai-sdd-workflow-dev). Each catalog entry
+uses a `git-subdir` source that points to a subdirectory of the main repository, pinned to a tag and commit SHA.
+
+プラグインは、Vibe Coding問題を防ぎ、仕様書を真実の源として高品質な実装を実現します。
+
+The plugin prevents Vibe Coding problems and achieves high-quality implementations using specifications as the
+source of truth.
 
 ## 利用可能なプラグイン / Available Plugins
 
-| プラグイン / Plugin | 言語 / Language      | 説明 / Description                                                                       |
-|:---------------|:-------------------|:---------------------------------------------------------------------------------------|
-| `sdd-workflow` | 多言語 / Multilingual | AI-SDD ワークフローを支援する統合プラグイン（`SDD_LANG` で言語切替）/ Unified plugin supporting AI-SDD workflow |
+| プラグイン / Plugin | 言語 / Language      | 説明 / Description                                                                       | 本体リポジトリ / Source Repository                                                                         |
+|:---------------|:-------------------|:---------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------|
+| `sdd-workflow` | 多言語 / Multilingual | AI-SDD ワークフローを支援する統合プラグイン（`SDD_LANG` で言語切替）/ Unified plugin supporting AI-SDD workflow | [ToshikiImagawa/ai-sdd-workflow-dev](https://github.com/ToshikiImagawa/ai-sdd-workflow-dev) |
 
 ## インストール / Installation
 
@@ -34,7 +44,7 @@ Claude Code で以下を実行 / Run the following in Claude Code:
 ### プラグインをインストール / Install Plugin
 
 ```
-/plugin install sdd-workflow@ToshikiImagawa/ai-sdd-workflow
+/plugin install sdd-workflow@ai-sdd-workflow
 ```
 
 言語は `.sdd-config.json` の `lang` フィールド（`en` / `ja`）で設定できます。
@@ -79,37 +89,73 @@ Existing `specification/*_design.md` files **remain valid** and you are never as
 migration is not urgent and can be done feature by feature. For the full list of breaking changes, the
 migration steps, and the known limitations, see the plugin README:
 
-- [Migration from v4.x (English)](./plugins/sdd-workflow/README.md#migration-from-v4x)
-- [v4.x からの移行（日本語）](./plugins/sdd-workflow/README.ja.md#v4x-からの移行)
+- [Migration from v4.x (English)](https://github.com/ToshikiImagawa/ai-sdd-workflow-dev/blob/main/plugins/sdd-workflow/README.md#migration-from-v4x)
+- [v4.x からの移行（日本語）](https://github.com/ToshikiImagawa/ai-sdd-workflow-dev/blob/main/plugins/sdd-workflow/README.ja.md#v4x-からの移行)
 
 ## プラグイン詳細 / Plugin Details
 
-プラグインの詳細は README を参照してください。
+プラグインの詳細・CHANGELOG・リリースは本体リポジトリを参照してください。
 
-For plugin details, see the README.
+For plugin details, the CHANGELOG, and releases, see the main repository.
 
-- [sdd-workflow README](./plugins/sdd-workflow/README.md)
-- [sdd-workflow README（日本語）](./plugins/sdd-workflow/README.ja.md)
+- [sdd-workflow README](https://github.com/ToshikiImagawa/ai-sdd-workflow-dev/blob/main/plugins/sdd-workflow/README.md)
+- [sdd-workflow README（日本語）](https://github.com/ToshikiImagawa/ai-sdd-workflow-dev/blob/main/plugins/sdd-workflow/README.ja.md)
+- [CHANGELOG](https://github.com/ToshikiImagawa/ai-sdd-workflow-dev/blob/main/plugins/sdd-workflow/CHANGELOG.md)
+- [CHANGELOG（日本語）](https://github.com/ToshikiImagawa/ai-sdd-workflow-dev/blob/main/plugins/sdd-workflow/CHANGELOG.ja.md)
+- [Releases](https://github.com/ToshikiImagawa/ai-sdd-workflow-dev/releases)
+
+## カタログの更新 / Updating the Catalog
+
+本体リポジトリでリリースタグ `vX.Y.Z` が打たれると、本体リポジトリの release workflow がこのリポジトリの `main` 向けに
+`marketplace.json` の `version` / `ref` / `sha` を更新する PR を作成します。PR をマージすると利用者に新しいバージョンが
+配布されます。
+
+When a release tag `vX.Y.Z` is pushed in the main repository, its release workflow opens a PR against `main` of this
+repository that updates `version` / `ref` / `sha` in `marketplace.json`. Merging that PR delivers the new version to
+users.
+
+### プラグインを追加するとき / Adding a Plugin
+
+`.claude-plugin/marketplace.json` の `plugins` 配列に `git-subdir` ソースのエントリを追加します。`sha` には `ref` の
+タグが指すコミットの 40 桁 SHA を指定します（`git ls-remote <url> 'refs/tags/vX.Y.Z*'` で確認でき、annotated tag の
+場合は `^{}` の行がコミット SHA です）。
+
+Add an entry with a `git-subdir` source to the `plugins` array in `.claude-plugin/marketplace.json`. Set `sha` to the
+40-character SHA of the commit the `ref` tag points to (check it with `git ls-remote <url> 'refs/tags/vX.Y.Z*'`; for
+an annotated tag, the `^{}` line is the commit SHA).
+
+```json
+{
+  "name": "<plugin-name>",
+  "source": {
+    "source": "git-subdir",
+    "url": "<owner>/<repo>",
+    "path": "plugins/<plugin-name>",
+    "ref": "vX.Y.Z",
+    "sha": "<40-char commit SHA>"
+  },
+  "description": "...",
+  "version": "X.Y.Z"
+}
+```
+
+追加後、ローカルで検証してから PR を作成します。CI でも同じ検証が実行されます。
+
+After adding it, validate locally before opening a PR. CI runs the same checks.
+
+```bash
+claude plugin validate .
+```
 
 ## リポジトリ構成 / Repository Structure
 
 ```
 ai-sdd-workflow/
 ├── .claude-plugin/
-│   └── marketplace.json           # マーケットプレイスメタデータ / Marketplace metadata
-├── plugins/
-│   └── sdd-workflow/              # 統合プラグイン（多言語対応）/ Unified plugin (multilingual)
-│       ├── .claude-plugin/
-│       │   └── plugin.json
-│       ├── agents/
-│       ├── skills/
-│       ├── hooks/
-│       ├── scripts/
-│       ├── CHANGELOG.md
-│       ├── CHANGELOG.ja.md
-│       ├── LICENSE
-│       ├── README.md
-│       └── README.ja.md
+│   └── marketplace.json           # プラグインカタログ / Plugin catalog
+├── .github/
+│   └── workflows/
+│       └── ci.yml                 # カタログの検証 / Catalog validation
 ├── LICENSE
 └── README.md
 ```

@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: marketplace.json の JSON 構文を検証
+        run: jq empty .claude-plugin/marketplace.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Claude Code CLI をインストール
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: マーケットプレイスを検証
+        run: claude plugin validate .

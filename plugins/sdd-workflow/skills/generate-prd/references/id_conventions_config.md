@@ -1,1 +1,0 @@
-../../../shared/references/id_conventions_config.md

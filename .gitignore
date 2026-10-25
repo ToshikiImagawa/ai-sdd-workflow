@@ -18,10 +18,6 @@ Thumbs.db
 .claude/worktrees/
 .agents/worktrees/
 
-# Python
-__pycache__/
-.pytest_cache/
-
 # direnv
 .envrc
 
